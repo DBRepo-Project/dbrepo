@@ -8,7 +8,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ExecuteInternalQueryDTO {
+public class ExecuteQueryDTO {
 
     @JsonProperty("ContainerID")
     private String containerID;
