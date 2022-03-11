@@ -19,8 +19,8 @@ services:
     networks:
       fda-public:
     environment:
-      NAME: Vienna
       KEY: temperature
+      NAME: Vienna
     logging:
       driver: json-file
 
@@ -32,8 +32,8 @@ services:
     networks:
       fda-public:
     environment:
-      NAME: Graz
       KEY: temperature
+      NAME: Graz
     logging:
       driver: json-file
 
@@ -45,7 +45,7 @@ services:
     networks:
       fda-public:
     environment:
-      NAME: Linz
       KEY: temperature
+      NAME: Linz
     logging:
       driver: json-file

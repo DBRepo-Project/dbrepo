@@ -22,8 +22,13 @@ def send():
         'value': rand()
     }
     payload = dumps(message).encode('utf8')
-    print('payload', payload)
-    channel.basic_publish(exchange='', routing_key=os.getenv('KEY'), body=payload)
+    channel.basic_publish(exchange='',
+                          routing_key=os.getenv('KEY'),
+                          body=payload,
+                          properties=pika.BasicProperties(
+                              delivery_mode=2,  # make message persistent
+                          ))
+    #print('payload', payload)
     connection.close()
 
 
@@ -33,4 +38,4 @@ if __name__ == "__main__":
     print('Started AMQP producer.')
     while 1:
         send()
-        sleep(1000)
+        sleep(0.05)
