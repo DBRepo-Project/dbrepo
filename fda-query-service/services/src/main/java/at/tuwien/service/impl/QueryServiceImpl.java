@@ -43,19 +43,22 @@ import java.util.stream.Collectors;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final QueryMapper queryMapper;
+    private final StoreService storeService;
     private final TableService tableService;
     private final DatabaseService databaseService;
+    private final CommaValueService commaValueService;
     private final TableColumnRepository tableColumnRepository;
-    private final StoreService storeService;
 
     @Autowired
     public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
-                            TableColumnRepository tableColumnRepository, StoreService storeService) {
+                            TableColumnRepository tableColumnRepository, StoreService storeService,
+                            CommaValueService commaValueService) {
         this.queryMapper = queryMapper;
+        this.storeService = storeService;
         this.tableService = tableService;
         this.databaseService = databaseService;
+        this.commaValueService = commaValueService;
         this.tableColumnRepository = tableColumnRepository;
-        this.storeService = storeService;
     }
 
     @Override
@@ -64,13 +67,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException, TableNotFoundException, SQLException, JSQLParserException, TableMalformedException {
         Instant i = Instant.now();
         Query q = storeService.insert(containerId, databaseId, null, statement, i);
-        final QueryResultDto result = this.reExecute(containerId,databaseId,q,page,size);
-        q = storeService.update(containerId,databaseId,result, result.getResultNumber(),q);
+        final QueryResultDto result = this.reExecute(containerId, databaseId, q, page, size);
+        q = storeService.update(containerId, databaseId, result, result.getResultNumber(), q);
         return result;
     }
 
     @Override
-    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size) throws TableNotFoundException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
+            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            SQLException, JSQLParserException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -84,7 +89,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         session.beginTransaction();
         /* prepare the statement */
         Instant i = Instant.now();
-        final NativeQuery<?> nativeQuery = session.createSQLQuery(queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getExecution(),page, size));
+        final NativeQuery<?> nativeQuery = session.createSQLQuery(queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getExecution(), page, size));
         final int affectedTuples;
         try {
             log.debug("execute raw view-only query {}", query);
@@ -100,7 +105,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns = parseColumns(query, database);
         QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
-        result.setResultNumber(query.getResultNumber()!=null ? query.getResultNumber() : countQueryResults(containerId,databaseId,query));
+        result.setResultNumber(query.getResultNumber() != null ? query.getResultNumber() : countQueryResults(containerId, databaseId, query).longValue());
         result.setId(query.getId());
         session.close();
         factory.close();
@@ -220,11 +225,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* prepare the statement */
         final InsertTableRawQuery raw = queryMapper.pathToRawInsertQuery(table, data);
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
-        return insert(query, session, factory);
+        final Integer affectedTuples = insert(query, session, factory);
+        /* delete csv dataset */
+        commaValueService.delete(data.getLocation());
+        return affectedTuples;
     }
 
     /**
-     * Executes a insert query on an active Hibernate session on a table with given id and returns the affected rows.
+     * Executes an insert query on an active Hibernate session on a table with given id and returns the affected rows.
      *
      * @param query   The query.
      * @param session The active Hibernate session.
@@ -282,15 +290,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         Statement statement = parserRealSql.parse(new StringReader(query.getQuery()));
         log.debug("Given query {}", query.getQuery());
 
-        if(statement instanceof Select) {
+        if (statement instanceof Select) {
             Select selectStatement = (Select) statement;
-            PlainSelect ps = (PlainSelect)selectStatement.getSelectBody();
+            PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
             List<SelectItem> selectItems = ps.getSelectItems();
 
             //Parse all tables
             List<FromItem> fromItems = new ArrayList<>();
             fromItems.add(ps.getFromItem());
-            if(ps.getJoins() != null && ps.getJoins().size() > 0) {
+            if (ps.getJoins() != null && ps.getJoins().size() > 0) {
                 for (Join j : ps.getJoins()) {
                     if (j.getRightItem() != null) {
                         fromItems.add(j.getRightItem());
@@ -299,61 +307,59 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             //Checking if all tables exist
             List<TableColumn> allColumns = new ArrayList<>();
-            for(FromItem f : fromItems) {
+            for (FromItem f : fromItems) {
                 boolean i = false;
                 log.debug("from item iterated through: {}", f);
-                for(Table t : database.getTables()) {
-                    if(queryMapper.stringToEscapedString(f.toString()).equals(queryMapper.stringToEscapedString(t.getInternalName()))) {
+                for (Table t : database.getTables()) {
+                    if (queryMapper.stringToEscapedString(f.toString()).equals(queryMapper.stringToEscapedString(t.getInternalName()))) {
                         allColumns.addAll(t.getColumns());
-                        i=false;
+                        i = false;
                         break;
                     }
                     i = true;
                 }
-                if(i) {
-                    throw new JSQLParserException("Table "+queryMapper.stringToEscapedString(f.toString())+ " does not exist");
+                if (i) {
+                    throw new JSQLParserException("Table " + queryMapper.stringToEscapedString(f.toString()) + " does not exist");
                 }
             }
 
             //Checking if all columns exist
-            for(SelectItem s : selectItems) {
+            for (SelectItem s : selectItems) {
                 String select = queryMapper.stringToEscapedString(s.toString());
                 log.debug(select);
-                if(select.trim().equals("*")) {
+                if (select.trim().equals("*")) {
                     log.debug("Please do not use * to query data");
                     continue;
                 }
                 // ignore prefixes
-                if(select.contains(".")) {
+                if (select.contains(".")) {
                     log.debug(select);
                     select = select.split("\\.")[1];
                 }
                 boolean i = false;
-                for(TableColumn tc : allColumns ) {
+                for (TableColumn tc : allColumns) {
                     log.debug("{},{},{}", tc.getInternalName(), tc.getName(), s);
-                    if(select.equals(queryMapper.stringToEscapedString(tc.getInternalName()))) {
-                        i=false;
+                    if (select.equals(queryMapper.stringToEscapedString(tc.getInternalName()))) {
+                        i = false;
                         columns.add(tc);
                         break;
                     }
                     i = true;
                 }
-                if(i) {
-                    throw new JSQLParserException("Column "+s.toString() + " does not exist");
+                if (i) {
+                    throw new JSQLParserException("Column " + s.toString() + " does not exist");
                 }
             }
             return columns;
-        }
-        else {
+        } else {
             throw new JSQLParserException("SQL Query is not a SELECT statement - please only use SELECT statements");
         }
 
     }
 
-    @Transactional
-    Long countQueryResults(Long containerId, Long databaseId, Query query)
-            throws DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException {
+    @Transactional(readOnly = true)
+    protected BigInteger countQueryResults(Long containerId, Long databaseId, Query query)
+            throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         /* run query */
@@ -375,7 +381,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         session.getTransaction()
                 .commit();
-        final Long count = nativeQuery.getSingleResult().longValue();
+        final BigInteger count = nativeQuery.getSingleResult();
         session.close();
         factory.close();
         return count;

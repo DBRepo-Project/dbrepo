@@ -13,62 +13,62 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({AuthenticationInvalidException.class})
-    public ResponseEntity<Object> handle(AuthenticationInvalidException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.FORBIDDEN)
-                .message(e.getLocalizedMessage())
-                .code("error.auth.invalid")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ExceptionHandler({AuthenticationMalformedException.class})
-    public ResponseEntity<Object> handle(AuthenticationMalformedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.auth.malformed")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ExceptionHandler({RoleNotFoundException.class})
-    public ResponseEntity<Object> handle(RoleNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.auth.role")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ExceptionHandler({UserEmailExistsException.class})
-    public ResponseEntity<Object> handle(UserEmailExistsException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.EXPECTATION_FAILED)
-                .message(e.getLocalizedMessage())
-                .code("error.auth.email")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ExceptionHandler({UserNameExistsException.class})
-    public ResponseEntity<Object> handle(UserNameExistsException e, WebRequest request) {
+    @ExceptionHandler({IdentifierAlreadyExistsException.class})
+    public ResponseEntity<Object> handle(IdentifierAlreadyExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
-                .code("error.auth.username")
+                .code("error.identifier.exists")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({UserNotFoundException.class})
-    public ResponseEntity<Object> handle(UserNotFoundException e, WebRequest request) {
+    @ExceptionHandler({IdentifierAlreadyPublishedException.class})
+    public ResponseEntity<Object> handle(IdentifierAlreadyPublishedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.PRECONDITION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.published")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({IdentifierNotFoundException.class})
+    public ResponseEntity<Object> handle(IdentifierNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.auth.user")
+                .code("error.identifier.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({IdentifierPublishingNotAllowedException.class})
+    public ResponseEntity<Object> handle(IdentifierPublishingNotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_ACCEPTABLE)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.publish")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({QueryNotFoundException.class})
+    public ResponseEntity<Object> handle(QueryNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.query")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({RemoteUnavailableException.class})
+    public ResponseEntity<Object> handle(RemoteUnavailableException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NO_CONTENT)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.remote")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

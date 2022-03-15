@@ -6,7 +6,6 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.FileStorageException;
 import com.opencsv.CSVWriter;
 import org.mapstruct.Mapper;
-import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 

@@ -42,6 +42,13 @@ public interface CommaValueService {
     TableCsvDto read(Long containerId, Long databaseId, Long tableId, String location, Character separator, Long skipLines, String nullElement,
                      String falseElement, String trueElement) throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, ContainerNotFoundException;
 
+    /**
+     * Deletes a csv file for a path
+     *
+     * @param path The path.
+     */
+    void delete(String path);
+
 //    /**
 //     * Exports a table to a file by given database and table id for a specific point in time.
 //     *

@@ -84,7 +84,6 @@ public interface QueryMapper {
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
                 .append("'")
-//                .append("' LINES TERMINATED BY '\\r\\n'")
                 .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder dateSet = new StringBuilder();
@@ -224,10 +223,6 @@ public interface QueryMapper {
         return sb.toString();
 
     }
-
-
-
-
 
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
             throws ImageNotSupportedException {

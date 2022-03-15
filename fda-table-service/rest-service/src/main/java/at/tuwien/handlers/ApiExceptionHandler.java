@@ -18,7 +18,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
-                .code("error.amqp.queue")
+                .code("error.database.queue")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -28,7 +28,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
-                .code("error.keys.primary")
+                .code("error.database.primary")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({ContainerNotFoundException.class})
+    public ResponseEntity<Object> handle(ContainerNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.database.container")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -93,22 +103,22 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({TableNameExistsException.class})
-    public ResponseEntity<Object> handle(TableNameExistsException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
-                .message(e.getLocalizedMessage())
-                .code("error.database.name")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
     @ExceptionHandler({TableMalformedException.class})
     public ResponseEntity<Object> handle(TableMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
                 .code("error.database.table")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ExceptionHandler({TableNameExistsException.class})
+    public ResponseEntity<Object> handle(TableNameExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.database.name")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

@@ -31,6 +31,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.apache.commons.io.FileUtils.deleteQuietly;
+import static org.apache.commons.io.FileUtils.getFile;
+
 @Slf4j
 @Service
 public class CommaValueServiceImpl implements CommaValueService {
@@ -170,6 +173,12 @@ public class CommaValueServiceImpl implements CommaValueService {
         return TableCsvDto.builder()
 //                .data(rows)
                 .build();
+    }
+
+    @Override
+    public void delete(String path) {
+        final File csv = getFile(path);
+        deleteQuietly(csv);
     }
 
 //    @Override
