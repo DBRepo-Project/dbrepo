@@ -15,13 +15,26 @@ import java.util.List;
 public interface StoreService {
 
     /**
+     * Initializes the query store for a given container and database id.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @throws ContainerNotFoundException The container is not found.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     */
+    void init(Long containerId, Long databaseId) throws ContainerNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException;
+
+    /**
      * Finds all queries in the query store of the given database id and query id.
      *
      * @param databaseId The database id.
      * @return The list of queries.
-     * @throws ImageNotSupportedException The image is not supported
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database
-     * @throws QueryStoreException        The query store produced an invalid result
+     * @throws ContainerNotFoundException The container is not found.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws QueryStoreException        The query store produced an invalid result.
      */
     List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, ContainerNotFoundException;
@@ -70,7 +83,20 @@ public interface StoreService {
                  Instant execution) throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException;
 
-    @Transactional(readOnly = true)
+    /**
+     * Updates
+     *
+     * @param containerId
+     * @param databaseId
+     * @param result
+     * @param resultNumber
+     * @param metadata
+     * @return
+     * @throws QueryStoreException
+     * @throws DatabaseNotFoundException
+     * @throws ImageNotSupportedException
+     * @throws ContainerNotFoundException
+     */
     Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException;

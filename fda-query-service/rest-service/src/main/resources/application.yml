@@ -6,7 +6,7 @@ spring:
     username: postgres
     password: postgres
   jpa:
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
@@ -21,7 +21,7 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
-    at.tuwien.service.QueryService: trace
+    at.tuwien.service.: trace
     at.tuwien.config.: trace
 eureka:
   instance.hostname: fda-query-service

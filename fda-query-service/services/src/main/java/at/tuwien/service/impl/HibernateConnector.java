@@ -21,7 +21,8 @@ public abstract class HibernateConnector {
     private static final Integer MIN_SIZE = 5;
     private static final Integer MAX_SIZE = 500;
     private static final Integer INCREMENT_SIZE = 5;
-    private static final Integer TIMEOUT = 1800;
+    private static final Integer TIMEOUT = 300;
+    private static final Integer IDLE = 3000;
     private static final String SESSION_CONTEXT = "thread";
     private static final String COORDINATOR_CLASS = "jdbc";
 
@@ -60,6 +61,7 @@ public abstract class HibernateConnector {
                 .setProperty("hibernate.c3p0.max_size", String.valueOf(MAX_SIZE))
                 .setProperty("hibernate.c3p0.acquire_increment", String.valueOf(INCREMENT_SIZE))
                 .setProperty("hibernate.c3p0.timeout", String.valueOf(TIMEOUT))
+                .setProperty("hibernate.c3p0.idle_test_periods", String.valueOf(IDLE))
                 .addAnnotatedClass(Query.class)
                 .addAnnotatedClass(Table.class)
                 .addAnnotatedClass(Column.class);

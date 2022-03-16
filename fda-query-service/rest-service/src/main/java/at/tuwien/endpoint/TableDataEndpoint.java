@@ -52,7 +52,7 @@ public class TableDataEndpoint {
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @Valid @RequestBody TableCsvDto data)
-            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException {
         return ResponseEntity.accepted()
                 .body(queryService.insert(id, databaseId, tableId, data));
@@ -97,8 +97,7 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) Long page,
                                                  @RequestParam(required = false) Long size)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
-            ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException {
+            ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException {
         if ((page == null && size != null) || (page != null && size == null)) {
             log.error("Cannot perform pagination with only one of page/size set.");
             log.debug("invalid pagination specification, one of page/size is null, either both should be null or none.");
@@ -110,8 +109,7 @@ public class TableDataEndpoint {
         if (size != null && size <= 0) {
             throw new PaginationException("Page number cannot be lower or equal to 0");
         }
-        /* fixme query store maybe not created, create it through running findAll() */
-        storeService.findAll(id, databaseId);
+        storeService.init(id, databaseId);
         final BigInteger count = queryService.count(id, databaseId, tableId, timestamp);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());

@@ -25,6 +25,7 @@ public class QuerySeederImpl extends AbstractSeeder implements Seeder {
     @SneakyThrows
     @Override
     public void seed() {
+        storeService.init(CONTAINER_1_ID, DATABASE_1_ID);
         if (storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID).stream().anyMatch(q -> q.getId().equals(QUERY_1_ID))) {
             log.warn("Already seeded. Skip.");
             return;

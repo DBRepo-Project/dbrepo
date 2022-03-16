@@ -42,6 +42,24 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
+    public void init(Long containerId, Long databaseId) throws ContainerNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException {
+        /* find */
+        final Container container = containerService.find(containerId);
+        final Database database = databaseService.find(databaseId);
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        log.trace("initialize query store (if not exist) for database id {}", databaseId);
+        /* run query */
+        final SessionFactory factory = getSessionFactory(database, true);
+        factory.openSession()
+                .close();
+        factory.close();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryStoreException, ContainerNotFoundException {
         /* find */
@@ -175,7 +193,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         factory.close();
         return query;
     }
-
 
 
 }
