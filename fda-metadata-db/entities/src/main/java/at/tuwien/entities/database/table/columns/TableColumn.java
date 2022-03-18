@@ -1,10 +1,13 @@
 package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import io.swagger.annotations.ApiModelProperty;
+import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -103,6 +106,15 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumns( {
+            @JoinColumn(name = "id", referencedColumnName = "cid",insertable = false, updatable = false),
+            @JoinColumn(name = "tid", referencedColumnName = "tid",insertable = false, updatable = false),
+            @JoinColumn(name = "cdbid", referencedColumnName = "cdbid",insertable = false, updatable = false)
+    })
+    private ColumnConcept columnConcept;
 
     @Column
     @LastModifiedDate

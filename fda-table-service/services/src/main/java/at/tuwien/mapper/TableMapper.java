@@ -7,9 +7,13 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnConceptDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
+import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.TableMalformedException;
 import org.mapstruct.Mapper;
@@ -48,9 +52,16 @@ public interface TableMapper {
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "unique", source = "isUnique"),
             @Mapping(target = "checkExpression", expression = "java(data.getCheckExpression())"),
-            @Mapping(target = "foreignKey", expression = "java(data.getForeignKey())")
+            @Mapping(target = "foreignKey", expression = "java(data.getForeignKey())"),
+            @Mapping(target = "concept",  source="columnConcept")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
+
+    default ConceptDto columnConceptToConceptDto(ColumnConcept data) {
+        return conceptToConceptDto(data.getConcept());
+    }
+
+    ConceptDto conceptToConceptDto(Concept concept);
 
     Table tableCreateDtoToTable(TableCreateDto data);
 

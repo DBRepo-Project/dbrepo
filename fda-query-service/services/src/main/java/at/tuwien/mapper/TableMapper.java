@@ -1,7 +1,9 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnConceptDto;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mappings;
 
@@ -11,4 +13,5 @@ public interface TableMapper {
     @Mappings({})
     TableDto tableToTableDto(Table data);
 
+    ColumnConceptDto columnConceptToColumnConceptDto(ColumnConcept data);
 }
