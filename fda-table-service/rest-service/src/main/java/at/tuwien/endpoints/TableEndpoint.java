@@ -95,7 +95,10 @@ public class TableEndpoint {
                                              @NotNull @PathVariable("tableId") Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
         final Table table = tableService.findById(id, databaseId, tableId);
-        return ResponseEntity.ok(tableMapper.tableToTableDto(table));
+        log.debug(table);
+        TableDto tableDto = tableMapper.tableToTableDto(table);
+        log.debug(tableDto);
+        return ResponseEntity.ok(tableDto);
     }
 
     @PutMapping("/{tableId}")

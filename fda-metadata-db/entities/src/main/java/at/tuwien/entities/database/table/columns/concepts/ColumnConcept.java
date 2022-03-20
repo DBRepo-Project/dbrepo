@@ -33,7 +33,7 @@ public class ColumnConcept {
     @EqualsAndHashCode.Include
     private Long cdbid;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JoinColumn(name="uri")
     private Concept concept;
 }

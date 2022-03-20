@@ -107,7 +107,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumns( {
             @JoinColumn(name = "id", referencedColumnName = "cid",insertable = false, updatable = false),
