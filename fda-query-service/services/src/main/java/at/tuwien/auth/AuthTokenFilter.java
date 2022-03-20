@@ -27,7 +27,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String jwt = parseJwt(request);
+        final String jwt = parseJwt(request);
         if (jwt != null) {
             final UserDetails userDetails = authenticationServiceGateway.validate(jwt);
             final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
