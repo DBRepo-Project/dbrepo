@@ -201,7 +201,7 @@ public class ContainerServiceImpl implements ContainerService {
     @Override
     @Transactional(readOnly = true)
     public List<Container> getAll() {
-        return containerRepository.findAll();
+        return containerRepository.findAllPublic();
     }
 
     @Override

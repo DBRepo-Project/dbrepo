@@ -118,7 +118,7 @@ public class ContainerEndpoint {
     @DeleteMapping("/{id}")
     @Transactional
     @ApiOperation(value = "Delete a container")
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Deleted the container."),
             @ApiResponse(code = 401, message = "Not authorized to delete a container."),

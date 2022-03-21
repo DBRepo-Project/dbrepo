@@ -100,6 +100,7 @@ public class TableEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @ApiOperation(value = "Update a table", notes = "Update a table in the database.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Updated the table."),

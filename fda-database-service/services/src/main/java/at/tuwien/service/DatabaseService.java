@@ -28,15 +28,6 @@ public interface DatabaseService {
     List<Database> findAll();
 
     /**
-     * Finds all known databases in the metadata database that belong to a username.
-     *
-     * @param id       The container id.
-     * @param username The username.
-     * @return The databases.
-     */
-    List<Database> findAllMine(Long id, String username);
-
-    /**
      * Finds a specific database for a given id in the metadata database.
      *
      * @param id         The container id.
@@ -52,27 +43,31 @@ public interface DatabaseService {
      *
      * @param id         The container id.
      * @param databaseId The database id.
+     * @param principal  The authentication principal.
      * @throws DatabaseNotFoundException  The database was not found.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be deleted.
      */
-    void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException;
+    void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException, ContainerUnauthorizedException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
      * @param id        The container id.
      * @param createDto The metadata.
+     * @param principal The authentication principal.
      * @return The created database as stored on the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws ContainerNotFoundException The container was not found.
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be created.
      */
-    Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
+    Database create(Long id, DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            UserNotFoundException, ContainerUnauthorizedException;
 
     /**
      * Updates a database with metadata in the metadata database  for a given database id.
@@ -80,14 +75,16 @@ public interface DatabaseService {
      * @param id         The container id.
      * @param databaseId The database id.
      * @param metadata   The metadata.
+     * @param principal  The authentication principal.
      * @return The update database, if successful.
      * @throws ContainerNotFoundException   The container was not found.
      * @throws DatabaseMalformedException   The query string is malformed.
      * @throws ContainerConnectionException
      * @throws UserNotFoundException
      */
-    Database update(Long id, Long databaseId, DatabaseModifyDto metadata) throws ContainerNotFoundException,
-            DatabaseMalformedException, ContainerConnectionException, UserNotFoundException, DatabaseNotFoundException;
+    Database update(Long id, Long databaseId, DatabaseModifyDto metadata, Principal principal)
+            throws ContainerNotFoundException, DatabaseMalformedException, ContainerConnectionException,
+            UserNotFoundException, DatabaseNotFoundException, ContainerUnauthorizedException;
 
     /**
      * Returns a new session for a given {@link Database} entity.

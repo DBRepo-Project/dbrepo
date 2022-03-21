@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface ContainerRepository extends JpaRepository<Container, Long> {
 
+    @Query("select c from Container c where c.isPublic = true")
+    List<Container> findAllPublic();
+
     @Query("select c from Container c where c.isPublic = true or c.creator.username = :username")
     List<Container> findAllAndByCreator(@Param("username") String username);
 

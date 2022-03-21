@@ -18,7 +18,6 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Visibility</th>
               <th>Engine</th>
               <th>Created</th>
             </tr>
@@ -35,10 +34,6 @@
               class="database"
               @click="loadDatabase(item)">
               <td>{{ item.name }}</td>
-              <td>
-                <v-icon v-if="item.is_public">mdi-earth</v-icon>
-                <v-icon v-if="!item.is_public">mdi-eye-off</v-icon>
-              </td>
               <td>{{ item.engine }}</td>
               <td>{{ formatDate(item.created) }}</td>
             </tr>

@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -72,12 +73,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional(readOnly = true)
-    public List<Database> findAllMine(Long id, String username) {
-        return databaseRepository.findAllMine(id, username);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException, ContainerNotFoundException {
         final Container container = containerService.find(id);
         final Optional<Database> database = databaseRepository.findById(databaseId);
@@ -90,8 +85,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException {
+    public void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException, ContainerUnauthorizedException {
+        final Container container = containerService.find(id);
+        if (!container.getCreator().getUsername().equals(principal.getName())) {
+            log.error("Unauthorized access to foreign container!");
+            throw new ContainerUnauthorizedException("Unauthorized");
+        }
         final Database database = findById(id, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -119,9 +120,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
+    public Database create(Long id, DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            UserNotFoundException, ContainerUnauthorizedException {
         final Container container = containerService.find(id);
+        if (!container.getCreator().getUsername().equals(principal.getName())) {
+            log.error("Unauthorized access to foreign container!");
+            throw new ContainerUnauthorizedException("Unauthorized");
+        }
         /* start the object */
         final Database database = new Database();
         database.setName(createDto.getName());
@@ -152,7 +158,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setDescription(createDto.getDescription());
-        database.setIsPublic(createDto.getIsPublic());
         database.setCreator(userService.findByUsername(authentication.getName()));
         final Database out = databaseRepository.save(database);
         log.info("Created database with id {}", out.getId());
@@ -166,16 +171,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database update(Long id, Long databaseId, DatabaseModifyDto metadata) throws ContainerNotFoundException,
-            UserNotFoundException, DatabaseNotFoundException {
-        /* find */
+    public Database update(Long id, Long databaseId, DatabaseModifyDto metadata, Principal principal)
+            throws ContainerNotFoundException, UserNotFoundException, DatabaseNotFoundException,
+            ContainerUnauthorizedException {
         final Container container = containerService.find(id);
+        if (!container.getCreator().getUsername().equals(principal.getName())) {
+            log.error("Unauthorized access to foreign container!");
+            throw new ContainerUnauthorizedException("Unauthorized");
+        }
+        /* find */
         final Database database = findById(id, databaseId);
         /* user */
         final UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder
                 .getContext().getAuthentication();
         /* update in metadata database */
-        database.setIsPublic(metadata.getIsPublic());
         database.setDescription(metadata.getDescription());
         database.setPublisher(metadata.getPublisher());
         database.setLicense(metadata.getLicense());

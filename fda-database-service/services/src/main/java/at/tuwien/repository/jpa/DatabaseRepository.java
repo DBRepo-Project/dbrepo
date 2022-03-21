@@ -11,10 +11,10 @@ import java.util.List;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true")
+    @Query("select d from Database d where d.container.id = :containerId")
     List<Database> findAllByContainerId(@Param("containerId") Long containerId);
 
-    @Query("select d from Database d where (d.container.id = :containerId and d.isPublic = true) or (d.container.id = :containerId and d.creator.username = :username)")
+    @Query("select d from Database d where d.container.id = :containerId and d.creator.username = :username")
     List<Database> findAllMine(@Param("containerId") Long containerId, @Param("username") String username);
 
 }
