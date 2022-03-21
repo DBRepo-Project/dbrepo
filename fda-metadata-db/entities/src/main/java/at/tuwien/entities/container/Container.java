@@ -47,6 +47,9 @@ public class Container {
     @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
+    private Boolean isPublic;
+
     @ToString.Exclude
     @Column(nullable = false)
     private String internalName;

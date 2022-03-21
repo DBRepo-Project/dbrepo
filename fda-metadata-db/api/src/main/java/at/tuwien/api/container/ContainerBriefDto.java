@@ -31,4 +31,9 @@ public class ContainerBriefDto {
     @JsonProperty("internal_name")
     @ApiModelProperty(name = "container internal name", example = "weather-world")
     private String internalName;
+
+    @NotNull
+    @JsonProperty("is_public")
+    @ApiModelProperty(name = "container public", example = "true")
+    private Boolean isPublic;
 }

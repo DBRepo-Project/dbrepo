@@ -72,6 +72,12 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional(readOnly = true)
+    public List<Database> findAllMine(Long id, String username) {
+        return databaseRepository.findAllMine(id, username);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException, ContainerNotFoundException {
         final Container container = containerService.find(id);
         final Optional<Database> database = databaseRepository.findById(databaseId);

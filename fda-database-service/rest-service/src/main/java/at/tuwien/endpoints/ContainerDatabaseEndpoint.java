@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,9 +47,15 @@ public class ContainerDatabaseEndpoint {
             @ApiResponse(code = 200, message = "All databases running in all containers are listed."),
             @ApiResponse(code = 401, message = "Not authorized to list all databases."),
     })
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id) {
-        final List<DatabaseBriefDto> databases = databaseService.findAll(id)
-                .stream()
+    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id,
+                                                          Principal principal) {
+        final List<Database> dbs;
+        if (principal != null) {
+            dbs = databaseService.findAllMine(id, principal.getName());
+        } else {
+            dbs = databaseService.findAll(id);
+        }
+        final List<DatabaseBriefDto> databases = dbs.stream()
                 .map(databaseMapper::databaseToDatabaseBriefDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(databases);

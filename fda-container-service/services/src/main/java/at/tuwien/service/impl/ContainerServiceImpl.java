@@ -83,6 +83,7 @@ public class ContainerServiceImpl implements ContainerService {
         Container container = new Container();
         container.setImage(image.get());
         container.setPort(availableTcpPort);
+        container.setIsPublic(createDto.getIsPublic());
         container.setCreator(userService.findByUsername(authentication.getName()));
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
@@ -200,9 +201,13 @@ public class ContainerServiceImpl implements ContainerService {
     @Override
     @Transactional(readOnly = true)
     public List<Container> getAll() {
-        final List<Container> containers = containerRepository.findAll();
-        log.trace("found containers {}", containers);
-        return containers;
+        return containerRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Container> getAllAndMine(String username) {
+        return containerRepository.findAllAndByCreator(username);
     }
 
     @Override

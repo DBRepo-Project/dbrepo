@@ -113,7 +113,7 @@ public class EndpointUnitTest extends BaseUnitTest {
         when(databaseService.findAll(CONTAINER_1_ID))
                 .thenReturn(List.of(DATABASE_1));
 
-        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.findAll(CONTAINER_1_ID);
+        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.findAll(CONTAINER_1_ID, null);
 
         /* test */
         assertEquals(HttpStatus.OK, response.getStatusCode());

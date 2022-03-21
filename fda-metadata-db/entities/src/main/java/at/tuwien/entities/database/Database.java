@@ -87,9 +87,6 @@ public class Database {
     })
     private List<Table> tables;
 
-    @Column(nullable = false)
-    private Boolean isPublic;
-
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;

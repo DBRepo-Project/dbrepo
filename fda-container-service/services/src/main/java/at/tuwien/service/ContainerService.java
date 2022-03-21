@@ -33,5 +33,13 @@ public interface ContainerService {
 
     List<Container> getAll();
 
+    /**
+     * Gets a list of containers existing in the metadata database by a given creator username.
+     *
+     * @param username The username.
+     * @return The list of containers.
+     */
+    List<Container> getAllAndMine(String username);
+
     Container start(Long containerId) throws ContainerNotFoundException, DockerClientException;
 }

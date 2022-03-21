@@ -49,7 +49,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
         when(containerService.getAll())
                 .thenReturn(List.of(CONTAINER_1));
 
-        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll();
+        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll(null);
 
         /* test */
         assertEquals(HttpStatus.OK, response.getStatusCode());

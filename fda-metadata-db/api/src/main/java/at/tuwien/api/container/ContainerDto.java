@@ -55,9 +55,16 @@ public class ContainerDto {
     private String ipAddress;
 
     @NotNull
+    @JsonProperty("is_public")
+    @ApiModelProperty(name = "container public", example = "true")
+    private Boolean isPublic;
+
+    @NotNull
+    @ApiModelProperty(name = "container image")
     private ImageDto image;
 
     @NotNull
+    @ApiModelProperty(name = "container port")
     private Integer port;
 
     @NotNull

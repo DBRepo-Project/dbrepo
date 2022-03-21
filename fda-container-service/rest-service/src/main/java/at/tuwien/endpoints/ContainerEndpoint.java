@@ -46,8 +46,13 @@ public class ContainerEndpoint {
             @ApiResponse(code = 200, message = "All containers are listed."),
             @ApiResponse(code = 401, message = "Not authorized to list all containers."),
     })
-    public ResponseEntity<List<ContainerBriefDto>> findAll() {
-        final List<Container> containers = containerService.getAll();
+    public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal) {
+        final List<Container> containers;
+        if (principal == null) {
+            containers = containerService.getAll();
+        } else {
+            containers = containerService.getAllAndMine(principal.getName());
+        }
         return ResponseEntity.ok()
                 .body(containers.stream()
                         .map(containerMapper::containerToDatabaseContainerBriefDto)

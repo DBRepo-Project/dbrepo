@@ -28,6 +28,15 @@ public interface DatabaseService {
     List<Database> findAll();
 
     /**
+     * Finds all known databases in the metadata database that belong to a username.
+     *
+     * @param id       The container id.
+     * @param username The username.
+     * @return The databases.
+     */
+    List<Database> findAllMine(Long id, String username);
+
+    /**
      * Finds a specific database for a given id in the metadata database.
      *
      * @param id         The container id.

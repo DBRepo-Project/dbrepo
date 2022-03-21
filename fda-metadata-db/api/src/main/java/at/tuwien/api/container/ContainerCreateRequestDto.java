@@ -1,9 +1,11 @@
 package at.tuwien.api.container;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -24,5 +26,10 @@ public class ContainerCreateRequestDto {
     @NotBlank
     @ApiModelProperty(name = "tag", example = "latest")
     private String tag = "latest";
+
+    @NotNull
+    @JsonProperty("is_public")
+    @ApiModelProperty(name = "public", example = "true")
+    private Boolean isPublic;
 
 }

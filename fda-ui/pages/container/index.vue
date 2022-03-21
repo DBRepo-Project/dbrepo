@@ -18,8 +18,8 @@
           <thead>
             <tr>
               <th>Name</th>
+              <th>Visibility</th>
               <th>Engine</th>
-              <th>Tables</th>
               <th>Created</th>
             </tr>
           </thead>
@@ -35,8 +35,11 @@
               class="database"
               @click="loadDatabase(item)">
               <td>{{ item.name }}</td>
+              <td>
+                <v-icon v-if="item.is_public">mdi-earth</v-icon>
+                <v-icon v-if="!item.is_public">mdi-eye-off</v-icon>
+              </td>
               <td>{{ item.engine }}</td>
-              <td />
               <td>{{ formatDate(item.created) }}</td>
             </tr>
           </tbody>
@@ -80,6 +83,16 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token != null) {
+        return {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        }
+      }
+      return null
     }
   },
   mounted () {
@@ -90,13 +103,14 @@ export default {
       this.createDbDialog = false
       try {
         this.loading = true
-        let res = await this.$axios.get('/api/container/')
+        let res = await this.$axios.get('/api/container/', this.config)
         this.containers = res.data
         console.debug('containers', this.containers)
         for (const container of this.containers) {
-          res = await this.$axios.get(`/api/container/${container.id}/database`)
+          res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
           for (const database of res.data) {
             database.container_id = container.id
+            database.is_public = container.is_public
             this.databases.push(database)
           }
         }
