@@ -3,11 +3,12 @@ package at.tuwien.api.database;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
-import javax.validation.constraints.Min;
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -34,9 +35,22 @@ public class DatabaseDto {
     @ApiModelProperty(name = "database internal name", example = "weather_australia")
     private String internalName;
 
+    @NotNull
+    @ApiModelProperty(name = "user")
+    private UserDto creator;
+
     @NotBlank
     @ApiModelProperty(name = "database description", example = "Weather Australia 2009-2021")
     private String description;
+
+    @ApiModelProperty(name = "database publisher", example = "TU Wien")
+    private String publisher;
+
+    @ApiModelProperty(name = "database license", example = "MIT")
+    private String license;
+
+    @ApiModelProperty(name = "database contact person")
+    private UserDto contact;
 
     @NotNull
     @ApiModelProperty(name = "tables")
@@ -53,10 +67,6 @@ public class DatabaseDto {
     @NotBlank
     @ApiModelProperty(name = "container")
     private ContainerDto container;
-
-    @NotBlank
-    @ApiModelProperty(name = "database publisher", example = "National Office")
-    private String publisher;
 
     @ApiModelProperty(name = "database creation time", example = "2020-08-04 11:12:00")
     private Instant created;

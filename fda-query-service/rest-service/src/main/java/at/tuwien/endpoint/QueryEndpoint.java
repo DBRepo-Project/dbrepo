@@ -52,16 +52,24 @@ public class QueryEndpoint {
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
                                                   @Valid @RequestBody ExecuteStatementDto data,
-                                                  @RequestParam(value = "page", required = false ) Long page, @RequestParam(value = "size", required = false) Long size)
+                                                  @RequestParam(value = "page", required = false) Long page,
+                                                  @RequestParam(value = "size", required = false) Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
-            TableNotFoundException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            TableNotFoundException, ContainerNotFoundException, SQLException, JSQLParserException,
+            TableMalformedException, UserNotFoundException {
         /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Query is empty");
             throw new QueryMalformedException("Invalid query");
         }
-        log.debug("Data for execution: {}", data);
+        if (data.getTables().size() == 0) {
+            log.error("Table list is empty");
+            throw new QueryMalformedException("Invalid table");
+        }
         final QueryResultDto result = queryService.execute(id, databaseId, data, page, size);
+        final QueryDto query = queryMapper.queryToQueryDto(storeService.insert(id, databaseId, result, data,
+                Instant.now()));
+        result.setId(query.getId());
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -78,11 +86,12 @@ public class QueryEndpoint {
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long id,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
-                                                    @RequestParam(value = "page", required = false) Long page, @RequestParam(value = "size", required = false) Long size)
+                                                    @RequestParam(value = "page", required = false) Long page,
+                                                    @RequestParam(value = "size", required = false) Long size)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableNotFoundException, QueryMalformedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            TableNotFoundException, QueryMalformedException, ContainerNotFoundException, SQLException,
+            JSQLParserException, TableMalformedException {
         final Query query = storeService.findOne(id, databaseId, queryId);
-        log.debug(query.toString());
         final QueryResultDto result = queryService.reExecute(id, databaseId, query, page, size);
         result.setId(queryId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)

@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,7 +70,7 @@ public class ContainerDatabaseEndpoint {
     public ResponseEntity<DatabaseDto> create(@NotBlank @PathVariable("id") Long id,
                                               @Valid @RequestBody DatabaseCreateDto createDto)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException {
+            AmqpException, ContainerConnectionException, UserNotFoundException {
         final Database database = databaseService.create(id, createDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseDto(database));
@@ -82,8 +85,25 @@ public class ContainerDatabaseEndpoint {
             @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
     })
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
-                                                @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException {
+                                                @NotBlank @PathVariable Long databaseId)
+            throws DatabaseNotFoundException, ContainerNotFoundException {
         return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(databaseService.findById(id, databaseId)));
+    }
+
+    @PutMapping("/{databaseId}")
+    @Transactional
+    @ApiOperation(value = "Updates information about the database")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The database information is displayed."),
+            @ApiResponse(code = 400, message = "The payload contains invalid data."),
+            @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
+    })
+    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long id,
+                                              @NotBlank @PathVariable Long databaseId,
+                                              @Valid @RequestBody DatabaseModifyDto metadata)
+            throws UserNotFoundException, ContainerNotFoundException, DatabaseNotFoundException {
+        return ResponseEntity.accepted()
+                .body(databaseMapper.databaseToDatabaseDto(databaseService.update(id, databaseId, metadata)));
     }
 
     @DeleteMapping("/{databaseId}")
@@ -99,7 +119,8 @@ public class ContainerDatabaseEndpoint {
     })
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long id,
                                     @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException {
         databaseService.delete(id, databaseId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
