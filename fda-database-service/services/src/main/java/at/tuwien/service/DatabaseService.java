@@ -1,12 +1,14 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface DatabaseService {
@@ -20,6 +22,7 @@ public interface DatabaseService {
 
     /**
      * Finds all known databases in the metadata database.
+     *
      * @return List of databases.
      */
     List<Database> findAll();
@@ -32,7 +35,7 @@ public interface DatabaseService {
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findById(Long id, Long databaseId) throws DatabaseNotFoundException;
+    Database findById(Long id, Long databaseId) throws DatabaseNotFoundException, ContainerNotFoundException;
 
     /**
      * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
@@ -40,27 +43,48 @@ public interface DatabaseService {
      *
      * @param id         The container id.
      * @param databaseId The database id.
+     * @param principal  The authentication principal.
      * @throws DatabaseNotFoundException  The database was not found.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be deleted.
      */
-    void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException;
+    void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException, ContainerUnauthorizedException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
      * @param id        The container id.
      * @param createDto The metadata.
+     * @param principal The authentication principal.
      * @return The created database as stored on the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
-     * @throws ContainerNotFoundException The container was not foudn.
+     * @throws ContainerNotFoundException The container was not found.
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be created.
      */
-    Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException;
+    Database create(Long id, DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            UserNotFoundException, ContainerUnauthorizedException;
+
+    /**
+     * Updates a database with metadata in the metadata database  for a given database id.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @param metadata   The metadata.
+     * @param principal  The authentication principal.
+     * @return The update database, if successful.
+     * @throws ContainerNotFoundException   The container was not found.
+     * @throws DatabaseMalformedException   The query string is malformed.
+     * @throws ContainerConnectionException
+     * @throws UserNotFoundException
+     */
+    Database update(Long id, Long databaseId, DatabaseModifyDto metadata, Principal principal)
+            throws ContainerNotFoundException, DatabaseMalformedException, ContainerConnectionException,
+            UserNotFoundException, DatabaseNotFoundException, ContainerUnauthorizedException;
 
     /**
      * Returns a new session for a given {@link Database} entity.

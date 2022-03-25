@@ -3,11 +3,12 @@ package at.tuwien.api.database;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.Min;
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -22,46 +23,55 @@ import java.util.List;
 public class DatabaseDto {
 
     @NotNull
-    @ApiModelProperty(name = "database id", example = "1")
+    @Parameter(name = "database id", example = "1")
     private Long id;
 
     @NotBlank
-    @ApiModelProperty(name = "database name", example = "Weather Australia")
+    @Parameter(name = "database name", example = "Weather Australia")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @ApiModelProperty(name = "database internal name", example = "weather_australia")
+    @Parameter(name = "database internal name", example = "weather_australia")
     private String internalName;
 
+    @NotNull
+    @Parameter(name = "user")
+    private UserDto creator;
+
     @NotBlank
-    @ApiModelProperty(name = "database description", example = "Weather Australia 2009-2021")
+    @Parameter(name = "database description", example = "Weather Australia 2009-2021")
     private String description;
 
+    @Parameter(name = "database publisher", example = "TU Wien")
+    private String publisher;
+
+    @Parameter(name = "database license", example = "MIT")
+    private String license;
+
+    @Parameter(name = "database contact person")
+    private UserDto contact;
+
     @NotNull
-    @ApiModelProperty(name = "tables")
+    @Parameter(name = "tables")
     private List<TableDto> tables;
 
     @NotBlank
-    @ApiModelProperty(name = "database exchange", example = "fda.c1.d1")
+    @Parameter(name = "database exchange", example = "fda.c1.d1")
     private String exchange;
 
     @NotBlank
-    @ApiModelProperty(name = "database container image")
+    @Parameter(name = "database container image")
     private ImageDto image;
 
     @NotBlank
-    @ApiModelProperty(name = "container")
+    @Parameter(name = "container")
     private ContainerDto container;
 
-    @NotBlank
-    @ApiModelProperty(name = "database publisher", example = "National Office")
-    private String publisher;
-
-    @ApiModelProperty(name = "database creation time", example = "2020-08-04 11:12:00")
+    @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
     private Instant created;
 
-    @ApiModelProperty(name = "database deletion time", example = "2020-08-04 11:13:00")
+    @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
     private Instant deleted;
 
 }

@@ -153,7 +153,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
-                null, null);
+                null, null, null, null);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_NAME));
         assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(COLUMN_1_2_NAME));
@@ -174,7 +174,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, InterruptedException,
-            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            SQLException, JSQLParserException, TableMalformedException, UserNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -183,7 +184,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        //FIXME
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
         assertEquals(3, response.getResult().size());
         assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get(COLUMN_1_1_NAME));
@@ -203,12 +203,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(0.0, response.getResult().get(2).get(COLUMN_1_5_NAME));
     }
 
-    // TODO use own user that has only read-only permissions
     @Test
     @Disabled
     public void execute_modifyData_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
             InterruptedException, QueryMalformedException, TableNotFoundException, QueryStoreException,
-            ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException,
+            UserNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("DELETE FROM `weather_aus`;")
                 .build();
@@ -217,7 +217,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        //FIXME
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
         assertNotNull(response.getResult());
         assertEquals(3, response.getResult().size());
@@ -290,7 +289,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_succeeds() throws InterruptedException, TableNotFoundException, DatabaseNotFoundException,
-            TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException {
+            TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException,
+            FileStorageException {
         final ImportDto request = ImportDto.builder()
                 .location("/tmp/csv_12.csv")
                 .build();
@@ -342,7 +342,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_large_succeeds() throws InterruptedException, TableNotFoundException, DatabaseNotFoundException,
-            TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException {
+            TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException,
+            FileStorageException {
         final ImportDto request = ImportDto.builder()
                 .location("/tmp/csv_13.csv")
                 .build();

@@ -42,7 +42,6 @@
             id="public"
             v-model="isPublic"
             name="public"
-            disabled
             label="Public" />
         </v-card-text>
         <v-card-actions>
@@ -135,7 +134,8 @@ export default {
           name: this.database.trim(),
           description: this.description.trim(),
           repository: this.engine.repository,
-          tag: this.engine.tag
+          tag: this.engine.tag,
+          is_public: this.isPublic
         }, {
           headers: { Authorization: `Bearer ${this.token}` }
         })

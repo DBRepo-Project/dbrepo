@@ -2,6 +2,7 @@ package at.tuwien.entities.container;
 
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -37,8 +38,17 @@ public class Container {
     )
     private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private Boolean isPublic;
 
     @ToString.Exclude
     @Column(nullable = false)
@@ -50,6 +60,7 @@ public class Container {
     @Column
     private Integer port;
 
+    @Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)

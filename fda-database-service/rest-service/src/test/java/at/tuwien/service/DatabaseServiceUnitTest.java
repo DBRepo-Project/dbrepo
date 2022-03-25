@@ -1,18 +1,15 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -47,9 +44,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
-
-    @MockBean
-    private ContainerRepository containerRepository;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -123,7 +117,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findById_succeeds() throws DatabaseNotFoundException {
+    public void findById_succeeds() throws DatabaseNotFoundException, ContainerNotFoundException {
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -157,23 +151,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
-
-    @Test
-    public void create_notFound_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .build();
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1_ID, request);
+            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, null);
         });
     }
 

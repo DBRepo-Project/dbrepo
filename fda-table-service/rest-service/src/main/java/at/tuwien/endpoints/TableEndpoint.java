@@ -74,7 +74,7 @@ public class TableEndpoint {
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto)
             throws ImageNotSupportedException, DatabaseNotFoundException, DataProcessingException,
             ArbitraryPrimaryKeysException, TableMalformedException, AmqpException, TableNameExistsException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, UserNotFoundException {
         final Table table = tableService.createTable(id, databaseId, createDto);
         amqpService.create(table);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -100,6 +100,7 @@ public class TableEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @ApiOperation(value = "Update a table", notes = "Update a table in the database.")
     @ApiResponses({
             @ApiResponse(code = 200, message = "Updated the table."),

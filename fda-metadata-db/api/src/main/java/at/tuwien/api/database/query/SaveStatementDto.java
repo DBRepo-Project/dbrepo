@@ -1,6 +1,6 @@
 package at.tuwien.api.database.query;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,6 +15,6 @@ import javax.validation.constraints.NotBlank;
 public class SaveStatementDto {
 
     @NotBlank(message = "statement is required")
-    @ApiModelProperty(notes = "sql query")
+    @Parameter(name = "sql query")
     private String statement;
 }

@@ -1,6 +1,6 @@
 package at.tuwien.api.auth;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,11 +14,11 @@ import javax.validation.constraints.NotNull;
 public class LoginRequestDto {
 
     @NotNull
-    @ApiModelProperty(name = "user name")
+    @Parameter(name = "user name")
     private String username;
 
     @NotNull
-    @ApiModelProperty(name = "password hash")
+    @Parameter(name = "password hash")
     private String password;
 
 }

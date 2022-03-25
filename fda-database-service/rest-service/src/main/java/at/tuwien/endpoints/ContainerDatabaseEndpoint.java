@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,10 +67,11 @@ public class ContainerDatabaseEndpoint {
             @ApiResponse(code = 405, message = "Unable to connect to database within container."),
     })
     public ResponseEntity<DatabaseDto> create(@NotBlank @PathVariable("id") Long id,
-                                              @Valid @RequestBody DatabaseCreateDto createDto)
+                                              @Valid @RequestBody DatabaseCreateDto createDto,
+                                              Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException {
-        final Database database = databaseService.create(id, createDto);
+            AmqpException, ContainerConnectionException, UserNotFoundException, ContainerUnauthorizedException {
+        final Database database = databaseService.create(id, createDto, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseDto(database));
     }
@@ -82,8 +85,28 @@ public class ContainerDatabaseEndpoint {
             @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
     })
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
-                                                @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException {
+                                                @NotBlank @PathVariable Long databaseId)
+            throws DatabaseNotFoundException, ContainerNotFoundException {
         return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(databaseService.findById(id, databaseId)));
+    }
+
+    @PutMapping("/{databaseId}")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @ApiOperation(value = "Updates information about the database")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The database information is displayed."),
+            @ApiResponse(code = 400, message = "The payload contains invalid data."),
+            @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
+    })
+    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long id,
+                                              @NotBlank @PathVariable Long databaseId,
+                                              @Valid @RequestBody DatabaseModifyDto metadata,
+                                              Principal principal)
+            throws UserNotFoundException, ContainerNotFoundException, DatabaseNotFoundException,
+            ContainerUnauthorizedException {
+        return ResponseEntity.accepted()
+                .body(databaseMapper.databaseToDatabaseDto(databaseService.update(id, databaseId, metadata, principal)));
     }
 
     @DeleteMapping("/{databaseId}")
@@ -98,9 +121,11 @@ public class ContainerDatabaseEndpoint {
             @ApiResponse(code = 405, message = "Unable to connect to database within container."),
     })
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long id,
-                                    @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        databaseService.delete(id, databaseId);
+                                    @NotBlank @PathVariable Long databaseId,
+                                    Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException, ContainerUnauthorizedException {
+        databaseService.delete(id, databaseId, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

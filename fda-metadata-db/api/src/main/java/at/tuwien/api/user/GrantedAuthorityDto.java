@@ -1,6 +1,6 @@
 package at.tuwien.api.user;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 @Getter
@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 public class GrantedAuthorityDto {
 
-    @ApiModelProperty(name = "authority name")
+    @Parameter(name = "authority name")
     private String authority;
 
 

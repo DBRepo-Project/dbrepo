@@ -22,13 +22,15 @@ public class GatewayConfig {
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://fda-analyse-service"))
-                .route("fda-identifier-service", r -> r.path("/api/pid/**", "/api/container/**/database/**/identifier")
+                .route("fda-identifier-service", r -> r.path("/api/pid/**",
+                                "/api/container/**/database/**/identifier/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://fda-identifier-service"))
                 .route("fda-query-service", r -> r.path("/api/container/**/database/**/query/**",
                                 "/api/container/**/database/**/table/**/data/**", // TODO
+                                "/api/container/**/database/**/table/**/export/**",
                                 "/api/container/**/database/**/table/**/query/**", // TODO
                                 "/api/container/**/database/**/version/**")
                         .and()

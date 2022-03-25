@@ -28,7 +28,6 @@
         <docker.version>3.2.7</docker.version>
         <testcontainers.version>1.15.2</testcontainers.version>
         <swagger.version>2.1.7</swagger.version>
-        <springfox.version>3.0.0</springfox.version>
         <jacoco.version>0.8.7</jacoco.version>
         <sqlserver.version>9.2.1.jre11</sqlserver.version>
     </properties>
@@ -158,32 +157,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
-        </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-spring-web</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-models</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
     </dependencies>
 

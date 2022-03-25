@@ -1,6 +1,6 @@
 package at.tuwien.api.database.query;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,6 +15,6 @@ import javax.validation.constraints.NotBlank;
 public class ImportDto {
 
     @NotBlank(message = "location is required")
-    @ApiModelProperty(name = "csv location")
+    @Parameter(name = "csv location")
     private String location;
 }

@@ -19,7 +19,6 @@
             <tr>
               <th>Name</th>
               <th>Engine</th>
-              <th>Tables</th>
               <th>Created</th>
             </tr>
           </thead>
@@ -36,7 +35,6 @@
               @click="loadDatabase(item)">
               <td>{{ item.name }}</td>
               <td>{{ item.engine }}</td>
-              <td />
               <td>{{ formatDate(item.created) }}</td>
             </tr>
           </tbody>
@@ -67,7 +65,7 @@ export default {
       createDbDialog: false,
       databases: [],
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' }
+        { text: 'Databases', href: '/container' }
       ],
       loading: true,
       error: false,
@@ -80,6 +78,16 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token != null) {
+        return {
+          headers: {
+            Authorization: `Bearer ${this.token}`
+          }
+        }
+      }
+      return null
     }
   },
   mounted () {
@@ -90,13 +98,14 @@ export default {
       this.createDbDialog = false
       try {
         this.loading = true
-        let res = await this.$axios.get('/api/container/')
+        let res = await this.$axios.get('/api/container/', this.config)
         this.containers = res.data
         console.debug('containers', this.containers)
         for (const container of this.containers) {
-          res = await this.$axios.get(`/api/container/${container.id}/database`)
+          res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
           for (const database of res.data) {
             database.container_id = container.id
+            database.is_public = container.is_public
             this.databases.push(database)
           }
         }

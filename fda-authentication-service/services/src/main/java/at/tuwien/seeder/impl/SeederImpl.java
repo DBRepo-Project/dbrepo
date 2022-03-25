@@ -2,7 +2,6 @@ package at.tuwien.seeder.impl;
 
 import at.tuwien.seeder.Seeder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 
@@ -10,14 +9,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class SeederImpl implements Seeder {
 
-    private final Seeder databaseSeederImpl;
+    private final Seeder userSeederImpl;
 
-    public SeederImpl(Seeder databaseSeederImpl) {
-        this.databaseSeederImpl = databaseSeederImpl;
+    public SeederImpl(Seeder userSeederImpl) {
+        this.userSeederImpl = userSeederImpl;
     }
 
     @Override
     public void seed() {
-        databaseSeederImpl.seed();
+        userSeederImpl.seed();
     }
 }
