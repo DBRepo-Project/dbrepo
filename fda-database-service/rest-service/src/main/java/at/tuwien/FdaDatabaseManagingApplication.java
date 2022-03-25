@@ -7,11 +7,9 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import springfox.documentation.oas.annotations.EnableOpenApi;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableOpenApi
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})

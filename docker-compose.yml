@@ -266,13 +266,9 @@ services:
       TZ: Europe/Vienna
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.3
     ports:
       - "5672:5672"
       - "15672:15672"
-    depends_on:
-      fda-discovery-service:
-        condition: service_healthy
     volumes:
       - fda-broker-service-data:/var/lib/rabbitmq/
     logging:
