@@ -5,9 +5,8 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,13 +35,7 @@ public class IdentifierEndpoint {
     }
 
     @GetMapping
-    @ApiOperation(value = "Find IDs", notes = "Find all identifiers")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        @RequestParam(required = false) Long qid)
@@ -59,13 +52,7 @@ public class IdentifierEndpoint {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
-    @ApiOperation(value = "Create ID", notes = "Create a new identifier")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Created the ID."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
@@ -77,43 +64,26 @@ public class IdentifierEndpoint {
     }
 
     @PutMapping("/{identiferId}")
-    @ApiOperation(value = "Publish ID", notes = "Get Data from a Table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Publish some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> publish(@NotNull @PathVariable("id") Long id,
                                      @NotNull @PathVariable("databaseId") Long databaseId,
                                      @NotNull @Valid @RequestParam("identiferId") Long persistentId) {
-        return null;
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .build();
     }
 
     @PostMapping("/{identiferId}")
-    @ApiOperation(value = "Update ID", notes = "Get Data from a Table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestParam("identiferId") Long persistentId,
                                                 @NotNull @Valid @RequestBody IdentifierDto data) {
-        return null;
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .build();
     }
 
     @DeleteMapping("/{identiferId}")
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') or hasRole('ROLE_DEVELOPER')")
-    @ApiOperation(value = "Delete ID", notes = "Get Data from a Table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id,
                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @Valid @RequestParam("identiferId") Long persistentId) {

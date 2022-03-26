@@ -7,14 +7,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({IdentifierAlreadyExistsException.class})
-    public ResponseEntity<Object> handle(IdentifierAlreadyExistsException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(IdentifierAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
@@ -23,8 +25,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({IdentifierAlreadyPublishedException.class})
-    public ResponseEntity<Object> handle(IdentifierAlreadyPublishedException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    @ExceptionHandler(IdentifierAlreadyPublishedException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyPublishedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.PRECONDITION_FAILED)
                 .message(e.getLocalizedMessage())
@@ -33,8 +36,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({IdentifierNotFoundException.class})
-    public ResponseEntity<Object> handle(IdentifierNotFoundException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(IdentifierNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
@@ -43,8 +47,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({IdentifierPublishingNotAllowedException.class})
-    public ResponseEntity<Object> handle(IdentifierPublishingNotAllowedException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ExceptionHandler(IdentifierPublishingNotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierPublishingNotAllowedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_ACCEPTABLE)
                 .message(e.getLocalizedMessage())
@@ -53,8 +58,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({QueryNotFoundException.class})
-    public ResponseEntity<Object> handle(QueryNotFoundException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(QueryNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
@@ -63,8 +69,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({RemoteUnavailableException.class})
-    public ResponseEntity<Object> handle(RemoteUnavailableException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ExceptionHandler(RemoteUnavailableException.class)
+    public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NO_CONTENT)
                 .message(e.getLocalizedMessage())

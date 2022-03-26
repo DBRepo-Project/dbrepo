@@ -7,14 +7,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({AuthenticationInvalidException.class})
-    public ResponseEntity<Object> handle(AuthenticationInvalidException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AuthenticationInvalidException.class)
+    public ResponseEntity<ApiErrorDto> handle(AuthenticationInvalidException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.FORBIDDEN)
                 .message(e.getLocalizedMessage())
@@ -23,8 +25,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({AuthenticationMalformedException.class})
-    public ResponseEntity<Object> handle(AuthenticationMalformedException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AuthenticationMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(AuthenticationMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
@@ -33,8 +36,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({RoleNotFoundException.class})
-    public ResponseEntity<Object> handle(RoleNotFoundException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(RoleNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
@@ -43,8 +47,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({UserEmailExistsException.class})
-    public ResponseEntity<Object> handle(UserEmailExistsException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(UserEmailExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserEmailExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.EXPECTATION_FAILED)
                 .message(e.getLocalizedMessage())
@@ -53,8 +58,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({UserNameExistsException.class})
-    public ResponseEntity<Object> handle(UserNameExistsException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(UserNameExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserNameExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
@@ -63,8 +69,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ExceptionHandler({UserNotFoundException.class})
-    public ResponseEntity<Object> handle(UserNotFoundException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
