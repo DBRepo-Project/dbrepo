@@ -33,7 +33,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("table-service")
+                .group("identifier-service")
                 .pathsToMatch("/api/**")
                 .build();
     }

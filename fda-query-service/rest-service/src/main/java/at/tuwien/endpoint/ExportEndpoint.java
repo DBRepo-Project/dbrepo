@@ -2,9 +2,8 @@ package at.tuwien.endpoint;
 
 import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
 import java.time.Instant;
 
 @Log4j2
@@ -32,13 +30,7 @@ public class ExportEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Download export", notes = "Get Data from a Table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("tableId") Long tableId,

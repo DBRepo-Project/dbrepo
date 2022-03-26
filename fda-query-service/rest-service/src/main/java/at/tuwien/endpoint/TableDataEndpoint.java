@@ -6,9 +6,8 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -39,15 +38,7 @@ public class TableDataEndpoint {
 
     @PostMapping
     @Transactional
-    @ApiOperation(value = "Insert values", notes = "Insert Data into a Table in the database. When the location string is set, the data argument is ignored and the location is used as data input")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Updated the table."),
-            @ApiResponse(code = 400, message = "The form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 415, message = "The file provided is not in csv format"),
-            @ApiResponse(code = 422, message = "The csv was not processable."),
-    })
+    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
@@ -59,17 +50,9 @@ public class TableDataEndpoint {
     }
 
     @PostMapping("/import")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Transactional
-    @ApiOperation(value = "Insert values", notes = "Insert Data into a Table in the database. When the location string is set, the data argument is ignored and the location is used as data input")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Updated the table."),
-            @ApiResponse(code = 400, message = "The form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 415, message = "The file provided is not in csv format"),
-            @ApiResponse(code = 422, message = "The csv was not processable."),
-    })
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long id,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
@@ -82,13 +65,7 @@ public class TableDataEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get values", notes = "Get Data from a Table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get data from the table."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-            @ApiResponse(code = 405, message = "The connection to the database was unsuccessful."),
-    })
+    @Operation(summary = "Find data")
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long id,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
