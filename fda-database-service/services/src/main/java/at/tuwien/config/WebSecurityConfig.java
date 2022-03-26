@@ -66,7 +66,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 /* our public endpoints */
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**").permitAll()
-                .antMatchers("/v3/api-docs/**",
+                .antMatchers("/v3/api-docs.yaml",
+                        "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                 /* our private endpoints */

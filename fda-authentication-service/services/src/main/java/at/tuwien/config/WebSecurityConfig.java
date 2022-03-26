@@ -91,7 +91,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 /* our public endpoints */
                 .antMatchers(HttpMethod.POST, "/api/user").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
-                .antMatchers("/v3/api-docs/**",
+                .antMatchers("/v3/api-docs.yaml",
+                        "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                 /* our private endpoints */
