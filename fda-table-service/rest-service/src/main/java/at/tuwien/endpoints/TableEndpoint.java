@@ -6,11 +6,8 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
-import at.tuwien.service.impl.RabbitMqService;
-import at.tuwien.service.impl.TableServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -43,11 +40,7 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "List all tables", notes = "Lists the tables in the metadata database for this database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All tables are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all tables."),
-    })
+    @Operation(summary = "List tables")
     public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                        @NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseNotFoundException {
@@ -60,15 +53,7 @@ public class TableEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Create a table", notes = "Creates a new table for a database, requires a running container.")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "The table was created."),
-            @ApiResponse(code = 400, message = "The creation form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to create a tables."),
-            @ApiResponse(code = 404, message = "The database does not exist."),
-            @ApiResponse(code = 405, message = "The container is not running."),
-            @ApiResponse(code = 409, message = "The table name already exists."),
-    })
+    @Operation(summary = "Create table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto)
@@ -84,12 +69,7 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get information about table", notes = "Lists the information of a table from the metadata database for this database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All tables are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all tables."),
-            @ApiResponse(code = 404, message = "Table not found in metadata database."),
-    })
+    @Operation(summary = "Find some table")
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long id,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId)
@@ -101,29 +81,17 @@ public class TableEndpoint {
     @PutMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Update a table", notes = "Update a table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Updated the table."),
-            @ApiResponse(code = 400, message = "The update form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-    })
+    @Operation(summary = "Update some table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId) {
-        // TODO
         return ResponseEntity.unprocessableEntity().body(new TableBriefDto());
     }
 
     @DeleteMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
-    @ApiOperation(value = "Delete a table", notes = "Delete a table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Deleted the table."),
-            @ApiResponse(code = 401, message = "Not authorized to delete tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-    })
+    @Operation(summary = "Delete some table", security = @SecurityRequirement(name = "bearerAuth"))
     @ResponseStatus(HttpStatus.OK)
     public void delete(@NotNull @PathVariable("id") Long id,
                        @NotNull @PathVariable("databaseId") Long databaseId,
