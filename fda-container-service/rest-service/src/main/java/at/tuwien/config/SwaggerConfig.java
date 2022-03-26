@@ -6,12 +6,18 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springdoc.core.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${app.version:unknown}")
+    private String version;
 
     @Bean
     public OpenAPI springShopOpenAPI() {
@@ -22,7 +28,7 @@ public class SwaggerConfig {
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
                         .description("Service that manages the containers")
-                        .version("v1.1.0-alpha")
+                        .version(version)
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))

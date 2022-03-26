@@ -6,11 +6,11 @@
     <parent>
         <groupId>at.tuwien</groupId>
         <artifactId>fda-gateway-service</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.1.0-alpha</version>
     </parent>
 
     <artifactId>report</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-gateway-service-report</name>
     <description>
         This module is only intended for the pipeline coverage report. See the detailed report in the

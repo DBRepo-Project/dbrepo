@@ -15,10 +15,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
 @EntityScan(basePackages = {"at.tuwien.entities"})
-public class FdaCitationServiceApplication {
+public class FdaIdentifierServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FdaCitationServiceApplication.class, args);
+        SpringApplication.run(FdaIdentifierServiceApplication.class, args);
     }
 
 }

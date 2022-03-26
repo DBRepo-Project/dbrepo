@@ -1,4 +1,4 @@
-flask==1.1.2
+flask==2.0.3
 flasgger==0.9.5
 py-eureka-client==0.9.1
 docker==5.0.0
