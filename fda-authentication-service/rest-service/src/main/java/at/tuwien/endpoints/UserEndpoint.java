@@ -8,9 +8,8 @@ import at.tuwien.exception.UserEmailExistsException;
 import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.UserService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +38,8 @@ public class UserEndpoint {
     }
 
     @GetMapping
-    @ApiOperation(value = "List the users")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "List the users."),
-    })
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD') or hasRole('ROLE_DEVELOPER')")
+    @Operation(summary = "List users", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<UserDto>> list() {
         final List<User> users = userService.findAll();
         return ResponseEntity.ok(users.stream()
@@ -52,13 +48,7 @@ public class UserEndpoint {
     }
 
     @PostMapping
-    @ApiOperation(value = "Register a new user")
-    @ApiResponses({
-            @ApiResponse(code = 202, message = "Successfully created a new user."),
-            @ApiResponse(code = 400, message = "Invalid payload."),
-            @ApiResponse(code = 409, message = "The username is already taken."),
-            @ApiResponse(code = 417, message = "The mail is already taken."),
-    })
+    @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@Valid @RequestBody SignupRequestDto data) throws UserEmailExistsException,
             UserNameExistsException, RoleNotFoundException {
         final User user = userService.create(data);

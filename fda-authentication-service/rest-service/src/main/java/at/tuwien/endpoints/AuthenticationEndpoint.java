@@ -5,9 +5,8 @@ import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.AuthenticationService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,10 +37,7 @@ public class AuthenticationEndpoint {
     }
 
     @PostMapping
-    @ApiOperation(value = "Authenticates a user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully authenticated a user.")
-    })
+    @Operation(summary = "Create token")
     public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data) {
         final JwtResponseDto response = authenticationService.authenticate(data);
         return ResponseEntity.accepted()
@@ -49,10 +45,7 @@ public class AuthenticationEndpoint {
     }
 
     @PutMapping
-    @ApiOperation(value = "Authenticates a token")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully authenticated a user.")
-    })
+    @Operation(summary = "Validate token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> authenticateUser(Principal principal) {
         final UserDetails details = userDetailsServiceImpl.loadUserByUsername(principal.getName());
         return ResponseEntity.accepted()
