@@ -1,4 +1,3 @@
-app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -26,7 +25,6 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
-    at.tuwien.mapper.: trace
 eureka:
   instance.hostname: fda-table-service
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/

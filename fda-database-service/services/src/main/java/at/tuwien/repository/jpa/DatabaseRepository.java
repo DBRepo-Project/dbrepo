@@ -14,7 +14,4 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
     @Query("select d from Database d where d.container.id = :containerId")
     List<Database> findAllByContainerId(@Param("containerId") Long containerId);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.creator.username = :username")
-    List<Database> findAllMine(@Param("containerId") Long containerId, @Param("username") String username);
-
 }

@@ -32,10 +32,6 @@ public class ContainerDto {
     @Parameter(name = "container name", example = "Weather World")
     private String name;
 
-    @NotNull
-    @Parameter(name = "user")
-    private UserDto creator;
-
     @NotBlank
     @JsonProperty("internal_name")
     @Parameter(name = "container internal name", example = "weather-world")

@@ -31,10 +31,6 @@ public class ColumnDto {
     @Parameter(name = "internal name", example = "mdb_date", required = true)
     private String internalName;
 
-    @NotNull
-    @Parameter(name = "user")
-    private UserDto creator;
-
     @NotBlank
     @JsonProperty("date_format")
     @Parameter(name = "date format", example = "1")

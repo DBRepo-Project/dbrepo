@@ -31,10 +31,6 @@ public class TableDto {
     @Parameter(name = "table internal name", example = "weather_australia")
     private String internalName;
 
-    @NotNull
-    @Parameter(name = "user")
-    private UserDto creator;
-
     @NotBlank
     @Parameter(name = "topic name", example = "fda.c1.d1.t1")
     private String topic;

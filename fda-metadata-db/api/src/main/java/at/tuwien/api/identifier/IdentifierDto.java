@@ -33,10 +33,6 @@ public class IdentifierDto {
     @Parameter(name = "query id", example = "1")
     private Long qid;
 
-    @NotNull
-    @Parameter(name = "user")
-    private UserDto creator;
-
     @NotBlank
     @Parameter(name = "query title", example = "Select all weather events for 2012")
     private String title;

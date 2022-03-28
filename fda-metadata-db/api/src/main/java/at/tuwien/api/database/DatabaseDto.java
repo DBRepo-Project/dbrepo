@@ -35,10 +35,6 @@ public class DatabaseDto {
     @Parameter(name = "database internal name", example = "weather_australia")
     private String internalName;
 
-    @NotNull
-    @Parameter(name = "user")
-    private UserDto creator;
-
     @NotBlank
     @Parameter(name = "database description", example = "Weather Australia 2009-2021")
     private String description;
