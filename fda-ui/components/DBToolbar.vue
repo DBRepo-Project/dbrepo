@@ -2,10 +2,9 @@
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" />
     <v-toolbar v-if="db" flat>
-      <v-toolbar-title>{{ db.name }}</v-toolbar-title>
-      <v-toolbar-title class="pl-2">
-        <v-icon v-if="db.container.is_public">mdi-lock-open-outline</v-icon>
-        <v-icon v-if="!db.container.is_public">mdi-lock-outline</v-icon>
+      <img id="engine-logo" :alt="`${db.image.repository}`" :src="`data:image/png;base64,${db.image.logo}`">
+      <v-toolbar-title>
+        {{ db.name }}
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
@@ -70,16 +69,16 @@ export default {
       if (this.db != null) {
         return
       }
-      this.loading = true
       try {
+        this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
+        this.loading = false
       } catch (err) {
         this.$toast.error('Could not load database.')
         this.loading = false
       }
-      this.loading = false
     }
   }
 }

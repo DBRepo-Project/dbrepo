@@ -3,7 +3,13 @@
     <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
-        <span>Create table schema</span>
+        <span>Create Table</span>
+      </v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn :disabled="!canCreateTable" color="primary" @click="createTable">
+          Create Table
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat>
@@ -18,8 +24,7 @@
               <v-text-field
                 v-model="tableCreate.name"
                 name="name"
-                autocomplete="off"
-                label="Name *"
+                label="Table Name"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -29,8 +34,7 @@
               <v-text-field
                 v-model="tableCreate.description"
                 name="description"
-                autocomplete="off"
-                label="Description *" />
+                label="Description" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -52,11 +56,7 @@
           <div v-for="(c, idx) in tableCreate.columns" :key="idx">
             <v-row dense class="column pa-2 mb-2">
               <v-col cols="2">
-                <v-text-field
-                  v-model="c.name"
-                  required
-                  label="Name"
-                  :rules="[v => !!v || $t('Required')]" />
+                <v-text-field v-model="c.name" required label="Name" />
               </v-col>
               <v-col cols="2">
                 <v-select
@@ -65,26 +65,6 @@
                   item-value="value"
                   required
                   label="Data Type" />
-              </v-col>
-              <v-col cols="auto" class="pl-10" :hidden="c.type !== 'DECIMAL'">
-                <v-text-field
-                  v-model="c.decimal_digits_before"
-                  label="Digits before decimal"
-                  type="number"
-                  value="10"
-                  required
-                  hint="e.g. 4 for 1111.11"
-                  :rules="[v => !!v || $t('Required')]" />
-              </v-col>
-              <v-col cols="auto" class="pl-10" :hidden="c.type !== 'DECIMAL'">
-                <v-text-field
-                  v-model="c.decimal_digits_after"
-                  label="Digits after decimal"
-                  type="number"
-                  value="2"
-                  required
-                  hint="e.g. 2 for 1111.11"
-                  :rules="[v => !!v || $t('Required')]" />
               </v-col>
               <v-col cols="2" :hidden="c.type !== 'ENUM'">
                 <v-select
@@ -112,27 +92,22 @@
                 <v-checkbox v-model="c.null_allowed" :disabled="c.primary_key" label="Null Allowed" />
               </v-col>
               <v-col cols="auto" class="pl-10">
-                <v-checkbox v-model="c.unique" :disabled="c.primary_key" label="Unique" />
+                <v-checkbox v-model="c.unique" :hidden="c.primary_key" label="Unique" />
               </v-col>
-              <v-col cols="auto" class="pl-10" hidden>
-                <v-text-field v-model="c.foreign_key" required label="Foreign Key" />
+              <v-col cols="auto" class="pl-10">
+                <v-text-field v-model="c.foreign_key" hidden required label="Foreign Key" />
               </v-col>
-              <v-col cols="auto" class="pl-10" hidden>
-                <v-text-field v-model="c.references" required label="References" />
+              <v-col cols="auto" class="pl-10">
+                <v-text-field v-model="c.references" hidden required label="References" />
               </v-col>
-              <v-col cols="auto">
-                <v-btn class="mt-2 float-right" @click.stop="removeColumn(idx)">Remove</v-btn>
+              <v-col>
+                <v-btn @click.stop="removeColumn(idx)">Remove</v-btn>
               </v-col>
             </v-row>
           </div>
           <div>
-            <v-btn @click="addColumn()">
-              <v-icon left aria-label="add">mdi-plus</v-icon> Column
-            </v-btn>
-          </div>
-          <div>
-            <v-btn class="mt-10" :loading="loading" :disabled="!canCreateTable" color="primary" @click="createTable">
-              Create Table
+            <v-btn class="mt-2" color="primary" :loading="loading" @click="addColumn()">
+              Add
             </v-btn>
           </div>
         </v-form>
@@ -154,14 +129,13 @@ export default {
       step: 1,
       error: false,
       columnTypes: [
-        { value: 'ENUM', text: 'Enumeration' },
-        { value: 'BOOLEAN', text: 'Boolean' },
-        { value: 'NUMBER', text: 'Number' },
-        { value: 'DECIMAL', text: 'Decimal' },
-        { value: 'BLOB', text: 'Binary Large Object' },
-        { value: 'DATE', text: 'Date' },
-        { value: 'STRING', text: 'Character Varying' },
-        { value: 'TEXT', text: 'Text' }
+        { value: 'ENUM', text: 'ENUM' },
+        { value: 'BOOLEAN', text: 'BOOLEAN' },
+        { value: 'NUMBER', text: 'NUMBER' },
+        { value: 'BLOB', text: 'BLOB' },
+        { value: 'DATE', text: 'DATE' },
+        { value: 'STRING', text: 'STRING' },
+        { value: 'TEXT', text: 'TEXT' }
       ],
       tableCreate: {
         name: null,
@@ -171,7 +145,7 @@ export default {
         null_element: null,
         columns: [],
         separator: ',',
-        skip_lines: '0'
+        skip_lines: 0
       }
     }
   },
@@ -269,12 +243,10 @@ export default {
           this.error = true
           this.$toast.error(`Could not create table: status ${res.status}`)
         }
-        this.loading = false
       } catch (err) {
         this.error = true
         console.error('could not create table', err)
         this.$toast.error('Could not create table.')
-        this.loading = false
       }
     }
   }

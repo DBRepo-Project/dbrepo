@@ -63,7 +63,6 @@ public interface TableMapper {
             @Mapping(source = "data.name", target = "name"),
             @Mapping(source = "data.internalName", target = "internalName"),
             @Mapping(source = "data.created", target = "created"),
-            @Mapping(source = "data.creator", target = "creator"),
             @Mapping(source = "data.dfid", target = "dfid"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
@@ -120,7 +119,7 @@ public interface TableMapper {
             case NUMBER:
                 return "BIGINT";
             case DECIMAL:
-                return "DECIMAL(" + data.getDecimalDigitsBefore() + "," + data.getDecimalDigitsAfter() + ")";
+                return "DOUBLE";
             case BOOLEAN:
                 return "BOOLEAN";
             case ENUM:
