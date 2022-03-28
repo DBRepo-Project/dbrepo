@@ -1,6 +1,7 @@
 package at.tuwien.api.database.table.columns;
 
 import at.tuwien.api.container.image.ImageDateDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -48,6 +49,12 @@ public class ColumnDto {
     @JsonProperty("column_type")
     @ApiModelProperty(name = "type", example = "STRING", required = true)
     private ColumnTypeDto columnType;
+
+    @NotNull
+    @JsonProperty("column_concept")
+    @ApiModelProperty(name = "concept", example = "STRING", required = true)
+    private ConceptDto concept;
+
 
     @NotNull
     @ApiModelProperty(name = "unique", example = "true", required = true)
