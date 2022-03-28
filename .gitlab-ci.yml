@@ -17,9 +17,6 @@ image: "docker/compose:latest"
 
 stages:
   - build
-  - test-frontend
-  - test-backend
-  - deploy
 
 build-backend-metadata:
   stage: build
