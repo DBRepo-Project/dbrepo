@@ -27,9 +27,4 @@ public class ContainerCreateRequestDto {
     @Parameter(name = "tag", example = "latest")
     private String tag = "latest";
 
-    @NotNull
-    @JsonProperty("is_public")
-    @Parameter(name = "public", example = "true")
-    private Boolean isPublic;
-
 }

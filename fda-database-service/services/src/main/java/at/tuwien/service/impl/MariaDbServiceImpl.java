@@ -1,17 +1,16 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.ImageMapper;
+import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -21,14 +20,11 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
-import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -37,44 +33,41 @@ import java.util.Optional;
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
-    private final AmqpMapper amqpMapper;
-    private final UserService userService;
-    private final DatabaseMapper databaseMapper;
-    private final RabbitMqServiceImpl amqpService;
-    private final ContainerService containerService;
+    private final ContainerRepository containerRepository;
     private final DatabaseRepository databaseRepository;
     private final DatabaseidxRepository databaseidxRepository;
+    private final DatabaseMapper databaseMapper;
+    private final RabbitMqServiceImpl amqpService;
+    private final AmqpMapper amqpMapper;
 
     @Autowired
-    public MariaDbServiceImpl(DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository, DatabaseMapper databaseMapper,
-                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService,
-                              ContainerService containerService) {
+    public MariaDbServiceImpl(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
+                              DatabaseidxRepository databaseidxRepository, ImageMapper imageMapper,
+                              DatabaseMapper databaseMapper,
+                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper) {
+        this.containerRepository = containerRepository;
         this.databaseRepository = databaseRepository;
         this.databaseMapper = databaseMapper;
         this.databaseidxRepository = databaseidxRepository;
         this.amqpService = amqpService;
         this.amqpMapper = amqpMapper;
-        this.userService = userService;
-        this.containerService = containerService;
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Database> findAll(Long id) {
         return databaseRepository.findAllByContainerId(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Database> findAll() {
         return databaseRepository.findAll();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException, ContainerNotFoundException {
-        final Container container = containerService.find(id);
+    @Transactional
+    public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
             log.warn("could not find database with id {}", databaseId);
@@ -85,14 +78,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            ContainerNotFoundException, ContainerUnauthorizedException {
-        final Container container = containerService.find(id);
-        if (!container.getCreator().getUsername().equals(principal.getName())) {
-            log.error("Unauthorized access to foreign container!");
-            throw new ContainerUnauthorizedException("Unauthorized");
-        }
+    public void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException {
         final Database database = findById(id, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -120,22 +107,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(Long id, DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            UserNotFoundException, ContainerUnauthorizedException {
-        final Container container = containerService.find(id);
-        if (!container.getCreator().getUsername().equals(principal.getName())) {
-            log.error("Unauthorized access to foreign container!");
-            throw new ContainerUnauthorizedException("Unauthorized");
+    public Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+        final Optional<Container> container = containerRepository.findById(id);
+        if (container.isEmpty()) {
+            log.warn("Container with id {} does not exist", id);
+            throw new ContainerNotFoundException("Container does not exist.");
         }
         /* start the object */
         final Database database = new Database();
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
-        database.setContainer(container);
-        /* user */
-        final UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder
-                .getContext().getAuthentication();
+        database.setContainer(container.get());
         /* run query */
         final Session session = getSession(database);
         final Transaction transaction = getTransaction(session);
@@ -143,8 +126,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         try {
             log.debug("query affected {} rows", query.executeUpdate());
         } catch (PersistenceException e) {
-            log.error("Failed to create database.");
-            throw new DatabaseMalformedException("Failed to create database", e);
+            log.error("Failed to delete database.");
+            throw new DatabaseMalformedException("Failed to delete database", e);
         }
         final NativeQuery<?> grant = session.createSQLQuery(databaseMapper.imageToRawGrantReadonlyAccessQuery());
         try {
@@ -158,7 +141,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setDescription(createDto.getDescription());
-        database.setCreator(userService.findByUsername(authentication.getName()));
+        database.setIsPublic(createDto.getIsPublic());
         final Database out = databaseRepository.save(database);
         log.info("Created database with id {}", out.getId());
         log.debug("created database {}", out);
@@ -166,34 +149,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         databaseidxRepository.save(database);
         amqpService.createExchange(database);
         log.debug("created exchange {}", database.getExchange());
-        return out;
-    }
-
-    @Override
-    @Transactional
-    public Database update(Long id, Long databaseId, DatabaseModifyDto metadata, Principal principal)
-            throws ContainerNotFoundException, UserNotFoundException, DatabaseNotFoundException,
-            ContainerUnauthorizedException {
-        final Container container = containerService.find(id);
-        if (!container.getCreator().getUsername().equals(principal.getName())) {
-            log.error("Unauthorized access to foreign container!");
-            throw new ContainerUnauthorizedException("Unauthorized");
-        }
-        /* find */
-        final Database database = findById(id, databaseId);
-        /* user */
-        final UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder
-                .getContext().getAuthentication();
-        /* update in metadata database */
-        database.setDescription(metadata.getDescription());
-        database.setPublisher(metadata.getPublisher());
-        database.setLicense(metadata.getLicense());
-        database.setContact(userService.findById(metadata.getContactPerson()));
-        final Database out = databaseRepository.save(database);
-        log.info("Updated database with id {}", out.getId());
-        log.debug("updated database {}", out);
-        // save in database_index - elastic search
-        databaseidxRepository.save(database);
         return out;
     }
 
