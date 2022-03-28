@@ -13,7 +13,7 @@ spring:
     open-in-view: false
   application:
     name: fda-gateway-service
-springdoc.swagger-ui.enabled: true
+springdoc.swagger-ui.enabled: false
 server.port: 9095
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
