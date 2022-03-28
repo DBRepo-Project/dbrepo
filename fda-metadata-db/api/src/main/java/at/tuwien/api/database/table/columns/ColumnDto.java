@@ -1,12 +1,11 @@
 package at.tuwien.api.database.table.columns;
 
 import at.tuwien.api.container.image.ImageDateDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -50,6 +49,12 @@ public class ColumnDto {
     @JsonProperty("column_type")
     @Parameter(name = "type", example = "STRING", required = true)
     private ColumnTypeDto columnType;
+
+    @NotNull
+    @Parameter(name = "unique", example = "true", required = true)
+    @JsonProperty("column_concept")
+    private ConceptDto concept;
+
 
     @NotNull
     @Parameter(name = "unique", example = "true", required = true)
