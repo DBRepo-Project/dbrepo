@@ -56,8 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User create(SignupRequestDto data) throws UserEmailExistsException, UserNameExistsException,
-            RoleNotFoundException {
+    public User create(SignupRequestDto data) throws UserEmailExistsException, UserNameExistsException {
         /* check */
         final Optional<User> email = userRepository.findByEmail(data.getEmail());
         if (email.isPresent()) {

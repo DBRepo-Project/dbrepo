@@ -1,7 +1,6 @@
 package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -33,12 +32,6 @@ public class View {
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
     )
     Long id;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
-    })
-    private User creator;
 
     @ToString.Include
     @Column(nullable = false)

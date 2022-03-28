@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
-import at.tuwien.config.MountProperties;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
@@ -10,21 +9,17 @@ import at.tuwien.mapper.ImageMapper;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.ContainerService;
-import at.tuwien.service.UserService;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.SocketUtils;
 
@@ -38,35 +33,28 @@ import java.util.Optional;
 public class ContainerServiceImpl implements ContainerService {
 
     private final HostConfig hostConfig;
-    private final UserService userService;
-    private final ImageMapper imageMapper;
     private final DockerClient dockerClient;
-    private final MountProperties mountProperties;
     private final ImageRepository imageRepository;
-    private final ContainerMapper containerMapper;
     private final ContainerRepository containerRepository;
+    private final ContainerMapper containerMapper;
+    private final ImageMapper imageMapper;
 
     @Autowired
     public ContainerServiceImpl(DockerClient dockerClient, ContainerRepository containerRepository,
-                                ImageRepository imageRepository, HostConfig hostConfig, UserService userService,
-                                ContainerMapper containerMapper, ImageMapper imageMapper,
-                                MountProperties mountProperties) {
+                                ImageRepository imageRepository, HostConfig hostConfig, ContainerMapper containerMapper,
+                                ImageMapper imageMapper) {
         this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
         this.imageRepository = imageRepository;
         this.containerRepository = containerRepository;
-        this.userService = userService;
         this.containerMapper = containerMapper;
         this.imageMapper = imageMapper;
-        this.mountProperties = mountProperties;
     }
 
     @Override
     @Transactional
-    public Container create(ContainerCreateRequestDto createDto) throws ImageNotFoundException,
-            DockerClientException, UserNotFoundException {
-        final Optional<ContainerImage> image = imageRepository.findByRepositoryAndTag(createDto.getRepository(),
-                createDto.getTag());
+    public Container create(ContainerCreateRequestDto createDto) throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
+        final Optional<ContainerImage> image = imageRepository.findByRepositoryAndTag(createDto.getRepository(), createDto.getTag());
         if (image.isEmpty()) {
             log.error("failed to get image with name {}:{}", createDto.getRepository(), createDto.getTag());
             throw new ImageNotFoundException("image was not found in metadata database.");
@@ -76,15 +64,10 @@ public class ContainerServiceImpl implements ContainerService {
                 .withNetworkMode("fda-userdb")
                 .withLinks(List.of(new Link("fda-database-service", "fda-database-service")))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
-        /* user */
-        final UsernamePasswordAuthenticationToken authentication = (UsernamePasswordAuthenticationToken) SecurityContextHolder
-                .getContext().getAuthentication();
         /* save to metadata database */
         Container container = new Container();
         container.setImage(image.get());
         container.setPort(availableTcpPort);
-        container.setIsPublic(createDto.getIsPublic());
-        container.setCreator(userService.findByUsername(authentication.getName()));
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
         log.trace("will create host config {} and container {}", hostConfig, container);
@@ -96,14 +79,12 @@ public class ContainerServiceImpl implements ContainerService {
                     .withHostName(container.getInternalName())
                     .withEnv(imageMapper.environmentItemsToStringList(image.get().getEnvironment()))
                     .withHostConfig(hostConfig)
-                    .withBinds(Bind.parse(mountProperties.getMountPath() + ":/tmp"))
                     .exec();
         } catch (ConflictException e) {
             log.error("Conflicting names {}", createDto.getName());
-            throw new DockerClientException("Unexpected behavior", e);
+            throw new ContainerAlreadyExistsException("Unexpected behavior", e);
         } catch (NotFoundException e) {
-            log.error("The image {}:{} not available on the container service", createDto.getRepository(),
-                    createDto.getTag());
+            log.error("The image {}:{} not available on the container service", createDto.getRepository(), createDto.getTag());
             log.debug("payload was {}", createDto);
             throw new DockerClientException("Image not available", e);
         }
@@ -115,7 +96,7 @@ public class ContainerServiceImpl implements ContainerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Container stop(Long containerId) throws ContainerNotFoundException, DockerClientException {
         final Container container = find(containerId);
         try {
@@ -133,7 +114,7 @@ public class ContainerServiceImpl implements ContainerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void remove(Long containerId) throws ContainerNotFoundException, DockerClientException,
             ContainerStillRunningException {
         final Container container = find(containerId);
@@ -155,7 +136,7 @@ public class ContainerServiceImpl implements ContainerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Container find(Long id) throws ContainerNotFoundException {
         final Optional<Container> container = containerRepository.findById(id);
         if (container.isEmpty()) {
@@ -166,9 +147,8 @@ public class ContainerServiceImpl implements ContainerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException,
-            ContainerNotRunningException {
+    @Transactional
+    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException {
         final Container container = find(id);
         final InspectContainerResponse response;
         try {
@@ -194,24 +174,22 @@ public class ContainerServiceImpl implements ContainerService {
                     log.trace("key {} network {}", key, network);
                     container.setIpAddress(network.getIpAddress());
                 });
-        log.trace("inspect container {}", container);
+        log.info("Inspect container with id {}", id);
+        log.debug("inspect container {}", container);
         return container;
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<Container> getAll() {
-        return containerRepository.findAllPublic();
+        final List<Container> containers = containerRepository.findAll();
+        log.info("Found {} containers", containers.size());
+        log.debug("found containers {}", containers);
+        return containers;
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Container> getAllAndMine(String username) {
-        return containerRepository.findAllAndByCreator(username);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Container start(Long containerId) throws ContainerNotFoundException, DockerClientException {
         final Container container = find(containerId);
         try {

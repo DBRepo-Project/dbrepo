@@ -2,7 +2,6 @@ package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,9 +25,7 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
-})
+@javax.persistence.Table(name = "mdb_tables")
 public class Table {
 
     @Id
@@ -44,12 +41,6 @@ public class Table {
     @Id
     @EqualsAndHashCode.Include
     private Long tdbid;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
-    })
-    private User creator;
 
     @Column(nullable = false, name = "tname")
     private String name;
@@ -67,10 +58,10 @@ public class Table {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
-    
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "table")
     @OrderBy("ordinalPosition")
     @Field(type = FieldType.Nested)
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "table")
     private List<TableColumn> columns;
 
     @Column(name = "separator")

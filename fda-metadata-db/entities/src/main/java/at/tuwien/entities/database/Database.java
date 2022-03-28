@@ -2,7 +2,6 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -26,9 +25,7 @@ import java.util.List;
 @Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "update mdb_databases set deleted = NOW() where id = ?")
-@javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "internalName"})
-})
+@javax.persistence.Table(name = "mdb_databases")
 public class Database {
 
     @Id
@@ -40,12 +37,6 @@ public class Database {
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_databases_seq")
     )
     private Long id;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
-    })
-    private User creator;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -66,26 +57,15 @@ public class Database {
     @Column
     private String description;
 
-    @Column
-    private String publisher;
-
-    @Column
-    private String license;
-
-    @Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
-    })
-    private User contact;
-
     @ToString.Exclude
-    @Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private List<Table> tables;
+
+    @Column(nullable = false)
+    private Boolean isPublic;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

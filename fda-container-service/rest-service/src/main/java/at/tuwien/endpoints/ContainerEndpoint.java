@@ -42,12 +42,7 @@ public class ContainerEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find all containers")
     public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal) {
-        final List<Container> containers;
-        if (principal == null) {
-            containers = containerService.getAll();
-        } else {
-            containers = containerService.getAllAndMine(principal.getName());
-        }
+        final List<Container> containers = containerService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
                         .map(containerMapper::containerToDatabaseContainerBriefDto)
@@ -59,7 +54,7 @@ public class ContainerEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data)
-            throws ImageNotFoundException, DockerClientException, UserNotFoundException {
+            throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
         final Container container = containerService.create(data);
         final ContainerBriefDto response = containerMapper.containerToDatabaseContainerBriefDto(container);
         return ResponseEntity.status(HttpStatus.CREATED)

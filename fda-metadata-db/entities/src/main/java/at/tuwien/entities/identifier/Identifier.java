@@ -1,6 +1,5 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -46,12 +45,6 @@ public class Identifier {
 
     @Column(nullable = false)
     private Long qid;
-
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
-    })
-    private User creator;
 
     @Column(nullable = false)
     private String title;
