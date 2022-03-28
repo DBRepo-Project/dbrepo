@@ -132,7 +132,7 @@ public class QueryEndpointIntegrationTest extends BaseUnitTest {
     @Test
     public void reExecute_succeeds() throws TableNotFoundException, QueryStoreException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryNotFoundException, InterruptedException,
-            SQLException, ContainerNotFoundException, JSQLParserException, TableMalformedException, UserNotFoundException {
+            SQLException, ContainerNotFoundException, JSQLParserException, TableMalformedException {
         final QueryResultDto result = QueryResultDto.builder()
                 .id(QUERY_1_ID)
                 .result(List.of(Map.of("MinTemp", 13.4, "Rainfall", 0.6, "id", 1)))
@@ -140,8 +140,6 @@ public class QueryEndpointIntegrationTest extends BaseUnitTest {
         final ExecuteStatementDto statement = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
-        final Long page = 1L;
-        final Long size = 10L;
         final Instant execution = Instant.now();
 
         /* mock */
@@ -150,8 +148,9 @@ public class QueryEndpointIntegrationTest extends BaseUnitTest {
         storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
 
         /* test */
+        //FIXME
         final ResponseEntity<QueryResultDto> response = queryEndpoint.reExecute(CONTAINER_1_ID, DATABASE_1_ID,
-                QUERY_1_ID, page, size);
+                QUERY_1_ID,0L,0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(QUERY_1_ID, response.getBody().getId());

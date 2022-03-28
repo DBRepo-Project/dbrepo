@@ -15,26 +15,13 @@ import java.util.List;
 public interface StoreService {
 
     /**
-     * Initializes the query store for a given container and database id.
-     *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @throws ContainerNotFoundException The container is not found.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws ImageNotSupportedException The image is not supported.
-     */
-    void init(Long containerId, Long databaseId) throws ContainerNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException;
-
-    /**
      * Finds all queries in the query store of the given database id and query id.
      *
      * @param databaseId The database id.
      * @return The list of queries.
-     * @throws ContainerNotFoundException The container is not found.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws QueryStoreException        The query store produced an invalid result.
+     * @throws ImageNotSupportedException The image is not supported
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database
+     * @throws QueryStoreException        The query store produced an invalid result
      */
     List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, ContainerNotFoundException;
@@ -65,7 +52,7 @@ public interface StoreService {
      * @throws ImageNotSupportedException The image is not supported
      */
     Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException;
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id
@@ -81,22 +68,9 @@ public interface StoreService {
      */
     Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
                  Instant execution) throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException;
+            ContainerNotFoundException;
 
-    /**
-     * Updates
-     *
-     * @param containerId
-     * @param databaseId
-     * @param result
-     * @param resultNumber
-     * @param metadata
-     * @return
-     * @throws QueryStoreException
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
-     * @throws ContainerNotFoundException
-     */
+    @Transactional(readOnly = true)
     Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException;

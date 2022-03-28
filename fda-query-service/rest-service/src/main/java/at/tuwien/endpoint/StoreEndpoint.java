@@ -1,15 +1,11 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.entities.user.User;
-import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.StoreService;
-import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,16 +18,12 @@ import java.util.List;
 @RequestMapping("/api/container/{id}/database/{databaseId}/query")
 public class StoreEndpoint {
 
-    private final UserMapper userMapper;
     private final QueryMapper queryMapper;
-    private final UserService userService;
     private final StoreService storeService;
 
     @Autowired
-    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService, StoreService storeService) {
-        this.userMapper = userMapper;
+    public StoreEndpoint(QueryMapper queryMapper, StoreService storeService) {
         this.queryMapper = queryMapper;
-        this.userService = userService;
         this.storeService = storeService;
     }
 
@@ -41,17 +33,8 @@ public class StoreEndpoint {
     public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
-        final List<Query> storedQueries = storeService.findAll(id, databaseId);
-        final List<QueryDto> queries = queryMapper.queryListToQueryDtoList(storedQueries);
-        queries.forEach(query -> {
-            try {
-                final User user = userService.findById(query.getCreatedBy());
-                query.setCreator(userMapper.userToUserDto(user));
-            } catch (UserNotFoundException e) {
-                /* already logged */
-            }
-        });
-        return ResponseEntity.ok(queries);
+        final List<Query> queries = storeService.findAll(id, databaseId);
+        return ResponseEntity.ok(queryMapper.queryListToQueryDtoList(queries));
     }
 
     @GetMapping("/{queryId}")
@@ -61,11 +44,8 @@ public class StoreEndpoint {
                                          @NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryStoreException, QueryNotFoundException, ContainerNotFoundException, UserNotFoundException {
-        final Query storeQuery = storeService.findOne(id, databaseId, queryId);
-        final QueryDto query = queryMapper.queryToQueryDto(storeQuery);
-        final User user = userService.findById(query.getCreatedBy());
-        query.setCreator(userMapper.userToUserDto(user));
-        return ResponseEntity.ok(query);
+            QueryStoreException, QueryNotFoundException, ContainerNotFoundException {
+        final Query query = storeService.findOne(id, databaseId, queryId);
+        return ResponseEntity.ok(queryMapper.queryToQueryDto(query));
     }
 }

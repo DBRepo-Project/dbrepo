@@ -2,7 +2,9 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.query.SaveStatementDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.StoreService;
@@ -45,8 +47,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void execute_succeeds() throws TableNotFoundException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException,
-            JSQLParserException, TableMalformedException, UserNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -54,27 +55,25 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                 .id(QUERY_1_ID)
                 .result(List.of(Map.of("key", "value")))
                 .build();
-        final Long page = 1L;
-        final Long size = 10L;
         final Instant execution = Instant.now();
 
         /* mock */
-        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, page, size))
+        //FIXME
+        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L))
                 .thenReturn(result);
         when(storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, request, execution))
                 .thenReturn(QUERY_1);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
-                page, size);
+        //FIXME
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
     public void execute_emptyResult_succeeds() throws TableNotFoundException, QueryStoreException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
-            SQLException, JSQLParserException, TableMalformedException, UserNotFoundException {
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -82,38 +81,38 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                 .id(QUERY_1_ID)
                 .result(List.of())
                 .build();
-        final Long page = 1L;
-        final Long size = 10L;
         final Instant execution = Instant.now();
 
         /* mock */
-        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, page, size))
+        //FIXME
+        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L))
                 .thenReturn(result);
         when(storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, request, execution))
                 .thenReturn(QUERY_1);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
-                page, size);
+        //FIXME
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
     public void execute_tableNotFound_fails() throws TableNotFoundException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryStoreException,
-            SQLException, JSQLParserException, TableMalformedException, UserNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, SQLException, JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
 
         /* mock */
+        //FIXME
         when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L))
                 .thenThrow(TableNotFoundException.class);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
+            //FIXME
+            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
         });
     }
 
