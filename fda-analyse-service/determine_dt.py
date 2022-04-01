@@ -15,17 +15,18 @@ import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
    headers_guess, headers_processor, offset_processor
 
-def determine_datatypes(path, enum=False, enum_tol=0.0001):
+def determine_datatypes(path, enum=False, enum_tol=0.0001,separator = None):
 # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark 
 # Enum is not SQL standard, hence, it might not be supported by all db-engines. 
 # However, it can be used in Postgres and MySQL. 
     fh = open(path, 'rb')
-    with open(path, newline='') as csvfile:
-        dialect = csv.Sniffer().sniff(csvfile.read(1024))
-    separator = dialect.delimiter
+    if separator == None:
+        with open(path) as csvfile:
+            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+        separator = dialect.delimiter
 
     # Load a file object:
-    table_set = CSVTableSet(fh)
+    table_set = CSVTableSet(fh,delimiter=separator)
 
     # A table set is a collection of tables:
     row_set = table_set.tables[0]

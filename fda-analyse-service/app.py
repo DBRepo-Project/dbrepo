@@ -1,6 +1,6 @@
 import os
 from flask import Flask, flash, request, redirect, url_for, Response, abort, jsonify
-from determine_dt import determine_datatypes, guess_separator
+from determine_dt import determine_datatypes
 from analysecsv import analysecsv
 from insert_mdb_db import insert_mdb_db
 from import_db import import_db
@@ -75,10 +75,10 @@ def determinedt():
         if 'enum_tol' in input_json:
             enum_tol = float(input_json['enum_tol'])
             print(enum_tol)
-        seperator = ','
-        if 'seperator' in input_json:
-            seperator = str(input_json['seperator'])
-        res = determine_datatypes(filepath,enum,enum_tol,seperator)
+        separator = None
+        if 'separator' in input_json:
+            separator = str(input_json['separator'])
+        res = determine_datatypes(filepath,enum,enum_tol,separator)
     except Exception as e:
         print(e)
         res = {"success": False, "message": "Unknown error"}

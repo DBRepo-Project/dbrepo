@@ -20,7 +20,7 @@ parameters:
         example: true 
       enum_tol: 
         example: 0.1
-      seperator: 
+      separator: 
         type: "string"
         example: ","
 responses:
