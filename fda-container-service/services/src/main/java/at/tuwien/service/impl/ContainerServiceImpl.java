@@ -11,6 +11,7 @@ import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.ContainerService;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.CreateVolumeResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -18,6 +19,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Link;
 import com.github.dockerjava.api.model.PortBinding;
+import com.github.dockerjava.api.model.Volume;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,14 +73,22 @@ public class ContainerServiceImpl implements ContainerService {
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
         log.trace("will create host config {} and container {}", hostConfig, container);
+        /* create the volume */
+        final CreateVolumeResponse response = dockerClient.createVolumeCmd()
+                .withName(container.getInternalName())
+                .exec();
+        log.info("Created volume {}", response.getName());
+        log.debug("created volume {} with mapping /var/lib/mysql", response.getName());
+        final Volume volume = new Volume(response.getName() + ":/var/lib/mysql");
         /* create the container */
-        final CreateContainerResponse response;
+        final CreateContainerResponse response1;
         try {
-            response = dockerClient.createContainerCmd(containerMapper.containerCreateRequestDtoToDockerImage(createDto))
+            response1 = dockerClient.createContainerCmd(containerMapper.containerCreateRequestDtoToDockerImage(createDto))
                     .withName(container.getInternalName())
                     .withHostName(container.getInternalName())
                     .withEnv(imageMapper.environmentItemsToStringList(image.get().getEnvironment()))
                     .withHostConfig(hostConfig)
+                    .withVolumes(volume)
                     .exec();
         } catch (ConflictException e) {
             log.error("Conflicting names {}", createDto.getName());
@@ -88,7 +98,7 @@ public class ContainerServiceImpl implements ContainerService {
             log.debug("payload was {}", createDto);
             throw new DockerClientException("Image not available", e);
         }
-        container.setHash(response.getId());
+        container.setHash(response1.getId());
         container = containerRepository.save(container);
         log.info("Created container {}", container.getId());
         log.debug("created container {}", container);
