@@ -83,6 +83,31 @@ public interface QueryMapper {
                 .build();
     }
 
+    default String generateTemporaryTableSQL(Table table) {
+        final StringBuilder generateTable = new StringBuilder("CREATE TABLE `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("_temporary`")
+                .append(" LIKE `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("`;");
+        log.debug(generateTable.toString());
+        return generateTable.toString();
+    }
+
+    default String dropTemporaryTableSQL(Table table) {
+        final StringBuilder t = new StringBuilder("DROP TEMPORARY TABLE `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("_temporary`;");
+        log.debug(t.toString());
+        return t.toString();
+    }
+
     default InsertTableRawQuery pathToRawInsertQuery(Table table, ImportDto data) {
         final StringBuilder query = new StringBuilder("LOAD DATA LOCAL INFILE '")
                 .append(data.getLocation())
@@ -90,6 +115,7 @@ public interface QueryMapper {
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
+                .append("_temporary")
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
                 .append("'");
