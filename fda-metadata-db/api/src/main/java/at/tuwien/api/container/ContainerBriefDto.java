@@ -1,7 +1,7 @@
 package at.tuwien.api.container;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -16,19 +16,24 @@ import javax.validation.constraints.NotNull;
 public class ContainerBriefDto {
 
     @NotNull
-    @ApiModelProperty(name = "id", example = "1")
+    @Parameter(name = "id", example = "1")
     private Long id;
 
     @NotNull
-    @ApiModelProperty(name = "container hash", example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
+    @Parameter(name = "container hash", example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
     private String hash;
 
     @NotBlank
-    @ApiModelProperty(name = "container name", example = "Weather World")
+    @Parameter(name = "container name", example = "Weather World")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @ApiModelProperty(name = "container internal name", example = "weather-world")
+    @Parameter(name = "container internal name", example = "weather-world")
     private String internalName;
+
+    @NotNull
+    @JsonProperty("is_public")
+    @Parameter(name = "container public", example = "true")
+    private Boolean isPublic;
 }

@@ -7,20 +7,18 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import springfox.documentation.oas.annotations.EnableOpenApi;
 
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableOpenApi
 @EnableTransactionManagement
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
 @EntityScan(basePackages = {"at.tuwien.entities"})
-public class FdaCitationServiceApplication {
+public class FdaIdentifierServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FdaCitationServiceApplication.class, args);
+        SpringApplication.run(FdaIdentifierServiceApplication.class, args);
     }
 
 }

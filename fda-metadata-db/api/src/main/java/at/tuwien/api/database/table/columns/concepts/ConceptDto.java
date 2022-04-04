@@ -1,11 +1,8 @@
 package at.tuwien.api.database.table.columns.concepts;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
@@ -18,14 +15,14 @@ import java.time.Instant;
 public class ConceptDto {
 
     @NotNull
-    @ApiModelProperty(name = "uri", required = true)
+    @Parameter(name = "uri", required = true)
     private String uri;
 
     @NotNull
-    @ApiModelProperty(name = "name", required = true)
+    @Parameter(name = "name", required = true)
     private String name;
 
     @NotNull
-    @ApiModelProperty(name = "created", required = true)
+    @Parameter(name = "created", required = true)
     private Instant created;
 }

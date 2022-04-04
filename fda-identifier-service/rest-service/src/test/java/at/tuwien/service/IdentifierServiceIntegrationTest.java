@@ -139,7 +139,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .visibility(IDENTIFIER_2_VISIBILITY_DTO)
                 .created(IDENTIFIER_2_CREATED)
                 .lastModified(IDENTIFIER_2_MODIFIED)
-                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO).toArray(new CreatorDto[0]))
+                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
 
         /* mock */
@@ -164,7 +164,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .visibility(IDENTIFIER_2_VISIBILITY_DTO)
                 .created(IDENTIFIER_2_CREATED)
                 .lastModified(IDENTIFIER_2_MODIFIED)
-                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO).toArray(new CreatorDto[0]))
+                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
 
         /* mock */

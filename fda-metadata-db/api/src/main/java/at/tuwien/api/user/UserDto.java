@@ -1,7 +1,8 @@
 package at.tuwien.api.user;
 
+import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -15,24 +16,52 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDto {
 
-    @ApiModelProperty(name = "id")
+    @Parameter(name = "id")
     private Long id;
 
-    @ApiModelProperty(name = "user authorities")
+    @Parameter(name = "user authorities")
     private List<GrantedAuthorityDto> authorities;
 
     @NotNull
-    @ApiModelProperty(name = "user name")
+    @Parameter(name = "user name")
     private String username;
+
+    @NotNull
+    @Parameter(name = "titles before the first name")
+    private String titlesBefore;
+
+    @NotNull
+    @Parameter(name = "titles after the last name")
+    private String titlesAfter;
+
+    @NotNull
+    @Parameter(name = "first name")
+    private String firstname;
+
+    @NotNull
+    @Parameter(name = "last name")
+    private String lastname;
+
+    @NotNull
+    @Parameter(name = "list of containers")
+    private List<ContainerDto> containers;
+
+    @NotNull
+    @Parameter(name = "list of databases")
+    private List<ContainerDto> databases;
+
+    @NotNull
+    @Parameter(name = "list of identifiers")
+    private List<ContainerDto> identifiers;
 
     @NotNull
     @ToString.Exclude
     @JsonIgnore
-    @ApiModelProperty(name = "password hash")
+    @Parameter(name = "password hash")
     private String password;
 
     @NotNull
-    @ApiModelProperty(name = "mail address")
+    @Parameter(name = "mail address")
     private String email;
 
 }

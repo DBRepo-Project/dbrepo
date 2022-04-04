@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -16,7 +17,7 @@ spring:
   cloud:
     loadbalancer.ribbon.enabled: false
   rabbitmq:
-    host: fda-broker-service
+    host: localhost
     username: fda
     password: fda
 server.port: 9092

@@ -1,7 +1,7 @@
 package at.tuwien.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -21,11 +21,11 @@ public class CreatorDto {
     private Long pid;
 
     @NotBlank
-    @ApiModelProperty(name = "query title", example = "Maximilian")
+    @Parameter(name = "query title", example = "Maximilian")
     private String firstname;
 
     @NotBlank
-    @ApiModelProperty(name = "lastname", example = "Mustermann")
+    @Parameter(name = "lastname", example = "Mustermann")
     private String lastname;
 
     @NotNull

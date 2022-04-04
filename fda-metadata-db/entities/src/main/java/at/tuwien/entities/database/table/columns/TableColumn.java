@@ -1,7 +1,6 @@
 package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import lombok.*;
@@ -109,10 +108,10 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumns( {
-            @JoinColumn(name = "id", referencedColumnName = "cid",insertable = false, updatable = false),
-            @JoinColumn(name = "tid", referencedColumnName = "tid",insertable = false, updatable = false),
-            @JoinColumn(name = "cdbid", referencedColumnName = "cdbid",insertable = false, updatable = false)
+    @JoinColumns({
+            @JoinColumn(name = "id", referencedColumnName = "cid", insertable = false, updatable = false),
+            @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+            @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
     })
     private ColumnConcept columnConcept;
 

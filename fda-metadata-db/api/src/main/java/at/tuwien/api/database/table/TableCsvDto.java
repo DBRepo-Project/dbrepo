@@ -1,6 +1,6 @@
 package at.tuwien.api.database.table;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class TableCsvDto {
 
     @NotNull(message = "data is required")
-    @ApiModelProperty(name = "data")
+    @Parameter(name = "data")
     private Map<String, Object> data;
 
 }

@@ -6,9 +6,8 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.sql.SQLException;
-import java.time.Instant;
 
 @Log4j2
 @RestController
@@ -42,17 +40,12 @@ public class QueryEndpoint {
     @PutMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "executes a query and save the results")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Executed the query, Saved it and return the results"),
-            @ApiResponse(code = 400, message = "The payload is malformed."),
-            @ApiResponse(code = 404, message = "The database does not exist."),
-            @ApiResponse(code = 405, message = "The container is not running."),
-            @ApiResponse(code = 409, message = "The container image is not supported."),})
+    @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
                                                   @Valid @RequestBody ExecuteStatementDto data,
-                                                  @RequestParam(value = "page", required = false ) Long page, @RequestParam(value = "size", required = false) Long size)
+                                                  @RequestParam(value = "page", required = false) Long page,
+                                                  @RequestParam(value = "size", required = false) Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             TableNotFoundException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
         /* validation */
@@ -69,12 +62,7 @@ public class QueryEndpoint {
     @PutMapping("/{queryId}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "re-executes a query by given id")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Re-Execute a saved query and return the results"),
-            @ApiResponse(code = 404, message = "The database does not exist."),
-            @ApiResponse(code = 405, message = "The container is not running."),
-            @ApiResponse(code = 409, message = "The container image is not supported."),})
+    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long id,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,

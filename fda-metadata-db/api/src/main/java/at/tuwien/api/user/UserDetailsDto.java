@@ -1,7 +1,6 @@
 package at.tuwien.api.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,23 +16,23 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDetailsDto implements UserDetails {
 
-    @ApiModelProperty(name = "id")
+    @Parameter(name = "id")
     private Long id;
 
-    @ApiModelProperty(name = "user authorities")
+    @Parameter(name = "user authorities")
     private List<? extends GrantedAuthority> authorities;
 
     @NotNull
-    @ApiModelProperty(name = "user name")
+    @Parameter(name = "user name")
     private String username;
 
     @NotNull
     @ToString.Exclude
-    @ApiModelProperty(name = "password hash")
+    @Parameter(name = "password hash")
     private String password;
 
     @NotNull
-    @ApiModelProperty(name = "mail address")
+    @Parameter(name = "mail address")
     private String email;
 
     @Override

@@ -2,7 +2,7 @@ package at.tuwien.api.database.query;
 
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -14,18 +14,19 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @ToString
 public class ExecuteStatementDto {
 
     @NotBlank(message = "statement is required")
-    @ApiModelProperty(name = "sql query")
+    @Parameter(name = "sql query")
     private String statement;
 
     @NotNull(message = "list of tables is required")
-    @ApiModelProperty(name = "tables mentioned in the query")
+    @Parameter(name = "tables mentioned in the query")
     private List<TableBriefDto> tables;
 
     @NotNull(message = "list of columns is required")
-    @ApiModelProperty(name = "columns mentioned in the query")
+    @Parameter(name = "columns mentioned in the query")
     private List<List<ColumnBriefDto>> columns;
 }

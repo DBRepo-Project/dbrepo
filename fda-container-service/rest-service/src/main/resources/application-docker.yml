@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -25,5 +26,6 @@ eureka:
   instance.hostname: fda-container-service
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
 fda:
+  mount.path: /tmp
   ready.path: /ready
   gateway.endpoint: http://fda-gateway-service:9095

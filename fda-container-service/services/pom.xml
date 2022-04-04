@@ -6,11 +6,11 @@
     <parent>
         <artifactId>fda-container-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.1.0-alpha</version>
     </parent>
 
     <artifactId>services</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-container-service-services</name>
 
     <build>

@@ -98,7 +98,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .visibility(VisibilityTypeDto.EVERYONE)
                 .created(IDENTIFIER_1_CREATED)
                 .lastModified(IDENTIFIER_1_MODIFIED)
-                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO).toArray(new CreatorDto[0]))
+                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
 
         /* test */

@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -21,7 +22,7 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
-    at.tuwien.service.QueryService: trace
+    at.tuwien.service.: debug
     at.tuwien.config.: debug
 eureka:
   instance.hostname: fda-query-service

@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -6,7 +7,7 @@ spring:
     username: postgres
     password: postgres
   jpa:
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
@@ -20,9 +21,7 @@ logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    at.tuwien.service.QueryService: trace
-    at.tuwien.config.: trace
+    at.tuwien.: trace
 eureka:
   instance.hostname: fda-query-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
