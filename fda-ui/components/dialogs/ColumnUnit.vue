@@ -3,6 +3,9 @@
     v-model="dialog"
     max-width="600px">
     <template v-slot:activator="{ on, attrs }">
+      <span v-if="column.column_concept">
+        {{ column.column_concept.name }}
+      </span>
       <v-btn
         class="ml-2"
         icon
@@ -44,19 +47,19 @@
       </v-card-text>
       <v-expand-transition>
         <v-list v-if="model" class="lighten-3" subheader three-line>
-          <v-list-item>
+          <v-list-item v-if="model.name">
             <v-list-item-content>
               <v-list-item-title>Name</v-list-item-title>
               <v-list-item-subtitle>{{ model.name }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item>
+          <v-list-item v-if="model.symbol">
             <v-list-item-content>
               <v-list-item-title>Symbol</v-list-item-title>
               <v-list-item-subtitle>{{ model.symbol }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item>
+          <v-list-item v-if="model.comment">
             <v-list-item-content>
               <v-list-item-title>Comment</v-list-item-title>
               <v-list-item-subtitle>{{ model.comment }}</v-list-item-subtitle>
@@ -129,6 +132,7 @@ export default {
       try {
         const res = await this.$axios.get(`/api/units/uri/${val.name}`)
         this.uri = res.data.URI
+        console.log(this.uri)
       } catch (err) {
         this.$toast.error(`Could not load URI of unit "${val.name}"`)
         console.log(err)
@@ -152,6 +156,14 @@ export default {
     }
   },
   mounted () {
+    if (this.column.column_concept) {
+      const { name, uri } = this.column.column_concept
+      console.log(this.column.column_concept)
+      this.model = {
+        name,
+        uri
+      }
+    }
   },
   methods: {
     async save () {

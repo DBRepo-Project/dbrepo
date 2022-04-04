@@ -194,6 +194,7 @@ export default {
         this.tableDetails = undefined
         this.$toast.error('Could not get table details.')
       }
+      this.$forceUpdate()
     },
     /**
      * if tableId is given, open the table after refresh
