@@ -23,8 +23,9 @@ from flasgger.utils import swag_from
 from flasgger import LazyString, LazyJSONEncoder
 from gevent.pywsgi import WSGIServer
 
+from logging.config import dictConfig
 
-#logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
 #UPLOAD_FOLDER = '.'
 #ALLOWED_EXTENSIONS = {'csv'}
 
@@ -80,7 +81,7 @@ def determinedt():
             separator = str(input_json['separator'])
         res = determine_datatypes(filepath,enum,enum_tol,separator)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -95,7 +96,7 @@ def determinepk():
             seperator = str(input_json['seperator'])
         res = determine_pk(filepath,seperator)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -117,7 +118,7 @@ def checkcsv():
             seperator = str(input_json['seperator'])
         res = analysecsv(filepath,seperator,intdbname, dbhost, dbid, tname, header)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -132,7 +133,7 @@ def importdb():
         publisher = str(input_json['publisher'])
         res = insert_mdb_db(dbid, resourcetype, description, publisher)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -144,7 +145,7 @@ def importtbl():
         dbid=int(input_json['dbid'])
         res = insert_mdb_tbl(dbid)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -157,7 +158,7 @@ def updateispublic():
         ispublic=bool(input_json['is_public'])
         res = insert_mdb_db_pub(dbid, ispublic)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -172,7 +173,7 @@ def updatesiunit():
         siunit=str(input_json['siunit'])
         res = update_mdb_siunit(dbid,tid,cid,siunit)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -185,7 +186,7 @@ def updatesdataprovenance():
         prov=str(input_json['provenance'])
         res = update_mdb_data(dataid,prov)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
@@ -212,7 +213,7 @@ def updatecol():
         cid=int(input_json['cid'])
         res = update_mdb_col(dbid,tid,cid)
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": "Unknown error"}
     return jsonify(res), 200
 
