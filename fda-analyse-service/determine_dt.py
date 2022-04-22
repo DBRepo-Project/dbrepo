@@ -22,7 +22,7 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001,separator = None):
     fh = open(path, 'rb')
     if separator == None:
         with open(path) as csvfile:
-            dialect = csv.Sniffer().sniff(csvfile.read(1024))
+            dialect = csv.Sniffer().sniff(csvfile.readline())
         separator = dialect.delimiter
 
     # Load a file object:
