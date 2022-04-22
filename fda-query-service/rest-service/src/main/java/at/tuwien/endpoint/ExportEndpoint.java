@@ -1,11 +1,13 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.exception.*;
+import at.tuwien.service.CommaValueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +21,29 @@ import java.time.Instant;
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/export")
 public class ExportEndpoint {
 
+    private final CommaValueService commaValueService;
+
+    @Autowired
+    public ExportEndpoint(CommaValueService commaValueService) {
+        this.commaValueService = commaValueService;
+    }
+
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("tableId") Long tableId,
-                                                      @RequestParam(required = false) Instant timestamp) {
+                                                      @RequestParam(required = false) Instant timestamp)
+            throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
+            ContainerNotFoundException {
         final HttpHeaders headers = new HttpHeaders();
+        final InputStreamResource resource = commaValueService.export(id, databaseId, tableId, timestamp);
         headers.add("Content-Disposition", "attachment; filename=\"export.csv\"");
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .build();
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 
 
