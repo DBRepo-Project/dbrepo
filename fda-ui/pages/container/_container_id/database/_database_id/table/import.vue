@@ -71,6 +71,15 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
+              <v-select
+                v-model="tableCreate.quote"
+                :items="quotes"
+                hint="Character quoting the values"
+                label="Value quotes" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
               <v-text-field
                 v-model="tableCreate.null_element"
                 hint="Representation of 'no value present'"
@@ -240,6 +249,9 @@ export default {
         '%',
         '#'
       ],
+      quotes: [
+        '"'
+      ],
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -257,6 +269,7 @@ export default {
         name: null,
         description: null,
         columns: [],
+        quote: null,
         false_element: null,
         true_element: null,
         null_element: null,

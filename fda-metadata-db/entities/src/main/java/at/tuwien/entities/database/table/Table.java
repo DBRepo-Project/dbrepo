@@ -67,6 +67,9 @@ public class Table {
     @Column(name = "separator")
     private Character separator = ',';
 
+    @Column(name = "quote")
+    private Character quote;
+
     @Column(name = "element_null")
     private String nullElement = null;
 
