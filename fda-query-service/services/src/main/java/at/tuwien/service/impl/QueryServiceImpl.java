@@ -384,9 +384,20 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         /* prepare the statement */
+        final String rawTemp = queryMapper.generateTemporaryTableSQL(table);
+        final NativeQuery<?> queryCreate = session.createSQLQuery(rawTemp);
+        log.debug(rawTemp);
+        final String rawDeleteTemp = queryMapper.dropTemporaryTableSQL(table);
+        final NativeQuery<?> queryDelete = session.createSQLQuery(rawDeleteTemp);
+        log.debug(rawDeleteTemp);
+        insert(queryCreate,session, factory);
         final InsertTableRawQuery raw = queryMapper.pathToRawInsertQuery(table, data);
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
-        return insert(query, session, factory);
+        Integer i = insert(query, session, factory);
+        insert(queryDelete, session, factory);
+        session.close();
+        factory.close();
+        return i;
     }
 
     /**
@@ -411,8 +422,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         session.getTransaction()
                 .commit();
-        session.close();
-        factory.close();
         return affectedTuples;
     }
 
