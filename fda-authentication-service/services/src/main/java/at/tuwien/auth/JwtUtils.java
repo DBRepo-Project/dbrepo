@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -25,8 +26,8 @@ public class JwtUtils {
     @Value("${jwt.expiration.ms}")
     private Integer expire;
 
-    public String generateJwtToken(Authentication authentication) {
-        final UserDetailsDto userPrincipal = (UserDetailsDto) authentication.getPrincipal();
+    public String generateJwtToken(Object principal) {
+        final UserDetailsDto userPrincipal = (UserDetailsDto) principal;
         final Algorithm algorithm = Algorithm.HMAC512(secret);
         return JWT.create()
                 .withSubject(userPrincipal.getUsername())

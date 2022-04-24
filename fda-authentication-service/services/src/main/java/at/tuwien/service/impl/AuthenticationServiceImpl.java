@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
+
 
 @Slf4j
 @Service
@@ -32,15 +34,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public JwtResponseDto authenticate(LoginRequestDto data) {
         final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(data.getUsername(),
                 data.getPassword());
         final Authentication authentication = authenticationManager.authenticate(token);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         final JwtResponseDto response = userMapper.principalToJwtResponseDto(authentication.getPrincipal());
-        response.setToken(jwtUtils.generateJwtToken(authentication));
+        response.setToken(jwtUtils.generateJwtToken(authentication.getPrincipal()));
         return response;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public JwtResponseDto renew(Principal principal) {
+        final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) principal;
+        final Authentication authentication = authenticationManager.authenticate(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        final JwtResponseDto response = userMapper.principalToJwtResponseDto(authentication.getPrincipal());
+        response.setToken(jwtUtils.generateJwtToken(authentication.getPrincipal()));
+        return response;
+    }
 }
