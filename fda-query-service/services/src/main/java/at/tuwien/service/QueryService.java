@@ -9,6 +9,7 @@ import at.tuwien.querystore.Query;
 import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.sql.SQLException;
@@ -90,18 +91,36 @@ public interface QueryService {
      * @param databaseId  The container-database id pair.
      * @param tableId     The table id.
      * @param timestamp   The given time.
-     * @return The select all data result in the form of a downloadable .csv file
+     * @return The select all data result in the form of a downloadable .csv file.
      * @throws ContainerNotFoundException  The container was not found in the metadata database.
      * @throws TableNotFoundException      The table was not found in the metadata database.
      * @throws TableMalformedException     The table columns are messed up what we got from the metadata database.
      * @throws DatabaseNotFoundException   The database was not found in the remote database.
      * @throws ImageNotSupportedException  The image is not supported.
      * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
+     * @throws FileStorageException        The file could not be exported.
      */
     InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
             FileStorageException;
+
+    /**
+     * @param containerId The container-database id pair.
+     * @param databaseId  The container-database id pair.
+     * @param queryId     The query id.
+     * @return The query result in the form  of a downloadable .csv file.
+     * @throws DatabaseNotFoundException  The database was not found in the remote database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws FileStorageException       The file could not be exported.
+     * @throws QueryStoreException        The query store is not reachable.
+     * @throws QueryNotFoundException     THe query was not found in the query store.
+     */
+    InputStreamResource findOne(Long containerId, Long databaseId, Long queryId)
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.

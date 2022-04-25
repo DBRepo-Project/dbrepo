@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.ExportQueryRawQuery;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
@@ -182,6 +183,43 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final InputStream inputStream;
         try {
             inputStream = FileUtils.openInputStream(new File("/tmp/export.csv"));
+        } catch (IOException e) {
+            throw new FileStorageException("Export file not present");
+        }
+        return new InputStreamResource(inputStream);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InputStreamResource findOne(Long containerId, Long databaseId, Long queryId)
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        /* run query */
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        final ExportQueryRawQuery raw = queryMapper.queryToRawExportQuery(query);
+        final NativeQuery<?> query2 = session.createSQLQuery(raw.getQuery());
+        try {
+            query2.executeUpdate();
+        } catch (PersistenceException e) {
+            log.error("Failed to export query");
+            session.close();
+            factory.close();
+            throw new TableMalformedException("Data not found", e);
+        }
+        session.getTransaction().commit();
+        session.close();
+        factory.close();
+        /* read file */
+        final InputStream inputStream;
+        try {
+            inputStream = FileUtils.openInputStream(new File(raw.getPath()));
         } catch (IOException e) {
             throw new FileStorageException("Export file not present");
         }

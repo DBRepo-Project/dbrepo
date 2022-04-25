@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.ExportQueryRawQuery;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableBriefDto;
@@ -10,6 +11,7 @@ import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ImageNotSupportedException;
+import org.apache.commons.lang.RandomStringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -162,6 +164,25 @@ public interface QueryMapper {
         }
         query.append(";");
         return query.toString();
+    }
+
+    default ExportQueryRawQuery queryToRawExportQuery(Query query) {
+        if (query.getQuery().contains(";")) {
+            log.trace("Remove ending ; from statement [{}]", query.getQuery());
+            query.setQuery(query.getQuery().substring(0, query.getQuery().indexOf(";")));
+        }
+        final String path = "/tmp/" + RandomStringUtils.randomAlphanumeric(20) + ".csv";
+        final StringBuilder statement = new StringBuilder(query.getQuery())
+                .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(LocalDateTime.ofInstant(query.getExecution(), ZoneId.of("Europe/Vienna")))
+                .append("' INTO OUTFILE '")
+                .append(path)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
+        log.trace("raw export query: [{}]", statement);
+        return ExportQueryRawQuery.builder()
+                .query(statement.toString())
+                .path(path)
+                .build();
     }
 
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
