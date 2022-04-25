@@ -17,6 +17,7 @@ public interface AuthenticationService {
 
     /**
      * Renews a token for a given principal
+     * TODO limit rate of renewal to 1/hour
      *
      * @param principal The principal.
      * @return The token, if successful

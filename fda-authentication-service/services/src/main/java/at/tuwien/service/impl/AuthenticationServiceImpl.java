@@ -49,10 +49,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional(readOnly = true)
     public JwtResponseDto renew(Principal principal) {
         final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) principal;
-        final Authentication authentication = authenticationManager.authenticate(token);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        final JwtResponseDto response = userMapper.principalToJwtResponseDto(authentication.getPrincipal());
-        response.setToken(jwtUtils.generateJwtToken(authentication.getPrincipal()));
+        final JwtResponseDto response = userMapper.principalToJwtResponseDto(token.getPrincipal());
+        response.setToken(jwtUtils.generateJwtToken(token.getPrincipal()));
         return response;
     }
 }
