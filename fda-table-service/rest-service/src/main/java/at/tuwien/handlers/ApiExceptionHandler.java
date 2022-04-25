@@ -7,24 +7,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     @ExceptionHandler({AmqpException.class})
-    public ResponseEntity<Object> handle(AmqpException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(AmqpException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.NOT_ACCEPTABLE)
                 .message(e.getLocalizedMessage())
                 .code("error.amqp.queue")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({ArbitraryPrimaryKeysException.class})
-    public ResponseEntity<Object> handle(ArbitraryPrimaryKeysException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(ArbitraryPrimaryKeysException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
@@ -33,8 +36,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler({DatabaseConnectionException.class})
-    public ResponseEntity<Object> handle(DatabaseConnectionException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(DatabaseConnectionException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .message(e.getLocalizedMessage())
@@ -43,8 +47,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({DatabaseNotFoundException.class})
-    public ResponseEntity<Object> handle(DatabaseNotFoundException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
@@ -53,8 +58,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({DataProcessingException.class})
-    public ResponseEntity<Object> handle(DataProcessingException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(DataProcessingException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
@@ -63,8 +69,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({FileStorageException.class})
-    public ResponseEntity<Object> handle(FileStorageException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(FileStorageException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
@@ -73,28 +80,31 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ImageNotSupportedException.class})
-    public ResponseEntity<Object> handle(ImageNotSupportedException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(ImageNotSupportedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
                 .code("error.database.image")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({PaginationException.class})
-    public ResponseEntity<Object> handle(PaginationException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(PaginationException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
                 .code("error.database.pagination")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler({TableNameExistsException.class})
-    public ResponseEntity<Object> handle(TableNameExistsException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(TableNameExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
@@ -103,8 +113,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({TableMalformedException.class})
-    public ResponseEntity<Object> handle(TableMalformedException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
@@ -113,8 +124,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({TableNotFoundException.class})
-    public ResponseEntity<Object> handle(TableNotFoundException e, WebRequest request) {
+    public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
