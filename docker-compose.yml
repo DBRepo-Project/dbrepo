@@ -94,6 +94,10 @@ services:
     depends_on:
       fda-container-service:
         condition: service_healthy
+      fda-broker-service:
+        condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -134,6 +138,8 @@ services:
     depends_on:
       fda-discovery-service:
         condition: service_healthy
+      fda-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -155,6 +161,8 @@ services:
       - /tmp:/tmp
     depends_on:
       fda-table-service:
+        condition: service_healthy
+      fda-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -178,7 +186,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
     depends_on:
-      fda-database-service:
+      fda-authentication-service:
+        condition: service_healthy
+      fda-search-service:
+        condition: service_started
+      fda-broker-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -199,6 +211,10 @@ services:
     depends_on:
       fda-query-service:
         condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
 
   fda-analyse-service:
     restart: on-failure

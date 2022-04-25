@@ -39,9 +39,13 @@ public class TableDto {
     @Parameter(name = "table description", example = "Predict next-day rain in Australia")
     private String description;
 
-    @NotBlank
+    @NotNull
     @Parameter(name = "table csv separator", example = ",")
     private Character separator = ',';
+
+    @NotNull
+    @Parameter(name = "csv quote character when importing", required = true, example = "\"")
+    private Character quote;
 
     @NotBlank
     @JsonProperty("null_element")

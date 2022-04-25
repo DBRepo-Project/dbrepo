@@ -37,9 +37,6 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @Autowired
-    private CommaValueService dataService;
-
-    @Autowired
     private TableRepository tableRepository;
 
     @Autowired
@@ -122,47 +119,6 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
         TABLE_2.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_1);
         tableRepository.save(TABLE_2);
-    }
-
-    @Test
-    @Disabled
-    public void write_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException {
-
-        /* test */
-//        final Resource response = dataService.export(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
-//        assertTrue(response.exists());
-    }
-
-    @Test
-    public void read_url_succeeds() throws TableNotFoundException, DatabaseNotFoundException, FileStorageException,
-            ContainerNotFoundException {
-        final String location = "http://" + CONTAINER_NGINX_IP + "/weather_aus.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(3, response.getData().size());
-    }
-
-    @Test
-    public void read_classpath_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            FileStorageException, ContainerNotFoundException {
-        final String location = "test:csv/csv_12.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(10000, response.getData().size());
-    }
-
-    @Test
-    public void read_succeeds() throws TableNotFoundException, DatabaseNotFoundException, FileStorageException,
-            ContainerNotFoundException {
-        final String location = "/csv_12.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(10000, response.getData().size());
     }
 
 }

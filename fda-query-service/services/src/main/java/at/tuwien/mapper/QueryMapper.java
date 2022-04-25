@@ -86,6 +86,13 @@ public interface QueryMapper {
                 .append(table.getSeparator())
                 .append("'")
                 .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
+                .append("'");
+        if (table.getQuote() != null) {
+            query.append(" OPTIONALLY ENCLOSED BY '")
+                    .append(table.getQuote())
+                    .append("'");
+        }
+        query.append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder dateSet = new StringBuilder();
         int[] idx = new int[]{0};
@@ -143,20 +150,15 @@ public interface QueryMapper {
                 .append(table.getInternalName())
                 .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
-                .append("' FIELDS TERMINATED BY '")
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
-                .append("' OPTIONALLY ENCLOSED BY '\"'");
+                .append("'");
+        if (table.getQuote() != null) {
+            query.append(" OPTIONALLY ENCLOSED BY '")
+                    .append(table.getQuote())
+                    .append("'");
+        }
         return query.toString();
-//                .append(data.getLocation())
-//                .append("' INTO TABLE `")
-//                .append(table.getDatabase().getInternalName())
-//                .append("`.`")
-//                .append(table.getInternalName())
-//                .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
-//                .append(table.getSeparator())
-//                .append("'")
-//                .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
-//                .append(" (");
     }
 
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)

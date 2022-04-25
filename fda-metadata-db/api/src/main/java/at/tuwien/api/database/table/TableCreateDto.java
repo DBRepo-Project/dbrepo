@@ -47,6 +47,10 @@ public class TableCreateDto {
     private Character separator;
 
     @NotNull
+    @Parameter(name = "csv quote character when importing", required = true, example = "\"")
+    private Character quote;
+
+    @NotNull
     @Parameter(name = "table columns", required = true)
     private ColumnCreateDto[] columns;
 

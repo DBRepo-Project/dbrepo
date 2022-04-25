@@ -36,9 +36,6 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private QueryServiceImpl queryService;
 
-    @MockBean
-    private CommaValueService commaValueService;
-
     @Test
     public void insert_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, FileStorageException, ContainerNotFoundException {

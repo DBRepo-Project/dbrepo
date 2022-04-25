@@ -33,9 +33,6 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private QueryServiceImpl queryService;
 
-    @MockBean
-    private CommaValueService commaValueService;
-
     @Test
     public void export_timestampNull_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,

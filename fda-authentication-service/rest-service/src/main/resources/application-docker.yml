@@ -31,4 +31,4 @@ fda:
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret
-  expiration.ms: 86400000
+  expiration.ms: 86400000 # 24 hrs
