@@ -1,7 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.exception.*;
-import at.tuwien.service.CommaValueService;
+import at.tuwien.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -21,11 +21,11 @@ import java.time.Instant;
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/export")
 public class ExportEndpoint {
 
-    private final CommaValueService commaValueService;
+    private final QueryService queryService;
 
     @Autowired
-    public ExportEndpoint(CommaValueService commaValueService) {
-        this.commaValueService = commaValueService;
+    public ExportEndpoint(QueryService queryService) {
+        this.queryService = queryService;
     }
 
     @GetMapping
@@ -36,10 +36,9 @@ public class ExportEndpoint {
                                                       @NotNull @PathVariable("tableId") Long tableId,
                                                       @RequestParam(required = false) Instant timestamp)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
         final HttpHeaders headers = new HttpHeaders();
-        final InputStreamResource resource = commaValueService.export(id, databaseId, tableId, timestamp);
+        final InputStreamResource resource = queryService.findAll(id, databaseId, tableId, timestamp);
         headers.add("Content-Disposition", "attachment; filename=\"export.csv\"");
         return ResponseEntity.ok()
                 .headers(headers)

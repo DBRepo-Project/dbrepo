@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
-import at.tuwien.service.CommaValueService;
 import at.tuwien.service.impl.QueryServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;

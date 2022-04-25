@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import net.sf.jsqlparser.JSQLParserException;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
@@ -31,8 +32,10 @@ public interface QueryService {
      * @throws DatabaseNotFoundException
      * @throws ImageNotSupportedException
      */
-    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto query, Long page, Long size) throws TableNotFoundException,
-            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException;
+    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto query, Long page, Long size)
+            throws TableNotFoundException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException,
+            TableMalformedException;
 
     /**
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the
@@ -49,8 +52,10 @@ public interface QueryService {
      * @throws DatabaseNotFoundException
      * @throws ImageNotSupportedException
      */
-    QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size) throws TableNotFoundException,
-            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException;
+    QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
+            throws TableNotFoundException,
+            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException;
 
 
     /**
@@ -75,6 +80,27 @@ public interface QueryService {
                            Long page, Long size) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
             ContainerNotFoundException;
+
+    /**
+     * Select all data known in the database-table id tuple at a given time and return a downloadable input stream
+     * resource at a given time. Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user
+     * for this.
+     *
+     * @param containerId The container-database id pair.
+     * @param databaseId  The container-database id pair.
+     * @param tableId     The table id.
+     * @param timestamp   The given time.
+     * @return The select all data result in the form of a downloadable .csv file
+     * @throws ContainerNotFoundException  The container was not found in the metadata database.
+     * @throws TableNotFoundException      The table was not found in the metadata database.
+     * @throws TableMalformedException     The table columns are messed up what we got from the metadata database.
+     * @throws DatabaseNotFoundException   The database was not found in the remote database.
+     * @throws ImageNotSupportedException  The image is not supported.
+     * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
+     */
+    InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.

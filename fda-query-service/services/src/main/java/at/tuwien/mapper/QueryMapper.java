@@ -15,6 +15,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.mariadb.jdbc.MariaDbBlob;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
@@ -84,7 +85,6 @@ public interface QueryMapper {
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
                 .append("'")
-//                .append("' LINES TERMINATED BY '\\r\\n'")
                 .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder dateSet = new StringBuilder();
@@ -128,6 +128,37 @@ public interface QueryMapper {
 
     }
 
+    default String tableToRawExportQuery(Table table, Instant timestamp) {
+        final StringBuilder query = new StringBuilder("SELECT ");
+        int[] idx = new int[]{0};
+        table.getColumns()
+                .forEach(column -> {
+                    query.append(idx[0] != 0 ? "," : "")
+                            .append("`")
+                            .append(column.getInternalName())
+                            .append("`");
+                    idx[0]++;
+                });
+        query.append("INTO OUTFILE '/tmp/export.csv' FROM `")
+                .append(table.getInternalName())
+                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
+                .append("' FIELDS TERMINATED BY '")
+                .append(table.getSeparator())
+                .append("' OPTIONALLY ENCLOSED BY '\"'");
+        return query.toString();
+//                .append(data.getLocation())
+//                .append("' INTO TABLE `")
+//                .append(table.getDatabase().getInternalName())
+//                .append("`.`")
+//                .append(table.getInternalName())
+//                .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
+//                .append(table.getSeparator())
+//                .append("'")
+//                .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
+//                .append(" (");
+    }
+
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
             throws TableMalformedException {
         if (table.getColumns().size() == 0) {
@@ -166,7 +197,8 @@ public interface QueryMapper {
                 "';";
     }
 
-    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp) throws ImageNotSupportedException {
+    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -176,7 +208,7 @@ public interface QueryMapper {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT COUNT(*) FROM");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[0]);
         } else {
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1]);
@@ -184,7 +216,7 @@ public interface QueryMapper {
         sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
         sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
         sb.append("' ");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append("where ");
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
         }
@@ -193,7 +225,8 @@ public interface QueryMapper {
         return sb.toString();
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size) throws ImageNotSupportedException {
+    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -202,7 +235,7 @@ public interface QueryMapper {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
         StringBuilder sb = new StringBuilder();
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("where")[0]);
         } else {
             sb.append(query.toLowerCase(Locale.ROOT));
@@ -210,12 +243,12 @@ public interface QueryMapper {
         sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
         sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
         sb.append("' ");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append("where");
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
         }
-        if(size != null && page != null && size > 0 && page >=0) {
-            sb.append(" LIMIT " + size + " OFFSET " + (page*size));
+        if (size != null && page != null && size > 0 && page >= 0) {
+            sb.append(" LIMIT " + size + " OFFSET " + (page * size));
         }
         sb.append(";");
 
@@ -224,9 +257,6 @@ public interface QueryMapper {
         return sb.toString();
 
     }
-
-
-
 
 
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
@@ -298,7 +328,8 @@ public interface QueryMapper {
                 return new MariaDbBlob((byte[]) data);
             case DATE:
                 if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {} of table {}", column.getId(), column.getTable().getId());
+                    log.error("Missing date format for column {} of table {}", column.getId(),
+                            column.getTable().getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -330,9 +361,9 @@ public interface QueryMapper {
 
     @Named("EscapedString")
     default String stringToEscapedString(String name) throws ImageNotSupportedException {
-        log.debug("StringToEscapedString: {}",name);
-        if(name!=null && !name.startsWith("`") && !name.endsWith("`")) {
-            return "`"+name+"`";
+        log.debug("StringToEscapedString: {}", name);
+        if (name != null && !name.startsWith("`") && !name.endsWith("`")) {
+            return "`" + name + "`";
         }
         return name;
     }
