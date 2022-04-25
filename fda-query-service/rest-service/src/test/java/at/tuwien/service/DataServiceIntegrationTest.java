@@ -135,34 +135,4 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
 //        assertTrue(response.exists());
     }
 
-    @Test
-    public void read_url_succeeds() throws TableNotFoundException, DatabaseNotFoundException, FileStorageException,
-            ContainerNotFoundException {
-        final String location = "http://" + CONTAINER_NGINX_IP + "/weather_aus.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(3, response.getData().size());
-    }
-
-    @Test
-    public void read_classpath_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            FileStorageException, ContainerNotFoundException {
-        final String location = "test:csv/csv_12.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(10000, response.getData().size());
-    }
-
-    @Test
-    public void read_succeeds() throws TableNotFoundException, DatabaseNotFoundException, FileStorageException,
-            ContainerNotFoundException {
-        final String location = "/csv_12.csv";
-
-        /* test */
-        final TableCsvDto response = dataService.read(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, location);
-        assertEquals(10000, response.getData().size());
-    }
-
 }

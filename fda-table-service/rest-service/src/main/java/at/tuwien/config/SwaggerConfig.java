@@ -1,40 +1,45 @@
 package at.tuwien.config;
 
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import org.springdoc.core.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.oas.annotations.EnableOpenApi;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-
-import java.util.Collections;
 
 @Configuration
-@EnableOpenApi
 public class SwaggerConfig {
 
+    @Value("${app.version:unknown}")
+    private String version;
+
     @Bean
-    public Docket tableApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(apiInfo())
-                .select()
-                .paths(PathSelectors.ant("/api/**"))
-                .build();
+    public OpenAPI springShopOpenAPI() {
+        return new OpenAPI()
+                .info(new Info()
+                        .title("Database Repository Table Service API")
+                        .contact(new Contact()
+                                .name("Prof. Andreas Rauber")
+                                .email("andreas.rauber@tuwien.ac.at"))
+                        .description("Service that manages the tables")
+                        .version(version)
+                        .license(new License()
+                                .name("Apache 2.0")
+                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
+                .externalDocs(new ExternalDocumentation()
+                        .description("Wiki Documentation")
+                        .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis"));
     }
 
-    private ApiInfo apiInfo() {
-        return new ApiInfo("FDA-Table-Service API",
-                "Service API for table service",
-                "1.0",
-                null,
-                new Contact("Ao.Univ.Prof. Andreas Rauber", "http://www.ifs.tuwien.ac.at/~andi/", "rauber@ifs.tuwien.ac.at"),
-                "API license",
-                null,
-                Collections.emptyList());
-
-
+    @Bean
+    public GroupedOpenApi publicApi() {
+        return GroupedOpenApi.builder()
+                .group("table-service")
+                .pathsToMatch("/api/**")
+                .build();
     }
 
 }

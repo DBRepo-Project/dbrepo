@@ -83,9 +83,13 @@ public interface QueryMapper {
                 .append(table.getInternalName())
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
-                .append("'")
-//                .append("' LINES TERMINATED BY '\\r\\n'")
-                .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
+                .append("'");
+        if (table.getQuote() != null) {
+            query.append(" ENCLOSED BY '")
+                    .append(table.getQuote())
+                    .append("'");
+        }
+        query.append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder dateSet = new StringBuilder();
         int[] idx = new int[]{0};
@@ -176,7 +180,7 @@ public interface QueryMapper {
         }
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT COUNT(*) FROM");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[0]);
         } else {
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1]);
@@ -184,7 +188,7 @@ public interface QueryMapper {
         sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
         sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
         sb.append("' ");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append("where ");
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
         }
@@ -202,7 +206,7 @@ public interface QueryMapper {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
         StringBuilder sb = new StringBuilder();
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("where")[0]);
         } else {
             sb.append(query.toLowerCase(Locale.ROOT));
@@ -210,12 +214,12 @@ public interface QueryMapper {
         sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
         sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
         sb.append("' ");
-        if(query.contains("where")) {
+        if (query.contains("where")) {
             sb.append("where");
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
         }
-        if(size != null && page != null && size > 0 && page >=0) {
-            sb.append(" LIMIT " + size + " OFFSET " + (page*size));
+        if (size != null && page != null && size > 0 && page >= 0) {
+            sb.append(" LIMIT " + size + " OFFSET " + (page * size));
         }
         sb.append(";");
 
@@ -224,9 +228,6 @@ public interface QueryMapper {
         return sb.toString();
 
     }
-
-
-
 
 
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
@@ -330,9 +331,9 @@ public interface QueryMapper {
 
     @Named("EscapedString")
     default String stringToEscapedString(String name) throws ImageNotSupportedException {
-        log.debug("StringToEscapedString: {}",name);
-        if(name!=null && !name.startsWith("`") && !name.endsWith("`")) {
-            return "`"+name+"`";
+        log.debug("StringToEscapedString: {}", name);
+        if (name != null && !name.startsWith("`") && !name.endsWith("`")) {
+            return "`" + name + "`";
         }
         return name;
     }
