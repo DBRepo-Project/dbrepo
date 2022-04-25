@@ -33,6 +33,7 @@ public interface QueryMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryMapper.class);
 
+    @Deprecated
     @Mappings({
             @Mapping(source = "query", target = "statement")
     })
@@ -84,8 +85,6 @@ public interface QueryMapper {
                 .append(table.getInternalName())
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
-                .append("'")
-                .append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append("'");
         if (table.getQuote() != null) {
             query.append(" OPTIONALLY ENCLOSED BY '")
@@ -146,11 +145,9 @@ public interface QueryMapper {
                             .append("`");
                     idx[0]++;
                 });
-        query.append("INTO OUTFILE '/tmp/export.csv' FROM `")
+        query.append("FROM `")
                 .append(table.getInternalName())
-                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY '")
+                .append("` INTO OUTFILE '/tmp/export.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
                 .append("'");
         if (table.getQuote() != null) {
@@ -158,6 +155,12 @@ public interface QueryMapper {
                     .append(table.getQuote())
                     .append("'");
         }
+        if (timestamp != null) {
+            query.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                    .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
+                    .append("'");
+        }
+        query.append(";");
         return query.toString();
     }
 

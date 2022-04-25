@@ -100,7 +100,8 @@ public interface QueryService {
      */
     InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException;
+            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
+            FileStorageException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.

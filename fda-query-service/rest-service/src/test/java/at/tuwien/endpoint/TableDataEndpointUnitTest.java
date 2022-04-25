@@ -38,7 +38,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void insert_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .location("test:csv/csv_01.csv")
                 .build();

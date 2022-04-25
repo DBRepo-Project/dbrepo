@@ -11,13 +11,13 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.TableColumnRepository;
 import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.SQLGrammarException;
@@ -28,16 +28,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -46,15 +46,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final QueryMapper queryMapper;
     private final TableService tableService;
     private final DatabaseService databaseService;
-    private final TableColumnRepository tableColumnRepository;
     private final StoreService storeService;
 
     @Autowired
-    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService, TableColumnRepository tableColumnRepository, StoreService storeService) {
+    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService, StoreService storeService) {
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.databaseService = databaseService;
-        this.tableColumnRepository = tableColumnRepository;
         this.storeService = storeService;
     }
 
@@ -153,15 +151,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException {
+            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
+            FileStorageException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, false);
+        final SessionFactory factory = getSessionFactory(database, true);
         final Session session = factory.openSession();
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
@@ -170,7 +170,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             query.executeUpdate();
         } catch (PersistenceException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to export table");
             session.close();
             factory.close();
             throw new TableMalformedException("Data not found", e);
@@ -178,7 +178,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         session.getTransaction().commit();
         session.close();
         factory.close();
-        return null;
+        /* read file */
+        final InputStream inputStream;
+        try {
+            inputStream = FileUtils.openInputStream(new File("/tmp/export.csv"));
+        } catch (IOException e) {
+            throw new FileStorageException("Export file not present");
+        }
+        return new InputStreamResource(inputStream);
     }
 
     @Override
@@ -283,27 +290,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return affectedTuples;
     }
 
-    /**
-     * Retrieves the columns from the tables (ids) and referenced column ids from the metadata database
-     *
-     * @param statement The list of tables (ids) and referenced column ids.
-     * @return The list of columns if successful
-     */
-    private List<TableColumn> parseColumns(Long databaseId, ExecuteStatementDto statement) {
-        final List<TableColumn> columns = new LinkedList<>();
-        final int[] idx = new int[]{0};
-        log.debug("Database id: {}", databaseId);
-        log.debug("ExecuteStatement: {}", statement.toString());
-        statement.getTables().forEach(table -> {
-            columns.addAll(statement.getColumns().get(idx[0]++).stream().map(
-                    column -> tableColumnRepository.findByIdAndTidAndCdbid(column.getId(), table.getId(),
-                            databaseId)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
-        });
-        return columns;
-    }
-
     private List<TableColumn> parseColumns(Query query, Database database)
-            throws SQLException, ImageNotSupportedException, JSQLParserException {
+            throws ImageNotSupportedException, JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
 
         CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
@@ -379,9 +367,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     }
 
+    /**
+     * mw: isn't this highly ineffective? We already have a {@link #count(Long, Long, Long, Instant)}  function
+     */
     @Transactional
     Long countQueryResults(Long containerId, Long databaseId, Query query)
-            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException,
+            throws DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);

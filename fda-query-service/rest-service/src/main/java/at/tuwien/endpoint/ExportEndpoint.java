@@ -30,13 +30,14 @@ public class ExportEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Export table")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("tableId") Long tableId,
                                                       @RequestParam(required = false) Instant timestamp)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
+            FileStorageException {
         final HttpHeaders headers = new HttpHeaders();
         final InputStreamResource resource = queryService.findAll(id, databaseId, tableId, timestamp);
         headers.add("Content-Disposition", "attachment; filename=\"export.csv\"");
