@@ -52,4 +52,12 @@ public class AuthenticationEndpoint {
                 .body(userMapper.userDetailsToUserDto(details, principal));
     }
 
+    @PostMapping("/renew")
+    @Operation(summary = "Renew token", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
+        final JwtResponseDto response = authenticationService.renew(principal);
+        return ResponseEntity.ok()
+                .body(response);
+    }
+
 }
