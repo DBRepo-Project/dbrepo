@@ -7,14 +7,14 @@ import at.tuwien.api.user.UserRolesDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.UserEmailExistsException;
-import at.tuwien.exception.UserNameExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repositories.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.TransientDataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,16 +104,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updateRoles(Long id, UserRolesDto data) throws UserNotFoundException {
+    public User updateRoles(Long id, UserRolesDto data)
+            throws UserNotFoundException, RoleNotFoundException, RoleUniqueException {
         /* check */
         final User user = find(id);
         /* save */
-        user.setRoles(data.getRoles()
-                .stream()
-                .map(RoleType::valueOf)
-                .collect(Collectors.toList()));
+        try {
+            user.setRoles(data.getRoles()
+                    .stream()
+                    .map(RoleType::valueOf)
+                    .collect(Collectors.toList()));
+        } catch (IllegalArgumentException e) {
+            log.error("Failed to map roles {}", data.getRoles());
+            throw new RoleNotFoundException("Failed to map roles");
+        }
         log.debug("mapped roles {} to updated user {}", data, user);
-        final User entity = userRepository.save(user);
+        final User entity;
+        try {
+            entity = userRepository.save(user);
+        } catch (DuplicateKeyException e) {
+            log.error("Failed to assign roles, must be unique");
+            throw new RoleUniqueException("Failed to assign roles", e);
+        }
         log.info("Updated user with id {}", entity.getId());
         log.debug("updated user {}", entity);
         return entity;

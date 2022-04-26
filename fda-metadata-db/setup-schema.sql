@@ -56,6 +56,13 @@ CREATE SEQUENCE public.mdb_user_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_user_role_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_data_seq
     START WITH 1
     INCREMENT BY 1
@@ -208,11 +215,14 @@ CREATE TABLE IF NOT EXISTS mdb_users
 
 CREATE TABLE IF NOT EXISTS mdb_user_roles
 (
+    id            bigint                      not null DEFAULT nextval('mdb_user_role_seq'),
     uid           bigint                      not null,
     role          varchar(255)                not null,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
-    PRIMARY KEY (uid)
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
+    UNIQUE (uid, role)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_databases

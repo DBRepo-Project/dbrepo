@@ -4,10 +4,7 @@ import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.exception.UserEmailExistsException;
-import at.tuwien.exception.UserNameExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,7 +85,8 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Update user roles", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateRoles(@NotNull @PathVariable("id") Long id,
-                                               @Valid @RequestBody UserRolesDto data) throws UserNotFoundException {
+                                               @Valid @RequestBody UserRolesDto data)
+            throws UserNotFoundException, RoleNotFoundException, RoleUniqueException {
         final User entity = userService.updateRoles(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userMapper.userToUserDto(entity));
@@ -111,7 +109,7 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_EMAIL')")
     @Operation(summary = "Update user email", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateEmail(@NotNull @PathVariable("id") Long id,
-                                                  @Valid @RequestBody UserEmailDto data) throws UserNotFoundException {
+                                               @Valid @RequestBody UserEmailDto data) throws UserNotFoundException {
         final User entity = userService.updateEmail(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userMapper.userToUserDto(entity));

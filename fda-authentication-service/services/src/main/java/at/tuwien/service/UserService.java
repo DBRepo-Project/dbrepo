@@ -3,10 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.exception.UserEmailExistsException;
-import at.tuwien.exception.UserNameExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -57,8 +54,10 @@ public interface UserService {
      * @param data The updated roles.
      * @return The updated user.
      * @throws UserNotFoundException The user was not found.
+     * @throws RoleNotFoundException Some updated roles were not found.
      */
-    User updateRoles(Long id, UserRolesDto data) throws UserNotFoundException;
+    User updateRoles(Long id, UserRolesDto data)
+            throws UserNotFoundException, RoleNotFoundException, RoleUniqueException;
 
     /**
      * Updates a user with the given id and updated password.

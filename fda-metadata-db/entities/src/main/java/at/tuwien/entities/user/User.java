@@ -59,7 +59,9 @@ public class User {
     private String password;
 
     @ElementCollection(targetClass = RoleType.class)
-    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"))
+    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"uid", "role"})
+    })
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private List<RoleType> roles;
