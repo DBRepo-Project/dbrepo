@@ -14,7 +14,6 @@ import java.time.Instant;
 @Builder
 public class CreatorDto {
 
-    @NotNull
     private Long id;
 
     @NotNull
@@ -28,10 +27,8 @@ public class CreatorDto {
     @Parameter(name = "lastname", example = "Mustermann")
     private String lastname;
 
-    @NotNull
     private Instant created;
 
-    @NotNull
     @JsonProperty("last_modified")
     private Instant lastModified;
 

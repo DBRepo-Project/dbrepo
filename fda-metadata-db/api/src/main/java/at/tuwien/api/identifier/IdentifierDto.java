@@ -49,7 +49,7 @@ public class IdentifierDto {
 
     @NotNull
     @Parameter(name = "creators")
-    private List<UserDto> creators;
+    private List<CreatorDto> creators;
 
     private Instant created;
 

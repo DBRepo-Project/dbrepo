@@ -39,13 +39,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Identifier> findAll(Long containerId, Long databaseId) {
         return identifierRepository.findAll();
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
         final Optional<Identifier> identifier = identifierRepository.findByQid(queryId);
         if (identifier.isEmpty()) {
@@ -83,7 +83,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Identifier find(Long identifierId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findById(identifierId);
         if (optional.isEmpty()) {
@@ -97,9 +97,10 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Transactional
     public Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
             throws IdentifierNotFoundException {
-        final Identifier entity = find(identifierId);
+        /* check */
+        find(identifierId);
+        /* update */
         final Identifier identifier = identifierMapper.identifierDtoToIdentifier(data);
-        identifier.setVisibility(entity.getVisibility()) /* never update visibility */;
         final Identifier entityUpdated = identifierRepository.save(identifier);
         log.info("Updated identifier with id {}", identifierId);
         log.debug("updated identifier {}", entityUpdated);
@@ -108,29 +109,12 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
-            throws IdentifierNotFoundException, IdentifierAlreadyPublishedException {
-        final Identifier identifier = find(identifierId);
-        if (identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
-            /* once published, the identifier cannot be reverted back, it is persistent! */
-            log.error("Identifier is already published");
-            log.debug("unpublish not supported for identifier {}", identifier);
-            throw new IdentifierAlreadyPublishedException("Unpublish not allowed");
-        }
-        identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(visibility));
-        final Identifier entity = identifierRepository.save(identifier);
-        log.info("Published identifier with id {}", identifierId);
-        log.debug("published identifier {}", entity);
-        return entity;
-    }
-
-    @Override
-    @Transactional
     public void delete(Long containerId, Long databaseId, Long identifierId) throws IdentifierNotFoundException {
+        /* check */
         final Identifier identifier = find(identifierId);
+        /* delete */
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);
-        log.debug("deleted identifier {}", identifier);
     }
 
 }

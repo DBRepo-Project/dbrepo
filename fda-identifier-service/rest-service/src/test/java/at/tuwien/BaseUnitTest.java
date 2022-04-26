@@ -2,9 +2,9 @@ package at.tuwien;
 
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -14,18 +14,12 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.test.context.TestPropertySource;
 
-import java.beans.Visibility;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
@@ -84,7 +78,7 @@ public abstract class BaseUnitTest {
             .lastModified(CREATOR_1_MODIFIED)
             .build();
 
-    public final static UserDto CREATOR_1_DTO = UserDto.builder()
+    public final static CreatorDto CREATOR_1_DTO = CreatorDto.builder()
             .id(CREATOR_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
@@ -123,7 +117,7 @@ public abstract class BaseUnitTest {
             .lastModified(CREATOR_2_MODIFIED)
             .build();
 
-    public final static UserDto CREATOR_2_DTO = UserDto.builder()
+    public final static CreatorDto CREATOR_2_DTO = CreatorDto.builder()
             .id(CREATOR_2_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)

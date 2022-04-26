@@ -66,21 +66,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
      * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
-
-    /**
-     * Publishes the identifier for a given identifier id in the metadata database.
-     *
-     * @param containerId  The container id.
-     * @param databaseId   The database id.
-     * @param identifierId The identifier id.
-     * @param visibility   The new visibility.
-     * @return The updated identifier from the metadata database.
-     * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
-     * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
-     */
-    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
-            IdentifierAlreadyPublishedException;
+    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
+            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the database, but sets it as deleted.

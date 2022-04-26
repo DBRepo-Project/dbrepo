@@ -1,23 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,11 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -237,70 +224,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_1_DESCRIPTION, response.getDescription());
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
         assertEquals(2, response.getCreators().size());
-    }
-
-    @Test
-    public void publish_everyone_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
-
-        /* test */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
-    }
-
-    @Test
-    public void publish_trusted_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
-
-        /* test */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.TRUSTED);
-    }
-
-    @Test
-    public void publish_notFound_fails() {
-
-        /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
-        });
-    }
-
-    @Test
-    @Transactional
-    public void publish_alreadyPublished_fails() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
-
-        /* mock */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
-
-        /* test */
-        assertThrows(IdentifierAlreadyPublishedException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
-        });
-    }
-
-    @Test
-    public void publish_queryNotFound_fails() throws QueryNotFoundException, RemoteUnavailableException {
-
-        /* mock */
-        doThrow(QueryNotFoundException.class)
-                .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
-
-        /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
-        });
-    }
-
-    @Test
-    public void publish_serviceUnavailable_fails() throws QueryNotFoundException, RemoteUnavailableException {
-
-        /* mock */
-        doThrow(RemoteUnavailableException.class)
-                .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
-
-        /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
-        });
     }
 
     @Test
