@@ -51,6 +51,9 @@ public class User {
     @Column(name = "main_email", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "main_email_verified", nullable = false)
+    private Boolean emailVerified;
+
     @ToString.Exclude
     @Column(nullable = false)
     private String password;

@@ -5,6 +5,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import org.mapstruct.Mapper;
@@ -46,6 +47,11 @@ public interface UserMapper {
                 .username(data.getUsername())
                 .email(data.getEmail())
                 .password(data.getPassword())
+                .firstname(data.getFirstname())
+                .lastname(data.getLastname())
+                .titlesBefore(data.getTitlesBefore())
+                .titlesAfter(data.getTitlesAfter())
+                .emailVerified(data.getEmailVerified())
                 .authorities(data.getRoles()
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)

@@ -1,9 +1,12 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserEmailDto;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserRolesDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RoleNotFoundException;
 import at.tuwien.exception.UserEmailExistsException;
 import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.exception.UserNotFoundException;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -35,7 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         final List<User> users = userRepository.findAll();
         log.info("Found {} users", users.size());
@@ -43,7 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public User find(Long id) throws UserNotFoundException {
         /* check */
         final Optional<User> user = userRepository.findById(id);
@@ -71,11 +75,76 @@ public class UserServiceImpl implements UserService {
         /* get role */
         /* save */
         final User user = userMapper.signupRequestDtoToUser(data);
+        user.setEmailVerified(false);
         user.setRoles(List.of(RoleType.ROLE_RESEARCHER));
         user.setPassword(passwordEncoder.encode(data.getPassword()));
         final User entity = userRepository.save(user);
         log.info("Created user with id {}", entity.getId());
         log.debug("created user {}", entity);
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public User update(Long id, UserUpdateDto data) throws UserNotFoundException {
+        /* check */
+        final User user = find(id);
+        /* save */
+        user.setTitlesBefore(data.getTitlesBefore());
+        user.setTitlesAfter(data.getTitlesAfter());
+        user.setFirstname(data.getFirstname());
+        user.setLastname(data.getLastname());
+        user.setUsername(user.getUsername());
+        log.debug("mapped data {} to new user {}", data, user);
+        final User entity = userRepository.save(user);
+        log.info("Updated user with id {}", entity.getId());
+        log.debug("updated user {}", entity);
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public User updateRoles(Long id, UserRolesDto data) throws UserNotFoundException {
+        /* check */
+        final User user = find(id);
+        /* save */
+        user.setRoles(data.getRoles()
+                .stream()
+                .map(RoleType::valueOf)
+                .collect(Collectors.toList()));
+        log.debug("mapped roles {} to updated user {}", data, user);
+        final User entity = userRepository.save(user);
+        log.info("Updated user with id {}", entity.getId());
+        log.debug("updated user {}", entity);
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException {
+        /* check */
+        final User user = find(id);
+        /* save */
+        final String passwd = passwordEncoder.encode(data.getPassword());
+        user.setPassword(passwd);
+        log.debug("mapped password {} to updated user {}", passwd, user);
+        final User entity = userRepository.save(user);
+        log.info("Updated user with id {}", entity.getId());
+        log.debug("updated user {}", entity);
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public User updateEmail(Long id, UserEmailDto data) throws UserNotFoundException {
+        /* check */
+        final User user = find(id);
+        /* save */
+        user.setEmail(data.getEmail());
+        log.debug("mapped email {} to updated user {}", data, user);
+        final User entity = userRepository.save(user);
+        log.info("Updated user with id {}", entity.getId());
+        log.debug("updated user {}", entity);
         return entity;
     }
 

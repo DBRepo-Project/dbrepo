@@ -196,6 +196,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Preceding_titles     VARCHAR(50),
     Postpositioned_title VARCHAR(50),
     Main_Email           VARCHAR(255)                not null,
+    main_email_verified  BOOLEAN                     not null DEFAULT false,
     password             VARCHAR(255)                not null,
     created              timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified        timestamp without time zone,
