@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -35,6 +36,7 @@ public class IdentifierEndpoint {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -42,28 +44,36 @@ public class IdentifierEndpoint {
             throws IdentifierNotFoundException {
         if (qid != null) {
             final Identifier identifier = identifierService.find(id, databaseId, qid);
+            log.info("Found identifier with id {} filtered by query id {}", identifier.getId(), qid);
+            log.debug("found identifier {} filtered by query id {}", identifier, qid);
             return ResponseEntity.ok(List.of(identifierMapper.identifierToIdentifierDto(identifier)));
         }
         final List<Identifier> identifiers = identifierService.findAll(id, databaseId);
+        log.info("Found {} identifiers", identifiers.size());
+        log.debug("found identifiers {}", identifiers);
         return ResponseEntity.ok(identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .collect(Collectors.toList()));
     }
 
     @PostMapping
+    @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException {
+            RemoteUnavailableException {
         final Identifier identifier = identifierService.create(id, databaseId, data);
+        log.info("Found identifier with id {}", identifier.getId());
+        log.debug("found identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
     @PutMapping("/{identiferId}")
+    @Transactional
     @Operation(summary = "Publish some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> publish(@NotNull @PathVariable("id") Long id,
                                      @NotNull @PathVariable("databaseId") Long databaseId,
@@ -73,6 +83,7 @@ public class IdentifierEndpoint {
     }
 
     @PostMapping("/{identiferId}")
+    @Transactional
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
@@ -83,6 +94,7 @@ public class IdentifierEndpoint {
     }
 
     @DeleteMapping("/{identiferId}")
+    @Transactional
     @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id,
                                     @NotNull @PathVariable("databaseId") Long databaseId,

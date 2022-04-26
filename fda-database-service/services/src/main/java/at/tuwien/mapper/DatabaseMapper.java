@@ -17,6 +17,8 @@ import java.util.regex.Pattern;
 @Mapper(componentModel = "spring", uses = {ContainerMapper.class})
 public interface DatabaseMapper {
 
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
+
     @Named("internalMapping")
     default String nameToInternalName(String data) {
         if (data == null || data.length() == 0) {
@@ -45,15 +47,21 @@ public interface DatabaseMapper {
     DatabaseDto databaseToDatabaseDto(Database data);
 
     default String databaseToRawCreateDatabaseQuery(Database database) {
-        return "CREATE DATABASE " + database.getInternalName() + ";";
+        final String statement = "CREATE DATABASE " + database.getInternalName() + ";";
+        log.trace("raw create statement [{}]", statement);
+        return statement;
     }
 
     default String imageToRawGrantReadonlyAccessQuery() {
-        return "GRANT SELECT ON *.* TO `mariadb`@`%`;";
+        final String statement = "GRANT SELECT ON *.* TO `mariadb`@`%`;";
+        log.trace("raw grant readonly statement [{}]", statement);
+        return statement;
     }
 
     default String databaseToRawDeleteDatabaseQuery(Database database) {
-        return "DROP DATABASE " + database.getInternalName() + ";";
+        final String statement = "DROP DATABASE " + database.getInternalName() + ";";
+        log.trace("raw grant readonly statement [{}]", statement);
+        return statement;
     }
 
 }

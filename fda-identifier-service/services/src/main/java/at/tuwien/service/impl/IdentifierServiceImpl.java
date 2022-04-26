@@ -73,6 +73,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
         final QueryDto query = queryServiceGateway.find(data) /* check if exists */;
+        log.debug("found query in query service {}", query);
         final Identifier identifier = identifierMapper.identifierDtoToIdentifier(data);
         identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         /* create in metadata database */
