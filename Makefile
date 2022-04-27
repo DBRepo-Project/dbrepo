@@ -19,28 +19,28 @@ config: config-backend config-docker config-frontend
 build-backend-metadata:
 	mvn -f ./fda-metadata-db/pom.xml clean install
 
-build-backend-authentication:
+build-backend-authentication: build-backend-metadata
 	mvn -f ./fda-authentication-service/pom.xml clean package -DskipTests
 
-build-backend-identifier:
+build-backend-identifier: build-backend-metadata
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
 
-build-backend-container:
+build-backend-container: build-backend-metadata
 	mvn -f ./fda-container-service/pom.xml clean package -DskipTests
 
-build-backend-database:
+build-backend-database: build-backend-metadata
 	mvn -f ./fda-database-service/pom.xml clean package -DskipTests
 
-build-backend-discovery:
+build-backend-discovery: build-backend-metadata
 	mvn -f ./fda-discovery-service/pom.xml clean package -DskipTests
 
-build-backend-gateway:
+build-backend-gateway: build-backend-metadata
 	mvn -f ./fda-gateway-service/pom.xml clean package -DskipTests
 
-build-backend-query:
+build-backend-query: build-backend-metadata
 	mvn -f ./fda-query-service/pom.xml clean package -DskipTests
 
-build-backend-table:
+build-backend-table: build-backend-metadata
 	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
 
 build-backend: build-backend-metadata build-backend-authentication build-backend-container build-backend-database build-backend-discovery build-backend-gateway build-backend-query build-backend-table
