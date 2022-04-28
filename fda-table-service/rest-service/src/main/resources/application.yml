@@ -26,10 +26,11 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-table-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
-  ready.path: ./readyalhost:9090/eureka/
+  ready.path: ./ready
   gateway.endpoint: http://localhost:9095
   elastic.endpoint: fda-search-service:9200

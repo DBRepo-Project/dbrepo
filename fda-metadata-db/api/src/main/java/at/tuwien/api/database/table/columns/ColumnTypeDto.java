@@ -13,5 +13,6 @@ public enum ColumnTypeDto {
     TEXT,
     BOOLEAN,
     DATE,
+    TIMESTAMP,
     BLOB;
 }
