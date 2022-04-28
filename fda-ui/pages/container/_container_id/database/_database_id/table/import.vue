@@ -175,10 +175,10 @@
                   label="Enumeration"
                   multiple />
               </v-col>
-              <v-col cols="2" class="pl-10" :hidden="c.type !== 'DATE' || c.type !== 'TIMESTAMP'">
+              <v-col cols="2" class="pl-10" :hidden="!c.type.match('(TIMESTAMP)|(DATE)')">
                 <v-select
                   v-model="c.dfid"
-                  :disabled="c.type !== 'DATE' || c.type !== 'TIMESTAMP'"
+                  :disabled="!c.type.match('(TIMESTAMP)|(DATE)')"
                   :items="dateFormats"
                   item-text="example"
                   item-value="id" />

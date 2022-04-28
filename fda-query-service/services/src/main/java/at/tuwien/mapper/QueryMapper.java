@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
@@ -91,7 +92,7 @@ public interface QueryMapper {
         }
         query.append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
                 .append(" (");
-        final StringBuilder dateSet = new StringBuilder();
+        final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
         table.getColumns()
                 .forEach(column -> {
@@ -99,37 +100,141 @@ public interface QueryMapper {
                         return;
                     }
                     query.append(idx[0] != 0 ? "," : "");
+                    /* format as variable */
+                    query.append("@")
+                            .append(column.getInternalName());
                     if (column.getDateFormat() != null) {
-                        /* format date as variable */
-                        query.append("@")
-                                .append(column.getInternalName());
-                        /* reformat the date variable as well */
-                        dateSet.append(dateSet.length() != 0 ? ", " : "")
-                                .append(column.getInternalName())
-                                .append(" = ")
-                                .append("STR_TO_DATE(")
-                                .append("@")
-                                .append(column.getInternalName())
-                                .append(", '")
-                                .append(column.getDateFormat()
-                                        .getDatabaseFormat())
-                                .append("')");
+                        /* reformat dates */
+                        columnToDateSet(table, column, set);
+                    } else if (column.getColumnType().equals(TableColumnType.BOOLEAN)) {
+                        /* reformat booleans */
+                        columnToBoolSet(table, column, set);
                     } else {
-                        query.append("`")
-                                .append(column.getInternalName())
-                                .append("`");
+                        /* reformat others */
+                        columnToTextSet(table, column, set);
                     }
                     idx[0]++;
                 });
         query.append(")")
-                .append(dateSet.length() != 0 ? (" SET " + dateSet) : "")
+                .append(set.length() != 0 ? (" SET " + set) : "")
                 .append(";");
         log.debug("import csv {} for table {}", data.getLocation(), table);
         log.trace("raw import query: [{}]", query);
         return InsertTableRawQuery.builder()
                 .query(query.toString())
                 .build();
+    }
 
+    default void columnToBoolSet(Table table, TableColumn column, StringBuilder set) {
+        set.append(set.length() != 0 ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = ");
+        if (table.getNullElement() != null) {
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(table.getNullElement())
+                    .append("'),NULL,");
+            columnToBoolSet2(table, column, set);
+            return;
+        }
+        columnToBoolSet2(table, column, set);
+    }
+
+    default void columnToBoolSet2(Table table, TableColumn column, StringBuilder set) {
+        if (table.getTrueElement() != null) {
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(table.getTrueElement())
+                    .append("'),TRUE,");
+            if (table.getFalseElement() != null) {
+                /* can map both true/false */
+                set.append("IF(!STRCMP(@")
+                        .append(column.getInternalName())
+                        .append(",'")
+                        .append(table.getFalseElement())
+                        .append("'),FALSE,@")
+                        .append(column.getInternalName())
+                        .append("))");
+            } else {
+                /* can only map true */
+                set.append("@")
+                        .append(column.getInternalName())
+                        .append(")");
+            }
+            set.append(")");
+            return;
+        }
+        if (table.getFalseElement() != null) {
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(table.getFalseElement())
+                    .append("'),FALSE,");
+            if (table.getTrueElement() != null) {
+                /* can map both true/false */
+                set.append("IF(!STRCMP(@")
+                        .append(column.getInternalName())
+                        .append(",'")
+                        .append(table.getTrueElement())
+                        .append("'),TRUE,@")
+                        .append(column.getInternalName())
+                        .append("))");
+            } else {
+                /* can only map true */
+                set.append("@")
+                        .append(column.getInternalName())
+                        .append(")");
+            }
+            set.append(")");
+        }
+    }
+
+    default void columnToTextSet(Table table, TableColumn column, StringBuilder set) {
+        set.append(set.length() != 0 ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = ");
+        if (table.getNullElement() != null) {
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(table.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL)");
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName());
+    }
+
+    default void columnToDateSet(Table table, TableColumn column, StringBuilder set) {
+        set.append(set.length() != 0 ? ", " : "")
+                .append("`")
+                .append(column.getInternalName())
+                .append("` = STR_TO_DATE(");
+        if (table.getNullElement() != null) {
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(table.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL), '")
+                    .append(column.getDateFormat()
+                            .getDatabaseFormat())
+                    .append("')");
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName())
+                .append(", '")
+                .append(column.getDateFormat()
+                        .getDatabaseFormat())
+                .append("')");
     }
 
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
@@ -170,7 +275,8 @@ public interface QueryMapper {
                 "';";
     }
 
-    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp) throws ImageNotSupportedException {
+    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -197,7 +303,8 @@ public interface QueryMapper {
         return sb.toString();
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size) throws ImageNotSupportedException {
+    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -299,7 +406,8 @@ public interface QueryMapper {
                 return new MariaDbBlob((byte[]) data);
             case DATE:
                 if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {} of table {}", column.getId(), column.getTable().getId());
+                    log.error("Missing date format for column {} of table {}", column.getId(),
+                            column.getTable().getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
