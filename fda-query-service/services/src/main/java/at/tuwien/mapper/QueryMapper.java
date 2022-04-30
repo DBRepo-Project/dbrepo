@@ -137,6 +137,7 @@ public interface QueryMapper {
                     .append(table.getNullElement())
                     .append("'),NULL,");
             columnToBoolSet2(table, column, set);
+            set.append(")");
             return;
         }
         columnToBoolSet2(table, column, set);
@@ -164,7 +165,7 @@ public interface QueryMapper {
                         .append(column.getInternalName())
                         .append(")");
             }
-            set.append(")");
+//            set.append(")");
             return;
         }
         if (table.getFalseElement() != null) {
@@ -188,8 +189,12 @@ public interface QueryMapper {
                         .append(column.getInternalName())
                         .append(")");
             }
-            set.append(")");
+//            set.append(")");
+            return;
         }
+        set.append("@")
+                .append(column.getInternalName());
+//                .append(")");
     }
 
     default void columnToTextSet(Table table, TableColumn column, StringBuilder set) {
