@@ -11,7 +11,6 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.TableColumnRepository;
 import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
@@ -33,10 +32,7 @@ import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -45,16 +41,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final QueryMapper queryMapper;
     private final TableService tableService;
     private final DatabaseService databaseService;
-    private final TableColumnRepository tableColumnRepository;
     private final StoreService storeService;
 
     @Autowired
     public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
-                            TableColumnRepository tableColumnRepository, StoreService storeService) {
+                            StoreService storeService) {
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.databaseService = databaseService;
-        this.tableColumnRepository = tableColumnRepository;
         this.storeService = storeService;
     }
 
@@ -250,31 +244,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return affectedTuples;
     }
 
-    /**
-     * Retrieves the columns from the tables (ids) and referenced column ids from the metadata database
-     *
-     * @param statement The list of tables (ids) and referenced column ids.
-     * @return The list of columns if successful
-     */
-    private List<TableColumn> parseColumns(Long databaseId, ExecuteStatementDto statement) {
-        final List<TableColumn> columns = new LinkedList<>();
-        final int[] idx = new int[]{0};
-        log.debug("Database id: {}", databaseId);
-        log.debug("ExecuteStatement: {}", statement.toString());
-        statement.getTables()
-                .forEach(table -> {
-                    columns.addAll(statement.getColumns()
-                            .get(idx[0]++)
-                            .stream()
-                            .map(column -> tableColumnRepository
-                                    .findByIdAndTidAndCdbid(column.getId(), table.getId(), databaseId))
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toList()));
-                });
-        return columns;
-    }
-
     private List<TableColumn> parseColumns(Query query, Database database) throws SQLException, ImageNotSupportedException, JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
 
@@ -352,8 +321,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Transactional
     Long countQueryResults(Long containerId, Long databaseId, Query query)
-            throws DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException {
+            throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         /* run query */

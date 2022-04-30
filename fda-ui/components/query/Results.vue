@@ -9,8 +9,6 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
 export default {
   props: {
     value: { type: Number, default: () => 0 }
@@ -68,11 +66,7 @@ export default {
       this.loading = true
       try {
         const data = {
-          statement: this.parent.query.sql,
-          tables: [_.pick(this.parent.table, ['id', 'name', 'internal_name'])],
-          columns: [this.parent.select.map(function (column) {
-            return _.pick(column, ['id', 'name', 'internal_name'])
-          })]
+          statement: this.parent.query.sql
         }
         console.debug('send data', data)
         const page = 0
