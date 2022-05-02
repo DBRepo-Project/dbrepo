@@ -21,10 +21,11 @@ logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: trace
+    at.tuwien.: debug
     at.tuwien.mapper.: trace
-    org.hibernate.SQL: debug # query statements
-    org.hibernate.type: trace # query values
+    at.tuwien.service.: debug
+    at.tuwien.config.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-query-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
