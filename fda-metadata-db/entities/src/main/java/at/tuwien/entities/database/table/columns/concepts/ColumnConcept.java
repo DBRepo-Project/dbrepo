@@ -1,39 +1,51 @@
 package at.tuwien.entities.database.table.columns.concepts;
 
 
-import at.tuwien.entities.database.table.columns.TableColumnKey;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.List;
 
 @Data
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(TableColumnKey.class)
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @javax.persistence.Table(name = "mdb_columns_concepts")
-public class ColumnConcept {
+public class ColumnConcept implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "cid", nullable = false)
+    @GeneratedValue(generator = "concept-sequence")
+    @GenericGenerator(
+            name = "concept-sequence",
+            strategy = "enhanced-sequence",
+            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_columns_concepts_seq")
+    )
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
+    @NotNull
+    @Column(name = "cid", nullable = false)
+    private Long cid;
+
+    @NotNull
     private Long tid;
 
-    @Id
-    @EqualsAndHashCode.Include
+    @NotNull
     private Long cdbid;
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "columnConcept")
+    private List<TableColumn> tableColumn;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name="uri")
+    @JoinColumn(name = "uri")
     private Concept concept;
 }

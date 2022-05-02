@@ -1,12 +1,12 @@
 package at.tuwien.entities.database.table.columns.concepts;
 
-import at.tuwien.entities.database.table.columns.TableColumnKey;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
@@ -25,6 +25,9 @@ public class Concept {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "concept")
+    private List<ColumnConcept> columnConcept;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

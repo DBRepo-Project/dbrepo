@@ -22,6 +22,7 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    at.tuwien.mapper.: trace
     at.tuwien.service.: debug
     at.tuwien.config.: debug
 eureka:

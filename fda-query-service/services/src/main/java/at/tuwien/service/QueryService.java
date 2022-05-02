@@ -22,17 +22,22 @@ public interface QueryService {
      *
      * @param databaseId The database id.
      * @param query      The query.
-     * @param page
-     * @param size
+     * @param page       The page number.
+     * @param size       The page size.
      * @return The result.
-     * @throws TableNotFoundException
-     * @throws QueryStoreException
-     * @throws QueryMalformedException
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
+     * @throws TableNotFoundException     The table was not found in the metadata database.
+     * @throws QueryStoreException        The query store is not reachable.
+     * @throws QueryMalformedException    The query is malformed.
+     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws TableMalformedException    The table is malformed.
+     * @throws ColumnParseException       The column mapping/parsing failed.
      */
-    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto query, Long page, Long size) throws TableNotFoundException,
-            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException;
+    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto query, Long page, Long size)
+            throws TableNotFoundException,
+            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, TableMalformedException, ColumnParseException;
 
     /**
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the
@@ -40,17 +45,22 @@ public interface QueryService {
      *
      * @param databaseId The database id.
      * @param query      The query.
-     * @param page
-     * @param size
+     * @param page       The page number.
+     * @param size       The page size.
      * @return The result.
-     * @throws TableNotFoundException
-     * @throws QueryStoreException
-     * @throws QueryMalformedException
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
+     * @throws TableNotFoundException     The table was not found in the metadata database.
+     * @throws QueryStoreException        The query store is not reachable.
+     * @throws QueryMalformedException    The query is malformed.
+     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws TableMalformedException    The table is malformed.
+     * @throws ColumnParseException       The column mapping/parsing failed.
      */
-    QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size) throws TableNotFoundException,
-            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException;
+    QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
+            throws TableNotFoundException,
+            QueryStoreException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, TableMalformedException, ColumnParseException;
 
 
     /**
@@ -64,12 +74,11 @@ public interface QueryService {
      * @param page        The page.
      * @param size        The page size.
      * @return The select all data result
-     * @throws ContainerNotFoundException  The container was not found in the metadata database.
-     * @throws TableNotFoundException      The table was not found in the metadata database.
-     * @throws TableMalformedException     The table columns are messed up what we got from the metadata database.
-     * @throws DatabaseNotFoundException   The database was not found in the remote database.
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
+     * @throws TableNotFoundException     The table was not found in the metadata database.
+     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws TableMalformedException    The table is malformed.
      */
     QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp,
                            Long page, Long size) throws TableNotFoundException, DatabaseNotFoundException,

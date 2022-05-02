@@ -28,7 +28,7 @@ public class TableServiceImpl implements TableService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {

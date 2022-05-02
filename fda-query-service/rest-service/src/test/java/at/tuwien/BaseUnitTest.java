@@ -2,6 +2,7 @@ package at.tuwien;
 
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -98,11 +99,27 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_DATE_1_DATABASE_FORMAT = "%Y-%c-%d";
     public final static String IMAGE_DATE_1_EXAMPLE = "2022-01-30";
 
+    public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_1_ID)
+            .iid(IMAGE_DATE_1_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
+            .example(IMAGE_DATE_1_EXAMPLE)
+            .build();
+
     public final static Long IMAGE_DATE_2_ID = 2L;
     public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
     public final static String IMAGE_DATE_2_DATABASE_FORMAT = "%d.%c.%y";
     public final static String IMAGE_DATE_2_EXAMPLE = "30.01.2022";
+
+    public final static ContainerImageDate IMAGE_DATE_2 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_2_ID)
+            .iid(IMAGE_DATE_2_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
+            .example(IMAGE_DATE_2_EXAMPLE)
+            .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
     public final static Integer COLUMN_1_1_ORDINALPOS = 0;
@@ -281,9 +298,8 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long QUERY_1_ID = 1L;
-    public final static String QUERY_1_TITLE = "AAAA";
-    public final static String QUERY_1_DESCRIPTION = "BBBBBBBB";
-    public final static String QUERY_1_STATEMENT = "SELECT * FROM `weather_aus`;";
+    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
+            "`weather_aus`";
     public final static String QUERY_1_DOI = "1111/1";
     public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
@@ -292,10 +308,7 @@ public abstract class BaseUnitTest {
     public final static Instant QUERY_1_EXECUTION = Instant.now();
 
     public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_TITLE = "CCCCCCC";
-    public final static String QUERY_2_DESCRIPTION = "DDDDDD";
     public final static String QUERY_2_STATEMENT = "SELECT * FROM `weather`;";
-    public final static String QUERY_2_DOI = null;
     public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
@@ -931,7 +944,6 @@ public abstract class BaseUnitTest {
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
             .lastModified(TABLE_1_LAST_MODIFIED)
-            .columns(TABLE_1_COLUMNS)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
             .separator(TABLE_1_SEPARATOR)
@@ -981,7 +993,6 @@ public abstract class BaseUnitTest {
             .isPublic(false)
             .name(DATABASE_1_NAME)
             .container(CONTAINER_1)
-            .tables(List.of(TABLE_1))
             .internalName(DATABASE_1_INTERNALNAME)
             .exchange(DATABASE_1_EXCHANGE)
             .build();

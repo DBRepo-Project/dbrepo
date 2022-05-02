@@ -59,10 +59,16 @@ public interface QueryMapper {
     default QueryResultDto resultListToQueryResultDto(List<TableColumn> columns, List<?> result) {
         final Iterator<?> iterator = result.iterator();
         final List<Map<String, Object>> resultList = new LinkedList<>();
+        log.trace("result has {} columns and {} rows", columns.size(), result.size());
         while (iterator.hasNext()) {
             /* map the result set to the columns through the stored metadata in the metadata database */
             int[] idx = new int[]{0};
-            final Object[] data = (Object[]) iterator.next();
+            final Object[] data;
+            if (columns.size() == 1) {
+                data = new Object[] { iterator.next() };
+            } else {
+                data = (Object[]) iterator.next();
+            }
             final Map<String, Object> map = new HashMap<>();
             columns
                     .forEach(column -> map.put(column.getName(),
@@ -170,7 +176,8 @@ public interface QueryMapper {
                 "';";
     }
 
-    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp) throws ImageNotSupportedException {
+    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -197,7 +204,8 @@ public interface QueryMapper {
         return sb.toString();
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size) throws ImageNotSupportedException {
+    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -299,7 +307,8 @@ public interface QueryMapper {
                 return new MariaDbBlob((byte[]) data);
             case DATE:
                 if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {} of table {}", column.getId(), column.getTable().getId());
+                    log.error("Missing date format for column {} of table {}", column.getId(),
+                            column.getTable().getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -331,9 +340,10 @@ public interface QueryMapper {
 
     @Named("EscapedString")
     default String stringToEscapedString(String name) throws ImageNotSupportedException {
-        log.debug("StringToEscapedString: {}", name);
         if (name != null && !name.startsWith("`") && !name.endsWith("`")) {
-            return "`" + name + "`";
+            final String escaped = "`" + name + "`";
+            log.trace("mapped non-escaped string [{}] to escaped string: [{}]", name, escaped);
+            return escaped;
         }
         return name;
     }

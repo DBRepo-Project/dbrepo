@@ -48,6 +48,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Long dfid;
 
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;

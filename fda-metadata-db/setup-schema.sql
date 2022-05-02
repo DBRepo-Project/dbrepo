@@ -98,6 +98,13 @@ CREATE SEQUENCE public.mdb_view_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_columns_concepts_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_identifiers_seq
     START WITH 1
     INCREMENT BY 1
@@ -348,11 +355,13 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
 
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 (
-    cDBID   bigint,
-    tID     bigint,
-    cID     bigint,
+    id      BIGINT                            NOT NULL DEFAULT nextval('mdb_columns_concepts_seq'),
+    cDBID   bigint                            NOT NULL,
+    tID     bigint                            NOT NULL,
+    cID     bigint                            NOT NULL,
     URI     TEXT REFERENCES mdb_concepts (URI),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (cID),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
