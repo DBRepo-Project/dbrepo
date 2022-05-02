@@ -10,10 +10,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.TableColumnRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
@@ -70,7 +67,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Autowired
-    private TableColumnRepository tableColumnRepository;
+    private ConceptRepository conceptRepository;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
@@ -132,6 +129,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Transactional
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
+        conceptRepository.save(CONCEPT_1);
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
         imageRepository.save(IMAGE_1);
         databaseRepository.save(DATABASE_1);

@@ -23,8 +23,8 @@ logging:
     root: warn
     at.tuwien.: trace
     at.tuwien.mapper.: trace
-#    org.hibernate.SQL: debug # query statements
-#    org.hibernate.type: trace # query values
+    org.hibernate.SQL: debug # query statements
+    org.hibernate.type: trace # query values
 eureka:
   instance.hostname: fda-query-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/

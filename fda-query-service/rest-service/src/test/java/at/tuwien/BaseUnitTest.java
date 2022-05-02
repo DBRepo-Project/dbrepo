@@ -3,6 +3,8 @@ package at.tuwien;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
+import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -14,7 +16,9 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import org.springframework.test.context.TestPropertySource;
 
+import java.net.URI;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.*;
@@ -269,6 +273,27 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_NGINX_INTERNALNAME = "fda-test-file-service";
     public final static String CONTAINER_NGINX_IP = "172.29.0.3";
     public final static Instant CONTAINER_NGINX_CREATED = Instant.now().minus(3, HOURS);
+
+    public final static Long CONCEPT_1_ID = 1L;
+    public final static String CONCEPT_1_NAME = "Temperature";
+    public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Concept CONCEPT_1 = Concept.builder()
+            .name(CONCEPT_1_NAME)
+            .created(CONCEPT_1_CREATED)
+            .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
+            .build();
+
+    public final static Long COLUMN_CONCEPT_1_DATABASE_ID = 1L;
+    public final static Long COLUMN_CONCEPT_1_COLUMN_ID = 1L;
+    public final static Long COLUMN_CONCEPT_1_TABLE_ID = 1L;
+
+    public final static ColumnConcept COLUMN_CONCEPT_1 = ColumnConcept.builder()
+            .cdbid(COLUMN_CONCEPT_1_DATABASE_ID)
+            .cid(COLUMN_CONCEPT_1_COLUMN_ID)
+            .tid(COLUMN_CONCEPT_1_TABLE_ID)
+            .concept(CONCEPT_1)
+            .build();
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
