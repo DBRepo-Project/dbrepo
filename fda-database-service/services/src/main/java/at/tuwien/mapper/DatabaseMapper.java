@@ -14,7 +14,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, ConceptMapper.class})
 public interface DatabaseMapper {
 
     @Named("internalMapping")
@@ -40,7 +40,7 @@ public interface DatabaseMapper {
     @Mappings({
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "image", source = "container.image"),
-            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm")
+            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
     })
     DatabaseDto databaseToDatabaseDto(Database data);
 

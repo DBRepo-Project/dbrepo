@@ -244,7 +244,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Disabled
     public void execute_modifyData_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
             InterruptedException, QueryMalformedException, TableNotFoundException, QueryStoreException,
-            ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException,
+            ContainerNotFoundException, TableMalformedException,
             ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("DELETE FROM `weather_aus`;")

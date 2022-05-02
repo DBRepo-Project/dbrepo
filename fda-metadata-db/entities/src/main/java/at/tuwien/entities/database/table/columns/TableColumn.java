@@ -3,6 +3,7 @@ package at.tuwien.entities.database.table.columns;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
+import at.tuwien.entities.database.table.columns.concepts.Concept;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NotFound;
@@ -107,14 +108,15 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
-    @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "cid", insertable = false, updatable = false),
-            @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-            @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
-    })
-    private ColumnConcept columnConcept;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "mdb_columns_concepts",
+            joinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            inverseJoinColumns = @JoinColumn(name = "uri"))
+    private Concept concept;
 
     @Column
     @LastModifiedDate

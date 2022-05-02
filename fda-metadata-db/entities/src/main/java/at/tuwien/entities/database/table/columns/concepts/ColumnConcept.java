@@ -4,7 +4,9 @@ import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.net.URI;
 
 @Data
 @Entity
@@ -31,7 +33,6 @@ public class ColumnConcept implements Serializable {
     @EqualsAndHashCode.Include
     private Long cdbid;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "uri")
-    private Concept concept;
+    @NotNull
+    private URI uri;
 }
