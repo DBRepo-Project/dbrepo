@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -100,7 +101,7 @@ public interface QueryService {
      * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
      * @throws FileStorageException        The file could not be exported.
      */
-    InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+    ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
             FileStorageException;
@@ -118,7 +119,7 @@ public interface QueryService {
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryNotFoundException     THe query was not found in the query store.
      */
-    InputStreamResource findOne(Long containerId, Long databaseId, Long queryId)
+    ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
             ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException;
 

@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportQueryRawQuery;
+import at.tuwien.ExportResource;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
@@ -19,6 +19,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.SQLGrammarException;
@@ -153,7 +154,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+    public ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
             FileStorageException {
@@ -164,10 +165,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, true);
         final Session session = factory.openSession();
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         final NativeQuery<?> query = session.createSQLQuery(
-                queryMapper.tableToRawExportQuery(table, timestamp));
+                queryMapper.tableToRawExportQuery(table, timestamp, filename));
         try {
             query.executeUpdate();
         } catch (PersistenceException e) {
@@ -182,16 +184,19 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* read file */
         final InputStream inputStream;
         try {
-            inputStream = FileUtils.openInputStream(new File("/tmp/export.csv"));
+            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException e) {
             throw new FileStorageException("Export file not present");
         }
-        return new InputStreamResource(inputStream);
+        return ExportResource.builder()
+                .resource(new InputStreamResource(inputStream))
+                .filename(filename)
+                .build();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource findOne(Long containerId, Long databaseId, Long queryId)
+    public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
             ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException {
         /* find */
@@ -201,10 +206,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, true);
         final Session session = factory.openSession();
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
-        final ExportQueryRawQuery raw = queryMapper.queryToRawExportQuery(query);
-        final NativeQuery<?> query2 = session.createSQLQuery(raw.getQuery());
+        final NativeQuery<?> query2 = session.createSQLQuery(queryMapper.queryToRawExportQuery(query, filename));
         try {
             query2.executeUpdate();
         } catch (PersistenceException e) {
@@ -219,11 +224,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* read file */
         final InputStream inputStream;
         try {
-            inputStream = FileUtils.openInputStream(new File(raw.getPath()));
+            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException e) {
             throw new FileStorageException("Export file not present");
         }
-        return new InputStreamResource(inputStream);
+        return ExportResource.builder()
+                .resource(new InputStreamResource(inputStream))
+                .filename(filename)
+                .build();
     }
 
     @Override

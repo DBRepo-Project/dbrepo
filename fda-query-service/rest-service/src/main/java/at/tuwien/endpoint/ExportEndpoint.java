@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.ExportResource;
 import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,11 +39,11 @@ public class ExportEndpoint {
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
             FileStorageException {
         final HttpHeaders headers = new HttpHeaders();
-        final InputStreamResource resource = queryService.findAll(id, databaseId, tableId, timestamp);
-        headers.add("Content-Disposition", "attachment; filename=\"export.csv\"");
+        final ExportResource resource = queryService.findAll(id, databaseId, tableId, timestamp);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(resource);
+                .body(resource.getResource());
     }
 
 

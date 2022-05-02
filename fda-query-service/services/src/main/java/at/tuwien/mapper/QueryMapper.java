@@ -1,9 +1,7 @@
 package at.tuwien.mapper;
 
-import at.tuwien.ExportQueryRawQuery;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.TableMalformedException;
@@ -11,17 +9,14 @@ import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ImageNotSupportedException;
-import org.apache.commons.lang.RandomStringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.mariadb.jdbc.MariaDbBlob;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.nio.charset.MalformedInputException;
 import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -136,7 +131,7 @@ public interface QueryMapper {
 
     }
 
-    default String tableToRawExportQuery(Table table, Instant timestamp) {
+    default String tableToRawExportQuery(Table table, Instant timestamp, String filename) {
         final StringBuilder query = new StringBuilder("SELECT ");
         int[] idx = new int[]{0};
         table.getColumns()
@@ -149,7 +144,9 @@ public interface QueryMapper {
                 });
         query.append("FROM `")
                 .append(table.getInternalName())
-                .append("` INTO OUTFILE '/tmp/export.csv' CHARACTER SET utf8 FIELDS TERMINATED BY '")
+                .append("` INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(table.getSeparator())
                 .append("'");
         if (table.getQuote() != null) {
@@ -166,23 +163,19 @@ public interface QueryMapper {
         return query.toString();
     }
 
-    default ExportQueryRawQuery queryToRawExportQuery(Query query) {
+    default String queryToRawExportQuery(Query query, String filename) {
         if (query.getQuery().contains(";")) {
             log.trace("Remove ending ; from statement [{}]", query.getQuery());
             query.setQuery(query.getQuery().substring(0, query.getQuery().indexOf(";")));
         }
-        final String path = "/tmp/" + RandomStringUtils.randomAlphanumeric(20) + ".csv";
         final StringBuilder statement = new StringBuilder(query.getQuery())
                 .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(LocalDateTime.ofInstant(query.getExecution(), ZoneId.of("Europe/Vienna")))
-                .append("' INTO OUTFILE '")
-                .append(path)
+                .append("' INTO OUTFILE '/tmp/")
+                .append(filename)
                 .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
         log.trace("raw export query: [{}]", statement);
-        return ExportQueryRawQuery.builder()
-                .query(statement.toString())
-                .path(path)
-                .build();
+        return statement.toString();
     }
 
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)

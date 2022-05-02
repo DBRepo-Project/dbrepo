@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
@@ -88,11 +89,11 @@ public class QueryEndpoint {
             ContainerNotFoundException, TableMalformedException, FileStorageException {
         final Query query = storeService.findOne(id, databaseId, queryId);
         final HttpHeaders headers = new HttpHeaders();
-        final InputStreamResource resource = queryService.findOne(id, databaseId, queryId);
-        headers.add("Content-Disposition", "attachment; filename=\"export.csv\"");
+        final ExportResource resource = queryService.findOne(id, databaseId, queryId);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         return ResponseEntity.ok()
                 .headers(headers)
-                .body(resource);
+                .body(resource.getResource());
     }
 
 }
