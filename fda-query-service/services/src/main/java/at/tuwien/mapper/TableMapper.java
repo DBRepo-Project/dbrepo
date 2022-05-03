@@ -7,7 +7,7 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface TableMapper {
 
-    /* keep */
+    @Deprecated
     TableDto tableToTableDto(Table data);
 
 }

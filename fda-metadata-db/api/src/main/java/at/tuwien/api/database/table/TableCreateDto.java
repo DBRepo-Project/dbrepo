@@ -25,7 +25,6 @@ public class TableCreateDto {
     @Parameter(name = "table description", required = true, example = "Predict next-day rain in Australia")
     private String description;
 
-    @NotNull
     @Min(value = 0L)
     @JsonProperty("skip_lines")
     @Parameter(name = "number of lines to skip when importing", example = "0")

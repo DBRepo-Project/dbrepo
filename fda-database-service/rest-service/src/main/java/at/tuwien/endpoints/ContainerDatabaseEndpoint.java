@@ -45,6 +45,8 @@ public class ContainerDatabaseEndpoint {
                 .stream()
                 .map(databaseMapper::databaseToDatabaseBriefDto)
                 .collect(Collectors.toList());
+        log.info("Found {} databases", databases.size());
+        log.debug("found databases {}", databases);
         return ResponseEntity.ok(databases);
     }
 
@@ -57,17 +59,22 @@ public class ContainerDatabaseEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException {
         final Database database = databaseService.create(id, createDto);
+        log.info("Created database with id {}", database.getId());
+        log.debug("created database {}", database);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseDto(database));
     }
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
-    @Operation(summary = "List some database")
+    @Operation(summary = "Find some database")
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
                                                 @NotBlank @PathVariable Long databaseId)
             throws DatabaseNotFoundException {
-        return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(databaseService.findById(id, databaseId)));
+        final Database database = databaseService.findById(id, databaseId);
+        log.info("Found database with id {}", database.getId());
+        log.debug("found database {}", database);
+        return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(database));
     }
 
     @DeleteMapping("/{databaseId}")
@@ -78,6 +85,7 @@ public class ContainerDatabaseEndpoint {
                                     @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
         databaseService.delete(id, databaseId);
+        log.info("Deleted database with id {}", id);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

@@ -16,10 +16,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +62,7 @@ public class ContainerServiceImpl implements ContainerService {
         final HostConfig hostConfig = this.hostConfig
                 .withNetworkMode("fda-userdb")
                 .withLinks(List.of(new Link("fda-database-service", "fda-database-service")))
+                .withBinds(Bind.parse("/tmp:/tmp"))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
         /* save to metadata database */
         Container container = new Container();
