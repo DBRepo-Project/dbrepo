@@ -19,11 +19,13 @@ import java.security.NoSuchAlgorithmException;
 import java.time.*;
 import java.util.*;
 
+@Deprecated
 @Mapper(componentModel = "spring")
 public interface DataMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DataMapper.class);
 
+    @Deprecated
     default Object tableColumnToObject(Object data, String nullElement, String trueElement, String falseElement) {
         /* null mapping */
         if (data == null || nullElement == null || nullElement.isEmpty() || nullElement.isBlank()
@@ -39,6 +41,7 @@ public interface DataMapper {
         return data;
     }
 
+    @Deprecated
     default Resource resultTableToResource(QueryResultDto result, Table table) throws FileStorageException {
         /* transform data */
         final List<String[]> data = tableQueryResultDtoToStringArrayList(table, result);
@@ -80,7 +83,7 @@ public interface DataMapper {
         return resource;
     }
 
-    // todo map null and boolean back
+    @Deprecated
     default List<String[]> tableQueryResultDtoToStringArrayList(Table table, QueryResultDto data) {
         final List<String[]> rows = new LinkedList<>();
         final String[] headers = table.getColumns()
