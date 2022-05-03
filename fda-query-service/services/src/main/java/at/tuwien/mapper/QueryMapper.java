@@ -2,7 +2,6 @@ package at.tuwien.mapper;
 
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.TableMalformedException;
@@ -18,7 +17,6 @@ import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.nio.charset.MalformedInputException;
 import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +30,7 @@ public interface QueryMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryMapper.class);
 
+    @Deprecated
     @Mappings({
             @Mapping(source = "query", target = "statement")
     })
@@ -85,7 +84,7 @@ public interface QueryMapper {
                 .append(table.getSeparator())
                 .append("'");
         if (table.getQuote() != null) {
-            query.append(" ENCLOSED BY '")
+            query.append(" OPTIONALLY ENCLOSED BY '")
                     .append(table.getQuote())
                     .append("'");
         }
@@ -132,6 +131,53 @@ public interface QueryMapper {
 
     }
 
+    default String tableToRawExportQuery(Table table, Instant timestamp, String filename) {
+        final StringBuilder query = new StringBuilder("SELECT ");
+        int[] idx = new int[]{0};
+        table.getColumns()
+                .forEach(column -> {
+                    query.append(idx[0] != 0 ? "," : "")
+                            .append("`")
+                            .append(column.getInternalName())
+                            .append("`");
+                    idx[0]++;
+                });
+        query.append("FROM `")
+                .append(table.getInternalName())
+                .append("` INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY '")
+                .append(table.getSeparator())
+                .append("'");
+        if (table.getQuote() != null) {
+            query.append(" OPTIONALLY ENCLOSED BY '")
+                    .append(table.getQuote())
+                    .append("'");
+        }
+        if (timestamp != null) {
+            query.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                    .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
+                    .append("'");
+        }
+        query.append(";");
+        return query.toString();
+    }
+
+    default String queryToRawExportQuery(Query query, String filename) {
+        if (query.getQuery().contains(";")) {
+            log.trace("Remove ending ; from statement [{}]", query.getQuery());
+            query.setQuery(query.getQuery().substring(0, query.getQuery().indexOf(";")));
+        }
+        final StringBuilder statement = new StringBuilder(query.getQuery())
+                .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(LocalDateTime.ofInstant(query.getExecution(), ZoneId.of("Europe/Vienna")))
+                .append("' INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
+        log.trace("raw export query: [{}]", statement);
+        return statement.toString();
+    }
+
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
             throws TableMalformedException {
         if (table.getColumns().size() == 0) {
@@ -170,7 +216,8 @@ public interface QueryMapper {
                 "';";
     }
 
-    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp) throws ImageNotSupportedException {
+    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -197,7 +244,8 @@ public interface QueryMapper {
         return sb.toString();
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size) throws ImageNotSupportedException {
+    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
+            throws ImageNotSupportedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -299,7 +347,8 @@ public interface QueryMapper {
                 return new MariaDbBlob((byte[]) data);
             case DATE:
                 if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {} of table {}", column.getId(), column.getTable().getId());
+                    log.error("Missing date format for column {} of table {}", column.getId(),
+                            column.getTable().getId());
                     throw new IllegalArgumentException("Missing date format");
                 }
                 final DateTimeFormatter formatter = new DateTimeFormatterBuilder()

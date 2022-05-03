@@ -2,9 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.SaveStatementDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.StoreService;
@@ -47,7 +45,8 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void execute_succeeds() throws TableNotFoundException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException,
+            JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -66,14 +65,16 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         //FIXME
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                0L, 0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
     public void execute_emptyResult_succeeds() throws TableNotFoundException, QueryStoreException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
+            SQLException, JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -92,14 +93,16 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         //FIXME
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                0L, 0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
     public void execute_tableNotFound_fails() throws TableNotFoundException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, SQLException, JSQLParserException, TableMalformedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryStoreException,
+            SQLException, JSQLParserException, TableMalformedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -112,7 +115,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
             //FIXME
-            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
         });
     }
 

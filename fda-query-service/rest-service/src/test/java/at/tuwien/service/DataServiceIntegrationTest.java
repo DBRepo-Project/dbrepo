@@ -1,10 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -25,7 +23,6 @@ import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -35,9 +32,6 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
-
-    @Autowired
-    private CommaValueService dataService;
 
     @Autowired
     private TableRepository tableRepository;
@@ -122,17 +116,6 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
         TABLE_2.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_1);
         tableRepository.save(TABLE_2);
-    }
-
-    @Test
-    @Disabled
-    public void write_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException {
-
-        /* test */
-//        final Resource response = dataService.export(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
-//        assertTrue(response.exists());
     }
 
 }
