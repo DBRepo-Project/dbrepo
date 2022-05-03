@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.ExportResource;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
@@ -10,24 +11,28 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
-import at.tuwien.querystore.Column;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.TableColumnRepository;
 import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.SQLGrammarException;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.time.DateTimeException;
@@ -117,10 +122,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
-                                  Long size) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            ContainerNotFoundException {
+    public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page, Long size)
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -130,8 +134,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Session session = factory.openSession();
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
-        final NativeQuery<?> query = session.createSQLQuery(queryMapper.tableToRawFindAllQuery(table, timestamp, size,
-                page));
+        final NativeQuery<?> query = session.createSQLQuery(
+                queryMapper.tableToRawFindAllQuery(table, timestamp, size, page));
         final int affectedTuples;
         try {
             affectedTuples = query.executeUpdate();
@@ -157,10 +161,92 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
+            FileStorageException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
+        /* run query */
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        final NativeQuery<?> query = session.createSQLQuery(
+                queryMapper.tableToRawExportQuery(table, timestamp, filename));
+        try {
+            query.executeUpdate();
+        } catch (PersistenceException e) {
+            log.error("Failed to export table");
+            session.close();
+            factory.close();
+            throw new TableMalformedException("Data not found", e);
+        }
+        session.getTransaction().commit();
+        session.close();
+        factory.close();
+        /* read file */
+        final InputStream inputStream;
+        try {
+            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+        } catch (IOException e) {
+            throw new FileStorageException("Export file not present");
+        }
+        return ExportResource.builder()
+                .resource(new InputStreamResource(inputStream))
+                .filename(filename)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        /* run query */
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        final NativeQuery<?> query2 = session.createSQLQuery(queryMapper.queryToRawExportQuery(query, filename));
+        try {
+            query2.executeUpdate();
+        } catch (PersistenceException e) {
+            log.error("Failed to export query");
+            session.close();
+            factory.close();
+            throw new TableMalformedException("Data not found", e);
+        }
+        session.getTransaction().commit();
+        session.close();
+        factory.close();
+        /* read file */
+        final InputStream inputStream;
+        try {
+            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+        } catch (IOException e) {
+            throw new FileStorageException("Export file not present");
+        }
+        return ExportResource.builder()
+                .resource(new InputStreamResource(inputStream))
+                .filename(filename)
+                .build();
+    }
+
+    @Override
     @Transactional
     public BigInteger count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
-            throws DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException {
+            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException,
+            ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -345,6 +431,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     }
 
+    /**
+     * mw: isn't this highly ineffective? We already have a {@link #count(Long, Long, Long, Instant)}  function
+     */
     @Transactional
     protected Long countQueryResults(Long containerId, Long databaseId, Query query)
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {

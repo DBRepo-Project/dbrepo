@@ -34,5 +34,6 @@ public class ColumnConcept implements Serializable {
     private Long cdbid;
 
     @NotNull
+    @Column(columnDefinition = "TEXT")
     private URI uri;
 }

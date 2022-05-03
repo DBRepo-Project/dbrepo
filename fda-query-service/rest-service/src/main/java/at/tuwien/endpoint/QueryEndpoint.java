@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
@@ -9,6 +10,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,11 +69,27 @@ public class QueryEndpoint {
             TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
             ColumnParseException {
         final Query query = storeService.findOne(id, databaseId, queryId);
-        log.debug(query.toString());
         final QueryResultDto result = queryService.reExecute(id, databaseId, query, page, size);
         result.setId(queryId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
+    }
+
+    @GetMapping("/{queryId}/export")
+    @Transactional(readOnly = true)
+    @Operation(summary = "Exports some query")
+    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
+                                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                                    @NotNull @PathVariable("queryId") Long queryId)
+            throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, TableMalformedException, FileStorageException {
+        final Query query = storeService.findOne(id, databaseId, queryId);
+        final HttpHeaders headers = new HttpHeaders();
+        final ExportResource resource = queryService.findOne(id, databaseId, queryId);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource.getResource());
     }
 
 }

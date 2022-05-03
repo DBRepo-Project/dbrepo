@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -28,9 +30,13 @@ public class PersistenceEndpoint {
     }
 
     @GetMapping("/{pid}")
+    @Transactional(readOnly = true)
     @Operation(summary = "Find some identifier")
     public ResponseEntity<IdentifierDto> find(@Valid @PathVariable("pid") Long pid) throws IdentifierNotFoundException {
-        return ResponseEntity.ok(identifierMapper.identifierToIdentifierDto(identifierService.find(pid)));
+        final Identifier identifier = identifierService.find(pid);
+        log.info("Found persistent identifier with id {}", identifier.getId());
+        log.debug("found persistent identifier {}", identifier);
+        return ResponseEntity.ok(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
 }

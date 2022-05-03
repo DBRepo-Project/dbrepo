@@ -22,7 +22,7 @@ import java.util.List;
 public class Concept {
 
     @Id
-    @Column(name = "URI", nullable = false)
+    @Column(name = "URI", nullable = false, columnDefinition = "TEXT")
     private URI uri;
 
     @Column(name = "name", nullable = false)
