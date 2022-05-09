@@ -2,8 +2,6 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.DatabaseModifyDto;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +12,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, ConceptMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);

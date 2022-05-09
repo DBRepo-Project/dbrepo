@@ -7,12 +7,10 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.TableMalformedException;
 import org.mapstruct.Mapper;
@@ -25,7 +23,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {ConceptMapper.class})
+@Mapper(componentModel = "spring")
 public interface TableMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TableMapper.class);

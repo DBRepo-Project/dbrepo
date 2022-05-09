@@ -4,9 +4,7 @@ import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.net.URI;
 
 @Data
 @Entity
@@ -33,7 +31,6 @@ public class ColumnConcept implements Serializable {
     @EqualsAndHashCode.Include
     private Long cdbid;
 
-    @NotNull
-    @Column(columnDefinition = "TEXT")
-    private URI uri;
+    @Column(nullable = false)
+    private String uri;
 }

@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 
@@ -22,12 +21,13 @@ import java.util.List;
 public class Concept {
 
     @Id
-    @Column(name = "URI", nullable = false, columnDefinition = "TEXT")
-    private URI uri;
+    @Column(name = "URI", nullable = false)
+    private String uri;
 
     @Column(name = "name", nullable = false)
     private String name;
 
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = @JoinColumn(name = "uri"),

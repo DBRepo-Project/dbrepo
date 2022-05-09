@@ -4,7 +4,7 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.entities.database.table.Table;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring", uses = {ConceptMapper.class})
+@Mapper(componentModel = "spring")
 public interface TableMapper {
 
     /* keep */

@@ -8,12 +8,12 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-import javax.transaction.Transactional;
-
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
-    @Mapping(target = "creators", ignore = true)
+    @Mappings({
+            @Mapping(target = "creators", ignore = true)
+    })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({

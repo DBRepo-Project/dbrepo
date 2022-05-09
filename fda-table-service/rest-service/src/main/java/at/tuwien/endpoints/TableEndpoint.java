@@ -40,7 +40,7 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "List all tables")
     public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                        @NotNull @PathVariable("databaseId") Long databaseId)
             throws DatabaseNotFoundException {
@@ -69,7 +69,7 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get information about table")
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long id,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId)

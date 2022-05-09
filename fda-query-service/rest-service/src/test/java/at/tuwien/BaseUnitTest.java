@@ -280,7 +280,7 @@ public abstract class BaseUnitTest {
     public final static Concept CONCEPT_1 = Concept.builder()
             .name(CONCEPT_1_NAME)
             .created(CONCEPT_1_CREATED)
-            .uri(URI.create("http://www.ontology-of-units-of-measure.org/resource/om-2/"))
+            .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
             .build();
 
     public final static Container CONTAINER_1 = Container.builder()
