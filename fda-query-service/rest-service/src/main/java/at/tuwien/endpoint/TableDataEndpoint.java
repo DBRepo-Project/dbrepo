@@ -40,6 +40,7 @@ public class TableDataEndpoint {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -53,6 +54,7 @@ public class TableDataEndpoint {
 
     @PutMapping
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -66,6 +68,7 @@ public class TableDataEndpoint {
 
     @DeleteMapping
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
