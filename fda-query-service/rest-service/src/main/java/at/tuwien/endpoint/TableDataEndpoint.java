@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
@@ -47,6 +48,19 @@ public class TableDataEndpoint {
             ImageNotSupportedException, ContainerNotFoundException {
         return ResponseEntity.accepted()
                 .body(queryService.insert(id, databaseId, tableId, data));
+    }
+
+    @PutMapping
+    @Transactional
+    @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long id,
+                                          @NotNull @PathVariable("databaseId") Long databaseId,
+                                          @NotNull @PathVariable("tableId") Long tableId,
+                                          @Valid @RequestBody TableCsvUpdateDto data)
+            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
+            ImageNotSupportedException, ContainerNotFoundException {
+        return ResponseEntity.accepted()
+                .body(queryService.update(id, databaseId, tableId, data));
     }
 
     @PostMapping("/import")

@@ -5,13 +5,12 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
-import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
-import java.sql.SQLException;
 import java.time.Instant;
 
 @Service
@@ -21,10 +20,11 @@ public interface QueryService {
      * Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the
      * default "mariadb" user is allowed read-only access "SELECT".
      *
-     * @param databaseId The database id.
-     * @param query      The query.
-     * @param page       The page number.
-     * @param size       The page size.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param query       The query.
+     * @param page        The page number.
+     * @param size        The page size.
      * @return The result.
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws QueryStoreException        The query store is not reachable.
@@ -42,10 +42,11 @@ public interface QueryService {
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the
      * default "mariadb" user is allowed read-only access "SELECT".
      *
-     * @param databaseId The database id.
-     * @param query      The query.
-     * @param page       The page number.
-     * @param size       The page size.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param query       The query.
+     * @param page        The page number.
+     * @param size        The page size.
      * @return The result.
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws QueryStoreException        The query store is not reachable.
@@ -107,8 +108,10 @@ public interface QueryService {
             FileStorageException;
 
     /**
-     * @param containerId The container-database id pair.
-     * @param databaseId  The container-database id pair.
+     * Finds one query by container-database-query triple.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
      * @param queryId     The query id.
      * @return The query result in the form  of a downloadable .csv file.
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
@@ -126,9 +129,9 @@ public interface QueryService {
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.
      *
-     * @param containerId The container-database id tuple.
-     * @param databaseId  The container-database id tuple.
-     * @param tableId     The container-database id tuple.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
      * @param timestamp   The time.
      * @return The number of records, if successful
      * @throws ContainerNotFoundException The container was not found in the metadata database.
@@ -145,17 +148,34 @@ public interface QueryService {
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
      * default "mariadb" user is configured to only be allowed to execute "SELECT" statements.
      *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @param data       The data.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param data        The data.
      * @return The number of tuples affected.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
     Integer insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data) throws ImageNotSupportedException,
             TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException;
+
+    /**
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param data        The updated tuple with the list of primary key columns.
+     * @return The number of records updated.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws TableMalformedException    The table does not exist in the metadata database.
+     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
+     * @throws TableNotFoundException     The table is not found in the metadata database.
+     */
+    Integer update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the
@@ -169,6 +189,7 @@ public interface QueryService {
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
     Integer insert(Long containerId, Long databaseId, Long tableId, ImportDto data) throws ImageNotSupportedException,
             TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException;

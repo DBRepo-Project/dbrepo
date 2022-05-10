@@ -1,15 +1,21 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.DockerConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.repository.elastic.DatabaseRepository;
+import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.ImageNotSupportedException;
+import at.tuwien.exception.TableMalformedException;
+import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
+import org.junit.Test;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +25,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@ExtendWith(SpringExtension.class)
 @SpringBootTest
+@ExtendWith(SpringExtension.class)
 public class DataServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
@@ -37,7 +47,7 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Autowired
-    private DatabaseRepository databaseRepository;
+    private QueryService queryService;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -58,30 +68,21 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
                 .withEnableIpv6(false)
                 .exec();
         /* create container */
-        final String bind = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
         log.trace("container bind {}", bind);
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                        "MARIADB_DATABASE=weather")
                 .withBinds(Bind.parse(bind))
-                .exec();
-        final String bind2 = new File("./src/test/resources/webserver").toPath().toAbsolutePath() + ":/usr/share/nginx/html:ro";
-        log.trace("container bind {}", bind2);
-        final CreateContainerResponse response2 = dockerClient.createContainerCmd(CONTAINER_NGINX_IMAGE + ":" + CONTAINER_NGINX_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-public"))
-                .withName(CONTAINER_NGINX_NAME)
-                .withIpv4Address(CONTAINER_NGINX_IP)
-                .withHostName(CONTAINER_NGINX_INTERNALNAME)
-                .withBinds(Bind.parse(bind2))
                 .exec();
         /* start */
         CONTAINER_1.setHash(response.getId());
-        CONTAINER_2.setHash(response2.getId());
         DockerConfig.startContainer(CONTAINER_1);
-        DockerConfig.startContainer(CONTAINER_2);
     }
 
     @AfterAll
@@ -113,9 +114,32 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+    }
+
+    public void update_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, SQLException {
+        /* modify rainfall 0.6 -> 1.3 */
+        final TableCsvUpdateDto request = TableCsvUpdateDto.builder()
+                .keys(Map.ofEntries(Map.entry("id", 1)))
+                .data(Map.ofEntries(
+                        Map.entry("date", "2008-12-01"),
+                        Map.entry("location", "Albury"),
+                        Map.entry("mintemp", 13.4),
+                        Map.entry("rainfall", 1.3)
+                ))
+                .build();
+
+        /* mock */
+
+        /* test */
+        queryService.update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+        final List<List<String>> result = MariaDbConfig.select(TABLE_1, 10);
+        assertEquals("1", result.get(0).get(0));
+        assertEquals("2008-12-01", result.get(0).get(1));
+        assertEquals("Albury", result.get(0).get(2));
+        assertEquals("13.4", result.get(0).get(3));
+        assertEquals("1.3", result.get(0).get(4));
     }
 
 }

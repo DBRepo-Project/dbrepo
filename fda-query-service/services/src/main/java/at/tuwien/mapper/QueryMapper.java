@@ -3,6 +3,7 @@ package at.tuwien.mapper;
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.TableMalformedException;
@@ -65,7 +66,7 @@ public interface QueryMapper {
             int[] idx = new int[]{0};
             final Object[] data;
             if (columns.size() == 1) {
-                data = new Object[] { iterator.next() };
+                data = new Object[]{iterator.next()};
             } else {
                 data = (Object[]) iterator.next();
             }
@@ -295,10 +296,15 @@ public interface QueryMapper {
     }
 
     default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
-            throws TableMalformedException {
+            throws TableMalformedException, ImageNotSupportedException {
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
             throw new TableMalformedException("Columns are not known");
+        }
+        /* check image */
+        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
         }
         /* parameterized query for prepared statement */
         final StringBuilder query = new StringBuilder("INSERT INTO `")
@@ -318,10 +324,57 @@ public interface QueryMapper {
                 .build();
     }
 
-    default String tableToRawCountAllQuery(Table table, Instant timestamp) throws ImageNotSupportedException {
-        /* param check */
+    default InsertTableRawQuery tableCsvDtoToRawUpdateQuery(Table table, TableCsvUpdateDto data)
+            throws TableMalformedException, ImageNotSupportedException {
+        if (table.getColumns().size() == 0) {
+            log.error("Column size is zero");
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* check image */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder query = new StringBuilder("UPDATE `")
+                .append(table.getInternalName())
+                .append("` SET ");
+        final int[] idx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> {
+                    query.append(idx[0] == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` = ?")
+                            .append(idx[0]);
+                    idx[0]++;
+                });
+        query.append(" WHERE ");
+        final int[] jdx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> {
+                    query.append(jdx[0] == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` = '")
+                            .append(value)
+                            .append("'");
+                    jdx[0]++;
+                });
+        query.append(";");
+        /* debug */
+        log.trace("raw update query: [{}] with data {}", query, data.getData().values());
+        return InsertTableRawQuery.builder()
+                .query(query.toString())
+                .data(data.getData().values())
+                .build();
+    }
+
+    default String tableToRawCountAllQuery(Table table, Instant timestamp) throws ImageNotSupportedException {
+        /* check image */
+        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
         }
         if (timestamp == null) {
             timestamp = Instant.now();
@@ -341,7 +394,7 @@ public interface QueryMapper {
         if (timestamp == null) {
             throw new IllegalArgumentException("Timestamp must be provided");
         }
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         sb.append("SELECT COUNT(*) FROM");
         if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[0]);
@@ -369,7 +422,7 @@ public interface QueryMapper {
         if (timestamp == null) {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         if (query.contains("where")) {
             sb.append(query.toLowerCase(Locale.ROOT).split("where")[0]);
         } else {
