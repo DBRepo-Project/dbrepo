@@ -16,7 +16,7 @@ const colTypeMap = {
   Numeric: 'NUMBER',
   String: 'STRING',
   Text: 'STRING',
-  Timestamp: 'DATE'
+  Timestamp: 'TIMESTAMP'
 }
 
 app.post('/table_from_csv', upload.single('file'), async (req, res) => {

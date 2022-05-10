@@ -48,8 +48,9 @@
             <v-col cols="8">
               <v-select
                 v-model="tableCreate.separator"
-                :rules="[v => notEmpty(v) || $t('Required')]"
                 :items="separators"
+                item-text="key"
+                item-value="value"
                 required
                 hint="Character separating the values"
                 label="Separator *" />
@@ -58,14 +59,13 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
-                v-model="tableCreate.skip_lines"
+                v-model.number="tableCreate.skip_lines"
                 :rules="[
-                  v => notEmpty(v) || $t('Required'),
-                  v => isNonNegativeInteger(v) || $t('Number of lines to skip')]"
+                  v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
                 type="number"
                 required
                 hint="Skip n lines from the top. These may include comments or the header of column names."
-                label="Skip Lines *"
+                label="Number of lines to skip *"
                 placeholder="e.g. 0" />
             </v-col>
           </v-row>
@@ -74,6 +74,8 @@
               <v-select
                 v-model="tableCreate.quote"
                 :items="quotes"
+                item-text="key"
+                item-value="value"
                 hint="Character quoting the values"
                 label="Value quotes" />
             </v-col>
@@ -107,7 +109,7 @@
           </v-row>
           <v-row dense>
             <v-col cols="6">
-              <v-btn :disabled="!validStep2 || !tableCreate.separator || !tableCreate.skip_lines" :loading="loading" color="primary" type="submit" @click="step = 3">Next</v-btn>
+              <v-btn :disabled="!validStep2" :loading="loading" color="primary" type="submit" @click="step = 3">Next</v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -131,7 +133,7 @@
               <v-text-field
                 v-model="url"
                 disabled
-                accept="text/csv"
+                accept=".csv,text/csv"
                 show-size
                 hint="e.g. http://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-verbindungen.csv"
                 label="File URL (.csv)" />
@@ -173,10 +175,10 @@
                   label="Enumeration"
                   multiple />
               </v-col>
-              <v-col cols="2" class="pl-10" :hidden="c.type !== 'DATE'">
+              <v-col cols="2" class="pl-10" :hidden="!c.type.match('(TIMESTAMP)|(DATE)')">
                 <v-select
                   v-model="c.dfid"
-                  :disabled="c.type !== 'DATE'"
+                  :disabled="!c.type.match('(TIMESTAMP)|(DATE)')"
                   :items="dateFormats"
                   item-text="example"
                   item-value="id" />
@@ -241,16 +243,13 @@ export default {
       validStep3: false,
       validStep4: false,
       separators: [
-        ',',
-        ';',
-        '-',
-        '|',
-        '$',
-        '%',
-        '#'
+        { key: ',', value: ',' },
+        { key: ';', value: ';' },
+        { key: '[Tab]', value: '\t' }
       ],
       quotes: [
-        '"'
+        { key: 'Double "', value: '"' },
+        { key: 'Single \'', value: '\'' }
       ],
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -274,7 +273,7 @@ export default {
         true_element: null,
         null_element: null,
         separator: ',',
-        skip_lines: '1'
+        skip_lines: 1
       },
       loading: false,
       file: null,
@@ -287,6 +286,7 @@ export default {
         { value: 'NUMBER', text: 'Number' },
         { value: 'BLOB', text: 'Binary Large Object' },
         { value: 'DATE', text: 'Date' },
+        { value: 'TIMESTAMP', text: 'Timestamp' },
         { value: 'DECIMAL', text: 'Decimal' },
         { value: 'STRING', text: 'Character Varying' },
         { value: 'TEXT', text: 'Text' }
@@ -320,8 +320,7 @@ export default {
             Authorization: `Bearer ${this.token}`
           }
         })
-        console.log(res.data)
-
+        console.log('data upload result', res.data)
         if (res.data.success) {
           this.tableCreate.columns = res.data.columns
           this.fileLocation = res.data.file.filename

@@ -122,9 +122,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page, Long size)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException {
+    public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
+                                  Long size) throws TableNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
+            ContainerNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -245,8 +246,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public BigInteger count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
-            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException,
-            ImageNotSupportedException {
+            throws DatabaseNotFoundException, TableNotFoundException,
+            TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
