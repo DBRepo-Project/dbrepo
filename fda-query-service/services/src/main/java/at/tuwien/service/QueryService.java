@@ -4,11 +4,13 @@ import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -174,6 +176,22 @@ public interface QueryService {
      * @throws TableNotFoundException     The table is not found in the metadata database.
      */
     Integer update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException;
+
+    /**
+     * Deletes a tuple by given constraint set
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param data        The constraint set.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws TableMalformedException    The table does not exist in the metadata database.
+     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
+     * @throws TableNotFoundException     The table is not found in the metadata database.
+     */
+    void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException;
 

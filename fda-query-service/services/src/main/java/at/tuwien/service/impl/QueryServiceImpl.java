@@ -5,6 +5,7 @@ import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -309,7 +310,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
-        if (data.getData().size() == 0) return null;
+        if (data.getData().size() == 0 || data.getKeys().size() == 0) return null;
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, true);
         final Session session = factory.openSession();
@@ -323,6 +324,40 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 .forEach((key, value) -> query.setParameter(idx[0]++, value));
         log.trace("query with parameters {}", query);
         return insert(query, session, factory);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
+        /* run query */
+        if (data.getKeys().size() == 0) return;
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        /* prepare the statement */
+        final NativeQuery<?> query = session.createSQLQuery(queryMapper.tableCsvDtoToRawDeleteQuery(table, data));
+        final int[] idx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> query.setParameter(idx[0]++, value));
+        try {
+            query.executeUpdate();
+        } catch (PersistenceException e) {
+            session.close();
+            factory.close();
+            log.error("Could not insert data: {}", e.getMessage());
+            throw new TableMalformedException("Could not insert data", e);
+        }
+        session.getTransaction()
+                .commit();
+        session.close();
+        factory.close();
     }
 
     @Override

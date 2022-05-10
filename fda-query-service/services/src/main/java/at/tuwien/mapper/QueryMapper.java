@@ -2,6 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -322,6 +323,33 @@ public interface QueryMapper {
                 .query(query.toString())
                 .data(data.getData().values())
                 .build();
+    }
+
+    default String tableCsvDtoToRawDeleteQuery(Table table, TableCsvDeleteDto data)
+            throws TableMalformedException, ImageNotSupportedException {
+        if (table.getColumns().size() == 0) {
+            log.error("Column size is zero");
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* check image */
+        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder query = new StringBuilder("DELETE FROM `")
+                .append(table.getInternalName())
+                .append("` WHERE ");
+        final int[] idx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> query.append(idx[0] == 0 ? "" : ", ")
+                        .append("`")
+                        .append(key)
+                        .append("` = ?")
+                        .append(idx[0]++));
+        /* debug */
+        log.trace("raw delete query: [{}] with data {}", query, data.getKeys().values());
+        return query.toString();
     }
 
     default InsertTableRawQuery tableCsvDtoToRawUpdateQuery(Table table, TableCsvUpdateDto data)

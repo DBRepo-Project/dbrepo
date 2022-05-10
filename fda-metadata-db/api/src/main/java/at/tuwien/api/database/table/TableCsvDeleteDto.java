@@ -12,11 +12,7 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TableCsvUpdateDto {
-
-    @NotNull(message = "data is required")
-    @Parameter(name = "data")
-    private Map<String, Object> data;
+public class TableCsvDeleteDto {
 
     @NotNull(message = "primary key columns are required")
     @Parameter(name = "keys")

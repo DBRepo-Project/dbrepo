@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
@@ -57,10 +58,24 @@ public class TableDataEndpoint {
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @Valid @RequestBody TableCsvUpdateDto data)
-            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            ImageNotSupportedException {
         return ResponseEntity.accepted()
                 .body(queryService.update(id, databaseId, tableId, data));
+    }
+
+    @DeleteMapping
+    @Transactional
+    @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long id,
+                                          @NotNull @PathVariable("databaseId") Long databaseId,
+                                          @NotNull @PathVariable("tableId") Long tableId,
+                                          @Valid @RequestBody TableCsvDeleteDto data)
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            ImageNotSupportedException {
+        queryService.delete(id, databaseId, tableId, data);
+        return ResponseEntity.accepted()
+                .build();
     }
 
     @PostMapping("/import")
@@ -92,7 +107,8 @@ public class TableDataEndpoint {
             QueryStoreException {
         if ((page == null && size != null) || (page != null && size == null)) {
             log.error("Cannot perform pagination with only one of page/size set.");
-            log.debug("invalid pagination specification, one of page/size is null, either both should be null or none.");
+            log.debug(
+                    "invalid pagination specification, one of page/size is null, either both should be null or none.");
             throw new PaginationException("Invalid pagination parameters");
         }
         if (page != null && page < 0) {
