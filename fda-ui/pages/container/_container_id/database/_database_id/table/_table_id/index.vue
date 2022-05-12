@@ -3,20 +3,25 @@
     <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" flat class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         {{ table.name }}
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
-          <v-icon left>mdi-arrow-left</v-icon> Back
+        <v-btn color="primary" class="mr-2 white--text" @click="addTuple">
+          <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="selection.length === 1" color="amber darken-2" class="mr-2 white--text">
+        <v-btn v-if="canEdit" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="selection.length > 0" color="red darken-2" class="white--text" @click="deleteItems">
+        <v-btn v-if="canDelete" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="selection.length === 0" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`" target="_blank">
@@ -51,9 +56,15 @@
         :footer-props="footerProps"
         class="elevation-1">
         <template v-slot:item.selection="{ item }">
-          <input type="checkbox" :value="item" v-model="selection">
+          <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
       </v-data-table>
+      <v-dialog
+        v-model="editTupleDialog"
+        persistent
+        max-width="640">
+        <EditTuple :tuple="selection[0]" :edit="edit" @close="editTupleDialog = false" />
+      </v-dialog>
     </v-card>
     <div class="mt-3">
       <v-chip
@@ -71,17 +82,20 @@
   </div>
 </template>
 <script>
+import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import { format } from 'date-fns'
 
 export default {
   components: {
-    TimeTravel
+    TimeTravel,
+    EditTuple
   },
   data () {
     return {
       loading: true,
       loadingData: true,
+      editTupleDialog: false,
       total: 0,
       footerProps: {
         'items-per-page-options': [10, 20, 30, 40, 50]
@@ -91,14 +105,17 @@ export default {
       selection: [],
       pickVersionDialog: null,
       version: null,
+      edit: false,
       error: false, // XXX: `error` is never changed
       options: {
         page: 1,
         itemsPerPage: 10
       },
+      dateColumns: [],
       table: {
         name: null,
-        description: null
+        description: null,
+        columns: []
       },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -134,6 +151,13 @@ export default {
         return null
       }
       return this.formatDate(this.version)
+    },
+    canEdit () {
+      if (this.selection.length !== 1) { return false }
+      return this.edit === true
+    },
+    canDelete () {
+      return this.selection.length !== 0
     }
   },
   watch: {
@@ -150,6 +174,15 @@ export default {
     this.loadData()
   },
   methods: {
+    addTuple () {
+      this.edit = false
+      const data = {}
+      this.table.columns.forEach((c) => {
+        data[c.internal_name] = null
+      })
+      this.selection = [data]
+      this.editTupleDialog = true
+    },
     async deleteItems () {
       if (this.selection.length < 1) {
         return
@@ -192,6 +225,8 @@ export default {
             sortable: false
           }
         }).forEach(header => this.headers.push(header))
+        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'DATE' || c.column_type === 'TIMESTAMP'))
+        console.debug('date columns are', this.dateColumns)
       } catch (err) {
         this.$toast.error('Could not get table details.')
       }
@@ -207,7 +242,14 @@ export default {
         }
         const res = await this.$axios.get(url)
         this.total = parseInt(res.headers['fda-count'])
-        this.rows = res.data.result
+        this.rows = res.data.result.map((row) => {
+          for (const col in row) {
+            if (this.dateColumns.filter(c => c.internal_name === col).length > 0) {
+              row[col] = this.formatDate(row[col])
+            }
+          }
+          return row
+        })
         console.debug('rows', this.rows)
       } catch (err) {
         console.error('failed to load data', err)
@@ -225,7 +267,7 @@ export default {
       return ''
     },
     formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm')
+      return format(new Date(d), 'yyyy-MM-dd HH:mm:ss')
     }
   }
 }
@@ -235,5 +277,14 @@ export default {
 thead td:first-child,
 tbody td:first-child {
   width: 1%;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
 }
 </style>

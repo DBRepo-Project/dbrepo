@@ -156,7 +156,7 @@
           <div v-for="(c, idx) in tableCreate.columns" :key="idx">
             <v-row dense class="column pa-2 ml-1 mr-1 mb-2">
               <v-col cols="2">
-                <v-text-field v-model="c.name" disabled required label="Name" />
+                <v-text-field v-model="c.name" required label="Name" />
               </v-col>
               <v-col cols="2">
                 <v-select
@@ -177,9 +177,17 @@
               </v-col>
               <v-col cols="2" class="pl-10" :hidden="!c.type.match('(TIMESTAMP)|(DATE)')">
                 <v-select
+                  v-if="c.type !== 'TIMESTAMP'"
                   v-model="c.dfid"
-                  :disabled="!c.type.match('(TIMESTAMP)|(DATE)')"
-                  :items="dateFormats"
+                  required
+                  :items="dateFormats.filter(f => !f.has_time)"
+                  item-text="example"
+                  item-value="id" />
+                <v-select
+                  v-if="c.type !== 'DATE'"
+                  v-model="c.dfid"
+                  required
+                  :items="dateFormats.filter(f => f.has_time)"
                   item-text="example"
                   item-value="id" />
               </v-col>
@@ -203,7 +211,13 @@
               </v-col>
             </v-row>
           </div>
-          <v-btn class="mt-2" color="primary" :loading="loading" type="submit" @click="createTable">
+          <v-btn
+            class="mt-2"
+            color="primary"
+            :disabled="!validStep4"
+            :loading="loading"
+            type="submit"
+            @click="createTable">
             Continue
           </v-btn>
         </v-form>

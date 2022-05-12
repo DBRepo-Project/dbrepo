@@ -15,7 +15,6 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import org.springframework.test.context.TestPropertySource;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 

@@ -298,6 +298,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* prepare the statement */
         final InsertTableRawQuery raw = queryMapper.tableCsvDtoToRawInsertQuery(table, data);
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
+
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
         return insert(query, session, factory);
     }
