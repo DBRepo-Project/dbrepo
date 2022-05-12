@@ -32,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import javax.persistence.Tuple;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -330,7 +331,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException {
+            TableNotFoundException, TupleDeleteException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -346,8 +347,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final int[] idx = new int[]{0};
         data.getKeys()
                 .forEach((key, value) -> query.setParameter(idx[0]++, value));
+        final int affectedTuples;
         try {
-            query.executeUpdate();
+            affectedTuples = query.executeUpdate();
         } catch (PersistenceException e) {
             session.close();
             factory.close();
@@ -358,6 +360,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 .commit();
         session.close();
         factory.close();
+        if (affectedTuples == 0) {
+            log.error("No tuples were deleted");
+            throw new TupleDeleteException("No tuples deleted");
+        }
+        log.info("Deleted {} tuple(s)", affectedTuples);
+        log.debug("Deleted tuple(s) {}", data);
     }
 
     @Override

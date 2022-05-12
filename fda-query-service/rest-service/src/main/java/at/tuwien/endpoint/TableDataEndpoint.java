@@ -75,7 +75,7 @@ public class TableDataEndpoint {
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @Valid @RequestBody TableCsvDeleteDto data)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, TupleDeleteException {
         queryService.delete(id, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();

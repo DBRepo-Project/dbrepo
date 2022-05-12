@@ -522,7 +522,7 @@ public interface QueryMapper {
             final Object[] data = (Object[]) iterator.next();
             final Map<String, Object> map = new HashMap<>();
             table.getColumns()
-                    .forEach(column -> map.put(column.getName(), dataColumnToObject(data[idx[0]++], column)));
+                    .forEach(column -> map.put(column.getInternalName(), dataColumnToObject(data[idx[0]++], column)));
             queryResult.add(map);
         }
         log.info("Selected {} records from table id {}", queryResult.size(), table.getId());
