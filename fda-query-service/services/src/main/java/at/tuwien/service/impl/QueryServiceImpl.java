@@ -347,88 +347,91 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Transactional(readOnly = true)
-    protected List<TableColumn> parseColumns(Query query, Database database)
-            throws ImageNotSupportedException, JSQLParserException {
+    protected List<TableColumn> parseColumns(Query query, Database database) throws ImageNotSupportedException,
+            JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
-
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final Statement statement = parserRealSql.parse(new StringReader(query.getQuery()));
 
-        if (statement instanceof Select) {
-            final Select selectStatement = (Select) statement;
-            final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
-            final List<SelectItem> clauses = ps.getSelectItems();
-            log.trace("columns referenced in the from-clause: {}", clauses);
-
-            /* Parse all tables */
-            final List<FromItem> tables = new ArrayList<>();
-            tables.add(ps.getFromItem());
-            if (ps.getJoins() != null && ps.getJoins().size() > 0) {
-                log.trace("query contains join items: {}", ps.getJoins());
-                for (Join j : ps.getJoins()) {
-                    if (j.getRightItem() != null) {
-                        tables.add(j.getRightItem());
-                    }
-                }
-            }
-            log.debug("tables referenced: {}", tables);
-            log.debug("columns referenced in the from-clause and join-clause(s): {}", clauses);
-
-            /* Checking if all tables exist */
-            List<TableColumn> allColumns = new ArrayList<>();
-            for (FromItem fromItem : tables) {
-                boolean i = false;
-                for (Table table : database.getTables()) {
-                    if (queryMapper.stringToEscapedString(table.getInternalName()).equals(
-                            queryMapper.stringToEscapedString(fromItem.toString()))) {
-                        allColumns.addAll(table.getColumns());
-                        log.trace("matched table {} with columns {}", table.getInternalName(),
-                                table.getColumns().stream().map(TableColumn::getInternalName).collect(
-                                        Collectors.toList()));
-                        i = false;
-                        break;
-                    }
-                    i = true;
-                }
-                if (i) {
-                    log.error("Table {} does not exist", queryMapper.stringToEscapedString(fromItem.toString()));
-                    throw new JSQLParserException("Table does not exist");
-                }
-            }
-
-            /* Checking if all columns exist */
-            for (SelectItem clause : clauses) {
-                String select = queryMapper.stringToEscapedString(clause.toString());
-                log.debug(select);
-                if (select.trim().equals("*")) {
-                    log.warn("Do not use * in queries");
-                    continue;
-                }
-                // ignore prefixes
-                if (select.contains(".")) {
-                    log.debug(select);
-                    select = select.split("\\.")[1];
-                }
-                boolean i = false;
-                for (TableColumn tc : allColumns) {
-                    log.trace("{},{},{}", tc.getInternalName(), tc.getName(), clause);
-                    if (select.equals(queryMapper.stringToEscapedString(tc.getInternalName()))) {
-                        i = false;
-                        columns.add(tc);
-                        break;
-                    }
-                    i = true;
-                }
-                if (i) {
-                    log.error("Column {} does not exist", clause);
-                    throw new JSQLParserException("Column does not exist");
-                }
-            }
-            return columns;
-        } else {
+        /* check */
+        if (!(statement instanceof Select)) {
             log.error("Query attempts to update the dataset, not a SELECT statement");
             throw new JSQLParserException("Query attempts to update the dataset");
         }
+
+        /* start parsing */
+        final Select selectStatement = (Select) statement;
+        final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
+        final List<SelectItem> clauses = ps.getSelectItems();
+        log.trace("columns referenced in the from-clause: {}", clauses);
+
+        /* Parse all tables */
+        final List<FromItem> tables = new ArrayList<>();
+        tables.add(ps.getFromItem());
+        if (ps.getJoins() != null && ps.getJoins().size() > 0) {
+            log.trace("query contains join items: {}", ps.getJoins());
+            for (Join j : ps.getJoins()) {
+                if (j.getRightItem() != null) {
+                    tables.add(j.getRightItem());
+                }
+            }
+        }
+        log.debug("tables referenced: {}", tables);
+        log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
+
+        /* Checking if all tables exist */
+        List<TableColumn> allColumns = new ArrayList<>();
+        for (FromItem fromItem : tables) {
+            boolean i = false;
+            for (final Table table : database.getTables()) {
+                final String tableName = fromItem.toString().contains(" ") ? fromItem.toString()
+                        .split(" ")[0] : fromItem.toString();
+                if (queryMapper.stringToEscapedString(table.getInternalName()).equals(tableName)) {
+                    allColumns.addAll(table.getColumns());
+                    log.trace("matched table {} with columns {}", table.getInternalName(),
+                            table.getColumns().stream().map(TableColumn::getInternalName).collect(
+                                    Collectors.toList()));
+                    i = false;
+                    break;
+                }
+                queryMapper.stringToEscapedString(fromItem.toString());
+                i = true;
+            }
+            if (i) {
+                log.error("Table {} does not exist", queryMapper.stringToEscapedString(fromItem.toString()));
+                throw new JSQLParserException("Table does not exist");
+            }
+        }
+
+        /* Checking if all columns exist */
+        for (SelectItem clause : clauses) {
+            String select = queryMapper.stringToEscapedString(clause.toString());
+            log.debug(select);
+            if (select.trim().equals("*")) {
+                log.warn("Do not use * in queries");
+                continue;
+            }
+            // ignore prefixes
+            if (select.contains(".")) {
+                log.debug(select);
+                select = select.split("\\.")[1];
+            }
+            boolean i = false;
+            for (TableColumn tc : allColumns) {
+                log.trace("{},{},{}", tc.getInternalName(), tc.getName(), clause);
+                if (select.equals(queryMapper.stringToEscapedString(tc.getInternalName()))) {
+                    i = false;
+                    columns.add(tc);
+                    break;
+                }
+                i = true;
+            }
+            if (i) {
+                log.error("Column {} does not exist", clause);
+                throw new JSQLParserException("Column does not exist");
+            }
+        }
+        return columns;
 
     }
 

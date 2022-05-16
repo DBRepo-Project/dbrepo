@@ -8,7 +8,6 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -17,7 +16,6 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import net.sf.jsqlparser.JSQLParserException;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.junit.jupiter.api.*;
@@ -73,7 +71,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws InterruptedException {
         afterAll();
 
         /* create network */
@@ -86,17 +84,20 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .exec();
 
         /* create container */
-        final String bind = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
         log.trace("container bind {}", bind);
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                        "MARIADB_DATABASE=weather")
                 .withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"))
                 .exec();
         CONTAINER_1.setHash(response.getId());
+        DockerConfig.startContainer(CONTAINER_1);
     }
 
     @AfterAll
@@ -135,18 +136,18 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
         TABLE_1.setDatabase(DATABASE_1);
         tableRepository.save(TABLE_1);
+        TABLE_2.setDatabase(DATABASE_1);
+        tableRepository.save(TABLE_2);
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         tableRepository.save(TABLE_1);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        tableRepository.save(TABLE_2);
     }
 
     @Test
-    @Disabled
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, InterruptedException, TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, TableNotFoundException, DatabaseConnectionException,
             PaginationException, ContainerNotFoundException {
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
@@ -170,16 +171,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled
-    public void execute_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, InterruptedException,
-            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+    public void execute_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
+            TableNotFoundException, QueryStoreException, ContainerNotFoundException,
             TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
@@ -191,15 +189,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
      */
     @Test
     public void execute_onlyNumber_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException,
             QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
             TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `id` FROM `weather_aus`")
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
@@ -208,15 +202,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_onlyString_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException,
             QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
             TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_aus`")
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
@@ -225,15 +215,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_onlyDate_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException,
             QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
             TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `date` FROM `weather_aus`")
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
@@ -241,34 +227,63 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled
-    public void execute_modifyData_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException, QueryMalformedException, TableNotFoundException, QueryStoreException,
-            ContainerNotFoundException, TableMalformedException,
-            ColumnParseException {
+    public void execute_join_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            TableMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `mintemp`, l.`lat`, l.`lng` FROM `weather_aus` w JOIN `weather_location` l ON " +
+                        "w.location = l.location")
+                .build();
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
+        assertEquals(3, response.getResultNumber());
+        assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
+        assertEquals(7.4, response.getResult().get(1).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(1).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(1).get("lng"));
+        assertEquals(12.9, response.getResult().get(2).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(2).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(2).get("lng"));
+    }
+
+    @Test
+    public void execute_joinWithWhere_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            TableMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `mintemp`, l.`lat`, l.`lng` FROM `weather_aus` w JOIN `weather_location` l ON " +
+                        "w.location = l.location WHERE `mintemp` > 13")
+                .build();
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
+        assertEquals(1, response.getResultNumber());
+        assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
+    }
+
+    @Test
+    public void execute_modifyData_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("DELETE FROM `weather_aus`;")
                 .build();
 
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-
         /* test */
-        //FIXME
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
-        assertNotNull(response.getResult());
-        assertEquals(3, response.getResult().size());
+        assertThrows(QueryMalformedException.class, () -> {
+            queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
+        });
     }
 
     @Test
     @Disabled
-    public void execute_databaseNotExists_fails() throws InterruptedException {
+    public void execute_databaseNotExists_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -279,14 +294,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void execute_tableNotFound_fails() throws InterruptedException {
+    public void execute_tableNotFound_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
 
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-
         /* test */
         assertThrows(PersistenceException.class, () -> {
             //FIXME
@@ -296,14 +308,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void execute_columnNotFound_fails() throws InterruptedException {
+    public void execute_columnNotFound_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `local` FROM `weather_aus`")
                 .build();
 
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-
         /* test */
         assertThrows(PersistenceException.class, () -> {
             //FIXME
@@ -313,13 +322,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void execute_statementNull_fails() throws InterruptedException {
+    public void execute_statementNull_fails() {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(null)
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
@@ -330,14 +336,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void insert_succeeds() throws InterruptedException, TableNotFoundException, DatabaseNotFoundException,
+    public void insert_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
             TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .location("/tmp/csv_12.csv")
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_3);
 
         /* test */
         final Integer rows = queryService.insert(CONTAINER_1_ID, DATABASE_3_ID, TABLE_3_ID, request);
@@ -383,14 +386,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void insert_large_succeeds() throws InterruptedException, TableNotFoundException, DatabaseNotFoundException,
+    public void insert_large_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
             TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder()
                 .location("/tmp/csv_13.csv")
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_3);
 
         /* test */
         final Integer rows = queryService.insert(CONTAINER_1_ID, DATABASE_3_ID, TABLE_3_ID, request);
@@ -435,7 +435,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled
-    public void insert_sensor_succeeds() throws InterruptedException, TableNotFoundException, DatabaseNotFoundException,
+    public void insert_sensor_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
             TableMalformedException, ImageNotSupportedException, SQLException, ContainerNotFoundException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
@@ -475,9 +475,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                     put("halt_punkt_id_nach", 10563);
                 }})
                 .build();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_3);
 
         /* test */
         final Integer rows = queryService.insert(CONTAINER_1_ID, DATABASE_3_ID, TABLE_3_ID, request);

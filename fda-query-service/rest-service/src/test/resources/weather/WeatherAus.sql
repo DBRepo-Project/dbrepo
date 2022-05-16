@@ -1,12 +1,24 @@
 /* https://www.kaggle.com/jsphyg/weather-dataset-rattle-package */
+CREATE TABLE weather_location
+(
+    location VARCHAR(255) PRIMARY KEY,
+    lat      DOUBLE PRECISION NULL,
+    lng      DOUBLE PRECISION NULL
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE weather_aus
 (
     id       BIGINT           NOT NULL PRIMARY KEY,
-    `date`     DATE             NOT NULL,
+    `date`   DATE             NOT NULL,
     location VARCHAR(255)     NULL,
     mintemp  DOUBLE PRECISION NULL,
-    rainfall DOUBLE PRECISION NULL
+    rainfall DOUBLE PRECISION NULL,
+    FOREIGN KEY (location) REFERENCES weather_location (location)
 ) WITH SYSTEM VERSIONING;
+
+INSERT INTO weather_location (location, lat, lng)
+VALUES ('Albury', -36.0653583, 146.9112214),
+       ('Sydney', -33.847927, 150.6517942);
 
 INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall)
 VALUES (1, '2008-12-01', 'Albury', 13.4, 0.6),

@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public interface QueryMapper {
@@ -65,7 +67,7 @@ public interface QueryMapper {
             int[] idx = new int[]{0};
             final Object[] data;
             if (columns.size() == 1) {
-                data = new Object[] { iterator.next() };
+                data = new Object[]{iterator.next()};
             } else {
                 data = (Object[]) iterator.next();
             }
@@ -341,27 +343,44 @@ public interface QueryMapper {
         if (timestamp == null) {
             throw new IllegalArgumentException("Timestamp must be provided");
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT COUNT(*) FROM");
-        if (query.contains("where")) {
-            sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[0]);
+        query = query.toLowerCase(Locale.ROOT)
+                .split("from")[1];
+        final StringBuilder sb = new StringBuilder();
+        sb.append("select count(*) from");
+        if (!query.contains("where")) {
+            /* treat join queries as normal queries */
+            sb.append(query);
         } else {
-            sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1]);
+            sb.append(query.split("where")[0]);
         }
-        sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
-        sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
-        sb.append("' ");
+        if (query.contains("join")) {
+            /* put timestamp after "join" and each "on" (but before alias) */
+        } else {
+            sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
+            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
+            sb.append("' ");
+        }
         if (query.contains("where")) {
-            sb.append("where ");
-            sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
+            sb.append("where");
+            sb.append(query.split("where")[1]);
         }
         sb.append(";");
-        log.debug(sb.toString());
-        return sb.toString();
+        /* replace timestamp for join query */
+        String statement = sb.toString();
+        if (query.contains("join")) {
+            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna"))
+                    + "' ");
+            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna"))
+                    + "' ");
+        }
+        log.debug("mapped raw view-only query [{}]", statement);
+        return statement;
     }
 
     default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
-            throws ImageNotSupportedException {
+            throws ImageNotSupportedException, QueryMalformedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -369,27 +388,47 @@ public interface QueryMapper {
         if (timestamp == null) {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
-        StringBuilder sb = new StringBuilder();
-        if (query.contains("where")) {
-            sb.append(query.toLowerCase(Locale.ROOT).split("where")[0]);
-        } else {
-            sb.append(query.toLowerCase(Locale.ROOT));
+        query = query.toLowerCase(Locale.ROOT);
+        /* query check (this is enforced by the db also) */
+        final String query_ = query;
+        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::startsWith)) {
+            log.error("Query attempts to modify the database.");
+            throw new QueryMalformedException("Query attempts to modify the databse");
         }
-        sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
-        sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
-        sb.append("' ");
+        final StringBuilder sb = new StringBuilder();
+        if (!query.contains("where")) {
+            /* treat join queries as normal queries */
+            sb.append(query);
+        } else {
+            sb.append(query.split("where")[0]);
+        }
+        if (query.contains("join")) {
+            /* put timestamp after "join" and each "on" (but before alias) */
+        } else {
+            sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
+            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
+            sb.append("' ");
+        }
         if (query.contains("where")) {
             sb.append("where");
-            sb.append(query.toLowerCase(Locale.ROOT).split("from ")[1].split("where")[1]);
+            sb.append(query.split("where")[1]);
         }
         if (size != null && page != null && size > 0 && page >= 0) {
             sb.append(" LIMIT " + size + " OFFSET " + (page * size));
         }
         sb.append(";");
-
-        log.debug(sb.toString());
-
-        return sb.toString();
+        /* replace timestamp for join query */
+        String statement = sb.toString();
+        if (query.contains("join")) {
+            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna"))
+                    + "' ");
+            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna"))
+                    + "' ");
+        }
+        log.debug("mapped raw view-only query [{}]", statement);
+        return statement;
 
     }
 
