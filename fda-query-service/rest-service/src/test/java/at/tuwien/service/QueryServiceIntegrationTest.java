@@ -98,6 +98,25 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .exec();
         CONTAINER_1.setHash(response.getId());
         DockerConfig.startContainer(CONTAINER_1);
+
+        /* create container */
+        final String bind2 = new File(
+                "./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        final CreateContainerResponse response2 =
+                dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
+                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withName(CONTAINER_2_INTERNALNAME)
+                .withIpv4Address(CONTAINER_2_IP)
+                .withHostName(CONTAINER_2_INTERNALNAME)
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                        "MARIADB_DATABASE=zoo")
+                .withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp"))
+                .exec();
+        CONTAINER_1.setHash(response.getId());
+        CONTAINER_2.setHash(response2.getId());
+        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.startContainer(CONTAINER_2);
     }
 
     @AfterAll
@@ -129,19 +148,33 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     @Transactional
     public void beforeEach() {
+        /* image */
         imageRepository.save(IMAGE_1);
+        /* concepts */
         conceptRepository.save(CONCEPT_1);
+        /* image dates */
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
         imageRepository.save(IMAGE_1);
+        /* create databases */
         databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_2);
+        databaseRepository.save(DATABASE_3);
+        /* create tables */
         TABLE_1.setDatabase(DATABASE_1);
         tableRepository.save(TABLE_1);
         TABLE_2.setDatabase(DATABASE_1);
         tableRepository.save(TABLE_2);
+        TABLE_3.setDatabase(DATABASE_3);
+        tableRepository.save(TABLE_3);
+        TABLE_4.setDatabase(DATABASE_2);
+        tableRepository.save(TABLE_4);
+        /* create columns */
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         tableRepository.save(TABLE_1);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         tableRepository.save(TABLE_2);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        tableRepository.save(TABLE_4);
     }
 
     @Test
@@ -237,6 +270,51 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
+        assertEquals(3, response.getResultNumber());
+        assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
+        assertEquals(7.4, response.getResult().get(1).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(1).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(1).get("lng"));
+        assertEquals(12.9, response.getResult().get(2).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(2).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(2).get("lng"));
+    }
+
+    @Test
+    public void execute_joinNotEscaped_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            TableMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT mintemp, l.lat, l.lng FROM weather_aus w JOIN weather_location l ON " +
+                        "w.location = l.location")
+                .build();
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, null, null);
+        assertEquals(3, response.getResultNumber());
+        assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
+        assertEquals(7.4, response.getResult().get(1).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(1).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(1).get("lng"));
+        assertEquals(12.9, response.getResult().get(2).get("MinTemp"));
+        assertEquals(-36.0653583, response.getResult().get(2).get("lat"));
+        assertEquals(146.9112214, response.getResult().get(2).get("lng"));
+    }
+
+    @Test
+    public void execute_join2_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            TableMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT z.id FROM zoo z INNER JOIN names n ON n.id = z.id")
+                .build();
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, null, null);
         assertEquals(3, response.getResultNumber());
         assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
         assertEquals(-36.0653583, response.getResult().get(0).get("lat"));

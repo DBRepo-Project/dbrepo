@@ -13,6 +13,7 @@ import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ImageNotSupportedException;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -175,7 +176,6 @@ public interface QueryMapper {
                         .append(column.getInternalName())
                         .append(")");
             }
-//            set.append(")");
             return;
         }
         if (table.getFalseElement() != null) {
@@ -634,13 +634,19 @@ public interface QueryMapper {
     }
 
     @Named("EscapedString")
-    default String stringToEscapedString(String name) throws ImageNotSupportedException {
+    default String stringToEscapedString(String name) {
         if (name != null && !name.startsWith("`") && !name.endsWith("`")) {
-            final String escaped = "`" + name + "`";
-            log.trace("mapped non-escaped string [{}] to escaped string: [{}]", name, escaped);
-            return escaped;
+            return "`" + name + "`";
         }
         return name;
+    }
+
+    default String fromItemToString(FromItem data) {
+        if (data.getAlias() != null) {
+            return data.toString()
+                    .substring(0, data.toString().indexOf(' '));
+        }
+        return data.toString();
     }
 
 }
