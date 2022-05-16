@@ -145,6 +145,7 @@ CREATE TABLE public.mdb_images_date
     database_format character varying(255)      NOT NULL,
     unix_format     character varying(255)      NOT NULL,
     example         character varying(255)      NOT NULL,
+    has_time        boolean                     NOT NULL,
     created_at      timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     FOREIGN KEY (iid) REFERENCES mdb_images (id),

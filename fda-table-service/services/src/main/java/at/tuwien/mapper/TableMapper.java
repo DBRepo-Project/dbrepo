@@ -116,6 +116,8 @@ public interface TableMapper {
                 return "BLOB";
             case DATE:
                 return "DATE";
+            case TIMESTAMP:
+                return "TIMESTAMP";
             case TEXT:
                 return "TEXT";
             case STRING:
@@ -184,9 +186,12 @@ public interface TableMapper {
                 log.error("Cannot create id column, it already exists");
                 throw new TableMalformedException("Cannot create id column");
             }
-            final ColumnCreateDto[] tmp = Arrays.copyOf(data.getColumns(), data.getColumns().length + 1);
-            tmp[data.getColumns().length] = idColumn;
-            data.setColumns(tmp);
+            final ColumnCreateDto[] columns = new ColumnCreateDto[data.getColumns().length + 1];
+            columns[0] = idColumn;
+            for (int i = 0; i < data.getColumns().length; i++) {
+                columns[i+1] = data.getColumns()[i];
+            }
+            data.setColumns(columns);
         }
         final int[] idx = {0};
         Arrays.stream(data.getColumns())

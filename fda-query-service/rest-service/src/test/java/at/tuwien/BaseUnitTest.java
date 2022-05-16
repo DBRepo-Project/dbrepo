@@ -106,6 +106,7 @@ public abstract class BaseUnitTest {
             .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
             .example(IMAGE_DATE_1_EXAMPLE)
+            .hasTime(IMAGE_DATE_1_HAS_TIME)
             .build();
 
     public final static Long IMAGE_DATE_2_ID = 2L;
@@ -121,6 +122,7 @@ public abstract class BaseUnitTest {
             .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
             .example(IMAGE_DATE_2_EXAMPLE)
+            .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
 
     public final static Long COLUMN_1_1_ID = 1L;

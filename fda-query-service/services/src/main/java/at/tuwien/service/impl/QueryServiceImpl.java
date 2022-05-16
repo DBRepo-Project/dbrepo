@@ -5,7 +5,9 @@ import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import javax.persistence.Tuple;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -295,8 +298,75 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* prepare the statement */
         final InsertTableRawQuery raw = queryMapper.tableCsvDtoToRawInsertQuery(table, data);
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
+
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
         return insert(query, session, factory);
+    }
+
+    @Override
+    @Transactional
+    public Integer update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
+        /* run query */
+        if (data.getData().size() == 0 || data.getKeys().size() == 0) return null;
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        /* prepare the statement */
+        final InsertTableRawQuery raw = queryMapper.tableCsvDtoToRawUpdateQuery(table, data);
+        final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
+        final int[] idx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> query.setParameter(idx[0]++, value));
+        log.trace("query with parameters {}", query);
+        return insert(query, session, factory);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, TupleDeleteException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
+        /* run query */
+        if (data.getKeys().size() == 0) return;
+        final long startSession = System.currentTimeMillis();
+        final SessionFactory factory = getSessionFactory(database, true);
+        final Session session = factory.openSession();
+        log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
+        session.beginTransaction();
+        /* prepare the statement */
+        final NativeQuery<?> query = session.createSQLQuery(queryMapper.tableCsvDtoToRawDeleteQuery(table, data));
+        final int[] idx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> query.setParameter(idx[0]++, value));
+        final int affectedTuples;
+        try {
+            affectedTuples = query.executeUpdate();
+        } catch (PersistenceException e) {
+            session.close();
+            factory.close();
+            log.error("Could not insert data: {}", e.getMessage());
+            throw new TableMalformedException("Could not insert data", e);
+        }
+        session.getTransaction()
+                .commit();
+        session.close();
+        factory.close();
+        if (affectedTuples == 0) {
+            log.error("No tuples were deleted");
+            throw new TupleDeleteException("No tuples deleted");
+        }
+        log.info("Deleted {} tuple(s)", affectedTuples);
+        log.debug("Deleted tuple(s) {}", data);
     }
 
     @Override
