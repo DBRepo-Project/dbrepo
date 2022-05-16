@@ -300,7 +300,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
 
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
-        return insert(query, session, factory);
+        return execute(query, session, factory);
+
+
     }
 
     @Override
@@ -325,7 +327,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         data.getData()
                 .forEach((key, value) -> query.setParameter(idx[0]++, value));
         log.trace("query with parameters {}", query);
-        return insert(query, session, factory);
+        return execute(query, session, factory);
     }
 
     @Override
@@ -379,37 +381,63 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
-        session.beginTransaction();
-        /* prepare the statement */
+        /* preparing the statements */
         final String rawTemp = queryMapper.generateTemporaryTableSQL(table);
-        final NativeQuery<?> queryCreate = session.createSQLQuery(rawTemp);
-        log.debug(rawTemp);
         final String rawDeleteTemp = queryMapper.dropTemporaryTableSQL(table);
-        final NativeQuery<?> queryDelete = session.createSQLQuery(rawDeleteTemp);
-        log.debug(rawDeleteTemp);
-        insert(queryCreate,session, factory);
         final InsertTableRawQuery raw = queryMapper.pathToRawInsertQuery(table, data);
-        final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
-        Integer i = insert(query, session, factory);
-        insert(queryDelete, session, factory);
-        session.close();
-        factory.close();
+        final String rawCopy = queryMapper.generateInsertFromTemporaryTableSQL(table);
+
+        /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
+        execute(rawTemp, database);
+        execute(raw.getQuery(), database);
+        Integer i =execute(rawCopy, database);
+        execute(rawDeleteTemp, database);
         return i;
+
+
     }
 
     /**
      * Executes a insert query on an active Hibernate session on a table with given id and returns the affected rows.
      *
-     * @param query   The query.
-     * @param session The active Hibernate session.
-     * @param factory The active Hibernate session factory.
+     * @param rawQuery The query to execute
+     * @param database the database to execute the query in
      * @return The affected rows, if successful.
      * @throws TableMalformedException The table metadata is wrong.
      */
-    private Integer insert(NativeQuery<?> query, Session session, SessionFactory factory)
+    private Integer execute(String rawQuery, Database database) throws TableMalformedException {
+        final int affectedTuples;
+        SessionFactory factory = getSessionFactory(database, true);
+        Session session = factory.openSession();
+        session.beginTransaction();
+        NativeQuery<?> query = session.createSQLQuery(rawQuery);
+        try {
+            affectedTuples = query.executeUpdate();
+            log.debug("Affected Tuples: {}", affectedTuples);
+        } catch (PersistenceException e) {
+            session.close();
+            factory.close();
+            log.error("Could not insert data: {}", e.getMessage());
+            log.throwing(e);
+            throw new TableMalformedException("Could not insert data", e);
+        }
+        session.getTransaction()
+                .commit();
+        session.close();
+        factory.close();
+        return affectedTuples;
+    }
+
+    /**
+     *
+     * @param query
+     * @param session
+     * @param factory
+     * @return
+     * @throws TableMalformedException
+     */
+    private Integer execute(NativeQuery<?> query, Session session, SessionFactory factory)
             throws TableMalformedException {
         final int affectedTuples;
         try {
@@ -422,8 +450,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         session.getTransaction()
                 .commit();
+        session.close();
+        factory.close();
         return affectedTuples;
     }
+
 
     @Transactional(readOnly = true)
     protected List<TableColumn> parseColumns(Query query, Database database)

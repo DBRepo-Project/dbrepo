@@ -98,8 +98,9 @@ public interface QueryMapper {
         return generateTable.toString();
     }
 
+
     default String dropTemporaryTableSQL(Table table) {
-        final StringBuilder t = new StringBuilder("DROP TEMPORARY TABLE `")
+        final StringBuilder t = new StringBuilder("DROP TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -107,6 +108,7 @@ public interface QueryMapper {
         log.debug(t.toString());
         return t.toString();
     }
+
 
     default InsertTableRawQuery pathToRawInsertQuery(Table table, ImportDto data) {
         final StringBuilder query = new StringBuilder("LOAD DATA LOCAL INFILE '")
@@ -630,6 +632,44 @@ public interface QueryMapper {
             return escaped;
         }
         return name;
+    }
+
+    /**
+     * Generates an insert statement so that the data from the temporary table is inserted in the original one.
+     * @param table
+     * @return
+     */
+    default String generateInsertFromTemporaryTableSQL(Table table) {
+        final StringBuilder generateTable = new StringBuilder("INSERT INTO `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("` SELECT ");
+        for(TableColumn tc : table.getColumns()) {
+            generateTable.append("`");
+            generateTable.append(tc.getInternalName()).append("`,");
+        }
+
+        generateTable.deleteCharAt(generateTable.length()-1);
+        generateTable.append(" FROM `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("_temporary`");
+
+        generateTable.append(" ON DUPLICATE KEY UPDATE ");
+        for(TableColumn tc : table.getColumns())
+            generateTable.append("`")
+                    .append(tc.getInternalName())
+                    .append("`")
+                    .append("=")
+                    .append("VALUES(`")
+                    .append(tc.getInternalName())
+                    .append("`),");
+        generateTable.deleteCharAt(generateTable.length()-1);
+        generateTable.append(";");
+        log.debug("Insert Query: {}",generateTable);
+        return generateTable.toString();
     }
 
 }
