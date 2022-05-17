@@ -110,6 +110,7 @@ export default {
   methods: {
     cancel () {
       this.$parent.$parent.$parent.persistQueryDialog = false
+      this.$emit('close', { action: 'closed' })
     },
     sleep (ms) {
       return new Promise((resolve) => {
@@ -127,9 +128,10 @@ export default {
       } catch (err) {
         this.$toast.error('Failed to persist query')
         console.error('persist failed', err)
+        return
       }
       this.$toast.success('Query persisted.')
-      this.$emit('close')
+      this.$emit('close', { action: 'persisted' })
       this.loading = false
     },
     async loadUser () {

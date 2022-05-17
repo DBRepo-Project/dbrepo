@@ -4,7 +4,7 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="persistQueryDialog = true">
+        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
@@ -47,7 +47,7 @@
         </p>
         <div>
           <p v-if="!identifier.description">
-            (empty) &#8212; <a href="#" @click.stop="persistQueryDialog = true">modify</a>
+            (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
           </p>
           <p v-if="identifier.description">{{ identifier.description }}</p>
         </div>
@@ -77,7 +77,7 @@
       v-model="persistQueryDialog"
       persistent
       max-width="640">
-      <PersistQuery @close="persistQueryDialog = false" />
+      <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
 </template>
@@ -183,6 +183,15 @@ export default {
         this.$toast.error('Could not re-execute query')
       }
       this.loading = false
+    },
+    openDialog () {
+      this.persistQueryDialog = true
+    },
+    closeDialog (event) {
+      this.persistQueryDialog = false
+      if (event.action === 'persisted') {
+        this.loadMetadata()
+      }
     }
   }
 }
