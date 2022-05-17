@@ -113,10 +113,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns.");
             throw new ColumnParseException("Failed to map/parse columns", e);
         }
-        QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
-        result.setResultNumber(
-                query.getResultNumber() != null ? query.getResultNumber() : countQueryResults(containerId, databaseId,
-                        query));
+        final QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
         result.setId(query.getId());
         session.close();
         factory.close();

@@ -84,6 +84,7 @@ public interface QueryMapper {
         }
         return QueryResultDto.builder()
                 .result(resultList)
+                .resultNumber((long) resultList.size())
                 .build();
     }
 
