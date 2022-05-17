@@ -98,6 +98,13 @@ CREATE SEQUENCE public.mdb_view_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_columns_concepts_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_identifiers_seq
     START WITH 1
     INCREMENT BY 1
@@ -138,6 +145,7 @@ CREATE TABLE public.mdb_images_date
     database_format character varying(255)      NOT NULL,
     unix_format     character varying(255)      NOT NULL,
     example         character varying(255)      NOT NULL,
+    has_time        boolean                     NOT NULL,
     created_at      timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     FOREIGN KEY (iid) REFERENCES mdb_images (id),
@@ -246,7 +254,8 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     tDescription  TEXT,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    separator     CHAR(1),
+    separator     CHAR(1)                              DEFAULT ',',
+    quote         CHAR(1),
     element_null  VARCHAR(50),
     skip_lines    BIGINT,
     element_true  VARCHAR(50),
@@ -347,9 +356,9 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
 
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 (
-    cDBID   bigint,
-    tID     bigint,
-    cID     bigint,
+    cDBID   bigint                            NOT NULL,
+    tID     bigint                            NOT NULL,
+    cID     bigint                            NOT NULL,
     URI     TEXT REFERENCES mdb_concepts (URI),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),

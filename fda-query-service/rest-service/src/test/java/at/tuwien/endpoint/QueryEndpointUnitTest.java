@@ -47,7 +47,8 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void execute_succeeds() throws TableNotFoundException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException,
+            JSQLParserException, TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -66,14 +67,16 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         //FIXME
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                0L, 0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
     public void execute_emptyResult_succeeds() throws TableNotFoundException, QueryStoreException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
+            SQLException, JSQLParserException, TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -92,14 +95,17 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         //FIXME
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                0L, 0L);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertEquals(result, response.getBody());
     }
 
     @Test
-    public void execute_tableNotFound_fails() throws TableNotFoundException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, SQLException, JSQLParserException, TableMalformedException {
+    public void execute_tableNotFound_fails()
+            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, QueryStoreException,
+            TableMalformedException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -112,7 +118,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
             //FIXME
-            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,0L,0L);
+            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request, 0L, 0L);
         });
     }
 

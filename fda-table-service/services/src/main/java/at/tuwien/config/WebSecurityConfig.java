@@ -2,6 +2,8 @@ package at.tuwien.config;
 
 import at.tuwien.auth.AuthTokenFilter;
 import at.tuwien.gateway.AuthenticationServiceGateway;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,12 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
+)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final AuthenticationServiceGateway authenticationServiceGateway;
@@ -58,16 +66,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 /* our public endpoints */
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**").permitAll()
-                .antMatchers("/v2/api-docs",
-                            "/configuration/ui",
-                            "/swagger-resources",
-                            "/configuration/security",
-                            "/swagger-ui.html",
-                            "/webjars/**",
-                            "/swagger-resources/configuration/ui",
-                            "/swagger-ui.html",
-                            "/v3/api-docs/**",
-                            "/swagger-ui/**").permitAll()
+                .antMatchers("/v3/api-docs.yaml",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html").permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
         /* add JWT token filter */

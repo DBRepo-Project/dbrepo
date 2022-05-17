@@ -3,14 +3,25 @@
     <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" flat class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         {{ table.name }}
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
-          <v-icon left>mdi-arrow-left</v-icon> Back
+        <v-btn color="primary" class="mr-2 white--text" @click="addTuple">
+          <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn class="mr-2" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="canEdit" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
+          <v-icon left>mdi-pencil</v-icon> Edit
+        </v-btn>
+        <v-btn v-if="canDelete" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
+          <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
+        </v-btn>
+        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`" target="_blank">
@@ -43,7 +54,17 @@
         :options.sync="options"
         :server-items-length="total"
         :footer-props="footerProps"
-        class="elevation-1" />
+        class="elevation-1">
+        <template v-slot:item.selection="{ item }">
+          <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
+        </template>
+      </v-data-table>
+      <v-dialog
+        v-model="editTupleDialog"
+        persistent
+        max-width="640">
+        <EditTuple :tuple="selection[0]" :edit="edit" @close="editTupleDialog = false" />
+      </v-dialog>
     </v-card>
     <div class="mt-3">
       <v-chip
@@ -61,33 +82,40 @@
   </div>
 </template>
 <script>
+import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import { format } from 'date-fns'
 
 export default {
   components: {
-    TimeTravel
+    TimeTravel,
+    EditTuple
   },
   data () {
     return {
       loading: true,
       loadingData: true,
+      editTupleDialog: false,
       total: 0,
       footerProps: {
         'items-per-page-options': [10, 20, 30, 40, 50]
       },
       dateMenu: false,
       timeMenu: false,
+      selection: [],
       pickVersionDialog: null,
       version: null,
+      edit: false,
       error: false, // XXX: `error` is never changed
       options: {
         page: 1,
         itemsPerPage: 10
       },
+      dateColumns: [],
       table: {
         name: null,
-        description: null
+        description: null,
+        columns: []
       },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -106,8 +134,13 @@ export default {
     token () {
       return this.$store.state.token
     },
+    requestHeaders () {
+      if (this.token === null) {
+        return null
+      }
+      return { Authorization: `Bearer ${this.token}` }
+    },
     versionColor () {
-      console.debug('version', this.version)
       if (this.version === null) {
         return 'grey lighten-1'
       }
@@ -118,6 +151,13 @@ export default {
         return null
       }
       return this.formatDate(this.version)
+    },
+    canEdit () {
+      if (this.selection.length !== 1) { return false }
+      return this.edit === true
+    },
+    canDelete () {
+      return this.selection.length !== 0
     }
   },
   watch: {
@@ -134,23 +174,59 @@ export default {
     this.loadData()
   },
   methods: {
+    addTuple () {
+      this.edit = false
+      const data = {}
+      this.table.columns.forEach((c) => {
+        data[c.internal_name] = null
+      })
+      this.selection = [data]
+      this.editTupleDialog = true
+    },
+    async deleteItems () {
+      if (this.selection.length < 1) {
+        return
+      }
+      try {
+        for (const select of this.selection) {
+          /* remove in container */
+          const constraints = {}
+          this.table.columns
+            .filter(c => c.is_primary_key)
+            .forEach((c) => {
+              constraints[c.internal_name] = select[c.internal_name]
+            })
+          const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
+            headers: this.requestHeaders,
+            data: { keys: constraints }
+          })
+          console.debug('tuple delete result', res)
+        }
+      } catch (err) {
+        console.error('Failed to delete rows', err)
+        this.$toast.error('Failed to delete rows.')
+        return
+      }
+      this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
+      this.selection = []
+      /* reload */
+      await this.loadData()
+    },
     async loadProperties () {
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
         this.table = res.data
-        console.debug('headers', res.data.columns)
-        this.headers = res.data.columns.map((c) => {
+        console.debug('headers', res.data.columns, 'table', this.table)
+        this.headers = [{ value: 'selection', text: '', sortable: false }]
+        res.data.columns.map((c) => {
           return {
-            value: c.name,
+            value: c.internal_name,
             text: this.columnAddition(c) + c.name,
-
-            // sorting is disabled for now
-            // backed has sorting functionality in 8cf84d4d3502202c5947eefb49bc6f48cebff234,
-            // branch 53-task-provide-property-information-for-metadata-db-frontend
-            // currenlty unmergable to dev
             sortable: false
           }
-        })
+        }).forEach(header => this.headers.push(header))
+        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'DATE' || c.column_type === 'TIMESTAMP'))
+        console.debug('date columns are', this.dateColumns)
       } catch (err) {
         this.$toast.error('Could not get table details.')
       }
@@ -165,9 +241,16 @@ export default {
           url += `&timestamp=${new Date(this.version).toISOString()}`
         }
         const res = await this.$axios.get(url)
-        console.debug('version', this.datetime, 'table data', res.data)
         this.total = parseInt(res.headers['fda-count'])
-        this.rows = res.data.result
+        this.rows = res.data.result.map((row) => {
+          for (const col in row) {
+            if (this.dateColumns.filter(c => c.internal_name === col).length > 0) {
+              row[col] = this.formatDate(row[col])
+            }
+          }
+          return row
+        })
+        console.debug('rows', this.rows)
       } catch (err) {
         console.error('failed to load data', err)
         this.$toast.error('Could not load table data.')
@@ -184,11 +267,24 @@ export default {
       return ''
     },
     formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm')
+      return format(new Date(d), 'yyyy-MM-dd HH:mm:ss')
     }
   }
 }
 </script>
 
 <style>
+thead td:first-child,
+tbody td:first-child {
+  width: 1%;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

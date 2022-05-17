@@ -1,16 +1,17 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
-import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,20 +20,17 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.sql.SQLException;
 
 @Log4j2
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/query")
 public class QueryEndpoint {
 
-    private final QueryMapper queryMapper;
     private final QueryService queryService;
     private final StoreService storeService;
 
     @Autowired
-    public QueryEndpoint(QueryMapper queryMapper, QueryService queryService, StoreService storeService) {
-        this.queryMapper = queryMapper;
+    public QueryEndpoint(QueryService queryService, StoreService storeService) {
         this.queryService = queryService;
         this.storeService = storeService;
     }
@@ -47,7 +45,7 @@ public class QueryEndpoint {
                                                   @RequestParam(value = "page", required = false) Long page,
                                                   @RequestParam(value = "size", required = false) Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
-            TableNotFoundException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            TableNotFoundException, ContainerNotFoundException, TableMalformedException, ColumnParseException {
         /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Query is empty");
@@ -68,13 +66,30 @@ public class QueryEndpoint {
                                                     @NotNull @PathVariable("queryId") Long queryId,
                                                     @RequestParam(value = "page", required = false) Long page, @RequestParam(value = "size", required = false) Long size)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableNotFoundException, QueryMalformedException, ContainerNotFoundException, SQLException, JSQLParserException, TableMalformedException {
+            TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
+            ColumnParseException {
         final Query query = storeService.findOne(id, databaseId, queryId);
-        log.debug(query.toString());
         final QueryResultDto result = queryService.reExecute(id, databaseId, query, page, size);
         result.setId(queryId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
+    }
+
+    @GetMapping("/{queryId}/export")
+    @Transactional(readOnly = true)
+    @Operation(summary = "Exports some query")
+    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
+                                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                                    @NotNull @PathVariable("queryId") Long queryId)
+            throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, TableMalformedException, FileStorageException {
+        final Query query = storeService.findOne(id, databaseId, queryId);
+        final HttpHeaders headers = new HttpHeaders();
+        final ExportResource resource = queryService.findOne(id, databaseId, queryId);
+        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource.getResource());
     }
 
 }

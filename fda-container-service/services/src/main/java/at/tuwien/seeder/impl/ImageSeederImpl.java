@@ -40,6 +40,10 @@ public class ImageSeederImpl extends AbstractSeeder implements Seeder {
         log.info("Seeded image date id {}", date4.getId());
         final ContainerImageDate date5 = imageDateRepository.save(IMAGE_DATE_5);
         log.info("Seeded image date id {}", date5.getId());
+        final ContainerImageDate date6 = imageDateRepository.save(IMAGE_DATE_6);
+        log.info("Seeded image date id {}", date6.getId());
+        final ContainerImageDate date7 = imageDateRepository.save(IMAGE_DATE_7);
+        log.info("Seeded image date id {}", date7.getId());
     }
 
 }

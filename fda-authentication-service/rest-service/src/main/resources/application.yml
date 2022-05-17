@@ -23,6 +23,7 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: localhost
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
@@ -31,4 +32,4 @@ fda:
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret
-  expiration.ms: 86400000
+  expiration.ms: 86400000 # 24 hrs

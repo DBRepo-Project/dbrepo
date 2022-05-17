@@ -22,6 +22,10 @@ logging:
   level:
     root: warn
     at.tuwien.: trace
+    at.tuwien.mapper.: trace
+    at.tuwien.service.: trace
+    at.tuwien.config.: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-query-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
