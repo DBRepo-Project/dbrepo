@@ -105,14 +105,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         log.trace("container bind {}", bind);
         final CreateContainerResponse response2 =
                 dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
-                .withName(CONTAINER_2_INTERNALNAME)
-                .withIpv4Address(CONTAINER_2_IP)
-                .withHostName(CONTAINER_2_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-                        "MARIADB_DATABASE=zoo")
-                .withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp"))
-                .exec();
+                        .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                        .withName(CONTAINER_2_INTERNALNAME)
+                        .withIpv4Address(CONTAINER_2_IP)
+                        .withHostName(CONTAINER_2_INTERNALNAME)
+                        .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                                "MARIADB_DATABASE=zoo")
+                        .withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp"))
+                        .exec();
         CONTAINER_1.setHash(response.getId());
         CONTAINER_2.setHash(response2.getId());
         DockerConfig.startContainer(CONTAINER_1);
@@ -325,6 +325,36 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(BigInteger.valueOf(3L), response.getResult().get(2).get("id"));
         assertEquals(BigInteger.valueOf(4L), response.getResult().get(3).get("id"));
         assertEquals(BigInteger.valueOf(5L), response.getResult().get(4).get("id"));
+    }
+
+    @Test
+    public void execute_joinWithSemicolon_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableNotFoundException, QueryStoreException, ContainerNotFoundException,
+            TableMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT z.id FROM zoo z INNER JOIN names n ON n.id = z.id;")
+                .build();
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, null, null);
+        assertEquals(5, response.getResultNumber());
+        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
+        assertEquals(BigInteger.valueOf(2L), response.getResult().get(1).get("id"));
+        assertEquals(BigInteger.valueOf(3L), response.getResult().get(2).get("id"));
+        assertEquals(BigInteger.valueOf(4L), response.getResult().get(3).get("id"));
+        assertEquals(BigInteger.valueOf(5L), response.getResult().get(4).get("id"));
+    }
+
+    @Test
+    public void execute_joinColumnNotExists_fails() {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT z.id2 FROM zoo z INNER JOIN names n ON n.id = z.id")
+                .build();
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, null, null);
+        });
     }
 
     @Test

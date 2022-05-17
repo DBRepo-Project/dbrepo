@@ -100,7 +100,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.info("Execution on database id {} affected {} rows", databaseId, affectedTuples);
             session.getTransaction()
                     .commit();
-        } catch (SQLGrammarException e) {
+        } catch (PersistenceException e) {
             session.close();
             factory.close();
             throw new QueryMalformedException("Query not valid for this database", e);

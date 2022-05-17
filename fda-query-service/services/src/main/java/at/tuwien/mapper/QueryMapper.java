@@ -480,7 +480,12 @@ public interface QueryMapper {
         if (timestamp == null) {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
-        query = query.toLowerCase(Locale.ROOT);
+        query = query.toLowerCase(Locale.ROOT)
+                .trim();
+        if (query.matches(";$")) {
+            /* remove last semicolon */
+            query = query.substring(0, query.length() - 1);
+        }
         /* query check (this is enforced by the db also) */
         final String query_ = query;
         if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::startsWith)) {
@@ -497,7 +502,7 @@ public interface QueryMapper {
         if (query.contains("join")) {
             /* put timestamp after "join" and each "on" (but before alias) */
         } else {
-            sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
+            sb.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '");
             sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
             sb.append("' ");
         }
