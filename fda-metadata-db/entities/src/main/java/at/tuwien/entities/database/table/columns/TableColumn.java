@@ -5,6 +5,8 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -23,6 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 @IdClass(TableColumnKey.class)
 @ToString
+@Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @javax.persistence.Table(name = "mdb_columns")
@@ -125,5 +128,18 @@ public class TableColumn implements Comparable<TableColumn> {
     @Override
     public int compareTo(TableColumn tableColumn) {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
+    }
+
+    public boolean equals(SelectItem other) {
+        final String name = other.toString()
+                .replace("`","");
+        final int idx = name.indexOf('.');
+        if (idx == -1) {
+            log.trace("internal name {} =?= name {}", this.internalName, name);
+            return name.equals(this.internalName);
+        }
+        log.trace("internal name {} =?= name {}", this.internalName, name.substring(idx + 1));
+        return name.substring(idx + 1)
+                .equals(this.internalName);
     }
 }
