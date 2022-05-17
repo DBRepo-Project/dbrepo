@@ -168,6 +168,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_3);
         TABLE_4.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_4);
+        TABLE_5.setDatabase(DATABASE_2);
+        tableRepository.save(TABLE_5);
         /* create columns */
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         tableRepository.save(TABLE_1);
@@ -175,6 +177,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_2);
         TABLE_4.setColumns(TABLE_4_COLUMNS);
         tableRepository.save(TABLE_4);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        tableRepository.save(TABLE_5);
     }
 
     @Test
@@ -315,16 +319,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, null, null);
-        assertEquals(3, response.getResultNumber());
-        assertEquals(13.4, response.getResult().get(0).get("MinTemp"));
-        assertEquals(-36.0653583, response.getResult().get(0).get("lat"));
-        assertEquals(146.9112214, response.getResult().get(0).get("lng"));
-        assertEquals(7.4, response.getResult().get(1).get("MinTemp"));
-        assertEquals(-36.0653583, response.getResult().get(1).get("lat"));
-        assertEquals(146.9112214, response.getResult().get(1).get("lng"));
-        assertEquals(12.9, response.getResult().get(2).get("MinTemp"));
-        assertEquals(-36.0653583, response.getResult().get(2).get("lat"));
-        assertEquals(146.9112214, response.getResult().get(2).get("lng"));
+        assertEquals(5, response.getResultNumber());
+        assertEquals(BigInteger.valueOf(1L), response.getResult().get(0).get("id"));
+        assertEquals(BigInteger.valueOf(2L), response.getResult().get(1).get("id"));
+        assertEquals(BigInteger.valueOf(3L), response.getResult().get(2).get("id"));
+        assertEquals(BigInteger.valueOf(4L), response.getResult().get(3).get("id"));
+        assertEquals(BigInteger.valueOf(5L), response.getResult().get(4).get("id"));
     }
 
     @Test

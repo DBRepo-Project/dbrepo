@@ -93,6 +93,18 @@ public abstract class BaseUnitTest {
     public final static String TABLE_4_TRUE_ELEMENT = null;
     public final static String TABLE_4_FALSE_ELEMENT = null;
 
+    public final static Long TABLE_5_ID = 5L;
+    public final static String TABLE_5_NAME = "names";
+    public final static String TABLE_5_INTERNALNAME = "names";
+    public final static String TABLE_5_DESCRIPTION = "Some names dataset";
+    public final static String TABLE_5_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_5_INTERNALNAME;
+    public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
+    public final static Long TABLE_5_SKIP_HEADERS = 1L;
+    public final static String TABLE_5_NULL_ELEMENT = null;
+    public final static Character TABLE_5_SEPARATOR = ',';
+    public final static String TABLE_5_TRUE_ELEMENT = null;
+    public final static String TABLE_5_FALSE_ELEMENT = null;
+
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
@@ -254,7 +266,7 @@ public abstract class BaseUnitTest {
     public final static Boolean COLUMN_4_1_PRIMARY = false;
     public final static String COLUMN_4_1_NAME = "id";
     public final static String COLUMN_4_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.DECIMAL;
+    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.NUMBER;
     public final static Long COLUMN_4_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_1_NULL = false;
     public final static Boolean COLUMN_4_1_UNIQUE = true;
@@ -542,6 +554,48 @@ public abstract class BaseUnitTest {
     public final static String COLUMN_4_21_FOREIGN_KEY = null;
     public final static String COLUMN_4_21_CHECK = null;
     public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
+
+    public final static Long COLUMN_5_1_ID = 23L;
+    public final static Integer COLUMN_5_1_ORDINALPOS = 0;
+    public final static Boolean COLUMN_5_1_PRIMARY = true;
+    public final static String COLUMN_5_1_NAME = "id";
+    public final static String COLUMN_5_1_INTERNAL_NAME = "id";
+    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_5_1_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_1_NULL = false;
+    public final static Boolean COLUMN_5_1_UNIQUE = true;
+    public final static Boolean COLUMN_5_1_AUTO_GENERATED = true;
+    public final static String COLUMN_5_1_FOREIGN_KEY = null;
+    public final static String COLUMN_5_1_CHECK = null;
+    public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
+
+    public final static Long COLUMN_5_2_ID = 24L;
+    public final static Integer COLUMN_5_2_ORDINALPOS = 1;
+    public final static Boolean COLUMN_5_2_PRIMARY = false;
+    public final static String COLUMN_5_2_NAME = "firstname";
+    public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
+    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_5_2_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_2_NULL = false;
+    public final static Boolean COLUMN_5_2_UNIQUE = false;
+    public final static Boolean COLUMN_5_2_AUTO_GENERATED = false;
+    public final static String COLUMN_5_2_FOREIGN_KEY = null;
+    public final static String COLUMN_5_2_CHECK = null;
+    public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
+
+    public final static Long COLUMN_5_3_ID = 25L;
+    public final static Integer COLUMN_5_3_ORDINALPOS = 2;
+    public final static Boolean COLUMN_5_3_PRIMARY = false;
+    public final static String COLUMN_5_3_NAME = "lastname";
+    public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
+    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_5_3_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_3_NULL = false;
+    public final static Boolean COLUMN_5_3_UNIQUE = false;
+    public final static Boolean COLUMN_5_3_AUTO_GENERATED = false;
+    public final static String COLUMN_5_3_FOREIGN_KEY = null;
+    public final static String COLUMN_5_3_CHECK = null;
+    public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
 
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
             ContainerImageEnvironmentItem.builder()
@@ -1657,6 +1711,52 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_4_21_ENUM_VALUES)
                     .build());
 
+    public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_5_1_ID)
+                    .ordinalPosition(COLUMN_5_1_ORDINALPOS)
+                    .cdbid(DATABASE_2_ID)
+                    .tid(TABLE_5_ID)
+                    .name(COLUMN_5_1_NAME)
+                    .internalName(COLUMN_5_1_INTERNAL_NAME)
+                    .columnType(COLUMN_5_1_TYPE)
+                    .dfid(COLUMN_5_1_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_5_1_NULL)
+                    .isUnique(COLUMN_5_1_UNIQUE)
+                    .autoGenerated(COLUMN_5_1_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_1_PRIMARY)
+                    .enumValues(COLUMN_5_1_ENUM_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_5_2_ID)
+                    .ordinalPosition(COLUMN_5_2_ORDINALPOS)
+                    .cdbid(DATABASE_2_ID)
+                    .tid(TABLE_5_ID)
+                    .name(COLUMN_5_2_NAME)
+                    .internalName(COLUMN_5_2_INTERNAL_NAME)
+                    .columnType(COLUMN_5_2_TYPE)
+                    .dfid(COLUMN_5_2_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_5_2_NULL)
+                    .isUnique(COLUMN_5_2_UNIQUE)
+                    .autoGenerated(COLUMN_5_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_2_PRIMARY)
+                    .enumValues(COLUMN_5_2_ENUM_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_5_3_ID)
+                    .ordinalPosition(COLUMN_5_3_ORDINALPOS)
+                    .cdbid(DATABASE_2_ID)
+                    .tid(TABLE_5_ID)
+                    .name(COLUMN_5_3_NAME)
+                    .internalName(COLUMN_5_3_INTERNAL_NAME)
+                    .columnType(COLUMN_5_3_TYPE)
+                    .dfid(COLUMN_5_3_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_5_3_NULL)
+                    .isUnique(COLUMN_5_3_UNIQUE)
+                    .autoGenerated(COLUMN_5_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_3_PRIMARY)
+                    .enumValues(COLUMN_5_3_ENUM_VALUES)
+                    .build());
+
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .created(Instant.now())
@@ -1719,6 +1819,22 @@ public abstract class BaseUnitTest {
             .trueElement(TABLE_4_TRUE_ELEMENT)
             .falseElement(TABLE_4_FALSE_ELEMENT)
             .skipLines(TABLE_4_SKIP_HEADERS)
+            .build();
+
+    public final static Table TABLE_5 = Table.builder()
+            .id(TABLE_5_ID)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .topic(TABLE_5_TOPIC)
+            .separator(TABLE_5_SEPARATOR)
+            .nullElement(TABLE_5_NULL_ELEMENT)
+            .trueElement(TABLE_5_TRUE_ELEMENT)
+            .falseElement(TABLE_5_FALSE_ELEMENT)
+            .skipLines(TABLE_5_SKIP_HEADERS)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()

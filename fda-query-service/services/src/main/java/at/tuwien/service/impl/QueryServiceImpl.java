@@ -417,8 +417,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Transactional(readOnly = true)
-    protected List<TableColumn> parseColumns(Query query, Database database) throws ImageNotSupportedException,
-            JSQLParserException {
+    protected List<TableColumn> parseColumns(Query query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final Statement statement = parserRealSql.parse(new StringReader(query.getQuery()));
@@ -450,21 +449,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
 
         /* Checking if all tables exist */
-        List<TableColumn> allColumns = new ArrayList<>();
+        final List<TableColumn> allColumns = new ArrayList<>();
         for (FromItem fromItem : tables) {
             boolean i = false;
             for (final Table table : database.getTables()) {
-                final String tableName = fromItem.toString().contains(" ") ? fromItem.toString()
-                        .split(" ")[0] : fromItem.toString();
-                if (queryMapper.stringToEscapedString(table.getInternalName()).equals(tableName)) {
+                if (table.equals(fromItem)) {
+                    log.trace("table {} equals from item {}", table.getInternalName(), fromItem);
                     allColumns.addAll(table.getColumns());
-                    log.trace("matched table {} with columns {}", table.getInternalName(),
-                            table.getColumns().stream().map(TableColumn::getInternalName).collect(
-                                    Collectors.toList()));
                     i = false;
                     break;
                 }
-                queryMapper.stringToEscapedString(fromItem.toString());
+                log.trace("table {} did not equal from item {}", table.getInternalName(), fromItem);
                 i = true;
             }
             if (i) {
@@ -474,22 +469,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
 
         /* Checking if all columns exist */
-        for (SelectItem clause : clauses) {
-            String select = queryMapper.stringToEscapedString(clause.toString());
-            log.debug(select);
-            if (select.trim().equals("*")) {
+        for (SelectItem item : clauses) {
+            if (item.toString().trim().equals("*")) {
                 log.warn("Do not use * in queries");
                 continue;
             }
-            // ignore prefixes
-            if (select.contains(".")) {
-                log.debug(select);
-                select = select.split("\\.")[1];
-            }
+            final String clause = queryMapper.selectItemToEscapedString(item);
             boolean i = false;
             for (TableColumn tc : allColumns) {
-                log.trace("{},{},{}", tc.getInternalName(), tc.getName(), clause);
-                if (select.equals(queryMapper.stringToEscapedString(tc.getInternalName()))) {
+                if (tc.equals(item)) {
                     i = false;
                     columns.add(tc);
                     break;
@@ -497,7 +485,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 i = true;
             }
             if (i) {
-                log.error("Column {} does not exist", clause);
+                log.error("Column {} does not exist", item);
                 throw new JSQLParserException("Column does not exist");
             }
         }

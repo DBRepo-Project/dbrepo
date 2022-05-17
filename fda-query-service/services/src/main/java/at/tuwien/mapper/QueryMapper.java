@@ -14,6 +14,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ImageNotSupportedException;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -520,9 +521,7 @@ public interface QueryMapper {
         }
         log.debug("mapped raw view-only query [{}]", statement);
         return statement;
-
     }
-
 
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
             throws ImageNotSupportedException {
@@ -641,12 +640,13 @@ public interface QueryMapper {
         return name;
     }
 
-    default String fromItemToString(FromItem data) {
-        if (data.getAlias() != null) {
-            return data.toString()
-                    .substring(0, data.toString().indexOf(' '));
+    default String selectItemToEscapedString(SelectItem data) {
+        final String item = data.toString();
+        final int idx = item.indexOf('.');
+        if (idx == -1) {
+            return "`" + item + "`";
         }
-        return data.toString();
+        return "`" + item.substring(idx + 1) + "`";
     }
 
 }
