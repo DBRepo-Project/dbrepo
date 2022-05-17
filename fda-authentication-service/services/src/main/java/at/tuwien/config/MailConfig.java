@@ -25,6 +25,9 @@ public class MailConfig {
     @Value("${fda.mail.prefix}")
     private String mailPrefix;
 
+    @Value("${spring.mail.username}")
+    private String mailUsername;
+
     @Bean
     public SpringTemplateEngine springTemplateEngine() {
         final SpringTemplateEngine springTemplateEngine = new SpringTemplateEngine();
