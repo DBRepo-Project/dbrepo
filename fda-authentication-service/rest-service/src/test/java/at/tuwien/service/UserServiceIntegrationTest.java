@@ -6,6 +6,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RoleNotFoundException;
 import at.tuwien.exception.UserEmailExistsException;
+import at.tuwien.exception.UserEmailFailedException;
 import at.tuwien.exception.UserNameExistsException;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     private UserService userService;
 
     @Test
-    public void create_succeeds() throws UserNameExistsException, RoleNotFoundException, UserEmailExistsException {
+    public void create_succeeds()
+            throws UserNameExistsException, RoleNotFoundException, UserEmailExistsException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .username(USER_1_USERNAME)
                 .password(USER_1_PASSWORD)

@@ -8,5 +8,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "jdoe";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_FIRSTNAME = "John";
+    public final static String USER_1_LASTNAME = "Doe";
 
 }
