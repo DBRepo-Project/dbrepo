@@ -81,6 +81,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
+        tmp.setCreators(List.of());
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(tmp);
         entity.setCreators(data.getCreators()

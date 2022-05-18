@@ -72,6 +72,10 @@
         <p v-if="identifier.creators.length === 0">
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
+        <p v-for="(creator,i) in identifier.creators" :key="i">
+          <span>{{ creator.lastname }} {{ creator.firstname }}</span>
+          <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
+        </p>
       </v-card-text>
       <QueryResults ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
     </v-card>

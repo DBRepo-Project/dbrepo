@@ -7,26 +7,14 @@ import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
-    @Mappings({
-            @Mapping(target = "creators", ignore = true)
-    })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
-    @Mappings({
-            @Mapping(target = "visibility", ignore = true),
-            @Mapping(target = "creators", ignore = true)
-    })
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
-    @Mappings({
-            @Mapping(target = "createdBy", ignore = true)
-    })
     Creator creatorDtoToCreator(CreatorDto data);
 
     VisibilityType visibilityTypeDtoToVisibilityType(VisibilityTypeDto data);
