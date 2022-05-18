@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.entities.user.User;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -75,15 +77,25 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         final QueryDto query = queryServiceGateway.find(data) /* check if exists */;
         log.debug("found query in query service {}", query);
-        final Identifier identifier = identifierMapper.identifierDtoToIdentifier(data);
-        identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
+        final Identifier tmp = identifierMapper.identifierDtoToIdentifier(data);
+        tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
-        identifier.setCreator(creator);
+        tmp.setCreator(creator);
         /* create in metadata database */
-        final Identifier entity = identifierRepository.save(identifier);
-        log.info("Created identifier with id {}", entity.getId());
-        log.debug("created identifier {}", entity);
-        return entity;
+        final Identifier entity = identifierRepository.save(tmp);
+        entity.setCreators(data.getCreators()
+                .stream()
+                .map(c -> {
+                    final Creator creatorDto = identifierMapper.creatorDtoToCreator(c);
+                    creatorDto.setPid(entity.getId());
+                    creatorDto.setCreator(creator);
+                    return creatorDto;
+                })
+                .collect(Collectors.toList()));
+        final Identifier identifier = identifierRepository.save(entity);
+        log.info("Created identifier with id {}", identifier.getId());
+        log.debug("created identifier {}", identifier);
+        return identifier;
     }
 
     @Override

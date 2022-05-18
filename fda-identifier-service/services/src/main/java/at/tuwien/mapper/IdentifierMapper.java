@@ -1,7 +1,9 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import org.mapstruct.Mapper;
@@ -21,6 +23,11 @@ public interface IdentifierMapper {
             @Mapping(target = "creators", ignore = true)
     })
     Identifier identifierDtoToIdentifier(IdentifierDto data);
+
+    @Mappings({
+            @Mapping(target = "createdBy", ignore = true)
+    })
+    Creator creatorDtoToCreator(CreatorDto data);
 
     VisibilityType visibilityTypeDtoToVisibilityType(VisibilityTypeDto data);
 

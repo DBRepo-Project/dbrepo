@@ -37,6 +37,10 @@ public class QueryDto {
     @Parameter(name = "creator id", example = "1")
     private Long createdBy;
 
+    @NotNull(message = "creator is required")
+    @Parameter(name = "creator")
+    private UserDto creator;
+
     @Parameter(name = "execution time", example = "2022-01-01 08:00:00.000")
     private Instant execution;
 

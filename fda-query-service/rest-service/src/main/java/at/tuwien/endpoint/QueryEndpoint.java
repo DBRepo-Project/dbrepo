@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 
 @Log4j2
 @RestController
@@ -43,16 +44,17 @@ public class QueryEndpoint {
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
                                                   @Valid @RequestBody ExecuteStatementDto data,
                                                   @RequestParam(value = "page", required = false) Long page,
-                                                  @RequestParam(value = "size", required = false) Long size)
+                                                  @RequestParam(value = "size", required = false) Long size,
+                                                  Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
-            TableNotFoundException, ContainerNotFoundException, TableMalformedException, ColumnParseException {
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException {
         /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Query is empty");
             throw new QueryMalformedException("Invalid query");
         }
         log.debug("Data for execution: {}", data);
-        final QueryResultDto result = queryService.execute(id, databaseId, data, page, size);
+        final QueryResultDto result = queryService.execute(id, databaseId, data, principal, page, size);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -79,8 +81,8 @@ public class QueryEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Exports some query")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
-                                                    @NotNull @PathVariable("databaseId") Long databaseId,
-                                                    @NotNull @PathVariable("queryId") Long queryId)
+                                                      @NotNull @PathVariable("databaseId") Long databaseId,
+                                                      @NotNull @PathVariable("queryId") Long queryId)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException {
         final Query query = storeService.findOne(id, databaseId, queryId);

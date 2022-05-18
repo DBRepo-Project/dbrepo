@@ -60,6 +60,9 @@ public class Query implements Serializable {
     @CreatedDate
     private Instant created;
 
+    @javax.persistence.Column(nullable = false)
+    private Long createdBy;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<Table> tables;
 

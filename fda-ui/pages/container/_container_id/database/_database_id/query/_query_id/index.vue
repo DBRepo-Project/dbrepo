@@ -63,11 +63,14 @@
         <p>
           Executed: <code v-if="query.execution">{{ query.execution }}</code><span v-if="!query.execution">(empty)</span>
         </p>
-        <p class="mt-2">
-          <strong>Creator</strong>
-        </p>
         <p>
-          Username: <code v-if="query.username">{{ query.username }}</code><span v-if="!query.username">(empty)</span>
+          Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
+        </p>
+        <p class="mt-2">
+          <strong>Creator(s)</strong>
+        </p>
+        <p v-if="identifier.creators.length === 0">
+          (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
       </v-card-text>
       <QueryResults ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
