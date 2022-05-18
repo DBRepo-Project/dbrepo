@@ -1,13 +1,15 @@
 Dear [[${username}]],
 
-You have successfully created an account at the demo instance of DBREPO, a joint-deployment of TU Wien and University of Vienna as part of the FAIR Data Austria project. Please note that this demo instance is only temporarily available and your data will not be saved.
+You have successfully created an account on the demo instance of DBRepo, a joint deployment of the TU Vienna and the University of Vienna as part of the FAIR Data Austria project. 
 
-If you want to receive updates on DBREPO, please register yourself to our mailing list, where we keep interested friendly-users informed: https://lists.univie.ac.at/mailman/listinfo/fairdata_dbrepo
+Please note that we reserve the right to make changes and new deployments to this demo instance. Your data will not be saved in such a case, and you may need to create a new account.
 
-We look forward for your test-data in the repository!
+If you want to receive updates on DBRepo, please subscribe to our mailing list: https://lists.univie.ac.at/mailman/listinfo/fairdata_dbrepo
+
+We are looking forward to your test data in the repository!
 
 Kind regards,
-DBREPO
+DBRepo
 
 --------
 
