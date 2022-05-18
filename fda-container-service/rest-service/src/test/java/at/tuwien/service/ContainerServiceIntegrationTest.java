@@ -15,6 +15,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.*;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -140,38 +142,43 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException {
+    public void create_succeeds()
+            throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
+            UserNotFoundException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .name(CONTAINER_1_NAME)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final Container container = containerService.create(request);
+        final Container container = containerService.create(request, principal);
         assertEquals(CONTAINER_1_NAME, container.getName());
     }
 
     @Test
-    public void create_conflictingNames_fails() throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException {
+    public void create_conflictingNames_fails()
+            throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
+            UserNotFoundException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .name(CONTAINER_1_NAME)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        containerService.create(request);
+        containerService.create(request, principal);
 
         /* test */
         assertThrows(DockerClientException.class, () -> {
-            containerService.create(request);
+            containerService.create(request, principal);
         });
     }
 
     @Test
     public void remove_hashNotFound_fails() {
-        /* request */
         final Container CONTAINER = Container.builder()
                 .id(CONTAINER_3_ID)
                 .name(CONTAINER_3_NAME)
@@ -213,10 +220,11 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .tag(IMAGE_2_TAG)
                 .name(CONTAINER_3_NAME)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            containerService.create(request);
+            containerService.create(request, principal);
         });
     }
 

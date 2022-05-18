@@ -1,23 +1,15 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,13 +20,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.List;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -104,21 +94,21 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_1_DOI, response.get(0).getDoi());
         assertEquals(2, response.get(0).getCreators().size());
         assertEquals(CREATOR_1_ID, response.get(0).getCreators().get(0).getId());
-        assertEquals(CREATOR_1_QUERY_ID, response.get(0).getCreators().get(0).getPid());
         assertEquals(CREATOR_2_ID, response.get(0).getCreators().get(1).getId());
-        assertEquals(CREATOR_2_QUERY_ID, response.get(0).getCreators().get(1).getPid());
     }
 
     @Test
     public void create_succeeds() throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException {
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(queryServiceGateway.find(IDENTIFIER_2_DTO_REQUEST))
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
-        final Identifier response = identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST);
+        final Identifier response = identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST,
+                principal);
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDbid());
         assertEquals(IDENTIFIER_2_QUERY_ID, response.getQid());
@@ -141,6 +131,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .lastModified(IDENTIFIER_2_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         doThrow(QueryNotFoundException.class)
@@ -149,7 +140,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         });
     }
 
@@ -166,6 +157,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .lastModified(IDENTIFIER_2_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(queryServiceGateway.find(IDENTIFIER_1_DTO_REQUEST))
@@ -173,12 +165,13 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         });
     }
 
     @Test
     public void create_queryServiceUnavailable_fails() throws QueryNotFoundException, RemoteUnavailableException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         doThrow(RemoteUnavailableException.class)
@@ -187,7 +180,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST, principal);
         });
     }
 
@@ -264,7 +257,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void publish_alreadyPublished_fails() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
+    public void publish_alreadyPublished_fails()
+            throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
 
         /* mock */
         identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);

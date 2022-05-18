@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface DatabaseService {
@@ -20,6 +21,7 @@ public interface DatabaseService {
 
     /**
      * Finds all known databases in the metadata database.
+     *
      * @return List of databases.
      */
     List<Database> findAll();
@@ -54,13 +56,16 @@ public interface DatabaseService {
      * @param id        The container id.
      * @param createDto The metadata.
      * @return The created database as stored on the metadata database.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws ContainerNotFoundException The container was not foudn.
-     * @throws DatabaseMalformedException The query string is malformed.
-     * @throws AmqpException              The exchange could not be created.
+     * @throws ImageNotSupportedException   The image is not supported.
+     * @throws ContainerNotFoundException   The container was not found.
+     * @throws DatabaseMalformedException   The query string is malformed.
+     * @throws AmqpException                The exchange could not be created.
+     * @throws ContainerConnectionException The connection to the container did not establish.
+     * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
      */
-    Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException;
+    Database create(Long id, DatabaseCreateDto createDto, Principal principal)
+            throws ImageNotSupportedException, ContainerNotFoundException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
 
     /**
      * Returns a new session for a given {@link Database} entity.

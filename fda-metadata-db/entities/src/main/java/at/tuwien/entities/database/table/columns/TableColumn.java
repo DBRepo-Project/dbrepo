@@ -4,6 +4,7 @@ import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -28,7 +29,9 @@ import java.util.List;
 @Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_columns")
+@javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tid", "internalName"})
+})
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
@@ -64,6 +67,12 @@ public class TableColumn implements Comparable<TableColumn> {
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
     })
     private Table table;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
 
     @Column(name = "cname", nullable = false)
     private String name;

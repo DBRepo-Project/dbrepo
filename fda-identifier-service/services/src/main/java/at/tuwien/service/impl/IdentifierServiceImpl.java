@@ -11,10 +11,9 @@ import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,26 +25,28 @@ import java.util.Optional;
 @Service
 public class IdentifierServiceImpl implements IdentifierService {
 
+    private final UserService userService;
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public IdentifierServiceImpl(IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
-                                 IdentifierRepository identifierRepository) {
+    public IdentifierServiceImpl(UserService userService, IdentifierMapper identifierMapper,
+                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository) {
+        this.userService = userService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Identifier> findAll(Long containerId, Long databaseId) {
         return identifierRepository.findAll();
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
         final Optional<Identifier> identifier = identifierRepository.findByQid(queryId);
         if (identifier.isEmpty()) {
@@ -57,9 +58,9 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Long containerId, Long databaseId, IdentifierDto data)
+    public Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException {
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
         if (!data.getVisibility().equals(VisibilityTypeDto.SELF)) {
             log.error("Identifier must be self visible for creation");
             log.debug("identifier is not self-visible {}", data);
@@ -76,6 +77,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         log.debug("found query in query service {}", query);
         final Identifier identifier = identifierMapper.identifierDtoToIdentifier(data);
         identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
+        final User creator = userService.findByUsername(principal.getName());
+        identifier.setCreator(creator);
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(identifier);
         log.info("Created identifier with id {}", entity.getId());
@@ -84,7 +87,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Identifier find(Long identifierId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findById(identifierId);
         if (optional.isEmpty()) {

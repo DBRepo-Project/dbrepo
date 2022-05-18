@@ -1,16 +1,21 @@
 package at.tuwien.seeder.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
-import at.tuwien.entities.database.Database;
+import org.apache.http.auth.BasicUserPrincipal;
 
+import java.security.Principal;
 import java.util.List;
 
 public abstract class AbstractSeeder {
+
+    public final static Long USER_1_ID = 1L;
+    public final static String USER_1_USERNAME = "system";
+
+    public final static Principal PRINCIPAL_1 = new BasicUserPrincipal(USER_1_USERNAME);
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";

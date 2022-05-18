@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,10 +56,11 @@ public class ContainerDatabaseEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> create(@NotBlank @PathVariable("id") Long id,
-                                              @Valid @RequestBody DatabaseCreateDto createDto)
+                                              @Valid @RequestBody DatabaseCreateDto createDto,
+                                              Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException {
-        final Database database = databaseService.create(id, createDto);
+            AmqpException, ContainerConnectionException, UserNotFoundException {
+        final Database database = databaseService.create(id, createDto, principal);
         log.info("Created database with id {}", database.getId());
         log.debug("created database {}", database);
         return ResponseEntity.status(HttpStatus.CREATED)

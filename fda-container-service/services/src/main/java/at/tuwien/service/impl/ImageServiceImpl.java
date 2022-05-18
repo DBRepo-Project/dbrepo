@@ -3,10 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.DockerClientException;
-import at.tuwien.exception.ImageAlreadyExistsException;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.PersistenceException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.ImageService;
@@ -25,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
+import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -34,9 +32,9 @@ import java.util.Optional;
 @Service
 public class ImageServiceImpl implements ImageService {
 
+    private final ImageMapper imageMapper;
     private final DockerClient dockerClient;
     private final ImageRepository imageRepository;
-    private final ImageMapper imageMapper;
 
     @Autowired
     public ImageServiceImpl(DockerClient dockerClient, ImageRepository imageRepository, ImageMapper imageMapper) {
@@ -64,8 +62,9 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     @Transactional
-    public ContainerImage create(ImageCreateDto createDto) throws ImageNotFoundException, ImageAlreadyExistsException,
-            DockerClientException {
+    public ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageNotFoundException,
+            ImageAlreadyExistsException,
+            DockerClientException, UserNotFoundException {
         pull(createDto.getRepository(), createDto.getTag());
         final ContainerImage image = inspect(createDto.getRepository(), createDto.getTag());
         if (imageRepository.findByRepositoryAndTag(createDto.getRepository(), createDto.getTag()).isPresent()) {

@@ -2,9 +2,9 @@ package at.tuwien;
 
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -14,21 +14,17 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.test.context.TestPropertySource;
 
-import java.beans.Visibility;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.time.temporal.ChronoUnit.HOURS;
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
+
+    public final static String USER_1_USERNAME = "junit";
 
     public final static String GATEWAY_SERVICE_REPOSITORY = "fda-gateway-service:latest";
     public final static String GATEWAY_SERVICE_INTERNAL_NAME = "fda-gateway-service";
@@ -69,7 +65,8 @@ public abstract class BaseUnitTest {
 
     public final static Long CREATOR_1_ID = 1L;
     public final static Long CREATOR_1_QUERY_ID = 1L;
-    public final static Long CREATOR_1_IDENTIFIER_ID = 1L;
+    public final static String CREATOR_1_ORCID = "00000-00000-00000";
+    public final static String CREATOR_1_AFFIL = "TU Graz";
     public final static String CREATOR_1_FIRSTNAME = "Max";
     public final static String CREATOR_1_LASTNAME = "Mustermann";
     public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
@@ -77,21 +74,15 @@ public abstract class BaseUnitTest {
 
     public final static Creator CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
-            .pid(CREATOR_1_IDENTIFIER_ID)
+            .orcid(CREATOR_1_ORCID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
 
-    public final static UserDto CREATOR_1_DTO = UserDto.builder()
-            .id(CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .build();
-
     public final static Creator CREATOR_1_REQUEST = Creator.builder()
-            .pid(CREATOR_1_IDENTIFIER_ID)
+            .orcid(CREATOR_1_ORCID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .created(CREATOR_1_CREATED)
@@ -100,7 +91,8 @@ public abstract class BaseUnitTest {
 
     public final static Long CREATOR_2_ID = 2L;
     public final static Long CREATOR_2_QUERY_ID = 1L;
-    public final static Long CREATOR_2_IDENTIFIER_ID = 1L;
+    public final static String CREATOR_2_ORCID = "00000-00000-00000";
+    public final static String CREATOR_2_AFFIL = "TU Wien";
     public final static String CREATOR_2_FIRSTNAME = "Martina";
     public final static String CREATOR_2_LASTNAME = "Mustermann";
     public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
@@ -108,7 +100,7 @@ public abstract class BaseUnitTest {
 
     public final static Creator CREATOR_2 = Creator.builder()
             .id(CREATOR_2_ID)
-            .pid(CREATOR_2_IDENTIFIER_ID)
+            .orcid(CREATOR_2_ORCID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .created(CREATOR_2_CREATED)
@@ -116,30 +108,28 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Creator CREATOR_2_REQUEST = Creator.builder()
-            .pid(CREATOR_2_IDENTIFIER_ID)
+            .orcid(CREATOR_2_ORCID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
 
-    public final static UserDto CREATOR_2_DTO = UserDto.builder()
+    public final static CreatorDto CREATOR_1_DTO = CreatorDto.builder()
+            .id(CREATOR_1_ID)
+            .affiliation(CREATOR_1_AFFIL)
+            .orcid(CREATOR_1_ORCID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .build();
+
+    public final static CreatorDto CREATOR_2_DTO = CreatorDto.builder()
             .id(CREATOR_2_ID)
+            .affiliation(CREATOR_2_AFFIL)
+            .orcid(CREATOR_2_ORCID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .build();
-
-    public final static String CREATOR_1_NAME = "First1 Last1";
-    public final static String CREATOR_1_AFFIL = "TU Wien";
-    public final static String CREATOR_1_ORCID = "0000-0002-5713-0725";
-
-    public final static String CREATOR_2_NAME = "First2 Last2";
-    public final static String CREATOR_2_AFFIL = "TU Graz";
-    public final static String CREATOR_2_ORCID = "0000-0002-2606-4059";
-
-    public final static String METADATA_1_TITLE = "My super dataset";
-    public final static String METADATA_1_DESCRIPTION = "The dataset contains 1000 records of ...";
-    public final static String[] METADATA_1_CREATORS = new String[]{CREATOR_1_NAME, CREATOR_2_NAME};
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "postgres";

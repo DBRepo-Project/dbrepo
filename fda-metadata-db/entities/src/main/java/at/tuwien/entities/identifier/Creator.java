@@ -13,7 +13,6 @@ import java.time.Instant;
 @Entity
 @Builder
 @ToString
-@IdClass(CreatorKey.class)
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -31,14 +30,20 @@ public class Creator {
     )
     private Long id;
 
-    @Column(nullable = false)
-    private Long pid;
+    @Column
+    private Long createdBy;
 
     @Column(nullable = false)
     private String firstname;
 
     @Column(nullable = false)
     private String lastname;
+
+    @Column
+    private String affiliation;
+
+    @Column
+    private String orcid;
 
     @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

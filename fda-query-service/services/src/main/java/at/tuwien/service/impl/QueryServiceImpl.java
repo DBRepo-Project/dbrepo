@@ -24,7 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.exception.SQLGrammarException;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -32,7 +31,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
-import javax.persistence.Tuple;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +40,6 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -66,7 +63,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement, Long page, Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, TableMalformedException, ColumnParseException {
+            ContainerNotFoundException, ColumnParseException {
         Instant i = Instant.now();
         Query q = storeService.insert(containerId, databaseId, null, statement, i);
         final QueryResultDto result = this.reExecute(containerId, databaseId, q, page, size);
@@ -78,7 +75,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, ColumnParseException {
+            ColumnParseException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -298,8 +295,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
         return execute(query, session, factory);
-
-
     }
 
     @Override
@@ -391,8 +386,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         Integer i =execute(rawCopy, database);
         execute(rawDeleteTemp, database);
         return i;
-
-
     }
 
     /**
@@ -534,6 +527,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      * mw: isn't this highly ineffective? We already have a {@link #count(Long, Long, Long, Instant)}  function
      */
     @Transactional
+    @Deprecated
     protected Long countQueryResults(Long containerId, Long databaseId, Query query)
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
         /* find */

@@ -3,14 +3,15 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.ImageMapper;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -33,24 +35,25 @@ import java.util.Optional;
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
-    private final ContainerRepository containerRepository;
-    private final DatabaseRepository databaseRepository;
-    private final DatabaseidxRepository databaseidxRepository;
+    private final AmqpMapper amqpMapper;
+    private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final RabbitMqServiceImpl amqpService;
-    private final AmqpMapper amqpMapper;
+    private final DatabaseRepository databaseRepository;
+    private final ContainerRepository containerRepository;
+    private final DatabaseidxRepository databaseidxRepository;
 
     @Autowired
     public MariaDbServiceImpl(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository, ImageMapper imageMapper,
-                              DatabaseMapper databaseMapper,
-                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper) {
+                              DatabaseidxRepository databaseidxRepository, DatabaseMapper databaseMapper,
+                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService) {
         this.containerRepository = containerRepository;
         this.databaseRepository = databaseRepository;
         this.databaseMapper = databaseMapper;
         this.databaseidxRepository = databaseidxRepository;
         this.amqpService = amqpService;
         this.amqpMapper = amqpMapper;
+        this.userService = userService;
     }
 
     @Override
@@ -107,8 +110,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(Long id, DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+    public Database create(Long id, DatabaseCreateDto createDto, Principal principal)
+            throws ImageNotSupportedException, ContainerNotFoundException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
         final Optional<Container> container = containerRepository.findById(id);
         if (container.isEmpty()) {
             log.warn("Container with id {} does not exist", id);
@@ -142,6 +146,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setExchange(amqpMapper.exchangeName(database));
         database.setDescription(createDto.getDescription());
         database.setIsPublic(createDto.getIsPublic());
+        final User creator = userService.findByUsername(principal.getName());
+        database.setCreator(creator);
         final Database out = databaseRepository.save(database);
         log.info("Created database with id {}", out.getId());
         log.debug("created database {}", out);
