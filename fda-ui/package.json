@@ -42,6 +42,7 @@
     "sql-formatter": "^4.0.2",
     "vue": "^2.6.12",
     "vue-toast-notification": "^0.5.4",
+    "vue2-ace-editor": "^0.0.15",
     "vuex": "^3.6.2",
     "vuex-persist": "^3.1.3"
   },

@@ -61,7 +61,9 @@
           </v-card-text>
         </v-tab-item>
         <v-tab-item>
-          TODO: raw sql goes here
+          <QueryRaw
+            v-model="query.raw"
+            class="mt-2 ml-3" />
         </v-tab-item>
       </v-tabs-items>
       <v-card-text>
@@ -92,11 +94,12 @@ export default {
       tableDetails: null,
       queryId: null,
       query: {
-        sql: ''
+        sql: '',
+        raw: ''
       },
       select: [],
       clauses: [],
-      tabs: null
+      tabs: 1
     }
   },
   computed: {
