@@ -115,6 +115,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         final QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
         result.setId(query.getId());
+        result.setResultNumber(countQueryResults(containerId, databaseId, query));
         session.close();
         factory.close();
         return result;
@@ -529,10 +530,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return columns;
 
     }
-
-    /**
-     * mw: isn't this highly ineffective? We already have a {@link #count(Long, Long, Long, Instant)}  function
-     */
+    
     @Transactional
     protected Long countQueryResults(Long containerId, Long databaseId, Query query)
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
