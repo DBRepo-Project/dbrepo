@@ -19,6 +19,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.hibernate.HibernateException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -80,14 +82,16 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .exec();
 
         /* create container */
-        final String bind = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
         log.trace("container bind {}", bind);
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                        "MARIADB_DATABASE=weather")
                 .withBinds(Bind.parse(bind))
                 .exec();
         CONTAINER_1.setHash(response.getId());
@@ -126,20 +130,21 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_succeeds() throws ArbitraryPrimaryKeysException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, TableMalformedException, InterruptedException,
-            TableNameExistsException, ContainerNotFoundException {
+    public void createTable_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, InterruptedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name(TABLE_2_NAME)
                 .description(TABLE_2_DESCRIPTION)
                 .columns(COLUMNS_CSV01)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -149,9 +154,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_noPrimaryKeyAutoGenerate_succeeds() throws ArbitraryPrimaryKeysException,
-            DatabaseNotFoundException, ImageNotSupportedException, DataProcessingException, TableMalformedException,
-            InterruptedException, TableNameExistsException, ContainerNotFoundException {
+    public void createTable_noPrimaryKeyAutoGenerate_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
+            InterruptedException, TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[]{
                 ColumnCreateDto.builder()
                         .name(COLUMN_1_2_NAME)
@@ -169,12 +174,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -184,21 +190,22 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_noPrimaryKeyAutoGenerateEmpty_succeeds() throws ArbitraryPrimaryKeysException,
-            DatabaseNotFoundException, ImageNotSupportedException, DataProcessingException, TableMalformedException,
-            InterruptedException, TableNameExistsException, ContainerNotFoundException {
+    public void createTable_noPrimaryKeyAutoGenerateEmpty_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
+            InterruptedException, TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[0];
         final TableCreateDto request = TableCreateDto.builder()
                 .name(TABLE_2_NAME)
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -236,20 +243,21 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         });
     }
 
     @Test
-    public void createTable_groupPrimaryKey_succeeds() throws ArbitraryPrimaryKeysException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, TableMalformedException, InterruptedException,
-            TableNameExistsException, ContainerNotFoundException {
+    public void createTable_groupPrimaryKey_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, InterruptedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[]{
                 ColumnCreateDto.builder()
                         .name(COLUMN_1_1_NAME)
@@ -277,13 +285,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
-
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -291,9 +299,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_checkExpression_succeeds() throws ArbitraryPrimaryKeysException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, TableMalformedException, InterruptedException,
-            TableNameExistsException, ContainerNotFoundException {
+    public void createTable_checkExpression_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, InterruptedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[]{
                 ColumnCreateDto.builder()
                         .name(COLUMN_1_1_NAME)
@@ -311,13 +319,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
-
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -325,9 +333,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_withEnum_succeeds() throws ArbitraryPrimaryKeysException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, TableMalformedException, InterruptedException,
-            TableNameExistsException, ContainerNotFoundException {
+    public void createTable_withEnum_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, InterruptedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[]{
                 ColumnCreateDto.builder()
                         .name(COLUMN_1_1_NAME)
@@ -355,12 +363,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -370,9 +379,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createTable_withUniqueColumn_succeeds() throws ArbitraryPrimaryKeysException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, TableMalformedException, InterruptedException,
-            TableNameExistsException, ContainerNotFoundException {
+    public void createTable_withUniqueColumn_succeeds()
+            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, InterruptedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final ColumnCreateDto[] columns = new ColumnCreateDto[]{
                 ColumnCreateDto.builder()
                         .name(COLUMN_1_1_NAME)
@@ -400,12 +409,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(columns)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final Table response = tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         assertEquals(TABLE_2_NAME, response.getName());
         assertEquals(TABLE_2_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_2_DESCRIPTION, response.getDescription());
@@ -433,9 +443,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
      * type: "BLOB"
      */
     @Test
-    public void createTable_textPrimaryKey_succeeds() throws InterruptedException, SQLException, TableMalformedException,
-            ArbitraryPrimaryKeysException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, TableNameExistsException, ContainerNotFoundException {
+    public void createTable_textPrimaryKey_succeeds()
+            throws InterruptedException, SQLException, TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("Issue 99")
                 .description("Related to issue 99")
@@ -456,19 +466,20 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                                 .build()
                 })
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* start */
         DockerConfig.startContainer(CONTAINER_1);
         MariaDbConfig.clearDatabase(TABLE_1);
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
     }
 
     @Test
-    public void createTable_blobPrimaryKey_succeeds() throws InterruptedException, SQLException, TableMalformedException,
-            ArbitraryPrimaryKeysException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, TableNameExistsException, ContainerNotFoundException {
+    public void createTable_blobPrimaryKey_succeeds()
+            throws InterruptedException, SQLException, TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("Issue 99")
                 .description("Related to issue 99")
@@ -489,13 +500,14 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                                 .build()
                 })
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* start */
         DockerConfig.startContainer(CONTAINER_1);
         MariaDbConfig.clearDatabase(TABLE_1);
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
     }
 
     @Test
@@ -512,20 +524,21 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void createTable_issue106_succeeds() throws InterruptedException, SQLException, TableMalformedException,
-            ArbitraryPrimaryKeysException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, TableNameExistsException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
+            ContainerNotFoundException, UserNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("Table")
                 .description(TABLE_2_DESCRIPTION)
                 .columns(COLUMNS_CSV01)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* start */
         DockerConfig.startContainer(CONTAINER_1);
         MariaDbConfig.clearDatabase(TABLE_1);
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
     }
 
     @Test
@@ -535,13 +548,14 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .description(TABLE_2_DESCRIPTION)
                 .columns(COLUMNS_CSV01)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* start */
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request);
+            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         });
     }
 

@@ -4,8 +4,13 @@ import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.RoleNotFoundException;
+import at.tuwien.exception.UserEmailExistsException;
+import at.tuwien.exception.UserEmailFailedException;
+import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
+import at.tuwien.service.MailService;
 import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -16,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.context.Context;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -31,11 +37,13 @@ public class UserEndpoint {
 
     private final UserMapper userMapper;
     private final UserService userService;
+    private final MailService mailService;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, MailService mailService) {
         this.userMapper = userMapper;
         this.userService = userService;
+        this.mailService = mailService;
     }
 
     @GetMapping
@@ -53,8 +61,11 @@ public class UserEndpoint {
     @Transactional
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@Valid @RequestBody SignupRequestDto data) throws UserEmailExistsException,
-            UserNameExistsException, RoleNotFoundException {
+            UserNameExistsException, RoleNotFoundException, UserEmailFailedException {
         final User user = userService.create(data);
+        final Context context = new Context();
+        context.setVariable("username", user.getUsername());
+        mailService.send(user, "Account Creation", "welcome-mail.txt", context);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserDto(user));
     }

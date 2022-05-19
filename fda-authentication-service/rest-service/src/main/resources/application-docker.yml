@@ -16,6 +16,16 @@ spring:
     name: fda-authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  mail:
+    default-encoding: UTF-8
+    host: mail.student.tuwien.ac.at
+    port: 587
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    properties.mail.smtp:
+      timeout: 5000
+      auth: true
+      starttls.enable: true
 server:
   port: 9097
 logging:
@@ -23,11 +33,16 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    org.springframework.mail.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-authentication-service
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
+  mail.prefix: /
+  mail.from: DBREPO <noreply@dbrepo.ossdip.at>
+  mail.replyto: Martin Weise <martin.weise@tuwien.ac.at>
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret

@@ -7,6 +7,7 @@ import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.persistence.Basic;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
@@ -63,10 +65,13 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .repository(IMAGE_1.getRepository())
                 .tag(IMAGE_1.getTag())
                 .build();
-        when(containerService.create(request))
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(containerService.create(request, principal))
                 .thenReturn(CONTAINER_1);
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -81,10 +86,13 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .repository("image")
                 .tag("notexisting")
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
                 .thenReturn(Optional.empty());
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
@@ -99,10 +107,13 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .repository(IMAGE_1.getRepository())
                 .tag(IMAGE_1.getTag())
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
                 .thenReturn(Optional.of(IMAGE_1));
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());

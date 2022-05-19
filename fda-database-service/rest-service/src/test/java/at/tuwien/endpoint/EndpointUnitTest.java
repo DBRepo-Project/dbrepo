@@ -12,6 +12,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -120,15 +122,16 @@ public class EndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void create_succeeds() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .description(DATABASE_1_DESCRIPTION)
                 .build();
-        when(databaseService.create(CONTAINER_1_ID, request))
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        when(databaseService.create(CONTAINER_1_ID, request, principal))
                 .thenReturn(DATABASE_1);
 
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(CONTAINER_1_ID, request);
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(CONTAINER_1_ID, request, principal);
 
         /* test */
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -138,36 +141,38 @@ public class EndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void create_containerNotFound_fails() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .description(DATABASE_1_DESCRIPTION)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        when(databaseService.create(CONTAINER_1_ID, request))
+        when(databaseService.create(CONTAINER_1_ID, request, principal))
                 .thenThrow(ContainerNotFoundException.class);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            databaseEndpoint.create(CONTAINER_1_ID, request);
+            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
         });
     }
 
     @Test
     public void create_imageNotSupported_fails() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .description(DATABASE_1_DESCRIPTION)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
-        when(databaseService.create(CONTAINER_1_ID, request))
+        when(databaseService.create(CONTAINER_1_ID, request, principal))
                 .thenThrow(ImageNotSupportedException.class);
 
         /* test */
         assertThrows(ImageNotSupportedException.class, () -> {
-            databaseEndpoint.create(CONTAINER_1_ID, request);
+            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
         });
     }
 

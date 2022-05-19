@@ -2,7 +2,10 @@ package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,9 +26,12 @@ import java.util.List;
 @Document(indexName = "tblindex", createIndex = false)
 @IdClass(TableKey.class)
 @ToString
+@Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_tables")
+@javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
+})
 public class Table {
 
     @Id
@@ -41,6 +47,12 @@ public class Table {
     @Id
     @EqualsAndHashCode.Include
     private Long tdbid;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
 
     @Column(nullable = false, name = "tname")
     private String name;
@@ -59,7 +71,7 @@ public class Table {
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "table")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
     @Field(type = FieldType.Nested)
     private List<TableColumn> columns;
@@ -93,6 +105,17 @@ public class Table {
     @PreRemove
     public void preRemove() {
         this.database = null;
+    }
+
+    public boolean equals(FromItem other) {
+        final String name = other.toString()
+                .replace("`","");
+        if (other.getAlias() != null) {
+            final int idx = name.indexOf(' ');
+            return this.getInternalName()
+                    .equals(name.substring(0, idx));
+        }
+        return this.getInternalName().equals(name);
     }
 
 }

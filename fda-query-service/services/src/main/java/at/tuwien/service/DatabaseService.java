@@ -10,6 +10,7 @@ public interface DatabaseService {
      *
      * @param id The id.
      * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
      */
     Database find(Long id) throws DatabaseNotFoundException;
 }

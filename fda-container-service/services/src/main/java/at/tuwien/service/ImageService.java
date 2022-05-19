@@ -3,12 +3,10 @@ package at.tuwien.service;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.DockerClientException;
-import at.tuwien.exception.ImageAlreadyExistsException;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.PersistenceException;
+import at.tuwien.exception.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface ImageService {
@@ -38,7 +36,9 @@ public interface ImageService {
      * @throws ImageAlreadyExistsException The image already exists.
      * @throws DockerClientException       The docker client encountered a problem.
      */
-    ContainerImage create(ImageCreateDto createDto) throws ImageNotFoundException, ImageAlreadyExistsException, DockerClientException;
+    ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageNotFoundException,
+            ImageAlreadyExistsException,
+            DockerClientException, UserNotFoundException;
 
     /**
      * Updates a container image in the metadata database by given id.

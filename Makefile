@@ -1,7 +1,7 @@
 all:
 
 config-backend:
-	./.fda-deployment/fda-authentication-service/install_cert
+	./.fda-deployment/fda-authentication-service/install_smtp
 
 config-frontend:
 	./.fda-deployment/fda-ui/install_cert
@@ -129,7 +129,7 @@ run-frontend:
 run:
 	docker-compose up -d
 
-run-sandbox: config-frontend
+run-sandbox: config-frontend config-backend
 	docker-compose -f docker-compose.prod.yml up -d
 
 logs:

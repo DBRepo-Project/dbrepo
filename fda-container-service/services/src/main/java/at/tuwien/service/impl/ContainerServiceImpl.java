@@ -3,12 +3,14 @@ package at.tuwien.service.impl;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ContainerMapper;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.ContainerService;
+import at.tuwien.service.UserService;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateVolumeResponse;
@@ -16,10 +18,7 @@ import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.ConflictException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.HostConfig;
-import com.github.dockerjava.api.model.Link;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Volume;
+import com.github.dockerjava.api.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +26,7 @@ import org.springframework.util.SocketUtils;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,28 +35,32 @@ import java.util.Optional;
 public class ContainerServiceImpl implements ContainerService {
 
     private final HostConfig hostConfig;
+    private final ImageMapper imageMapper;
+    private final UserService userService;
     private final DockerClient dockerClient;
+    private final ContainerMapper containerMapper;
     private final ImageRepository imageRepository;
     private final ContainerRepository containerRepository;
-    private final ContainerMapper containerMapper;
-    private final ImageMapper imageMapper;
 
     @Autowired
     public ContainerServiceImpl(DockerClient dockerClient, ContainerRepository containerRepository,
                                 ImageRepository imageRepository, HostConfig hostConfig, ContainerMapper containerMapper,
-                                ImageMapper imageMapper) {
+                                ImageMapper imageMapper, UserService userService) {
         this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
         this.imageRepository = imageRepository;
         this.containerRepository = containerRepository;
         this.containerMapper = containerMapper;
         this.imageMapper = imageMapper;
+        this.userService = userService;
     }
 
     @Override
     @Transactional
-    public Container create(ContainerCreateRequestDto createDto) throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
-        final Optional<ContainerImage> image = imageRepository.findByRepositoryAndTag(createDto.getRepository(), createDto.getTag());
+    public Container create(ContainerCreateRequestDto createDto, Principal principal) throws ImageNotFoundException,
+            DockerClientException, ContainerAlreadyExistsException, UserNotFoundException {
+        final Optional<ContainerImage> image = imageRepository.findByRepositoryAndTag(createDto.getRepository(),
+                createDto.getTag());
         if (image.isEmpty()) {
             log.error("failed to get image with name {}:{}", createDto.getRepository(), createDto.getTag());
             throw new ImageNotFoundException("image was not found in metadata database.");
@@ -65,6 +69,7 @@ public class ContainerServiceImpl implements ContainerService {
         final HostConfig hostConfig = this.hostConfig
                 .withNetworkMode("fda-userdb")
                 .withLinks(List.of(new Link("fda-database-service", "fda-database-service")))
+                .withBinds(Bind.parse("/tmp:/tmp"))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
         /* save to metadata database */
         Container container = new Container();
@@ -72,6 +77,8 @@ public class ContainerServiceImpl implements ContainerService {
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
+        final User user = userService.findByUsername(principal.getName());
+        container.setCreator(user);
         log.trace("will create host config {} and container {}", hostConfig, container);
         /* create the volume */
         final CreateVolumeResponse response = dockerClient.createVolumeCmd()
@@ -83,7 +90,8 @@ public class ContainerServiceImpl implements ContainerService {
         /* create the container */
         final CreateContainerResponse response1;
         try {
-            response1 = dockerClient.createContainerCmd(containerMapper.containerCreateRequestDtoToDockerImage(createDto))
+            response1 = dockerClient.createContainerCmd(
+                            containerMapper.containerCreateRequestDtoToDockerImage(createDto))
                     .withName(container.getInternalName())
                     .withHostName(container.getInternalName())
                     .withEnv(imageMapper.environmentItemsToStringList(image.get().getEnvironment()))
@@ -94,7 +102,8 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("Conflicting names {}", createDto.getName());
             throw new ContainerAlreadyExistsException("Unexpected behavior", e);
         } catch (NotFoundException e) {
-            log.error("The image {}:{} not available on the container service", createDto.getRepository(), createDto.getTag());
+            log.error("The image {}:{} not available on the container service", createDto.getRepository(),
+                    createDto.getTag());
             log.debug("payload was {}", createDto);
             throw new DockerClientException("Image not available", e);
         }
@@ -158,7 +167,8 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException {
+    public Container inspect(Long id)
+            throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException {
         final Container container = find(id);
         final InspectContainerResponse response;
         try {

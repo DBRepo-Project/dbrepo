@@ -1,0 +1,15 @@
+Dear [[${username}]],
+
+You have successfully created an account at the demo instance of DBREPO, a joint-deployment of TU Wien and University of Vienna as part of the FAIR Data Austria project. Please note that this demo instance is only temporarily available and your data will not be saved.
+
+If you want to receive updates on DBREPO, please register yourself to our mailing list, where we keep interested friendly-users informed: https://lists.univie.ac.at/mailman/listinfo/fairdata_dbrepo
+
+We look forward for your test-data in the repository!
+
+Kind regards,
+DBREPO
+
+--------
+
+https://dbrepo.ossdip.at/
+https://dbrepo-docs.ossdip.at/

@@ -41,6 +41,9 @@ public class ContainerImageDate {
     @Column(name = "example", nullable = false)
     private String example;
 
+    @Column(name = "has_time", nullable = false)
+    private Boolean hasTime;
+
     @Column(name = "database_format", nullable = false)
     private String databaseFormat;
 

@@ -8,6 +8,7 @@ import at.tuwien.seeder.Seeder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -23,6 +24,7 @@ public class ImageSeederImpl extends AbstractSeeder implements Seeder {
     }
 
     @Override
+    @Transactional
     public void seed() {
         if (imageRepository.existsById(IMAGE_1_ID)) {
             log.warn("Already seeded. Skip.");
@@ -40,6 +42,10 @@ public class ImageSeederImpl extends AbstractSeeder implements Seeder {
         log.info("Seeded image date id {}", date4.getId());
         final ContainerImageDate date5 = imageDateRepository.save(IMAGE_DATE_5);
         log.info("Seeded image date id {}", date5.getId());
+        final ContainerImageDate date6 = imageDateRepository.save(IMAGE_DATE_6);
+        log.info("Seeded image date id {}", date6.getId());
+        final ContainerImageDate date7 = imageDateRepository.save(IMAGE_DATE_7);
+        log.info("Seeded image date id {}", date7.getId());
     }
 
 }

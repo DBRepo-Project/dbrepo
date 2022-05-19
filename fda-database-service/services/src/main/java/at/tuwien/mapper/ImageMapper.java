@@ -12,6 +12,7 @@ import java.util.Properties;
 @Mapper(componentModel = "spring")
 public interface ImageMapper {
 
+    @Deprecated
     default Properties containerImageToProperties(ContainerImage data) throws ImageNotSupportedException {
         final Properties properties = new Properties();
         final Optional<ContainerImageEnvironmentItem> username = data.getEnvironment()

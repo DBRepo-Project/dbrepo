@@ -110,53 +110,53 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_2);
     }
 
-    @Test
-    public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException, SQLException, ContainerNotFoundException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("key", "val")))
-                .build();
-        final ExecuteStatementDto statement1 = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
-        final ExecuteStatementDto statement2 = ExecuteStatementDto.builder()
-                .statement(QUERY_2_STATEMENT)
-                .build();
-        final Instant execution = Instant.now();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-        MariaDbConfig.clearQueryStore(TABLE_1);
-        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement1, execution);
-        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement2, execution);
-
-        /* test */
-        final List<Query> response = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
-        assertEquals(2, response.size());
-    }
-
-    @Test
-    public void findOne_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException,
-            QueryNotFoundException, InterruptedException, SQLException, ContainerNotFoundException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("key", "val")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
-        final Instant execution = Instant.now();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-        MariaDbConfig.clearQueryStore(TABLE_1);
-        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
-
-        /* test */
-        final Query response = storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
-        assertEquals(QUERY_1_ID, response.getId());
-        assertEquals(QUERY_1_STATEMENT, response.getQuery());
-        assertNotNull(response.getQueryHash());
-    }
+//    @Test
+//    public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+//            InterruptedException, SQLException, ContainerNotFoundException {
+//        final QueryResultDto result = QueryResultDto.builder()
+//                .result(List.of(Map.of("key", "val")))
+//                .build();
+//        final ExecuteStatementDto statement1 = ExecuteStatementDto.builder()
+//                .statement(QUERY_1_STATEMENT)
+//                .build();
+//        final ExecuteStatementDto statement2 = ExecuteStatementDto.builder()
+//                .statement(QUERY_2_STATEMENT)
+//                .build();
+//        final Instant execution = Instant.now();
+//
+//        /* mock */
+//        DockerConfig.startContainer(CONTAINER_1);
+//        MariaDbConfig.clearQueryStore(TABLE_1);
+//        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement1, execution);
+//        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement2, execution);
+//
+//        /* test */
+//        final List<Query> response = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
+//        assertEquals(2, response.size());
+//    }
+//
+//    @Test
+//    public void findOne_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException,
+//            QueryNotFoundException, InterruptedException, SQLException, ContainerNotFoundException {
+//        final QueryResultDto result = QueryResultDto.builder()
+//                .result(List.of(Map.of("key", "val")))
+//                .build();
+//        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
+//                .statement(QUERY_1_STATEMENT)
+//                .build();
+//        final Instant execution = Instant.now();
+//
+//        /* mock */
+//        DockerConfig.startContainer(CONTAINER_1);
+//        MariaDbConfig.clearQueryStore(TABLE_1);
+//        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
+//
+//        /* test */
+//        final Query response = storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+//        assertEquals(QUERY_1_ID, response.getId());
+//        assertEquals(QUERY_1_STATEMENT, response.getQuery());
+//        assertNotNull(response.getQueryHash());
+//    }
 
     @Test
     public void findOne_notFound_fails() throws InterruptedException, SQLException {
@@ -177,64 +177,64 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         });
     }
 
-    @Test
-    public void insert_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException,
-            InterruptedException, SQLException, ContainerNotFoundException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("key", "val")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
-        final Instant execution = Instant.now();
+//    @Test
+//    public void insert_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException,
+//            InterruptedException, SQLException, ContainerNotFoundException {
+//        final QueryResultDto result = QueryResultDto.builder()
+//                .result(List.of(Map.of("key", "val")))
+//                .build();
+//        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
+//                .statement(QUERY_1_STATEMENT)
+//                .build();
+//        final Instant execution = Instant.now();
+//
+//        /* mock */
+//        DockerConfig.startContainer(CONTAINER_1);
+//        MariaDbConfig.clearQueryStore(TABLE_1);
+//
+//        /* test */
+//        final Query response = storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
+//        assertEquals(QUERY_1_ID, response.getId());
+//        assertEquals(QUERY_1_STATEMENT, response.getQuery());
+//    }
 
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-        MariaDbConfig.clearQueryStore(TABLE_1);
-
-        /* test */
-        final Query response = storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
-        assertEquals(QUERY_1_ID, response.getId());
-        assertEquals(QUERY_1_STATEMENT, response.getQuery());
-    }
-
-    @Test
-    public void insert_notRunning_fails() throws SQLException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("id", "1")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
-        final Instant execution = Instant.now();
-
-        /* mock */
-        DockerConfig.stopContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(QueryStoreException.class, () -> {
-            storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
-        });
-    }
-
-    @Test
-    public void insert_dbNotFound_fails() throws InterruptedException, SQLException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("id", "1")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
-        final Instant execution = Instant.now();
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-        MariaDbConfig.clearQueryStore(TABLE_1);
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            storeService.insert(CONTAINER_1_ID, 9999L, result, statement, execution);
-        });
-    }
+//    @Test
+//    public void insert_notRunning_fails() throws SQLException {
+//        final QueryResultDto result = QueryResultDto.builder()
+//                .result(List.of(Map.of("id", "1")))
+//                .build();
+//        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
+//                .statement(QUERY_1_STATEMENT)
+//                .build();
+//        final Instant execution = Instant.now();
+//
+//        /* mock */
+//        DockerConfig.stopContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(QueryStoreException.class, () -> {
+//            storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, result, statement, execution);
+//        });
+//    }
+//
+//    @Test
+//    public void insert_dbNotFound_fails() throws InterruptedException, SQLException {
+//        final QueryResultDto result = QueryResultDto.builder()
+//                .result(List.of(Map.of("id", "1")))
+//                .build();
+//        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
+//                .statement(QUERY_1_STATEMENT)
+//                .build();
+//        final Instant execution = Instant.now();
+//
+//        /* mock */
+//        DockerConfig.startContainer(CONTAINER_1);
+//        MariaDbConfig.clearQueryStore(TABLE_1);
+//
+//        /* test */
+//        assertThrows(DatabaseNotFoundException.class, () -> {
+//            storeService.insert(CONTAINER_1_ID, 9999L, result, statement, execution);
+//        });
+//    }
 
 }

@@ -30,6 +30,7 @@
         <jacoco.version>0.8.7</jacoco.version>
         <spring-saml.version>1.0.10.RELEASE</spring-saml.version>
         <javax-rs.version>2.1.1</javax-rs.version>
+        <javax-mail.version>1.4.7</javax-mail.version>
     </properties>
 
     <dependencies>
@@ -51,9 +52,18 @@
             <version>${spring-cloud.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>${javax-rs.version}</version>
+        </dependency>
+        <!-- Email Template -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <!-- Entity and API -->
         <dependency>
@@ -128,6 +138,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/*-mail.txt</include>
                 </includes>
             </resource>
         </resources>

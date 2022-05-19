@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,23 +45,31 @@ public class IdentifierEndpoint {
             throws IdentifierNotFoundException {
         if (qid != null) {
             final Identifier identifier = identifierService.find(id, databaseId, qid);
+            log.info("Found identifier with id {} filtered by query id {}", identifier.getId(), qid);
+            log.debug("found identifier {} filtered by query id {}", identifier, qid);
             return ResponseEntity.ok(List.of(identifierMapper.identifierToIdentifierDto(identifier)));
         }
         final List<Identifier> identifiers = identifierService.findAll(id, databaseId);
+        log.info("Found {} identifiers", identifiers.size());
+        log.debug("found identifiers {}", identifiers);
         return ResponseEntity.ok(identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .collect(Collectors.toList()));
     }
 
     @PostMapping
+    @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody IdentifierDto data)
+                                                @NotNull @Valid @RequestBody IdentifierDto data,
+                                                Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException {
-        final Identifier identifier = identifierService.create(id, databaseId, data);
+            RemoteUnavailableException, UserNotFoundException {
+        final Identifier identifier = identifierService.create(id, databaseId, data, principal);
+        log.info("Found identifier with id {}", identifier.getId());
+        log.debug("found identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }

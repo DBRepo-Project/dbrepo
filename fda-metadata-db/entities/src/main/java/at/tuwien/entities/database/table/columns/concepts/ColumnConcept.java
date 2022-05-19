@@ -1,29 +1,27 @@
 package at.tuwien.entities.database.table.columns.concepts;
 
-
-import at.tuwien.entities.database.table.columns.TableColumnKey;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Data
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(TableColumnKey.class)
 @ToString
+@IdClass(ColumnConceptKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @javax.persistence.Table(name = "mdb_columns_concepts")
-public class ColumnConcept {
+public class ColumnConcept implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "cid", nullable = false)
-    private Long id;
+    private Long cid;
 
     @Id
     @EqualsAndHashCode.Include
@@ -33,7 +31,6 @@ public class ColumnConcept {
     @EqualsAndHashCode.Include
     private Long cdbid;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @JoinColumn(name="uri")
-    private Concept concept;
+    @Column(nullable = false)
+    private String uri;
 }

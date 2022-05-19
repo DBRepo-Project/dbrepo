@@ -7,6 +7,7 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.IdentifierPublishingNotAllowedException;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,10 +100,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .lastModified(IDENTIFIER_1_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
         });
     }
 

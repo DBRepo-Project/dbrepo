@@ -31,8 +31,13 @@ public class ImageDateDto {
 
     @NotBlank
     @JsonProperty("unix_format")
-    @Parameter(required = true, example = "dd.mm.YYYY")
+    @Parameter(required = true, example = "dd.MM.YYYY")
     private String unixFormat;
+
+    @NotNull
+    @JsonProperty("has_time")
+    @Parameter(required = true)
+    private Boolean hasTime;
 
     @JsonProperty("created_at")
     private Instant createdAt;

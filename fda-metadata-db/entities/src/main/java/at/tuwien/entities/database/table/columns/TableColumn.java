@@ -3,7 +3,11 @@ package at.tuwien.entities.database.table.columns;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
+import at.tuwien.entities.database.table.columns.concepts.Concept;
+import at.tuwien.entities.user.User;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -22,9 +26,12 @@ import java.util.List;
 @NoArgsConstructor
 @IdClass(TableColumnKey.class)
 @ToString
+@Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_columns")
+@javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tid", "internalName"})
+})
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
@@ -48,6 +55,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Long dfid;
 
+    @ToString.Exclude
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;
@@ -59,6 +67,12 @@ public class TableColumn implements Comparable<TableColumn> {
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
     })
     private Table table;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
 
     @Column(name = "cname", nullable = false)
     private String name;
@@ -106,14 +120,15 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
-    @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "cid", insertable = false, updatable = false),
-            @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-            @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
-    })
-    private ColumnConcept columnConcept;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "mdb_columns_concepts",
+            joinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            inverseJoinColumns = @JoinColumn(name = "uri"))
+    private Concept concept;
 
     @Column
     @LastModifiedDate
@@ -122,5 +137,18 @@ public class TableColumn implements Comparable<TableColumn> {
     @Override
     public int compareTo(TableColumn tableColumn) {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
+    }
+
+    public boolean equals(SelectItem other) {
+        final String name = other.toString()
+                .replace("`","");
+        final int idx = name.indexOf('.');
+        if (idx == -1) {
+            log.trace("internal name {} =?= name {}", this.internalName, name);
+            return name.equals(this.internalName);
+        }
+        log.trace("internal name {} =?= name {}", this.internalName, name.substring(idx + 1));
+        return name.substring(idx + 1)
+                .equals(this.internalName);
     }
 }
