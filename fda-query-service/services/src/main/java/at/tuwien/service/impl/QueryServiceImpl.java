@@ -113,7 +113,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         final QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
         result.setId(query.getId());
-        result.setResultNumber(countQueryResults(containerId, databaseId, query));
+        result.setResultNumber(countQueryResults(databaseId, query));
         session.close();
         factory.close();
         return result;
@@ -391,7 +391,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     /**
-     * Executes a insert query on an active Hibernate session on a table with given id and returns the affected rows.
+     * Executes an insert query on an active Hibernate session on a table with given id and returns the affected rows.
      *
      * @param rawQuery The query to execute
      * @param database the database to execute the query in
@@ -422,11 +422,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     /**
-     * @param query
-     * @param session
-     * @param factory
-     * @return
-     * @throws TableMalformedException
+     * Executes a generic native query for a given session and factory
+     *
+     * @param query   The query.
+     * @param session The session.
+     * @param factory The factory.
+     * @return The number of affected tuples.
+     * @throws TableMalformedException The table where the query was applied to is malformed.
      */
     private Integer execute(NativeQuery<?> query, Session session, SessionFactory factory)
             throws TableMalformedException {
@@ -446,7 +448,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return affectedTuples;
     }
 
-
+    /**
+     * Parses the stored columns from a given query.
+     *
+     * @param query    The query.
+     * @param database The database that contains the list of tables with list of columns.
+     * @return List of columns in the order they are referenced in the query.
+     * @throws JSQLParserException The columns could not be extracted from the query.
+     */
     @Transactional(readOnly = true)
     protected List<TableColumn> parseColumns(Query query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
@@ -524,8 +533,18 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     }
 
-    @Transactional
-    protected Long countQueryResults(Long containerId, Long databaseId, Query query)
+    /**
+     * Counts the total number of tuples in the user database with given id for a given query object
+     *
+     * @param databaseId The database id.
+     * @param query      The query object.
+     * @return The number of tuples this query returns.
+     * @throws DatabaseNotFoundException  The user database was not found in the container.
+     * @throws TableMalformedException    The table is malformed in the database (in the container).
+     * @throws ImageNotSupportedException The database image is not supported.
+     */
+    @Transactional(readOnly = true)
+    protected Long countQueryResults(Long databaseId, Query query)
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
