@@ -126,6 +126,23 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
+    public Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+            throws IdentifierNotFoundException, IdentifierAlreadyPublishedException {
+        final Identifier identifier = find(identifierId);
+        if (identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
+            /* once published, the identifier cannot be reverted, it is persistent! */
+            log.error("Identifier is already published");
+            throw new IdentifierAlreadyPublishedException("Identifier is already published");
+        }
+        identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(visibility));
+        final Identifier entity = identifierRepository.save(identifier);
+        log.info("Published identifier with id {}", identifierId);
+        log.debug("published identifier {}", entity);
+        return entity;
+    }
+
+    @Override
+    @Transactional
     public void delete(Long containerId, Long databaseId, Long identifierId) throws IdentifierNotFoundException {
         /* check */
         final Identifier identifier = find(identifierId);
