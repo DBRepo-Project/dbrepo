@@ -3,6 +3,8 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.exception.UserEmailNotVerifiedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +40,8 @@ public class AuthenticationEndpoint {
 
     @PostMapping
     @Operation(summary = "Create token")
-    public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data) {
+    public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data)
+            throws UserNotFoundException, UserEmailNotVerifiedException {
         final JwtResponseDto response = authenticationService.authenticate(data);
         return ResponseEntity.accepted()
                 .body(response);

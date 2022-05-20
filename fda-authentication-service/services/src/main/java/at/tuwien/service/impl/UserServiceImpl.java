@@ -14,7 +14,6 @@ import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.dao.TransientDataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +59,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public User findByUsernameOrEmail(String username, String email) throws UserNotFoundException {
+        /* check */
+        final Optional<User> user = userRepository.findByUsernameOrEmail(username, email);
+        if (user.isEmpty()) {
+            log.error("User not found with username {} or email {}", username, email);
+            throw new UserNotFoundException("User not found");
+        }
+        return user.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User findByUsername(String username) throws UserNotFoundException {
+        /* check */
+        final Optional<User> user = userRepository.findByUsername(username);
+        if (user.isEmpty()) {
+            log.error("User not found with username {}", username);
+            throw new UserNotFoundException("User not found");
+        }
+        return user.get();
+    }
+
+    @Override
     @Transactional
     public User create(SignupRequestDto data) throws UserEmailExistsException, UserNameExistsException {
         /* check */
@@ -73,7 +96,6 @@ public class UserServiceImpl implements UserService {
             log.error("Username is already present in the database");
             throw new UserNameExistsException("Username taken");
         }
-        /* get role */
         /* save */
         final User user = userMapper.signupRequestDtoToUser(data);
         user.setEmailVerified(false);

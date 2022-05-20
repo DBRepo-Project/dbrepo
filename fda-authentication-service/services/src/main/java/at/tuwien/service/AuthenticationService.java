@@ -2,6 +2,8 @@ package at.tuwien.service;
 
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
+import at.tuwien.exception.UserEmailNotVerifiedException;
+import at.tuwien.exception.UserNotFoundException;
 
 import java.security.Principal;
 
@@ -13,7 +15,7 @@ public interface AuthenticationService {
      * @param data The credentials.
      * @return The token, if successful
      */
-    JwtResponseDto authenticate(LoginRequestDto data);
+    JwtResponseDto authenticate(LoginRequestDto data) throws UserEmailNotVerifiedException, UserNotFoundException;
 
     /**
      * Renews a token for a given principal

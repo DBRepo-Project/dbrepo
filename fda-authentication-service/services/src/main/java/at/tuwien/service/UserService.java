@@ -4,7 +4,6 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,10 +20,29 @@ public interface UserService {
      * Finds a specific user by given id.
      *
      * @param id The id.
-     * @return The specific user.
-     * @throws UserNotFoundException The user was not found.
+     * @return The user.
+     * @throws UserNotFoundException The user was not found in the metadata database.
      */
     User find(Long id) throws UserNotFoundException;
+
+    /**
+     * Finds a specific user by given username or email.
+     *
+     * @param username The username.
+     * @param email    The email.
+     * @return The user.
+     * @throws UserNotFoundException The user was not found in the metadata database.
+     */
+    User findByUsernameOrEmail(String username, String email) throws UserNotFoundException;
+
+    /**
+     * Finds a specific user by given username.
+     *
+     * @param username The username.
+     * @return The user.
+     * @throws UserNotFoundException The user was not found in the metadata database.
+     */
+    User findByUsername(String username) throws UserNotFoundException;
 
     /**
      * Creates a new user with information.

@@ -66,6 +66,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     private List<RoleType> roles;
 
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Token> tokens;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant created;
