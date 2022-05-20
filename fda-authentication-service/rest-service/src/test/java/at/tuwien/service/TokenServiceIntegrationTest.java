@@ -26,7 +26,7 @@ public class TokenServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @Autowired
-    private UserService userService;
+    private TokenService tokenService;
 
     @Autowired
     private TokenRepository tokenRepository;
@@ -42,9 +42,9 @@ public class TokenServiceIntegrationTest extends BaseUnitTest {
         /* mock */
 
         /* test */
-        userService.updateVerification(TOKEN_1_TOKEN);
+        tokenService.invalidate(TOKEN_1_TOKEN);
         assertThrows(TokenInvalidException.class, () -> {
-            userService.updateVerification(TOKEN_1_TOKEN);
+            tokenService.invalidate(TOKEN_1_TOKEN);
         });
     }
 
