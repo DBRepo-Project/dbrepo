@@ -4,10 +4,10 @@
       <v-toolbar-title>Create Query</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="false" :disabled="!valid || !token" color="blue-grey white--text" @click="save">
+        <v-btn v-if="false" :disabled="!canExecute || !token" color="blue-grey white--text" @click="save">
           Save without execution
         </v-btn>
-        <v-btn :disabled="!valid || !token" color="primary" @click="execute">
+        <v-btn :disabled="!canExecute || !token" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
           Execute
         </v-btn>
@@ -55,14 +55,14 @@
               :columns="columnNames" />
             <v-row v-if="query.formatted">
               <v-col>
-                <highlightjs autodetect :code="query.formatted" />
+                <highlightjs language="sql" :code="query.formatted" />
               </v-col>
             </v-row>
           </v-card-text>
         </v-tab-item>
         <v-tab-item>
           <QueryRaw
-            v-model="query.raw"
+            v-model="rawSQL"
             class="mt-2 ml-3" />
         </v-tab-item>
       </v-tabs-items>
@@ -94,9 +94,9 @@ export default {
       tableDetails: null,
       queryId: null,
       query: {
-        sql: '',
-        raw: ''
+        sql: ''
       },
+      rawSQL: '',
       select: [],
       clauses: [],
       tabs: 1
@@ -125,9 +125,24 @@ export default {
       }
       return { Authorization: `Bearer ${this.token}` }
     },
-    valid () {
-      // we need to have at least one column selected
-      return this.select.length
+    sql () {
+      if (this.tabs === 0) {
+        // builder
+        return this.query.sql
+      } else {
+        // raw sql
+        return this.rawSQL
+      }
+    },
+    canExecute () {
+      if (this.tabs === 0) {
+        // builder
+        return this.sql.length &&
+                 this.select.length // select `*` columns not supported in backend
+      } else {
+        // raw sql
+        return this.sql.length
+      }
     }
   },
   watch: {
@@ -139,6 +154,9 @@ export default {
       }
     },
     table () {
+      this.queryId = null
+    },
+    sql () {
       this.queryId = null
     },
     select () {
