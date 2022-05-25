@@ -63,7 +63,7 @@
         <p>
           Executed: <code v-if="query.execution">{{ query.execution }}</code><span v-if="!query.execution">(empty)</span>
         </p>
-        <p>
+        <p v-if="query.creator">
           Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
         </p>
         <p class="mt-2">
