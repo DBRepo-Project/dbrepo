@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
 public class RabbitMqService implements MessageQueueService {
-
-    private static final String AMQP_EXCHANGE = "fda";
 
     private final Channel channel;
     private final ObjectMapper objectMapper;
@@ -54,8 +53,8 @@ public class RabbitMqService implements MessageQueueService {
     @Transactional(readOnly = true)
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
-//        final Runnable tokenRunnable = this::obtainToken;
-//        this.executorService.schedule(tokenRunnable, 1L, TimeUnit.HOURS);
+        final Runnable tokenRunnable = this::obtainToken;
+        this.executorService.schedule(tokenRunnable, 1L, TimeUnit.HOURS);
         this.obtainToken();
     }
 
@@ -80,8 +79,7 @@ public class RabbitMqService implements MessageQueueService {
     public void create(Table table) throws AmqpException {
         try {
             channel.queueDeclare(table.getTopic(), true, false, false, null);
-            channel.queueBind(table.getTopic(), AMQP_EXCHANGE + "." + table.getDatabase().getExchange(),
-                    AMQP_EXCHANGE + "." + table.getDatabase().getExchange() + "." + table.getTopic());
+            channel.queueBind(table.getTopic(), table.getDatabase().getExchange(), table.getTopic());
         } catch (IOException e) {
             log.error("Failed to create queue and bind for table with id {}", table.getId());
             log.debug("Failed to create queue and bind for table {}", table);

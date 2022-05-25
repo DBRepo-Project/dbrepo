@@ -12,7 +12,7 @@ channel = connection.channel()
 data = {'timestamp': dt.now().strftime('%Y-%m-%d %H:%M:%d'), 'location': 'somelocation',
         'value': random.randint(20, 30)}
 
-channel.basic_publish(exchange='',
+channel.basic_publish(exchange='sensor',
                       routing_key='temperature',
                       body=bytes(json.dumps(data), encoding='utf8'))
 print(' [x] Sent %v', data)
