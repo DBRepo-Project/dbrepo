@@ -15,6 +15,7 @@ import java.util.List;
 public class JwtResponseDto {
 
     @NotNull
+    @ToString.Exclude
     @Parameter(name = "jwt")
     private String token;
 

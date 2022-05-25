@@ -483,10 +483,3 @@ CREATE TABLE IF NOT EXISTS mdb_owns
 );
 
 COMMIT;
-
-BEGIN;
-
-INSERT INTO mdb_users (username, Main_Email, password)
-VALUES ('system', 'noreply@dbrepo.ossdip.at', (SELECT md5(random()::text)));
-
-COMMIT;
