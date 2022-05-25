@@ -4,6 +4,7 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.SaveStatementDto;
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -12,6 +13,7 @@ import at.tuwien.mapper.StoreMapper;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.*;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,14 +31,16 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     private final QueryMapper queryMapper;
     private final StoreMapper storeMapper;
+    private final UserService userService;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
-    public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, DatabaseService databaseService,
-                            ContainerService containerService) {
+    public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, UserService userService,
+                            DatabaseService databaseService, ContainerService containerService) {
         this.queryMapper = queryMapper;
         this.storeMapper = storeMapper;
+        this.userService = userService;
         this.databaseService = databaseService;
         this.containerService = containerService;
     }
@@ -82,7 +87,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         final Session session = factory.openSession();
         final Transaction transaction = session.beginTransaction();
         /* use jpa to select one */
-        final org.hibernate.query.Query<Query> query = session.createQuery("from Query where cid = :cid and dbid = :dbid and id = :id",
+        final org.hibernate.query.Query<Query> query = session.createQuery(
+                "from Query where cid = :cid and dbid = :dbid and id = :id",
                 Query.class);
         query.setParameter("cid", containerId);
         query.setParameter("dbid", databaseId);
@@ -104,17 +110,20 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata)
+    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
+                        Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
-        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata), null);
+            ContainerNotFoundException, UserNotFoundException {
+        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata),
+                principal, null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata, Instant execution)
+    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
+                        Principal principal, Instant execution)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, UserNotFoundException {
         /* find */
         final Container container = containerService.find(containerId);
         final Database database = databaseService.find(databaseId);
@@ -122,6 +131,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         log.debug("Insert into database id {}, metadata {}", databaseId, metadata);
+        /* user */
+        final User creator = userService.findByUsername(principal.getName());
         /* save */
         final SessionFactory factory = getSessionFactory(database, true);
         final Session session = factory.openSession();
@@ -135,6 +146,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 .resultNumber(storeMapper.queryResultDtoToLong(result))
                 .resultHash(storeMapper.queryResultDtoToString(result))
                 .execution(execution)
+                .createdBy(creator.getId())
                 .build();
         session.save(query);
         transaction.commit();
@@ -175,7 +187,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         factory.close();
         return query;
     }
-
 
 
 }

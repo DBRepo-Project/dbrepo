@@ -24,7 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.exception.SQLGrammarException;
 import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -32,17 +31,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
-import javax.persistence.Tuple;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -64,11 +62,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement, Long page, Long size)
+    public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
+                                  Principal principal, Long page, Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, TableMalformedException, ColumnParseException {
-        Instant i = Instant.now();
-        Query q = storeService.insert(containerId, databaseId, null, statement, i);
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException {
+        Query q = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
         final QueryResultDto result = this.reExecute(containerId, databaseId, q, page, size);
         q = storeService.update(containerId, databaseId, result, result.getResultNumber(), q);
         return result;
@@ -78,7 +76,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, ColumnParseException {
+            ColumnParseException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -115,6 +113,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         final QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
         result.setId(query.getId());
+        result.setResultNumber(countQueryResults(databaseId, query));
         session.close();
         factory.close();
         return result;
@@ -298,8 +297,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
         return execute(query, session, factory);
-
-
     }
 
     @Override
@@ -388,15 +385,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
         execute(rawTemp, database);
         execute(raw.getQuery(), database);
-        Integer i =execute(rawCopy, database);
+        Integer i = execute(rawCopy, database);
         execute(rawDeleteTemp, database);
         return i;
-
-
     }
 
     /**
-     * Executes a insert query on an active Hibernate session on a table with given id and returns the affected rows.
+     * Executes an insert query on an active Hibernate session on a table with given id and returns the affected rows.
      *
      * @param rawQuery The query to execute
      * @param database the database to execute the query in
@@ -427,12 +422,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     /**
+     * Executes a generic native query for a given session and factory
      *
-     * @param query
-     * @param session
-     * @param factory
-     * @return
-     * @throws TableMalformedException
+     * @param query   The query.
+     * @param session The session.
+     * @param factory The factory.
+     * @return The number of affected tuples.
+     * @throws TableMalformedException The table where the query was applied to is malformed.
      */
     private Integer execute(NativeQuery<?> query, Session session, SessionFactory factory)
             throws TableMalformedException {
@@ -452,7 +448,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return affectedTuples;
     }
 
-
+    /**
+     * Parses the stored columns from a given query.
+     *
+     * @param query    The query.
+     * @param database The database that contains the list of tables with list of columns.
+     * @return List of columns in the order they are referenced in the query.
+     * @throws JSQLParserException The columns could not be extracted from the query.
+     */
     @Transactional(readOnly = true)
     protected List<TableColumn> parseColumns(Query query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
@@ -531,10 +534,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     /**
-     * mw: isn't this highly ineffective? We already have a {@link #count(Long, Long, Long, Instant)}  function
+     * Counts the total number of tuples in the user database with given id for a given query object
+     *
+     * @param databaseId The database id.
+     * @param query      The query object.
+     * @return The number of tuples this query returns.
+     * @throws DatabaseNotFoundException  The user database was not found in the container.
+     * @throws TableMalformedException    The table is malformed in the database (in the container).
+     * @throws ImageNotSupportedException The database image is not supported.
      */
-    @Transactional
-    protected Long countQueryResults(Long containerId, Long databaseId, Query query)
+    @Transactional(readOnly = true)
+    protected Long countQueryResults(Long databaseId, Query query)
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);

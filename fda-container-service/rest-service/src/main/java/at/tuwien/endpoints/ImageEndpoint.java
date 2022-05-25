@@ -5,10 +5,7 @@ import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.DockerClientException;
-import at.tuwien.exception.ImageAlreadyExistsException;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.PersistenceException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,8 +55,10 @@ public class ImageEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data) throws ImageNotFoundException, ImageAlreadyExistsException, DockerClientException {
-        final ContainerImage image = imageService.create(data);
+    public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
+                                           Principal principal) throws ImageNotFoundException,
+            ImageAlreadyExistsException, DockerClientException, UserNotFoundException {
+        final ContainerImage image = imageService.create(data, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(imageMapper.containerImageToImageDto(image));
     }

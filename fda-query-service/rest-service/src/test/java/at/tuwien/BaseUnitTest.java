@@ -22,6 +22,8 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static String USER_1_USERNAME = "junit";
+
     public final static String DATABASE_NET = "fda-userdb";
 
     public final static String BROKER_IMAGE = "fda-broker-service:latest";

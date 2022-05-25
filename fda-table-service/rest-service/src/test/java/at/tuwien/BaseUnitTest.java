@@ -22,6 +22,8 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest extends CsvUnitTest {
 
+    public final static String USER_1_USERNAME = "junit";
+
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";

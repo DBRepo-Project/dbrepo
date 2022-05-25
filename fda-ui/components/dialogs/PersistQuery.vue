@@ -12,31 +12,75 @@
           Choose an expressive query title and describe what result the query produces.
         </v-alert>
         <v-form v-model="formValid" autocomplete="off">
-          <v-text-field
-            id="title"
-            v-model="identifier.title"
-            name="title"
-            label="Query Title"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-textarea
-            id="description"
-            v-model="identifier.description"
-            name="description"
-            rows="2"
-            label="Query Description"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-select
-            id="visibility"
-            v-model="identifier.visibility"
-            :items="visibility"
-            item-value="value"
-            item-text="name"
-            label="Visibility"
-            :rules="[v => !!v || $t('Required')]"
-            disabled
-            required />
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="title"
+                v-model="identifier.title"
+                name="title"
+                label="Query Title"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+              <v-textarea
+                id="description"
+                v-model="identifier.description"
+                name="description"
+                rows="2"
+                label="Query Description"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
+            <v-col cols="4">
+              <v-text-field
+                v-model="creator.lastname"
+                name="lastname"
+                label="Lastname"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="4">
+              <v-text-field
+                v-model="creator.firstname"
+                name="firstname"
+                label="Firstname"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="creator.affiliation"
+                name="affiliation"
+                label="Affiliation" />
+            </v-col>
+            <v-col cols="1" class="mt-5">
+              <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small @click="addCreator">
+                Add Creator
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-select
+                id="visibility"
+                v-model="identifier.visibility"
+                :items="visibility"
+                item-value="value"
+                item-text="name"
+                label="Visibility"
+                :rules="[v => !!v || $t('Required')]"
+                disabled
+                required />
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -106,16 +150,23 @@ export default {
   },
   beforeMount () {
     this.loadUser()
+    this.addCreator()
   },
   methods: {
     cancel () {
       this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
     },
-    sleep (ms) {
-      return new Promise((resolve) => {
-        setTimeout(resolve, ms)
+    addCreator () {
+      this.identifier.creators.push({
+        firstname: null,
+        lastname: null,
+        affiliation: null,
+        orcid: null
       })
+    },
+    deleteCreator (index) {
+      this.identifier.creators.splice(index, 1)
     },
     async persist () {
       this.loading = true

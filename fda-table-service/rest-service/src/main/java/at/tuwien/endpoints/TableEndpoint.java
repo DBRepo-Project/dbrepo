@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,11 +57,11 @@ public class TableEndpoint {
     @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody TableCreateDto createDto)
-            throws ImageNotSupportedException, DatabaseNotFoundException, DataProcessingException,
-            ArbitraryPrimaryKeysException, TableMalformedException, AmqpException, TableNameExistsException,
-            ContainerNotFoundException {
-        final Table table = tableService.createTable(id, databaseId, createDto);
+                                                @NotNull @Valid @RequestBody TableCreateDto createDto,
+                                                Principal principal)
+            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
+        final Table table = tableService.createTable(id, databaseId, createDto, principal);
         amqpService.create(table);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(tableMapper.tableToTableBriefDto(table));

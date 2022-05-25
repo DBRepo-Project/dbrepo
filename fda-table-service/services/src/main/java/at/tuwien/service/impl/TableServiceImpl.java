@@ -5,12 +5,14 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,14 +30,16 @@ import java.util.stream.Collectors;
 public class TableServiceImpl extends HibernateConnector implements TableService {
 
     private final TableMapper tableMapper;
+    private final UserService userService;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
 
     @Autowired
-    public TableServiceImpl(TableMapper tableMapper, TableRepository tableRepository,
+    public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
                             DatabaseService databaseService, ContainerService containerService) {
         this.tableMapper = tableMapper;
+        this.userService = userService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
         this.containerService = containerService;
@@ -80,9 +85,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public Table createTable(Long containerId, Long databaseId, TableCreateDto createDto)
+    public Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, ContainerNotFoundException {
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         /* find */
         final Container container = containerService.find(containerId);
         final Database database = databaseService.findDatabase(databaseId);
@@ -120,6 +125,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setDatabase(database);
         tmp.setTopic(tmp.getInternalName());
         tmp.setColumns(List.of());
+        final User creator = userService.findByUsername(principal.getName());
+        tmp.setCreator(creator);
         log.debug("mapped new table {}", tmp);
         /* save in metadata database */
         final Table table = tableRepository.save(tmp);

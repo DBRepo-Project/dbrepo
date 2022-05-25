@@ -22,6 +22,8 @@ public abstract class BaseUnitTest {
     public final static String BROKER_IMAGE = "rabbitmq";
     public final static String BROKER_TAG = "3-alpine";
 
+    public final static String USER_1_USERNAME = "junit";
+
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";

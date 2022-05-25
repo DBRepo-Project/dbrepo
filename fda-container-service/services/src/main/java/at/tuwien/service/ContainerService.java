@@ -5,28 +5,66 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface ContainerService {
-    @Transactional
-    Container create(ContainerCreateRequestDto createDto) throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException;
 
-    @Transactional
+    /**
+     * @param createDto
+     * @param principal
+     * @return
+     * @throws ImageNotFoundException
+     * @throws DockerClientException
+     * @throws ContainerAlreadyExistsException
+     * @throws UserNotFoundException
+     */
+    Container create(ContainerCreateRequestDto createDto, Principal principal) throws ImageNotFoundException,
+            DockerClientException, ContainerAlreadyExistsException, UserNotFoundException;
+
+    /**
+     * @param containerId
+     * @return
+     * @throws ContainerNotFoundException
+     * @throws DockerClientException
+     */
     Container stop(Long containerId) throws ContainerNotFoundException, DockerClientException;
 
-    @Transactional
+    /**
+     * @param containerId
+     * @throws ContainerNotFoundException
+     * @throws DockerClientException
+     * @throws ContainerStillRunningException
+     */
     void remove(Long containerId) throws ContainerNotFoundException, DockerClientException,
             ContainerStillRunningException;
 
-    @Transactional
+    /**
+     * @param id
+     * @return
+     * @throws ContainerNotFoundException
+     */
     Container find(Long id) throws ContainerNotFoundException;
 
-    @Transactional
+    /**
+     * @param id
+     * @return
+     * @throws ContainerNotFoundException
+     * @throws DockerClientException
+     * @throws ContainerNotRunningException
+     */
     Container inspect(Long id) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException;
 
-    @Transactional
+    /**
+     * @return
+     */
     List<Container> getAll();
 
-    @Transactional
+    /**
+     * @param containerId
+     * @return
+     * @throws ContainerNotFoundException
+     * @throws DockerClientException
+     */
     Container start(Long containerId) throws ContainerNotFoundException, DockerClientException;
 }

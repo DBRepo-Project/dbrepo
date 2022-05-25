@@ -8,6 +8,7 @@ import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +49,8 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException {
+    public void create_succeeds()
+            throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_2_REPOSITORY)
                 .tag(IMAGE_2_TAG)
@@ -57,9 +61,10 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .logo(IMAGE_2_LOGO)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        imageService.create(request);
+        imageService.create(request, principal);
     }
 
     @Test
@@ -83,10 +88,11 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .logo(IMAGE_1_LOGO)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.create(request);
+            imageService.create(request, principal);
         });
     }
 
@@ -102,10 +108,11 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .logo(IMAGE_1_LOGO)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageService.create(request);
+            imageService.create(request, principal);
         });
     }
 

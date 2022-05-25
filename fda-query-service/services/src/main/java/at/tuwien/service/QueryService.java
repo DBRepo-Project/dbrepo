@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.Instant;
 
 @Service
@@ -24,21 +25,21 @@ public interface QueryService {
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
-     * @param query       The query.
+     * @param statement   The query.
+     * @param principal   The current user.
      * @param page        The page number.
      * @param size        The page size.
      * @return The result.
-     * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryMalformedException    The query is malformed.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
-     * @throws TableMalformedException    The table is malformed.
      */
-    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto query, Long page, Long size)
-            throws TableNotFoundException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, TableMalformedException, ColumnParseException;
+    QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
+                           Principal principal, Long page, Long size)
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException;
 
     /**
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the

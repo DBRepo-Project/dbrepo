@@ -12,6 +12,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.hibernate.Session;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.nio.channels.Channel;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -166,6 +168,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
@@ -173,7 +176,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1_ID, request);
+            databaseService.create(CONTAINER_1_ID, request, principal);
         });
     }
 
