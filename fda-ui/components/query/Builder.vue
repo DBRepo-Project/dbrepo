@@ -55,7 +55,10 @@
               :columns="columnNames" />
             <v-row v-if="query.formatted">
               <v-col>
-                <highlightjs language="sql" :code="query.formatted" />
+                <QueryRaw
+                  v-model="query.formatted"
+                  disabled
+                  class="mt-2 ml-3" />
               </v-col>
             </v-row>
           </v-card-text>
@@ -99,7 +102,7 @@ export default {
       rawSQL: '',
       select: [],
       clauses: [],
-      tabs: 1
+      tabs: 0
     }
   },
   computed: {

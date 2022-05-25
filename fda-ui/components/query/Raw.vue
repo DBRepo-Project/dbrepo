@@ -2,10 +2,11 @@
   <div>
     <editor
       v-model="content"
+      :value="value || content"
       lang="sql"
       :theme="theme"
       width="600"
-      height="150"
+      :height="height"
       @init="editorInit" />
   </div>
 </template>
@@ -15,17 +16,36 @@ export default {
   components: {
     editor: require('vue2-ace-editor')
   },
+  props: {
+    value: {
+      type: String,
+      default: () => ''
+    },
+    disabled: {
+      type: Boolean,
+      default: () => false
+    }
+  },
   data () {
     return {
-      content: 'SELECT `id` FROM "myTable"',
+      content: this.value || 'SELECT `id` FROM "myTable"',
       theme: 'xcode'
     }
   },
   computed: {
+    height () {
+      return 150
+      // if (!this.disabled) { return 150 }
+      // const numLines = this.value.split('\n').length
+      // return numLines * 25
+    }
   },
   watch: {
     content (v) {
       this.$emit('input', v)
+    },
+    value (v) {
+      this.content = v
     }
   },
   mounted () {
@@ -33,7 +53,9 @@ export default {
   methods: {
     editorInit (editor) {
       editor.setOptions({
-        fontSize: '11pt'
+        fontSize: '11pt',
+        readOnly: this.disabled,
+        behavioursEnabled: !this.disabled
       })
       require('brace/ext/language_tools') // language extension prerequsite...
       require('brace/mode/html')
@@ -42,6 +64,7 @@ export default {
       require('brace/theme/xcode')
       require('brace/snippets/sql') // snippet
       editor.renderer.setOptions({
+        selectionStyle: 'text',
         showGutter: false
       })
       this.$emit('input', this.content)
