@@ -142,7 +142,7 @@ export default {
     },
     versionColor () {
       if (this.version === null) {
-        return 'grey lighten-1'
+        return 'secondary black--text'
       }
       return 'primary white--text'
     },

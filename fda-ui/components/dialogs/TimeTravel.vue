@@ -3,19 +3,29 @@
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title>
-        Time Travelling
+        Versioning
       </v-card-title>
       <v-card-subtitle>
-        View data for other version
+        Choose a timestamp, the chart shows when changes occurred.
       </v-card-subtitle>
       <v-card-text>
-        <v-date-picker
-          v-model="date"
-          no-title />
-        <v-time-picker
-          v-model="time"
-          format="24hr"
-          no-title />
+        <v-text-field
+          v-model="datetime"
+          label="Timestamp"
+          type="datetime-local" />
+        <p v-if="totalChanges > 0">
+          The are {{ totalChanges }} total changes in the dataset:
+        </p>
+        <v-sparkline
+          v-if="!loading && totalChanges > 0"
+          :labels="labels"
+          :value="values"
+          stroke-linecap="round"
+          type="trend"
+          color="primary"
+          smooth="15"
+          line-width="1"
+          padding="10" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -33,7 +43,7 @@
         <v-btn
           id="version"
           class="mb-2"
-          :disabled="date === null || time === null"
+          :disabled="datetime === null || datetime === undefined || datetime === ''"
           color="primary"
           @click="pick">
           Pick
@@ -44,20 +54,27 @@
 </template>
 
 <script>
+import _ from 'lodash'
+import { format } from 'date-fns'
 export default {
   data () {
     return {
       formValid: false,
       loading: false,
-      error: false, // XXX: `error` is never changed
-      date: null,
-      time: null
+      error: false,
+      datetime: null,
+      labels: [],
+      values: [],
+      totalChanges: 0
     }
   },
   computed: {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
     }
+  },
+  mounted () {
+    this.loadHistory()
   },
   methods: {
     cancel () {
@@ -77,11 +94,44 @@ export default {
       this.cancel()
     },
     formatDate () {
-      if (this.date === null || this.time === null) {
+      if (this.datetime === null || this.datetime === undefined || this.datetime === '') {
         return null
       }
-      console.debug('selected date', this.date, 'time', this.time)
-      return Date.parse(this.date + ' ' + this.time)
+      console.debug('selected date', this.datetime)
+      return Date.parse(this.datetime)
+    },
+    aggregateChanges (data) {
+      const changes = _.map(data, o => o.length)
+      changes.unshift(0)
+      console.debug('mapped changes', changes)
+      return changes
+    },
+    aggregateLabels (data) {
+      const labels = _.map(data, o => format(new Date(_.head(o).deleted_at), 'dd.MM.'))
+      labels.unshift('*')
+      console.debug('mapped labels', labels)
+      return labels
+    },
+    async loadHistory () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/history`, {
+          headers: this.requestHeaders
+        })
+        this.error = false
+        let data = res.data
+        data = _.reject(data, { deleted_at: null })
+        this.totalChanges = data.length
+        data = _.partition(data, o => o.deleted_at)
+        data = _.reject(data, o => o.length === 0)
+        console.debug('table history', data)
+        this.values = this.aggregateChanges(data)
+        this.labels = this.aggregateLabels(data)
+      } catch (err) {
+        this.error = true
+        console.error('failed to load table history', err)
+      }
+      this.loading = false
     }
   }
 }

@@ -4,6 +4,7 @@ import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -19,6 +20,11 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import java.text.Normalizer;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -261,11 +267,11 @@ public interface TableMapper {
     }
 
     default String tableToCreateHistoryViewRawQuery(Table data) {
-        final StringBuilder builder = new StringBuilder("CREATE VIEW history AS SELECT ");
+        final StringBuilder builder = new StringBuilder("CREATE VIEW `t_history` AS SELECT ");
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()
-                .filter(c -> c.getIsPrimaryKey())
+                .filter(TableColumn::getIsPrimaryKey)
                 .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(c.getInternalName())

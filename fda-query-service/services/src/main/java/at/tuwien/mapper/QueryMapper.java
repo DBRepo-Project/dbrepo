@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.QueryMalformedException;
@@ -616,7 +617,43 @@ public interface QueryMapper {
                 .build();
     }
 
-    @Transactional
+    default String historyRawQuery(Table data) {
+        final int[] idx = new int[]{0};
+        final StringBuilder builder = new StringBuilder("SELECT ");
+        data.getColumns()
+                .stream()
+                .filter(TableColumn::getIsPrimaryKey)
+                .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`"));
+        builder.append(", `inserted_at`, `deleted_at` FROM `t_history`;");
+        log.trace("mapped find all from history view query [{}]", builder);
+        return builder.toString();
+    }
+
+    @Transactional(readOnly = true)
+    default List<TableHistoryDto> resultListToTableHistoryDto(Table table, List<?> resultList) {
+        final Iterator<?> iterator = resultList.iterator();
+        final List<TableHistoryDto> history = new LinkedList<>();
+        while (iterator.hasNext()) {
+            final int[] idx = new int[]{0};
+            final Map<String, Object> primaryKeys = new HashMap<>();
+            final Object[] row = (Object[]) iterator.next();
+            table.getColumns()
+                    .stream()
+                    .filter(TableColumn::getIsPrimaryKey)
+                    .forEach(c -> primaryKeys.put(c.getInternalName(), row[idx[0]++]));
+            history.add(TableHistoryDto.builder()
+                    .keys(primaryKeys)
+                    .insertedAt(objectToInstant(row[idx[0]++]))
+                    .deletedAt(objectToInstant(row[idx[0]++]))
+                    .build());
+        }
+        return history;
+    }
+
+    @Transactional(readOnly = true)
     default Object dataColumnToObject(Object data, TableColumn column) throws DateTimeException {
         if (data == null) {
             return null;
@@ -687,6 +724,7 @@ public interface QueryMapper {
 
     /**
      * Generates an insert statement so that the data from the temporary table is inserted in the original one.
+     *
      * @param table
      * @return
      */
@@ -696,12 +734,12 @@ public interface QueryMapper {
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` SELECT ");
-        for(TableColumn tc : table.getColumns()) {
+        for (TableColumn tc : table.getColumns()) {
             generateTable.append("`");
             generateTable.append(tc.getInternalName()).append("`,");
         }
 
-        generateTable.deleteCharAt(generateTable.length()-1);
+        generateTable.deleteCharAt(generateTable.length() - 1);
         generateTable.append(" FROM `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
@@ -709,7 +747,7 @@ public interface QueryMapper {
                 .append("_temporary`");
 
         generateTable.append(" ON DUPLICATE KEY UPDATE ");
-        for(TableColumn tc : table.getColumns())
+        for (TableColumn tc : table.getColumns())
             generateTable.append("`")
                     .append(tc.getInternalName())
                     .append("`")
@@ -717,10 +755,20 @@ public interface QueryMapper {
                     .append("VALUES(`")
                     .append(tc.getInternalName())
                     .append("`),");
-        generateTable.deleteCharAt(generateTable.length()-1);
+        generateTable.deleteCharAt(generateTable.length() - 1);
         generateTable.append(";");
-        log.debug("Insert Query: {}",generateTable);
+        log.debug("Insert Query: {}", generateTable);
         return generateTable.toString();
+    }
+
+    default Instant objectToInstant(Object data) {
+        if (data == null) {
+            return null;
+        }
+        final String str = String.valueOf(data);
+        log.trace("mapping string {} to instant", str);
+        return Timestamp.valueOf(str)
+                .toInstant();
     }
 
 }

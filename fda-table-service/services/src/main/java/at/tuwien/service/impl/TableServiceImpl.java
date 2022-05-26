@@ -5,7 +5,6 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
@@ -152,4 +151,5 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         session.close();
         return table;
     }
+
 }

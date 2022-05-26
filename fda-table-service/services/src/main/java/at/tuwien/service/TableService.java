@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
