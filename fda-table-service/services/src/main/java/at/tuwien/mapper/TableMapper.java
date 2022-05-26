@@ -190,7 +190,7 @@ public interface TableMapper {
             final ColumnCreateDto[] columns = new ColumnCreateDto[data.getColumns().length + 1];
             columns[0] = idColumn;
             for (int i = 0; i < data.getColumns().length; i++) {
-                columns[i+1] = data.getColumns()[i];
+                columns[i + 1] = data.getColumns()[i];
             }
             data.setColumns(columns);
         }
@@ -258,6 +258,23 @@ public interface TableMapper {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         return "CREATE SEQUENCE " + tableCreateDtoToSequenceName(data) + " START WITH 1 INCREMENT BY 1;";
+    }
+
+    default String tableToCreateHistoryViewRawQuery(Table data) {
+        final StringBuilder builder = new StringBuilder("CREATE VIEW history AS SELECT ");
+        final int[] idx = new int[]{0};
+        data.getColumns()
+                .stream()
+                .filter(c -> c.getIsPrimaryKey())
+                .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`"));
+        builder.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
+                .append(data.getInternalName())
+                .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC");
+        log.trace("created history view query [{}]", builder);
+        return builder.toString();
     }
 
 }

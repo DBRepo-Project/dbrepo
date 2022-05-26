@@ -5,6 +5,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
@@ -91,9 +92,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* find */
         final Container container = containerService.find(containerId);
         final Database database = databaseService.findDatabase(databaseId);
-        final Optional<Table> optional = tableRepository.findByInternalName(tableMapper.nameToInternalName(createDto.getName()));
+        final Optional<Table> optional = tableRepository.findByInternalName(
+                tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
-            log.error("Table name exists in database with id {} as table id {}", database.getId(), optional.get().getId());
+            log.error("Table name exists in database with id {} as table id {}", database.getId(),
+                    optional.get().getId());
             throw new TableNameExistsException("Table name exists");
         }
         /* run query */
@@ -116,7 +119,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         session.createSQLQuery(query.getQuery())
                 .executeUpdate();
         transaction.commit();
-        session.close();
         int[] idx = {0};
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
@@ -129,18 +131,25 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setCreator(creator);
         log.debug("mapped new table {}", tmp);
         /* save in metadata database */
-        final Table table = tableRepository.save(tmp);
-        table.setColumns(Arrays.stream(createDto.getColumns())
+        final Table entity = tableRepository.save(tmp);
+        entity.setColumns(Arrays.stream(createDto.getColumns())
                 .map(tableMapper::columnCreateDtoToTableColumn)
-                .map(column -> tableMapper.tableColumnToTableColumn(table, column, query))
+                .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
                 .collect(Collectors.toList()));
         /* set the ordinal position for the columns */
-        table.getColumns()
+        entity.getColumns()
                 .forEach(column -> {
                     column.setOrdinalPosition(idx[0]++);
                 });
-        log.info("Created table with id {} {}", table.getId(), query.getGenerated() ? "and auto-generated id column" : "");
+        final Table table = tableRepository.save(entity);
+        log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
-        return tableRepository.save(table);
+        /* create history view */
+        final Transaction transaction2 = session.beginTransaction();
+        session.createSQLQuery(tableMapper.tableToCreateHistoryViewRawQuery(table))
+                .executeUpdate();
+        transaction2.commit();
+        session.close();
+        return table;
     }
 }
