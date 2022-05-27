@@ -11,22 +11,13 @@ CREATE
     TYPE image_environment_type AS ENUM ('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD');
 CREATE
     TYPE role_type AS ENUM ('ROLE_RESEARCHER', 'ROLE_DEVELOPER', 'ROLE_DATA_STEWARD');
-CREATE
-    TYPE license_type AS ENUM ('MIT', 'GPL-3.0-only', 'BSD-3-Clause', 'BSD-4-Clause', 'Apache-2.0', 'CC0-1.0', 'CC-BY-4.0');
 
-CREATE
-    CAST
+CREATE CAST
     (character varying AS image_environment_type)
     WITH INOUT AS ASSIGNMENT;
 
-CREATE
-    CAST
+CREATE CAST
     (character varying AS role_type)
-    WITH INOUT AS ASSIGNMENT;
-
-CREATE
-    CAST
-    (character varying AS license_type)
     WITH INOUT AS ASSIGNMENT;
 
 CREATE SEQUENCE public.mdb_images_environment_item_seq
@@ -241,8 +232,8 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
 
 CREATE TABLE IF NOT EXISTS mdb_licenses
 (
-    identifier license_type NOT NULL,
-    uri        TEXT         NOT NULL,
+    identifier character varying(255) NOT NULL,
+    uri        TEXT                   NOT NULL,
     PRIMARY KEY (identifier),
     UNIQUE (uri)
 );
@@ -260,7 +251,7 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     Engine           VARCHAR(20)                          DEFAULT 'Postgres',
     Publisher        VARCHAR(255),
     Year             DATE                                 DEFAULT CURRENT_DATE,
-    License          license_type,
+    License          character varying(255),
     language         character varying(2),
     is_public        BOOLEAN                     NOT NULL DEFAULT TRUE,
     Creator          BIGINT REFERENCES mdb_USERS (UserID),

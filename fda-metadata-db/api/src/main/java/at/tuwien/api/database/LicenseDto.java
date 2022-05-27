@@ -16,7 +16,7 @@ public class LicenseDto {
 
     @NotNull
     @Parameter(name = "license identifier")
-    private LicenseIdentifierTypeDto identifier;
+    private String identifier;
 
     @NotBlank
     @Parameter(name = "license uri")

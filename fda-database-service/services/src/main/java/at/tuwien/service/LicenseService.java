@@ -1,6 +1,5 @@
 package at.tuwien.service;
 
-import at.tuwien.api.database.LicenseIdentifierTypeDto;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 
@@ -22,5 +21,5 @@ public interface LicenseService {
      * @return The license, if successful.
      * @throws LicenseNotFoundException The license was not found in the metadata database.
      */
-    License find(LicenseIdentifierTypeDto identifier) throws LicenseNotFoundException;
+    License find(String identifier) throws LicenseNotFoundException;
 }

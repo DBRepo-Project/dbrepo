@@ -21,7 +21,7 @@ public class DatabaseModifyDto {
     private Boolean isPublic;
 
     @Parameter(name = "database subjects")
-    private List<DatabaseSubjectDto> subject;
+    private List<SubjectModifyDto> subject;
 
     @Parameter(name = "database description")
     private String description;
@@ -36,7 +36,7 @@ public class DatabaseModifyDto {
     private Short publicationYear;
 
     @Parameter(name = "database license")
-    private LicenseIdentifierTypeDto license;
+    private String license;
 
     @Parameter(name = "database language")
     private LanguageTypeDto language;

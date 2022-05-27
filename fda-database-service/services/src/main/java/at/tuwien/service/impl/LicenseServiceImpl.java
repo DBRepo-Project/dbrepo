@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.LicenseIdentifierTypeDto;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.repository.jpa.LicenseRepository;
@@ -27,8 +26,8 @@ public class LicenseServiceImpl implements LicenseService {
     }
 
     @Override
-    public License find(LicenseIdentifierTypeDto identifier) throws LicenseNotFoundException {
-        final Optional<License> license = licenseRepository.findById(identifier.getName());
+    public License find(String identifier) throws LicenseNotFoundException {
+        final Optional<License> license = licenseRepository.findById(identifier);
         if (license.isEmpty()) {
             log.error("Failed to find license for identifier {}", identifier);
             throw new LicenseNotFoundException("Failed to find license");

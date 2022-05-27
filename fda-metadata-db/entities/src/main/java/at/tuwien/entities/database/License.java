@@ -18,10 +18,8 @@ import javax.persistence.*;
 public class License {
 
     @Id
-    @Column(nullable = false, columnDefinition = "enum('MIT', 'GPL-3.0-only', 'BSD-3-Clause', 'BSD-4-Clause', " +
-            "'Apache-2.0', 'CC0-1.0', 'CC-BY-4.0')")
-    @Enumerated(EnumType.STRING)
-    private LicenseIdentifierType identifier;
+    @Column(nullable = false)
+    private String identifier;
 
     @Column(nullable = false)
     private String uri;

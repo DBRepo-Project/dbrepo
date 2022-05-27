@@ -5,36 +5,37 @@
     <v-tabs-items v-if="!loading" v-model="tab">
       <v-tab-item>
         <v-card flat>
-          <v-card-title>
-            <span>{{ db.internalName }}</span>
-            <v-progress-circular v-if="loading" :size="20" :width="3" indeterminate color="primary" />
-          </v-card-title>
           <v-card-text>
             <p>
               <strong>DataCite Metadata</strong>
             </p>
-            <p>
-              Publisher: <code>{{ publisher }}</code>
+            <p v-if="db.publisher">
+              Publisher: {{ db.publisher }}
             </p>
-            <p>
-              Publication Year: <code>{{ publicationYear }}</code>
+            <p v-if="db.publication_year">
+              Year: <code>{{ db.publication_year }}</code>
             </p>
-            <p>
-              Subject: <code>{{ subject }}</code>
+            <p v-if="db.subject">
+              Subjects: <code>{{ db.subject }}</code>
             </p>
-            <p>
-              Language: <code>{{ language }}</code>
+            <p v-if="db.language">
+              Language: <code>{{ db.language }}</code>
             </p>
-            <p>
-              License: <code>{{ license }}</code>
+            <p v-if="db.license">
+              License: <a :href="db.license.uri">
+                <code>{{ db.license.identifier }}</code>
+              </a>
             </p>
-            <p>
-              Description: <code>{{ description }}</code>
+            <p v-if="db.description">
+              Description: {{ db.description }}
             </p>
             <p>
             </p>
             <p class="mt-2">
               <strong>Technical Information</strong>
+            </p>
+            <p>
+              Database: <code>{{ db.internal_name }}</code>
             </p>
             <p>
               Image: <code>{{ db.image.repository }}:{{ db.image.tag }}</code>
@@ -77,24 +78,6 @@ export default {
     },
     db () {
       return this.$store.state.db
-    },
-    description () {
-      return this.db.description === null ? '(no description)' : this.db.description
-    },
-    publisher () {
-      return this.db.publisher === null ? '(no publisher)' : this.db.publisher
-    },
-    publicationYear () {
-      return this.db.publication_year === null ? '(no publication year)' : this.db.publication_year
-    },
-    subject () {
-      return this.db.subject === null ? '(no subject)' : this.db.subject
-    },
-    language () {
-      return this.db.language === null ? '(no language)' : this.db.language
-    },
-    license () {
-      return this.db.license === null ? '(no license)' : this.db.license
     }
   },
   mounted () {
