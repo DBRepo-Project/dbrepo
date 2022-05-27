@@ -49,7 +49,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Autowired
     public MariaDbServiceImpl(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
                               DatabaseidxRepository databaseidxRepository, DatabaseMapper databaseMapper,
-                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService, LicenseService licenseService) {
+                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService,
+                              LicenseService licenseService) {
         this.containerRepository = containerRepository;
         this.databaseRepository = databaseRepository;
         this.databaseMapper = databaseMapper;
@@ -114,12 +115,12 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
-            UserNotFoundException, LicenseNotFoundException {
+    public Database update(Long id, Long databaseId, DatabaseModifyDto data, Principal principal)
+            throws DatabaseNotFoundException, UserNotFoundException, LicenseNotFoundException {
         final User contactPerson = userService.findByUsername(data.getContactPerson());
         final Database entity = findById(id, databaseId);
         entity.setIsPublic(data.getIsPublic());
-//        entity.setSubject(data.getSubject()); TODO
+        entity.setSubjects(data.getSubject());
         entity.setDescription(data.getDescription());
         entity.setPublisher(data.getPublisher());
         entity.setPublicationYear(data.getPublicationYear());

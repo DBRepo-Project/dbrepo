@@ -53,8 +53,11 @@ public class Database {
     @Column(nullable = false)
     private String internalName;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "database")
-    private List<Subject> subjects;
+    @ElementCollection
+    @CollectionTable(name = "mdb_databases_subjects", joinColumns = {
+            @JoinColumn(name = "dbid", referencedColumnName = "id")
+    })
+    private List<String> subjects;
 
     @Column
     private String description;

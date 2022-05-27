@@ -15,8 +15,8 @@
             <p v-if="db.publication_year">
               Year: <code>{{ db.publication_year }}</code>
             </p>
-            <p v-if="db.subject">
-              Subjects: <code>{{ db.subject }}</code>
+            <p v-if="db.subjects">
+              Subjects: <code class="mr-1" v-for="(subject,idx) in db.subjects" :key="idx">{{ subject }}</code>
             </p>
             <p v-if="db.language">
               Language: <code>{{ db.language }}</code>

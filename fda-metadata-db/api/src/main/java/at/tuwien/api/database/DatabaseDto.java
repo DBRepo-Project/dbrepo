@@ -34,8 +34,8 @@ public class DatabaseDto {
     @Parameter(name = "database internal name", example = "weather_australia")
     private String internalName;
 
-    @Parameter(name = "database subject")
-    private String subject;
+    @Parameter(name = "database subjects")
+    private List<String> subjects;
 
     @Parameter(name = "database language", example = "EN")
     private LanguageTypeDto language;

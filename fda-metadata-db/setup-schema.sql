@@ -69,13 +69,6 @@ CREATE SEQUENCE public.mdb_databases_seq
     NO MAXVALUE
     CACHE 1;
 
-CREATE SEQUENCE public.mdb_subjects_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 CREATE SEQUENCE public.mdb_tables_seq
     START WITH 1
     INCREMENT BY 1
@@ -266,24 +259,11 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 );
 
-CREATE TABLE IF NOT EXISTS mdb_subjects
-(
-    id            BIGINT                      NOT NULL DEFAULT nextval('mdb_subjects_seq'),
-    name          CHARACTER VARYING(255)      NOT NULL,
-    created_by    BIGINT                      NOT NULL,
-    created       timestamp without time zone NOT NULL DEFAULT NOW(),
-    last_modified timestamp without time zone,
-    PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID)
-);
-
 CREATE TABLE IF NOT EXISTS mdb_databases_subjects
 (
-    sid           BIGINT                      NOT NULL,
-    dbid          BIGINT                      NOT NULL,
-    created       timestamp without time zone NOT NULL DEFAULT NOW(),
-    last_modified timestamp without time zone,
-    PRIMARY KEY (sid, dbid)
+    dbid     BIGINT                 NOT NULL,
+    subjects character varying(255) NOT NULL,
+    PRIMARY KEY (dbid, subjects)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_tables

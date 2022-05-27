@@ -57,12 +57,14 @@ public interface DatabaseService {
      * @param id         The container id.
      * @param databaseId The database id.
      * @param data       The metadata.
+     * @param principal  The current user.
      * @return The database.
      * @throws DatabaseNotFoundException The database was not found.
      * @throws UserNotFoundException     The contact person was not found.
+     * @throws LicenseNotFoundException  The license was not found in the metadata database.
      */
-    Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
-            UserNotFoundException, LicenseNotFoundException;
+    Database update(Long id, Long databaseId, DatabaseModifyDto data, Principal principal)
+            throws DatabaseNotFoundException, UserNotFoundException, LicenseNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.

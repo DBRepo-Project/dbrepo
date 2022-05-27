@@ -58,7 +58,7 @@ public interface DocumentMapper {
             builder.append("<subjects>");
             database.getSubjects()
                     .forEach(subject -> builder.append("<subject xml:lang=\"en\">")
-                            .append(subject.getName())
+                            .append(subject)
                             .append("</subject>"));
             builder.append("</subjects>");
         }
@@ -75,9 +75,9 @@ public interface DocumentMapper {
         builder.append("<resourceType resourceTypeGeneral=\"Dataset\">Dataset</resourceType>");
         if (database.getLicense() != null) {
             builder.append("<rightsList><rights xml:lang=\"en-US\" schemeURI=\"https://spdx.org/licenses/\" ")
-                    .append("rightsIdentifierScheme=\"SPDX\" rightsIdentifier=\" ")
+                    .append("rightsIdentifierScheme=\"SPDX\" rightsIdentifier=\"")
                     .append(database.getLicense().getIdentifier())
-                    .append(" rightsURI=\"")
+                    .append("\" rightsURI=\"")
                     .append(database.getLicense().getUri())
                     .append("\"/></rightsList>");
         }

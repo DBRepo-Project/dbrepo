@@ -20,25 +20,25 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publicity")
     private Boolean isPublic;
 
-    @Parameter(name = "database subjects")
-    private List<SubjectModifyDto> subject;
+    @Parameter(name = "database subjects", example = "[\"test\"]")
+    private List<String> subject;
 
-    @Parameter(name = "database description")
+    @Parameter(name = "database description", example = "Description")
     private String description;
 
     @NotNull
-    @Parameter(name = "database publisher")
+    @Parameter(name = "database publisher", example = "Publisher")
     private String publisher;
 
     @NotNull
     @JsonProperty("publication_year")
-    @Parameter(name = "database year")
+    @Parameter(name = "database year", example = "2022")
     private Short publicationYear;
 
-    @Parameter(name = "database license")
+    @Parameter(name = "database license", example = "MIT")
     private String license;
 
-    @Parameter(name = "database language")
+    @Parameter(name = "database language", example = "EN")
     private LanguageTypeDto language;
 
     @JsonProperty("contact_person")
