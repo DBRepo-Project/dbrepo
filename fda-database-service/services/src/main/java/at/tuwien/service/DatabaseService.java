@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
@@ -49,6 +50,19 @@ public interface DatabaseService {
      */
     void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException;
+
+    /**
+     * Updates the database metadata.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @param data       The metadata.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     * @throws UserNotFoundException     The contact person was not found.
+     */
+    Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
+            UserNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.

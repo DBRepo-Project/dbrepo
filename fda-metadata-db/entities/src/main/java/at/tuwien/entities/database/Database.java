@@ -47,30 +47,40 @@ public class Database {
     })
     private User creator;
 
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
-    })
-    private Container container;
-
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false, updatable = false)
-    private String exchange;
+    @Column
+    private String subject;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private Language language;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private License license;
 
     @Column
     private String description;
+
+    @Column
+    private String publisher;
+
+    @Column
+    private Short publicationYear;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
     })
     private User contact;
+
+    @Column(nullable = false, updatable = false)
+    private String exchange;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -80,6 +90,13 @@ public class Database {
 
     @Column(nullable = false)
     private Boolean isPublic;
+
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private Container container;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

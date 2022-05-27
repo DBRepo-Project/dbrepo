@@ -9,16 +9,45 @@
             <span>{{ db.internalName }}</span>
             <v-progress-circular v-if="loading" :size="20" :width="3" indeterminate color="primary" />
           </v-card-title>
-          <v-card-subtitle>
-            {{ publisher }}, {{ db.image.repository }}:{{ db.image.tag }}
-          </v-card-subtitle>
           <v-card-text>
-            <blockquote>
-              <p>{{ description }}</p>
-            </blockquote>
-            <span>
-              Created {{ formatDate(db.created) }}
-            </span>
+            <p>
+              <strong>DataCite Metadata</strong>
+            </p>
+            <p>
+              Publisher: <code>{{ publisher }}</code>
+            </p>
+            <p>
+              Publication Year: <code>{{ publicationYear }}</code>
+            </p>
+            <p>
+              Subject: <code>{{ subject }}</code>
+            </p>
+            <p>
+              Language: <code>{{ language }}</code>
+            </p>
+            <p>
+              License: <code>{{ license }}</code>
+            </p>
+            <p>
+              Description: <code>{{ description }}</code>
+            </p>
+            <p>
+              <v-btn
+                color="secondary"
+                small>
+                <v-icon left>mdi-cloud-download</v-icon>
+                DataCite
+              </v-btn>
+            </p>
+            <p class="mt-2">
+              <strong>Technical Information</strong>
+            </p>
+            <p>
+              Image: <code>{{ db.image.repository }}:{{ db.image.tag }}</code>
+            </p>
+            <p>
+              Created: <code>{{ formatDate(db.created) }}</code>
+            </p>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -60,6 +89,18 @@ export default {
     },
     publisher () {
       return this.db.publisher === null ? '(no publisher)' : this.db.publisher
+    },
+    publicationYear () {
+      return this.db.publication_year === null ? '(no publication year)' : this.db.publication_year
+    },
+    subject () {
+      return this.db.subject === null ? '(no subject)' : this.db.subject
+    },
+    language () {
+      return this.db.language === null ? '(no language)' : this.db.language
+    },
+    license () {
+      return this.db.license === null ? '(no license)' : this.db.license
     }
   },
   mounted () {
@@ -83,7 +124,7 @@ export default {
       }
     },
     formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss.SSS')
+      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     }
   }
 }

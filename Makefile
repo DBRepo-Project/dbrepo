@@ -47,7 +47,7 @@ build-backend: build-backend-metadata build-backend-authentication build-backend
 
 build-docker:
 	docker-compose build fda-metadata-db
-	docker-compose build
+	docker-compose build --parallel
 
 build-docker-sandbox:
 	docker-compose -f docker-compose.prod.yml build fda-metadata-db

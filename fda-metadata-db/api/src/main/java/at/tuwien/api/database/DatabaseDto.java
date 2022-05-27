@@ -35,6 +35,15 @@ public class DatabaseDto {
     @Parameter(name = "database internal name", example = "weather_australia")
     private String internalName;
 
+    @Parameter(name = "database subject")
+    private String subject;
+
+    @Parameter(name = "database language", example = "EN")
+    private LanguageDto language;
+
+    @Parameter(name = "database license", example = "MIT2")
+    private LicenseDto license;
+
     @NotBlank
     @Parameter(name = "database description", example = "Weather Australia 2009-2021")
     private String description;
@@ -42,19 +51,24 @@ public class DatabaseDto {
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
-    @Parameter(name = "database license", example = "MIT")
-    private String license;
+    @JsonProperty("publication_year")
+    @Parameter(name = "database publication year")
+    private Short publicationYear;
 
     @Parameter(name = "database contact person")
     private UserDto contact;
+
+    @NotBlank
+    @Parameter(name = "database exchange", example = "fda.c1.d1")
+    private String exchange;
 
     @NotNull
     @Parameter(name = "tables")
     private List<TableDto> tables;
 
-    @NotBlank
-    @Parameter(name = "database exchange", example = "fda.c1.d1")
-    private String exchange;
+    @JsonProperty("is_public")
+    @Parameter(name = "database public")
+    private Boolean isPublic;
 
     @NotBlank
     @Parameter(name = "database container image")

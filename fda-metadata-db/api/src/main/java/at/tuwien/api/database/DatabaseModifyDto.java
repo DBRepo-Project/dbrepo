@@ -17,20 +17,32 @@ public class DatabaseModifyDto {
 
     @NotNull
     @JsonProperty("is_public")
-    @Parameter(name = "database publicity", example = "true")
+    @Parameter(name = "database publicity")
     private Boolean isPublic;
 
-    @Parameter(name = "database description", example = "Sample")
+    @Parameter(name = "database subject")
+    private String subject;
+
+    @Parameter(name = "database description")
     private String description;
 
-    @Parameter(name = "database publisher", example = "TU Wien")
+    @NotNull
+    @Parameter(name = "database publisher")
     private String publisher;
 
-    @Parameter(name = "database license", example = "MIT")
-    private String license;
+    @NotNull
+    @JsonProperty("publication_year")
+    @Parameter(name = "database year")
+    private Short publicationYear;
+
+    @Parameter(name = "database license")
+    private LicenseDto license;
+
+    @Parameter(name = "database language")
+    private LanguageDto language;
 
     @JsonProperty("contact_person")
-    @Parameter(name = "database license", example = "Max Mustermann")
-    private Long contactPerson;
+    @Parameter(name = "database contact person")
+    private String contactPerson;
 
 }

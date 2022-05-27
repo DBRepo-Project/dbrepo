@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
@@ -106,6 +107,27 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.debug("deleted database {}", database);
         amqpService.deleteExchange(database);
         log.debug("deleted exchange {}", database.getExchange());
+    }
+
+    @Override
+    @Transactional
+    public Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
+            UserNotFoundException {
+        final User contactPerson = userService.findByUsername(data.getContactPerson());
+        final Database entity = findById(id, databaseId);
+        entity.setIsPublic(data.getIsPublic());
+        entity.setSubject(data.getSubject());
+        entity.setDescription(data.getDescription());
+        entity.setPublisher(data.getPublisher());
+        entity.setPublicationYear(data.getPublicationYear());
+        entity.setLicense(databaseMapper.licenseDtoToLicense(data.getLicense()));
+        entity.setLanguage(databaseMapper.languageDtoToLanguage(data.getLanguage()));
+        entity.setContact(contactPerson);
+        /* save in metadata database */
+        final Database database = databaseRepository.save(entity);
+        log.info("Updated database with id {}", databaseId);
+        log.debug("updated database {}", database);
+        return database;
     }
 
     @Override
