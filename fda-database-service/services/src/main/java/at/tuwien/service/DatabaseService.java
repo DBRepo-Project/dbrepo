@@ -62,7 +62,7 @@ public interface DatabaseService {
      * @throws UserNotFoundException     The contact person was not found.
      */
     Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
-            UserNotFoundException;
+            UserNotFoundException, LicenseNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.

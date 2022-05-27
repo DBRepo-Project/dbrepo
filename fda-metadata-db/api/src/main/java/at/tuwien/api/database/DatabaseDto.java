@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -39,7 +38,7 @@ public class DatabaseDto {
     private String subject;
 
     @Parameter(name = "database language", example = "EN")
-    private LanguageDto language;
+    private LanguageTypeDto language;
 
     @Parameter(name = "database license", example = "MIT2")
     private LicenseDto license;

@@ -16,6 +16,7 @@
 
     <packaging>pom</packaging>
     <modules>
+        <module>api</module>
         <module>rest-service</module>
         <module>services</module>
         <module>report</module>
@@ -31,6 +32,7 @@
         <javax-ws-rs.version>2.1.1</javax-ws-rs.version>
         <maven-site.version>3.10.0</maven-site.version>
         <docker.version>3.2.7</docker.version>
+        <commons-io.version>2.11.0</commons-io.version>
     </properties>
 
     <dependencies>
@@ -138,6 +140,12 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+        </dependency>
+        <!-- Export -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
         </dependency>
         <!-- IDE -->
         <dependency>

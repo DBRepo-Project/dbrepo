@@ -1,11 +1,11 @@
-package at.tuwien.api.database;
+package at.tuwien.entities.database;
 
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
 @ToString
-public enum LanguageDto {
+public enum LanguageType {
     EN,
     DE,
     OTHER

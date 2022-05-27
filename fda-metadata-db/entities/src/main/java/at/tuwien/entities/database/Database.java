@@ -53,16 +53,8 @@ public class Database {
     @Column(nullable = false)
     private String internalName;
 
-    @Column
-    private String subject;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Language language;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private License license;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "database")
+    private List<Subject> subjects;
 
     @Column
     private String description;
@@ -91,12 +83,22 @@ public class Database {
     @Column(nullable = false)
     private Boolean isPublic;
 
+    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
+    @Enumerated(EnumType.STRING)
+    private LanguageType language;
+
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Container container;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "License", referencedColumnName = "identifier")
+    })
+    private License license;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

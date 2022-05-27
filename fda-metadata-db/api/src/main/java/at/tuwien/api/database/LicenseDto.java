@@ -1,16 +1,25 @@
 package at.tuwien.api.database;
 
-import lombok.Getter;
-import lombok.ToString;
+import io.swagger.v3.oas.annotations.Parameter;
+import lombok.*;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Getter
+@Setter
 @ToString
-public enum LicenseDto {
-    MIT2,
-    GNU_GPL3,
-    BSD2,
-    BSD3,
-    APACHE2,
-    CC_0,
-    CC_BY
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class LicenseDto {
+
+    @NotNull
+    @Parameter(name = "license identifier")
+    private LicenseIdentifierTypeDto identifier;
+
+    @NotBlank
+    @Parameter(name = "license uri")
+    private String uri;
+
 }

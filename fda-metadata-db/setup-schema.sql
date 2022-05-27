@@ -11,14 +11,22 @@ CREATE
     TYPE image_environment_type AS ENUM ('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD');
 CREATE
     TYPE role_type AS ENUM ('ROLE_RESEARCHER', 'ROLE_DEVELOPER', 'ROLE_DATA_STEWARD');
+CREATE
+    TYPE license_type AS ENUM ('MIT', 'GPL-3.0-only', 'BSD-3-Clause', 'BSD-4-Clause', 'Apache-2.0', 'CC0-1.0', 'CC-BY-4.0');
 
 CREATE
     CAST
     (character varying AS image_environment_type)
     WITH INOUT AS ASSIGNMENT;
+
 CREATE
     CAST
     (character varying AS role_type)
+    WITH INOUT AS ASSIGNMENT;
+
+CREATE
+    CAST
+    (character varying AS license_type)
     WITH INOUT AS ASSIGNMENT;
 
 CREATE SEQUENCE public.mdb_images_environment_item_seq
@@ -64,6 +72,13 @@ CREATE SEQUENCE public.mdb_data_seq
     CACHE 1;
 
 CREATE SEQUENCE public.mdb_databases_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE public.mdb_subjects_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -224,6 +239,14 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
     PRIMARY KEY (uid)
 );
 
+CREATE TABLE IF NOT EXISTS mdb_licenses
+(
+    identifier license_type NOT NULL,
+    uri        TEXT         NOT NULL,
+    PRIMARY KEY (identifier),
+    UNIQUE (uri)
+);
+
 CREATE TABLE IF NOT EXISTS mdb_databases
 (
     id               bigint                      NOT NULL DEFAULT nextval('mdb_databases_seq'),
@@ -237,7 +260,7 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     Engine           VARCHAR(20)                          DEFAULT 'Postgres',
     Publisher        VARCHAR(255),
     Year             DATE                                 DEFAULT CURRENT_DATE,
-    License          character varying(50),
+    License          license_type,
     language         character varying(2),
     is_public        BOOLEAN                     NOT NULL DEFAULT TRUE,
     Creator          BIGINT REFERENCES mdb_USERS (UserID),
@@ -248,7 +271,28 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     PRIMARY KEY (id),
     FOREIGN KEY (Creator) REFERENCES mdb_USERS (UserID),
     FOREIGN KEY (Contactperson) REFERENCES mdb_USERS (UserID),
+    FOREIGN KEY (License) REFERENCES mdb_licenses (identifier),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
+);
+
+CREATE TABLE IF NOT EXISTS mdb_subjects
+(
+    id            BIGINT                      NOT NULL DEFAULT nextval('mdb_subjects_seq'),
+    name          CHARACTER VARYING(255)      NOT NULL,
+    created_by    BIGINT                      NOT NULL,
+    created       timestamp without time zone NOT NULL DEFAULT NOW(),
+    last_modified timestamp without time zone,
+    PRIMARY KEY (id),
+    FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID)
+);
+
+CREATE TABLE IF NOT EXISTS mdb_databases_subjects
+(
+    sid           BIGINT                      NOT NULL,
+    dbid          BIGINT                      NOT NULL,
+    created       timestamp without time zone NOT NULL DEFAULT NOW(),
+    last_modified timestamp without time zone,
+    PRIMARY KEY (sid, dbid)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_tables
@@ -491,5 +535,14 @@ BEGIN;
 
 INSERT INTO mdb_users (username, Main_Email, password)
 VALUES ('system', 'noreply@dbrepo.ossdip.at', (SELECT md5(random()::text)));
+
+INSERT INTO mdb_licenses (identifier, uri)
+VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
+       ('GPL-3.0-only', 'https://www.gnu.org/licenses/gpl-3.0-standalone.html'),
+       ('BSD-3-Clause', 'https://opensource.org/licenses/BSD-3-Clause'),
+       ('BSD-4-Clause', 'http://directory.fsf.org/wiki/License:BSD_4Clause'),
+       ('Apache-2.0', 'https://opensource.org/licenses/Apache-2.0'),
+       ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
+       ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
 COMMIT;

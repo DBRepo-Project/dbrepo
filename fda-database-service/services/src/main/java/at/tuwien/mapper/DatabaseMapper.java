@@ -2,10 +2,10 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.LanguageDto;
+import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.Language;
+import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -34,9 +34,7 @@ public interface DatabaseMapper {
         return slug.toLowerCase(Locale.ENGLISH);
     }
 
-    License licenseDtoToLicense(LicenseDto data);
-
-    Language languageDtoToLanguage(LanguageDto data);
+    LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
     @Mappings({
             @Mapping(target = "id", source = "id"),

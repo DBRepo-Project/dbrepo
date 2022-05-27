@@ -4,11 +4,14 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id" color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
           <v-icon left>mdi-run</v-icon> Re-Execute
+        </v-btn>
+        <v-btn v-if="identifier.id" color="secondary" @click="download()">
+          <v-icon left>mdi-code-tags</v-icon> Metadata
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
@@ -147,6 +150,10 @@ export default {
   methods: {
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
+    },
+    download () {
+      const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`
+      window.location.href = url
     },
     async loadMetadata () {
       this.loading = true

@@ -12,6 +12,7 @@ import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.LicenseService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.HibernateException;
@@ -38,6 +39,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     private final AmqpMapper amqpMapper;
     private final UserService userService;
+    private final LicenseService licenseService;
     private final DatabaseMapper databaseMapper;
     private final RabbitMqServiceImpl amqpService;
     private final DatabaseRepository databaseRepository;
@@ -47,7 +49,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Autowired
     public MariaDbServiceImpl(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
                               DatabaseidxRepository databaseidxRepository, DatabaseMapper databaseMapper,
-                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService) {
+                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService, LicenseService licenseService) {
         this.containerRepository = containerRepository;
         this.databaseRepository = databaseRepository;
         this.databaseMapper = databaseMapper;
@@ -55,22 +57,23 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         this.amqpService = amqpService;
         this.amqpMapper = amqpMapper;
         this.userService = userService;
+        this.licenseService = licenseService;
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Database> findAll(Long id) {
         return databaseRepository.findAllByContainerId(id);
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Database> findAll() {
         return databaseRepository.findAll();
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
@@ -112,16 +115,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database update(Long id, Long databaseId, DatabaseModifyDto data) throws DatabaseNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, LicenseNotFoundException {
         final User contactPerson = userService.findByUsername(data.getContactPerson());
         final Database entity = findById(id, databaseId);
         entity.setIsPublic(data.getIsPublic());
-        entity.setSubject(data.getSubject());
+//        entity.setSubject(data.getSubject()); TODO
         entity.setDescription(data.getDescription());
         entity.setPublisher(data.getPublisher());
         entity.setPublicationYear(data.getPublicationYear());
-        entity.setLicense(databaseMapper.licenseDtoToLicense(data.getLicense()));
-        entity.setLanguage(databaseMapper.languageDtoToLanguage(data.getLanguage()));
+        entity.setLicense(licenseService.find(data.getLicense()));
+        entity.setLanguage(databaseMapper.languageTypeDtoToLanguageType(data.getLanguage()));
         entity.setContact(contactPerson);
         /* save in metadata database */
         final Database database = databaseRepository.save(entity);

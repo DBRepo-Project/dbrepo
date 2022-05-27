@@ -32,12 +32,6 @@
               Description: <code>{{ description }}</code>
             </p>
             <p>
-              <v-btn
-                color="secondary"
-                small>
-                <v-icon left>mdi-cloud-download</v-icon>
-                DataCite
-              </v-btn>
             </p>
             <p class="mt-2">
               <strong>Technical Information</strong>

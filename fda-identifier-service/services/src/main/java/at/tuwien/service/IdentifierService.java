@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
@@ -54,6 +55,18 @@ public interface IdentifierService {
     Identifier find(Long identifierId) throws IdentifierNotFoundException;
 
     /**
+     * Export metadata for a identifier
+     *
+     * @param containerId  The container id.
+     * @param databaseId   The database id.
+     * @param identifierId The identifier id.
+     * @return The export, if successful.
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     */
+    ExportResource exportMetadata(Long containerId, Long databaseId, Long identifierId)
+            throws IdentifierNotFoundException, DatabaseNotFoundException;
+
+    /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.
      *
      * @param containerId  The container id.
@@ -64,7 +77,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
      * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
+    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
+            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
 
     /**
      * Publishes the identifier for a given identifier id in the metadata database.
@@ -77,7 +91,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
      */
-    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
+    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+            throws IdentifierNotFoundException,
             IdentifierAlreadyPublishedException;
 
     /**

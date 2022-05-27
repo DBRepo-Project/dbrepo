@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,8 +20,8 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publicity")
     private Boolean isPublic;
 
-    @Parameter(name = "database subject")
-    private String subject;
+    @Parameter(name = "database subjects")
+    private List<DatabaseSubjectDto> subject;
 
     @Parameter(name = "database description")
     private String description;
@@ -36,10 +36,10 @@ public class DatabaseModifyDto {
     private Short publicationYear;
 
     @Parameter(name = "database license")
-    private LicenseDto license;
+    private LicenseIdentifierTypeDto license;
 
     @Parameter(name = "database language")
-    private LanguageDto language;
+    private LanguageTypeDto language;
 
     @JsonProperty("contact_person")
     @Parameter(name = "database contact person")

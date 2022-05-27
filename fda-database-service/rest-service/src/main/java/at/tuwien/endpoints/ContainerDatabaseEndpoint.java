@@ -87,7 +87,7 @@ public class ContainerDatabaseEndpoint {
                                                 @NotBlank @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseModifyDto data,
                                                 Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException {
+            throws DatabaseNotFoundException, UserNotFoundException, LicenseNotFoundException {
         final Database database = databaseService.update(containerId, databaseId, data);
         return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(database));
     }

@@ -1,16 +1,29 @@
 package at.tuwien.entities.database;
 
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@Getter
+import javax.persistence.*;
+
+@Data
+@Entity
+@Builder
 @ToString
-public enum License {
-    MIT2,
-    GNU_GPL3,
-    BSD2,
-    BSD3,
-    APACHE2,
-    CC_0,
-    CC_BY
+@AllArgsConstructor
+@NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+@javax.persistence.Table(name = "mdb_licenses", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uri"})
+})
+public class License {
+
+    @Id
+    @Column(nullable = false, columnDefinition = "enum('MIT', 'GPL-3.0-only', 'BSD-3-Clause', 'BSD-4-Clause', " +
+            "'Apache-2.0', 'CC0-1.0', 'CC-BY-4.0')")
+    @Enumerated(EnumType.STRING)
+    private LicenseIdentifierType identifier;
+
+    @Column(nullable = false)
+    private String uri;
+
 }

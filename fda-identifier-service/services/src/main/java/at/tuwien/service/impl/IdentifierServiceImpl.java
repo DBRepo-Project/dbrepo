@@ -1,20 +1,25 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
+import at.tuwien.mapper.DocumentMapper;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +33,19 @@ import java.util.stream.Collectors;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final UserService userService;
+    private final DocumentMapper documentMapper;
+    private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public IdentifierServiceImpl(UserService userService, IdentifierMapper identifierMapper,
+    public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper,
+                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
                                  QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository) {
         this.userService = userService;
+        this.documentMapper = documentMapper;
+        this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
@@ -108,6 +118,21 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierNotFoundException("Unable to find identifier");
         }
         return optional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExportResource exportMetadata(Long containerId, Long databaseId, Long identifierId)
+            throws IdentifierNotFoundException, DatabaseNotFoundException {
+        /* check */
+        final Identifier identifier = find(identifierId);
+        final Database database = databaseService.find(databaseId);
+        /* map */
+        final InputStreamResource resource = documentMapper.identifierToInputStreamResource(database, identifier);
+        return ExportResource.builder()
+                .filename("metadata.xml")
+                .resource(resource)
+                .build();
     }
 
     @Override
