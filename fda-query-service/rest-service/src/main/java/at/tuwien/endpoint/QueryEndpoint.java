@@ -38,7 +38,7 @@ public class QueryEndpoint {
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_EXECUTE')")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -51,9 +51,9 @@ public class QueryEndpoint {
         /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Query is empty");
-            throw new QueryMalformedException("Invalid query");
+            throw new QueryMalformedException("Query is empty");
         }
-        log.debug("Data for execution: {}", data);
+        log.trace("data for execution: {}", data);
         final QueryResultDto result = queryService.execute(id, databaseId, data, principal, page, size);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
@@ -61,7 +61,7 @@ public class QueryEndpoint {
 
     @PutMapping("/{queryId}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_EXECUTE')")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long id,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
@@ -79,6 +79,7 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
+    @PreAuthorize("hasPermission(#id, 'DATABASE_EXPORT')")
     @Operation(summary = "Exports some query")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,

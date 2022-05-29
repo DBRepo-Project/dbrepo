@@ -91,7 +91,7 @@ public class UserServiceImpl implements UserService {
             log.error("Email address is already present in the database");
             throw new UserEmailExistsException("Email taken");
         }
-        final Optional<User> username = userRepository.findByUsername(data.getEmail());
+        final Optional<User> username = userRepository.findByUsername(data.getUsername());
         if (username.isPresent()) {
             log.error("Username is already present in the database");
             throw new UserNameExistsException("Username taken");

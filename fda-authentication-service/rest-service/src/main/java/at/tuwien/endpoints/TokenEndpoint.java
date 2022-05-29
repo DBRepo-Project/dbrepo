@@ -36,10 +36,10 @@ public class TokenEndpoint {
     @GetMapping
     @Transactional
     @Operation(summary = "verify user email")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) throws TokenInvalidException {
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) throws TokenInvalidException {
         tokenService.invalidate(token);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .build();
+        return ResponseEntity.accepted()
+                .body("Verification successful.");
     }
 
     @GetMapping("/resend")

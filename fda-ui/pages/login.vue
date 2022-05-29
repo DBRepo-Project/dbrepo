@@ -92,8 +92,14 @@ export default {
         this.$toast.success('Welcome back!')
         this.$router.push('/container')
       } catch (err) {
+        if (err.response !== undefined && err.response.status !== undefined && err.response.status === 418) {
+          this.$toast.error('Check your inbox and confirm your e-mail address. Login not successful.')
+          console.error('user has not confirmed e-mail', err)
+          this.loading = false
+          return
+        }
         console.error('login user failed', err)
-        this.$toast.error('Failed to login user')
+        this.$toast.error('Login not successful.')
       }
       this.loading = false
     },

@@ -42,7 +42,6 @@
             id="public"
             v-model="isPublic"
             name="public"
-            disabled
             label="Public" />
         </v-card-text>
         <v-card-actions>

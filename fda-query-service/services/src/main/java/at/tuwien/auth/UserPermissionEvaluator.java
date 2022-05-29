@@ -40,6 +40,7 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
             log.error("User with id {} was not found", targetDomainId);
             return false;
         }
+        final String permissionCode = (String) permission;
         return caller.getUsername().equals(domainObject.getUsername());
     }
 

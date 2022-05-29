@@ -40,7 +40,7 @@ public class TableDataEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_INSERT')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -54,7 +54,7 @@ public class TableDataEndpoint {
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_UPDATE')")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -68,7 +68,7 @@ public class TableDataEndpoint {
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') and hasPermission(#id, 'DATABASE_DELETE')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -83,7 +83,7 @@ public class TableDataEndpoint {
 
     @PostMapping("/import")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_INSERT')")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long id,
                                              @NotNull @PathVariable("databaseId") Long databaseId,

@@ -122,6 +122,20 @@ export default {
         this.$toast.success('Success. Check your inbox!')
         this.$router.push('/login')
       } catch (err) {
+        if (err.response !== undefined && err.response.status !== undefined) {
+          if (err.response.status === 417) {
+            this.$toast.error('User with this e-mail exists!')
+            console.error('email taken', err)
+            this.loading = false
+            return
+          }
+          if (err.response.status === 409) {
+            this.$toast.error('User with this username exists!')
+            console.error('username taken', err)
+            this.loading = false
+            return
+          }
+        }
         console.error('create user failed', err)
         this.$toast.error('Failed to create user')
       }
