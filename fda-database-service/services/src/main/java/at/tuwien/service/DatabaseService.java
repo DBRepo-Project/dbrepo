@@ -39,6 +39,15 @@ public interface DatabaseService {
     Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException;
 
     /**
+     * Find a database by id, only used in the authentication service
+     *
+     * @param databaseId the database id.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     */
+    Database findById(Long databaseId) throws DatabaseNotFoundException;
+
+    /**
      * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
      * does not actually delete it.
      *

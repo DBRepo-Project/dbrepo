@@ -60,6 +60,10 @@ public class DatabaseDto {
     @Parameter(name = "database container image")
     private ImageDto image;
 
+    @JsonProperty("is_public")
+    @Parameter(name = "database visibility")
+    private Boolean isPublic;
+
     @NotBlank
     @Parameter(name = "container")
     private ContainerDto container;

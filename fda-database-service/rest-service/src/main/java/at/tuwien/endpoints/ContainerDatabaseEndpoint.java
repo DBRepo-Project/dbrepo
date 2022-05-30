@@ -80,7 +80,7 @@ public class ContainerDatabaseEndpoint {
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATABASE_VIEW')")
+    @PreAuthorize("hasPermission(#databaseId, 'DATABASE_VIEW')")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
                                                 @NotBlank @PathVariable Long databaseId,

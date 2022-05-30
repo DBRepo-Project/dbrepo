@@ -59,6 +59,14 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -71,9 +79,7 @@ export default {
       }
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
         this.loading = false

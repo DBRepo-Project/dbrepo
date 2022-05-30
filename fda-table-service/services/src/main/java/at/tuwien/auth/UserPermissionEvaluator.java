@@ -40,21 +40,24 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
             log.error("Permission is not of type String");
             return false;
         }
+        final UserDetailsDto detailsDto = (UserDetailsDto) auth.getPrincipal();
         final Long targetDomainId = (Long) targetDomainObject;
         final String permissionCode = (String) permission;
         final Database database;
         try {
-            database = databaseService.findById(targetDomainId);
+            database = databaseService.findPublicOrMineById(targetDomainId,
+                    databaseMapper.userDetailsDtoToPrincipal(detailsDto));
         } catch (DatabaseNotFoundException e) {
             log.error("Failed to find database with id {}", targetDomainId);
             return false;
         }
         switch (permissionCode) {
-            case "DATABASE_VIEW":
+            case "TABLE_VIEW":
+            case "TABLE_CREATE":
+            case "TABLE_UPDATE":
                 if (database.getIsPublic()) {
                     return true;
                 }
-                final UserDetailsDto detailsDto = (UserDetailsDto) auth.getPrincipal();
                 /* only the creator can view */
                 return database.getCreator().getId().equals(detailsDto.getId());
         }

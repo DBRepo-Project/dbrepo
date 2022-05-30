@@ -34,7 +34,7 @@
               :key="item.id"
               class="database"
               @click="loadDatabase(item)">
-              <td>{{ item.name }}</td>
+              <td>{{ item.name }} <v-icon v-if="!item.is_public">mdi-lock</v-icon></td>
               <td>{{ item.engine }}</td>
               <td />
               <td>{{ formatDate(item.created) }}</td>
@@ -80,6 +80,14 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -95,9 +103,7 @@ export default {
         console.debug('containers', this.containers)
         for (const container of this.containers) {
           try {
-            res = await this.$axios.get(`/api/container/${container.id}/database`, {
-              headers: { Authorization: `Bearer ${this.token}` }
-            })
+            res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
             for (const database of res.data) {
               database.container_id = container.id
               this.databases.push(database)

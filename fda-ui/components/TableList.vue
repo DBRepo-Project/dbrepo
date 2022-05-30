@@ -175,6 +175,19 @@ export default {
       dialogDelete: false
     }
   },
+  computed: {
+    token () {
+      return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    }
+  },
   mounted () {
     this.$root.$on('table-create', this.refresh)
     const table = this.$store.state.table
@@ -187,7 +200,7 @@ export default {
         return
       }
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
         this.tableDetails = res.data
         this.$store.commit('SET_TABLE', this.tableDetails)
       } catch (err) {
@@ -203,7 +216,7 @@ export default {
       let res
       try {
         this.loading = true
-        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`)
+        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
         this.tables = res.data
         this.loading = false
         if (tableId) { this.openPanelByTableId(tableId) }
@@ -215,7 +228,7 @@ export default {
     async deleteTable () {
       try {
         this.loading = true
-        await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.deleteTableId}`)
+        await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.deleteTableId}`, this.config)
         this.loading = false
         this.refresh()
       } catch (err) {

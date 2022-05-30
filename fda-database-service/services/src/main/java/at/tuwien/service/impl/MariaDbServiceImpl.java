@@ -69,7 +69,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException {
         final Optional<Database> database;
         if (principal == null) {
@@ -84,6 +84,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         return database.get();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Database findById(Long databaseId) throws DatabaseNotFoundException {
+        final Optional<Database> database = databaseRepository.findById(databaseId);
+        if (database.isEmpty()) {
+            log.warn("could not find database with id {}", databaseId);
+            throw new DatabaseNotFoundException("could not find database with this id");
+        }
+        return database.get();
+    }
 
     @Override
     @Transactional
