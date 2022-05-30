@@ -22,6 +22,7 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-identifier-service

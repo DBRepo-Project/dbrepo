@@ -4,7 +4,7 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id" color="accent" class="mr-2" :disabled="!query.execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
@@ -35,11 +35,11 @@
           <p>Statement</p>
           <v-alert
             border="left"
-            color="grey lighten-4 black--text">
-            <pre>{{ query.query }}</pre>
+            color="code">
+            <pre>{{ statement }}</pre>
           </v-alert>
           <p>
-            Hash: <code>sha256:{{ query.query_hash }}</code>
+            Hash: <code>{{ query_hash }}</code>
           </p>
         </div>
         <p class="mt-2">
@@ -55,16 +55,16 @@
           <strong>Result</strong>
         </p>
         <p>
-          Hash: <code v-if="query.result_hash">{{ query.result_hash }}</code><span v-if="!query.result_hash">(empty)</span>
+          Hash: <code v-if="result_hash">{{ result_hash }}</code><span v-if="!result_hash">(empty)</span>
         </p>
         <p>
-          Rows: <code v-if="query.result_number">{{ query.result_number }}</code><span v-if="!query.result_number">(empty)</span>
+          Rows: <code v-if="result_number">{{ result_number }}</code><span v-if="!result_number">(empty)</span>
         </p>
         <p>
-          Executed: <code v-if="query.execution">{{ query.execution }}</code><span v-if="!query.execution">(empty)</span>
+          Executed: <code v-if="execution">{{ execution }}</code><span v-if="!execution">(empty)</span>
         </p>
-        <p>
-          Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
+        <p v-if="creator">
+          Owner: <code>{{ creator.username }}</code><span v-if="!creator.username">(empty)</span>
         </p>
         <p class="mt-2">
           <strong>Creator(s)</strong>
@@ -72,12 +72,12 @@
         <p v-if="identifier.creators.length === 0">
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
-        <p v-for="(creator,i) in identifier.creators" :key="i">
+        <p v-for="(creator, i) in creators" :key="i">
           <span>{{ creator.lastname }} {{ creator.firstname }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
       </v-card-text>
-      <QueryResults ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
+      <QueryResults v-if="identifier.visibility !== 'SELF'" ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
@@ -113,7 +113,8 @@ export default {
         result_hash: null,
         result_number: null,
         execution: null,
-        created: null
+        created: null,
+        creator: null
       },
       identifier: {
         id: null,
@@ -122,6 +123,11 @@ export default {
         title: null,
         description: null,
         visibility: null,
+        query: null,
+        query_normalized: null,
+        query_hash: null,
+        result_number: null,
+        execution: null,
         doi: null,
         creators: []
       },
@@ -134,11 +140,34 @@ export default {
     token () {
       return this.$store.state.token
     },
-    headers () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    statement () {
+      return this.identifier.id ? this.identifier.query : this.query.query
+    },
+    query_hash () {
+      return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
+    },
+    result_number () {
+      return this.identifier.id ? this.identifier.result_number : this.query.result_number
+    },
+    result_hash () {
+      return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
+    },
+    execution () {
+      return this.identifier.id ? this.formatDate(this.identifier.execution) : this.formatDate(this.query.execution)
+    },
+    creator () {
+      return null
+    },
+    creators () {
+      return this.identifier.id ? this.identifier.creators : null
     }
   },
   mounted () {
@@ -151,7 +180,7 @@ export default {
     async loadMetadata () {
       this.loading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
         console.debug('query', res.data)
         this.query = res.data
       } catch (err) {
@@ -161,7 +190,7 @@ export default {
       }
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
         this.identifier = res.data[0]
         console.debug('identifier', res.data[0])
       } catch (err) {
@@ -181,9 +210,7 @@ export default {
     async reExecute () {
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, {
-          headers: this.headers
-        })
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
         console.debug('re-execute query', res.data)
       } catch (err) {
         console.error('Could not re-execute query', err)

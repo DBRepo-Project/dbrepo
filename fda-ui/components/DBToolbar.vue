@@ -2,16 +2,15 @@
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" />
     <v-toolbar v-if="db" flat>
-      <img id="engine-logo" :alt="`${db.image.repository}`" :src="`data:image/png;base64,${db.image.logo}`">
       <v-toolbar-title>
-        {{ db.name }}
+        {{ db.name }} <sup v-if="!db.is_public" class="text--secondary">Private Database</sup>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
         <v-btn class="mr-2" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn color="blue-grey" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn color="accent" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Query Builder
         </v-btn>
         <v-btn color="primary" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">

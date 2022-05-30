@@ -34,7 +34,7 @@
               :key="item.id"
               class="database"
               @click="loadDatabase(item)">
-              <td>{{ item.name }} <v-icon v-if="!item.is_public">mdi-lock</v-icon></td>
+              <td>{{ item.name }}</td>
               <td>{{ item.engine }}</td>
               <td />
               <td>{{ formatDate(item.created) }}</td>

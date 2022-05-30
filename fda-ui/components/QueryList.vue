@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" />
+    <v-progress-linear v-if="loading" indeterminate />
     <v-tabs-items>
       <v-card v-if="!loading && queries.length === 0" flat>
         <v-card-title>
@@ -110,6 +110,17 @@ export default {
   computed: {
     databaseId () {
       return this.$route.params.database_id
+    },
+    token () {
+      return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -122,12 +133,12 @@ export default {
       let res
       try {
         this.loading = true
-        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`)
+        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
         try {
           this.loading = true
-          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier`)
+          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier`, this.config)
           this.identifiers = res.data
           console.debug('identifiers', this.identifiers)
           this.queries.forEach((query) => {

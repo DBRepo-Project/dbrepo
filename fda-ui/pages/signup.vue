@@ -9,7 +9,7 @@
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Before you can use the repository sandbox, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
           <v-row>

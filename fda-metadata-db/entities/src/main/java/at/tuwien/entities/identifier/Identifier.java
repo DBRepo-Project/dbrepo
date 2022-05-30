@@ -59,6 +59,24 @@ public class Identifier {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private String query;
+
+    @Column(nullable = false)
+    private String queryNormalized;
+
+    @Column(nullable = false)
+    private String queryHash;
+
+    @Column(nullable = false)
+    private String resultHash;
+
+    @Column(nullable = false)
+    private Instant execution;
+
+    @Column(nullable = false)
+    private Long resultNumber;
+
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;

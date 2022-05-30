@@ -8,7 +8,7 @@
       <v-card-text>
         <v-alert
           border="left"
-          color="amber lighten-4 black--text">
+          color="info">
           Choose an expressive query title and describe what result the query produces.
         </v-alert>
         <v-form v-model="formValid" autocomplete="off">
@@ -77,7 +77,6 @@
                 item-text="name"
                 label="Visibility"
                 :rules="[v => !!v || $t('Required')]"
-                disabled
                 required />
             </v-col>
           </v-row>
@@ -115,11 +114,7 @@ export default {
         value: 'EVERYONE'
       },
       {
-        name: 'Organization',
-        value: 'TRUSTED'
-      },
-      {
-        name: 'Hidden',
+        name: 'Only me',
         value: 'SELF'
       }],
       identifier: {
@@ -128,7 +123,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        visibility: 'SELF',
+        visibility: 'EVERYONE',
         doi: null,
         creators: []
       }

@@ -9,7 +9,7 @@
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             If you need an account, create one <a @click="signup">here</a>.
           </v-alert>
           <v-row>

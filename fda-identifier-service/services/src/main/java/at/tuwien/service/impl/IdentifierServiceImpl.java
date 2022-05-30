@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Creator;
@@ -44,13 +45,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(readOnly = true)
     public List<Identifier> findAll(Long containerId, Long databaseId) {
-        return identifierRepository.findAll();
+        return identifierRepository.findByDbid(databaseId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        final Optional<Identifier> identifier = identifierRepository.findByQid(queryId);
+        final Optional<Identifier> identifier = identifierRepository.findByDbidAndQid(databaseId, queryId);
         if (identifier.isEmpty()) {
             log.error("Failed to find identifier with query id {}", queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
@@ -60,28 +61,29 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
+    public Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String token)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
-        if (!data.getVisibility().equals(VisibilityTypeDto.SELF)) {
-            log.error("Identifier must be self visible for creation");
-            log.debug("identifier is not self-visible {}", data);
-            throw new IdentifierPublishingNotAllowedException("Identifier not self-visible");
-        }
         /* find */
-        final Optional<Identifier> optional = identifierRepository.findByQid(data.getQid());
+        final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(databaseId, data.getQid());
         if (optional.isPresent()) {
             log.error("Identifier already issued for database {} and query id {}", data.getDbid(), data.getQid());
             log.debug("identifier already exists similar to request {}", data);
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
-        final QueryDto query = queryServiceGateway.find(data) /* check if exists */;
+        final QueryDto query = queryServiceGateway.find(data, token) /* check if exists */;
         log.debug("found query in query service {}", query);
-        final Identifier tmp = identifierMapper.identifierDtoToIdentifier(data);
+        final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
         tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
         tmp.setCreators(List.of());
+        tmp.setQuery(query.getQuery());
+        tmp.setQueryNormalized(query.getQueryNormalized());
+        tmp.setQueryHash(query.getQueryHash());
+        tmp.setExecution(query.getExecution());
+        tmp.setResultNumber(query.getResultNumber());
+        tmp.setResultHash(query.getResultHash());
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(tmp);
         entity.setCreators(data.getCreators()

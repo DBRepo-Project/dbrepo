@@ -38,13 +38,7 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
             return false;
         }
         log.trace("principal is {}", auth.getPrincipal());
-        final UserDetailsDto principal;
-        if (!(auth.getPrincipal() instanceof UserDetailsDto) || auth.getPrincipal() == null) {
-            principal = null;
-        } else {
-            log.warn("Principal is null");
-            principal = (UserDetailsDto) auth.getPrincipal();
-        }
+        final UserDetailsDto principal = (UserDetailsDto) auth.getPrincipal();
         final Long targetDomainId = (Long) targetDomainObject;
         final String permissionCode = (String) permission;
         final Database database;
@@ -55,48 +49,14 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
             return false;
         }
         switch (permissionCode) {
-            case "DATA_VIEW":
-                if (database.getIsPublic()) {
-                    return true;
-                }
-                if (principal == null) {
-                    return false;
-                }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-                    /* only the creator can delete his/her database */
-                    return database.getCreator().getId().equals(principal.getId());
-                }
-            case "DATA_INSERT":
-            case "DATA_UPDATE":
-                if (principal == null) {
-                    return false;
-                }
+            case "IDENTIFIER_CREATE":
                 if (principal.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
                     return false;
                 }
-                /* only the creator can insert/update/delete */
-                return database.getCreator().getId().equals(principal.getId());
-            case "QUERY_VIEW":
-            case "DATA_DELETE":
-                if (principal == null) {
-                    return false;
-                }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DATA_STEWARD"))) {
-                    return true;
-                }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-                    /* only the creator can delete his/her database */
-                    return database.getCreator().getId().equals(principal.getId());
-                }
-            case "QUERY_EXECUTE":
-            case "DATA_EXPORT":
                 if (database.getIsPublic()) {
                     return true;
                 }
-                if (principal == null) {
-                    return false;
-                }
-                /* only the creator can execute/export non-public databases */
+                /* only creator can create identifiers for non-public databases */
                 return database.getCreator().getId().equals(principal.getId());
         }
         return false;

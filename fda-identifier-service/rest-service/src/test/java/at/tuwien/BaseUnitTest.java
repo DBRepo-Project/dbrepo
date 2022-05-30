@@ -3,6 +3,7 @@ package at.tuwien;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.identifier.CreatorDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.container.Container;
@@ -14,7 +15,6 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
-import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -343,7 +343,7 @@ public abstract class BaseUnitTest {
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 
-    public final static IdentifierDto IDENTIFIER_1_DTO_REQUEST = IdentifierDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
             .qid(IDENTIFIER_1_QUERY_ID)
             .dbid(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -355,7 +355,7 @@ public abstract class BaseUnitTest {
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 
-    public final static IdentifierDto IDENTIFIER_2_DTO_REQUEST = IdentifierDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
             .qid(IDENTIFIER_2_QUERY_ID)
             .dbid(IDENTIFIER_2_DATABASE_ID)
             .description(IDENTIFIER_2_DESCRIPTION)

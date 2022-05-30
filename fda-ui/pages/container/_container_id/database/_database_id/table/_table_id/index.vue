@@ -134,11 +134,13 @@ export default {
     token () {
       return this.$store.state.token
     },
-    requestHeaders () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     },
     versionColor () {
       if (this.version === null) {
@@ -197,7 +199,7 @@ export default {
               constraints[c.internal_name] = select[c.internal_name]
             })
           const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-            headers: this.requestHeaders,
+            headers: { Authorization: `Bearer ${this.token}` },
             data: { keys: constraints }
           })
           console.debug('tuple delete result', res)
@@ -214,7 +216,7 @@ export default {
     },
     async loadProperties () {
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.table = res.data
         console.debug('headers', res.data.columns, 'table', this.table)
         this.headers = [{ value: 'selection', text: '', sortable: false }]
@@ -240,7 +242,7 @@ export default {
           console.info('versioning active', this.version)
           url += `&timestamp=${new Date(this.version).toISOString()}`
         }
-        const res = await this.$axios.get(url)
+        const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])
         this.rows = res.data.result.map((row) => {
           for (const col in row) {

@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
@@ -89,7 +89,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void create_notSelfVisible_fails() {
-        final IdentifierDto request = IdentifierDto.builder()
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .id(IDENTIFIER_1_ID)
                 .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
@@ -101,10 +101,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* test */
         assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
         });
     }
 

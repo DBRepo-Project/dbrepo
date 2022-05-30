@@ -1,12 +1,15 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.CreatorRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -25,7 +28,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -101,14 +105,15 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(queryServiceGateway.find(IDENTIFIER_2_DTO_REQUEST))
+        when(queryServiceGateway.find(IDENTIFIER_2_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
         final Identifier response = identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST,
-                principal);
+                principal, bearer);
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDbid());
         assertEquals(IDENTIFIER_2_QUERY_ID, response.getQid());
@@ -120,7 +125,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_queryNotExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
-        final IdentifierDto request = IdentifierDto.builder()
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_2_QUERY_ID)
                 .dbid(IDENTIFIER_2_DATABASE_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
@@ -132,21 +137,22 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
         doThrow(QueryNotFoundException.class)
                 .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
+                .find(IDENTIFIER_2_DTO_REQUEST, bearer);
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
         });
     }
 
     @Test
     public void create_identifierAlreadyExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
-        final IdentifierDto request = IdentifierDto.builder()
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_1_QUERY_ID)
                 .dbid(IDENTIFIER_1_DATABASE_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
@@ -158,29 +164,31 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(queryServiceGateway.find(IDENTIFIER_1_DTO_REQUEST))
+        when(queryServiceGateway.find(IDENTIFIER_1_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_1_DTO);
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
         });
     }
 
     @Test
     public void create_queryServiceUnavailable_fails() throws QueryNotFoundException, RemoteUnavailableException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
         doThrow(RemoteUnavailableException.class)
                 .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
+                .find(IDENTIFIER_2_DTO_REQUEST, bearer);
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST, principal);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST, principal, bearer);
         });
     }
 
@@ -271,11 +279,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void publish_queryNotFound_fails() throws QueryNotFoundException, RemoteUnavailableException {
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
         doThrow(QueryNotFoundException.class)
                 .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
+                .find(IDENTIFIER_2_DTO_REQUEST, bearer);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
@@ -285,11 +294,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void publish_serviceUnavailable_fails() throws QueryNotFoundException, RemoteUnavailableException {
+        final String bearer = "Bearer abcxyz";
 
         /* mock */
         doThrow(RemoteUnavailableException.class)
                 .when(queryServiceGateway)
-                .find(IDENTIFIER_2_DTO_REQUEST);
+                .find(IDENTIFIER_2_DTO_REQUEST, bearer);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {

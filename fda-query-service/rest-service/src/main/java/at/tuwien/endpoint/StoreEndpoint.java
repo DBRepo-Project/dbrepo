@@ -11,6 +11,7 @@ import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +38,7 @@ public class StoreEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW')")
     @Operation(summary = "Find queries")
     public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId)
@@ -48,6 +50,7 @@ public class StoreEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
+    @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW')")
     @Operation(summary = "Find some query")
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long id,
                                          @NotNull @PathVariable("databaseId") Long databaseId,

@@ -68,7 +68,7 @@ public class TableDataEndpoint {
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') and hasPermission(#databaseId, 'DATA_DELETE')")
+    @PreAuthorize("hasPermission(#databaseId, 'DATA_DELETE')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -98,6 +98,7 @@ public class TableDataEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
+    @PreAuthorize("hasPermission(#databaseId, 'DATA_VIEW')")
     @Operation(summary = "Find data")
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,

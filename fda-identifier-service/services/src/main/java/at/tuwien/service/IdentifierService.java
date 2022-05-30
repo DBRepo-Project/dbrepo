@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
@@ -37,10 +38,11 @@ public interface IdentifierService {
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param data        The identifier.
+     * @param bearer      The authorization bearer.
      * @return The created identifier from the metadata database if successful.
      * @throws IdentifierPublishingNotAllowedException When the visibility is not self.
      */
-    Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
+    Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String bearer)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
 
@@ -78,7 +80,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
      */
-    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
+    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+            throws IdentifierNotFoundException,
             IdentifierAlreadyPublishedException;
 
     /**

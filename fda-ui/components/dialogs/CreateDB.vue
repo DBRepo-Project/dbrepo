@@ -9,7 +9,7 @@
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Choose an expressive database name and select a database engine.
           </v-alert>
           <v-text-field
