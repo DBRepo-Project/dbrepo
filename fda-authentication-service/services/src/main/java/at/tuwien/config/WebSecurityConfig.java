@@ -16,8 +16,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,11 +35,14 @@ import javax.servlet.http.HttpServletResponse;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtUtils jwtUtils;
+    private final SecurityConfig securityConfig;
     private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public WebSecurityConfig(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+    public WebSecurityConfig(JwtUtils jwtUtils, SecurityConfig securityConfig,
+                             UserDetailsServiceImpl userDetailsService) {
         this.jwtUtils = jwtUtils;
+        this.securityConfig = securityConfig;
         this.userDetailsService = userDetailsService;
     }
 
@@ -53,18 +54,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
         authenticationManagerBuilder.userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+                .passwordEncoder(securityConfig.passwordEncoder());
     }
 
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Override

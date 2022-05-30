@@ -13,6 +13,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public interface UserMapper {
 
     UserDetailsDto userToUserDetailsDto(User data);
 
+    @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {
         final UserDetailsDto details = (UserDetailsDto) data;
         return JwtResponseDto.builder()
@@ -41,6 +43,7 @@ public interface UserMapper {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     default UserDto userToUserDto(User data) {
         return UserDto.builder()
                 .id(data.getId())
@@ -75,6 +78,7 @@ public interface UserMapper {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     default UserDto userDetailsToUserDto(UserDetails data, Principal principal) {
         final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) principal;
         final UserDto user = UserDto.builder()

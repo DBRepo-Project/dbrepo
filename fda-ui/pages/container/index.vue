@@ -94,10 +94,18 @@ export default {
         this.containers = res.data
         console.debug('containers', this.containers)
         for (const container of this.containers) {
-          res = await this.$axios.get(`/api/container/${container.id}/database`)
-          for (const database of res.data) {
-            database.container_id = container.id
-            this.databases.push(database)
+          try {
+            res = await this.$axios.get(`/api/container/${container.id}/database`, {
+              headers: { Authorization: `Bearer ${this.token}` }
+            })
+            for (const database of res.data) {
+              database.container_id = container.id
+              this.databases.push(database)
+            }
+          } catch (err) {
+            if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
+              console.error('Failed to load databases for container', err)
+            }
           }
         }
         console.debug('databases', this.databases)

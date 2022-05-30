@@ -40,52 +40,52 @@ public class TableDataEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_INSERT')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_INSERT')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @Valid @RequestBody TableCsvDto data)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException {
         return ResponseEntity.accepted()
-                .body(queryService.insert(id, databaseId, tableId, data));
+                .body(queryService.insert(containerId, databaseId, tableId, data));
     }
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_UPDATE')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_UPDATE')")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @Valid @RequestBody TableCsvUpdateDto data)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException {
         return ResponseEntity.accepted()
-                .body(queryService.update(id, databaseId, tableId, data));
+                .body(queryService.update(containerId, databaseId, tableId, data));
     }
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') and hasPermission(#id, 'DATABASE_DELETE')")
+    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') and hasPermission(#databaseId, 'DATA_DELETE')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long id,
-                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @PathVariable("tableId") Long tableId,
-                                          @Valid @RequestBody TableCsvDeleteDto data)
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
+                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @Valid @RequestBody TableCsvDeleteDto data)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException {
-        queryService.delete(id, databaseId, tableId, data);
+        queryService.delete(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();
     }
 
     @PostMapping("/import")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_INSERT')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_INSERT')")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              @Valid @RequestBody ImportDto data)
@@ -93,13 +93,13 @@ public class TableDataEndpoint {
             ImageNotSupportedException, ContainerNotFoundException {
         log.info("Insert data from location {} into database id {}", data, databaseId);
         return ResponseEntity.accepted()
-                .body(queryService.insert(id, databaseId, tableId, data));
+                .body(queryService.insert(containerId, databaseId, tableId, data));
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Operation(summary = "Find data")
-    public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
                                                  @RequestParam(required = false) Instant timestamp,
@@ -121,11 +121,11 @@ public class TableDataEndpoint {
             throw new PaginationException("Page number cannot be lower or equal to 0");
         }
         /* fixme query store maybe not created, create it through running findAll() */
-        storeService.findAll(id, databaseId);
-        final BigInteger count = queryService.count(id, databaseId, tableId, timestamp);
+        storeService.findAll(containerId, databaseId);
+        final BigInteger count = queryService.count(containerId, databaseId, tableId, timestamp);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());
-        final QueryResultDto response = queryService.findAll(id, databaseId, tableId, timestamp, page, size);
+        final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(response);

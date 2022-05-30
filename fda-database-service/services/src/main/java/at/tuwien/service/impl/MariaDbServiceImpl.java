@@ -57,21 +57,26 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
-    @Transactional
-    public List<Database> findAll(Long id) {
-        return databaseRepository.findAllByContainerId(id);
+    @Transactional(readOnly = true)
+    public List<Database> findAllPublic(Long containerId) {
+        return databaseRepository.findAllByPublicAndContainerId(containerId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Database> findAllPublicOrMine(Long containerId, Principal principal) {
+        return databaseRepository.findAllByPublicAndContainerIdOrMine(containerId, principal.getName());
     }
 
     @Override
     @Transactional
-    public List<Database> findAll() {
-        return databaseRepository.findAll();
-    }
-
-    @Override
-    @Transactional
-    public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
-        final Optional<Database> database = databaseRepository.findById(databaseId);
+    public Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException {
+        final Optional<Database> database;
+        if (principal == null) {
+            database = databaseRepository.findPublic(databaseId);
+        } else {
+            database = databaseRepository.findPublicOrMine(databaseId, principal.getName());
+        }
         if (database.isEmpty()) {
             log.warn("could not find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");
@@ -79,11 +84,13 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         return database.get();
     }
 
+
     @Override
     @Transactional
-    public void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
+    public void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        final Database database = findById(id, databaseId);
+        final Database database = findPublicOrMineById(databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }

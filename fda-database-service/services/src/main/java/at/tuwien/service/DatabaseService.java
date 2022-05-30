@@ -12,29 +12,31 @@ import java.util.List;
 
 public interface DatabaseService {
     /**
-     * Finds all known databases in the metadata database for a given container id.
+     * Finds all public databases in the metadata database for a given container id.
      *
-     * @param id The container id.
+     * @param containerId The container id.
      * @return A list of databases
      */
-    List<Database> findAll(Long id);
+    List<Database> findAllPublic(Long containerId);
 
     /**
-     * Finds all known databases in the metadata database.
+     * Finds all public databases or my private database in the metadata database for a given container id.
      *
-     * @return List of databases.
+     * @param containerId The container id.
+     * @param principal   The principal.
+     * @return A list of databases
      */
-    List<Database> findAll();
+    List<Database> findAllPublicOrMine(Long containerId, Principal principal);
 
     /**
      * Finds a specific database for a given id in the metadata database.
      *
-     * @param id         The container id.
      * @param databaseId The database id.
+     * @param principal  The principal.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findById(Long id, Long databaseId) throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException;
 
     /**
      * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
@@ -47,7 +49,8 @@ public interface DatabaseService {
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be deleted.
      */
-    void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
+    void delete(Long id, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException;
 
     /**

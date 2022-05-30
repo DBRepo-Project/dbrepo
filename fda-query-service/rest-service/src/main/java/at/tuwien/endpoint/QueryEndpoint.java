@@ -38,7 +38,7 @@ public class QueryEndpoint {
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_EXECUTE')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'QUERY_EXECUTE')")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -61,7 +61,7 @@ public class QueryEndpoint {
 
     @PutMapping("/{queryId}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'DATABASE_EXECUTE')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#id, 'QUERY_EXECUTE')")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long id,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
@@ -79,7 +79,7 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#id, 'DATABASE_EXPORT')")
+    @PreAuthorize("hasPermission(#id, 'DATA_EXPORT')")
     @Operation(summary = "Exports some query")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,

@@ -41,11 +41,22 @@ public class ContainerDatabaseEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id) {
-        final List<DatabaseBriefDto> databases = databaseService.findAll(id)
-                .stream()
-                .map(databaseMapper::databaseToDatabaseBriefDto)
-                .collect(Collectors.toList());
+    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id,
+                                                          Principal principal) {
+        final List<DatabaseBriefDto> databases;
+        if (principal == null) {
+            log.trace("principal missing, listing all public databases only");
+            databases = databaseService.findAllPublic(id)
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseBriefDto)
+                    .collect(Collectors.toList());
+        } else {
+            log.trace("principal present, listing all public databases and my private databases");
+            databases = databaseService.findAllPublicOrMine(id, principal)
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseBriefDto)
+                    .collect(Collectors.toList());
+        }
         log.info("Found {} databases", databases.size());
         log.debug("found databases {}", databases);
         return ResponseEntity.ok(databases);
@@ -69,11 +80,20 @@ public class ContainerDatabaseEndpoint {
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
-    @Operation(summary = "Find some database")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATABASE_VIEW')")
+    @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
-                                                @NotBlank @PathVariable Long databaseId)
+                                                @NotBlank @PathVariable Long databaseId,
+                                                Principal principal)
             throws DatabaseNotFoundException {
-        final Database database = databaseService.findById(id, databaseId);
+        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+        if (!database.getIsPublic() && !principal.getName().equals(database.getCreator().getUsername())) {
+            log.error("Found database but is private and creator does not match");
+            log.debug("found database {}", database);
+            log.debug("creator {} does not equal principal {}", database.getCreator().getUsername(), principal.getName());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
         log.info("Found database with id {}", database.getId());
         log.debug("found database {}", database);
         return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(database));
@@ -84,9 +104,10 @@ public class ContainerDatabaseEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long id,
-                                    @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException,
+                                    @NotBlank @PathVariable Long databaseId,
+                                    Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        databaseService.delete(id, databaseId);
+        databaseService.delete(id, databaseId, principal);
         log.info("Deleted database with id {}", id);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();

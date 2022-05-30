@@ -12,13 +12,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="primary" class="mr-2 white--text" @click="addTuple">
+        <v-btn color="primary" :disabled="!token" class="mr-2 white--text" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEdit" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
+        <v-btn v-if="canEdit" :disabled="!token" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="canDelete" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
+        <v-btn v-if="canDelete" :disabled="!token" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
@@ -55,7 +55,7 @@
         :server-items-length="total"
         :footer-props="footerProps"
         class="elevation-1">
-        <template v-slot:item.selection="{ item }">
+        <template v-if="token" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
       </v-data-table>

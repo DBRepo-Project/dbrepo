@@ -3,6 +3,7 @@ package at.tuwien.auth;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +17,12 @@ import java.io.Serializable;
 @Component
 public class UserPermissionEvaluator implements PermissionEvaluator {
 
+    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public UserPermissionEvaluator(DatabaseService databaseService) {
+    public UserPermissionEvaluator(DatabaseMapper databaseMapper, DatabaseService databaseService) {
+        this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
     }
 
@@ -37,29 +40,24 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
             log.error("Permission is not of type String");
             return false;
         }
-        final UserDetailsDto principal = (UserDetailsDto) auth.getPrincipal();
+        final UserDetailsDto detailsDto = (UserDetailsDto) auth.getPrincipal();
         final Long targetDomainId = (Long) targetDomainObject;
         final String permissionCode = (String) permission;
         final Database database;
         try {
-            database = databaseService.find(targetDomainId);
+            database = databaseService.findPublicOrMineById(targetDomainId,
+                    databaseMapper.userDetailsDtoToPrincipal(detailsDto));
         } catch (DatabaseNotFoundException e) {
             log.error("Failed to find database with id {}", targetDomainId);
             return false;
         }
         switch (permissionCode) {
-            case "DATA_INSERT":
-            case "DATA_UPDATE":
-            case "DATA_DELETE":
-                /* only the creator can insert/update/delete */
-                return database.getCreator().getId().equals(principal.getId());
-            case "QUERY_EXECUTE":
-            case "DATA_EXPORT":
+            case "DATABASE_VIEW":
                 if (database.getIsPublic()) {
                     return true;
                 }
-                /* only the creator can execute/export non-public databases */
-                return database.getCreator().getId().equals(principal.getId());
+                /* only the creator can view */
+                return database.getCreator().getId().equals(detailsDto.getId());
         }
         return false;
     }
