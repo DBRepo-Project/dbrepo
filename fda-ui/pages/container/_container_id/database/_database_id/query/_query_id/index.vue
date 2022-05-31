@@ -4,7 +4,7 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id" color="accent" class="mr-2" :disabled="!query.execution || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id" color="accent" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
@@ -20,7 +20,7 @@
         <span v-if="query.created != null">
           Created {{ formatDate(query.created) }}
         </span>
-        <span v-if="query.execution == null">
+        <span v-if="execution == null">
           Query was never executed
         </span>
       </v-card-subtitle>
@@ -131,14 +131,24 @@ export default {
         doi: null,
         creators: []
       },
+      database: {
+        id: null,
+        name: null,
+        is_public: null
+      },
       persistQueryExists: false,
       persistQueryDialog: false,
-      loading: true
+      loading: true,
+      error: false,
+      promises: []
     }
   },
   computed: {
     token () {
       return this.$store.state.token
+    },
+    loadingColor () {
+      return this.error ? 'red' : 'primary'
     },
     config () {
       if (this.token === null) {
@@ -171,34 +181,52 @@ export default {
     }
   },
   mounted () {
+    this.loadDatabase()
+      .then(() => this.loadQuery())
     this.loadMetadata()
   },
   methods: {
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
-    async loadMetadata () {
+    async loadDatabase () {
+      this.loading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        console.debug('database', res.data)
+        this.database = res.data
+      } catch (err) {
+        this.error = true
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
+    },
+    async loadQuery () {
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
         console.debug('query', res.data)
         this.query = res.data
       } catch (err) {
+        this.error = true
         console.error('Could not load query', err)
         this.$toast.error('Could not load query')
-        this.loading = false
       }
+      this.loading = false
+    },
+    async loadMetadata () {
+      this.loading = true
       try {
-        this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
         this.identifier = res.data[0]
         console.debug('identifier', res.data[0])
       } catch (err) {
         if (err.response.status !== 404) {
+          this.error = true
           console.error('Could not load identifier', err)
           this.$toast.error('Could not load identifier')
         }
-        this.loading = false
       }
       this.loading = false
 
