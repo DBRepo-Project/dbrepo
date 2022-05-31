@@ -73,6 +73,7 @@
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
         <p v-for="(creator, i) in creators" :key="i">
+          <OrcidIcon :orcid="creator.orcid" />
           <span>{{ creator.lastname }} {{ creator.firstname }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
@@ -83,7 +84,7 @@
     <v-dialog
       v-model="persistQueryDialog"
       persistent
-      max-width="640">
+      max-width="860">
       <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
@@ -91,11 +92,13 @@
 <script>
 import { format } from 'date-fns'
 import PersistQuery from '@/components/dialogs/PersistQuery'
+import OrcidIcon from '@/components/icons/OrcidIcon'
 
 export default {
   name: 'QueryShow',
   components: {
-    PersistQuery
+    PersistQuery,
+    OrcidIcon
   },
   data () {
     return {

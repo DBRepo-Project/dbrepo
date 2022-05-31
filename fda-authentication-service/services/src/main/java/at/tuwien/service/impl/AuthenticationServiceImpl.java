@@ -11,6 +11,7 @@ import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.Arrays;
 
 
 @Slf4j
@@ -28,14 +30,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final JwtUtils jwtUtils;
     private final UserMapper userMapper;
     private final UserService userService;
+    private final Environment environment;
     private final AuthenticationManager authenticationManager;
 
     @Autowired
     public AuthenticationServiceImpl(JwtUtils jwtUtils, UserMapper userMapper,
-                                     UserService userService, AuthenticationManager authenticationManager) {
+                                     UserService userService, Environment environment,
+                                     AuthenticationManager authenticationManager) {
         this.jwtUtils = jwtUtils;
         this.userMapper = userMapper;
         this.userService = userService;
+        this.environment = environment;
         this.authenticationManager = authenticationManager;
     }
 
@@ -44,7 +49,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public JwtResponseDto authenticate(LoginRequestDto data) throws UserEmailNotVerifiedException,
             UserNotFoundException {
         final User user = userService.findByUsername(data.getUsername());
-        if (!user.getEmailVerified()) {
+        if (isProduction() && !user.getEmailVerified()) {
             log.error("E-Mail not verified for username {}", data.getUsername());
             throw new UserEmailNotVerifiedException("E-Mail not verified");
         }
@@ -64,5 +69,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         final JwtResponseDto response = userMapper.principalToJwtResponseDto(token.getPrincipal());
         response.setToken(jwtUtils.generateJwtToken(token.getPrincipal()));
         return response;
+    }
+
+    private Boolean isProduction() {
+        return Arrays.asList(this.environment.getActiveProfiles()).contains("prod");
     }
 }

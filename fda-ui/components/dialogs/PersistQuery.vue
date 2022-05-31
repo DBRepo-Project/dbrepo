@@ -32,7 +32,7 @@
             </v-col>
           </v-row>
           <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 v-model="creator.lastname"
                 name="lastname"
@@ -40,7 +40,7 @@
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 v-model="creator.firstname"
                 name="firstname"
@@ -53,6 +53,12 @@
                 v-model="creator.affiliation"
                 name="affiliation"
                 label="Affiliation" />
+            </v-col>
+            <v-col cols="2">
+              <v-text-field
+                v-model="creator.orcid"
+                name="orcid"
+                label="ORCiD" />
             </v-col>
             <v-col cols="1" class="mt-5">
               <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">

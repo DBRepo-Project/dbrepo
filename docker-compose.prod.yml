@@ -133,9 +133,9 @@ services:
       fda-public:
     #    ipv4_address: 172.29.0.14
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SMTP_USERNAME: ${MAIL_USERNAME:-local}
-      SMTP_PASSWORD: ${MAIL_PASSWORD:-local}
+      SPRING_PROFILES_ACTIVE: docker, prod
+      SMTP_USERNAME: ${MAIL_USERNAME}
+      SMTP_PASSWORD: ${MAIL_PASSWORD}
       TZ: Europe/Vienna
     ports:
       - "9097:9097"
