@@ -2,6 +2,7 @@ package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -28,7 +29,9 @@ import java.util.List;
 @Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_tables")
+@javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
+})
 public class Table {
 
     @Id
@@ -44,6 +47,12 @@ public class Table {
     @Id
     @EqualsAndHashCode.Include
     private Long tdbid;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
 
     @Column(nullable = false, name = "tname")
     private String name;

@@ -8,6 +8,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +42,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void getAll_succeeds() {
+
+        /* mock */
         when(imageRepository.findAll())
                 .thenReturn(List.of(IMAGE_1));
 
@@ -52,6 +56,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void getById_succeeds() throws ImageNotFoundException {
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
 
@@ -63,6 +69,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void getById_notFound_fails() {
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
 
@@ -80,12 +88,15 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.save(any(ContainerImage.class)))
                 .thenThrow(ConstraintViolationException.class);
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageService.create(request);
+            imageService.create(request, principal);
         });
     }
 
@@ -95,6 +106,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
@@ -112,6 +125,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(9999)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
@@ -129,6 +144,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
 
@@ -140,6 +157,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_succeeds() throws ImageNotFoundException, PersistenceException {
+
+        /* mock */
         doNothing()
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
@@ -150,6 +169,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_notFound_fails() {
+
+        /* mock */
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);

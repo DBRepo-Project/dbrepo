@@ -46,6 +46,9 @@ public interface QueryMapper {
 
     ExecuteStatementDto saveStatementDtoToExecuteStatementDto(SaveStatementDto data);
 
+    @Mappings({
+            @Mapping(target = "creator", ignore = true)
+    })
     QueryDto queryToQueryDto(Query data);
 
     List<QueryDto> queryListToQueryDtoList(List<Query> data);
@@ -84,7 +87,6 @@ public interface QueryMapper {
         }
         return QueryResultDto.builder()
                 .result(resultList)
-                .resultNumber((long) resultList.size())
                 .build();
     }
 

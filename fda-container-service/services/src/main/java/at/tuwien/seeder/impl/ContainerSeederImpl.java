@@ -29,11 +29,11 @@ public class ContainerSeederImpl extends AbstractSeeder implements Seeder {
             log.warn("Already seeded. Skip.");
             return;
         }
-        final Container container1 = containerService.create(CONTAINER_1_CREATE_DTO);
+        final Container container1 = containerService.create(CONTAINER_1_CREATE_DTO, PRINCIPAL_1);
         log.info("Created container id {}", container1.getId());
         final Container container1start = containerService.start(CONTAINER_1_ID);
         log.info("Started container id {}", container1start.getId());
-        final Container container2 = containerService.create(CONTAINER_2_CREATE_DTO);
+        final Container container2 = containerService.create(CONTAINER_2_CREATE_DTO, PRINCIPAL_1);
         log.info("Created container id {}", container2.getId());
         final Container container2start = containerService.start(CONTAINER_2_ID);
         log.info("Started container id {}", container2start.getId());

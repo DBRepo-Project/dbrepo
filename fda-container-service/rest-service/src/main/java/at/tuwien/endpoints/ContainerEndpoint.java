@@ -53,9 +53,11 @@ public class ContainerEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data)
-            throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
-        final Container container = containerService.create(data);
+    public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data,
+                                                    Principal principal)
+            throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException,
+            UserNotFoundException {
+        final Container container = containerService.create(data, principal);
         final ContainerBriefDto response = containerMapper.containerToDatabaseContainerBriefDto(container);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);

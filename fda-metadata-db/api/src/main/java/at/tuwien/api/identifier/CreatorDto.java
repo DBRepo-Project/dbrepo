@@ -17,16 +17,19 @@ public class CreatorDto {
     @NotNull
     private Long id;
 
-    @NotNull
-    private Long pid;
-
     @NotBlank
-    @Parameter(name = "query title", example = "Maximilian")
+    @Parameter(name = "firstname", example = "Maximilian")
     private String firstname;
 
     @NotBlank
     @Parameter(name = "lastname", example = "Mustermann")
     private String lastname;
+
+    @Parameter(name = "affiliation", example = "TU Wien")
+    private String affiliation;
+
+    @Parameter(name = "orcid", example = "ORCID")
+    private String orcid;
 
     @NotNull
     private Instant created;

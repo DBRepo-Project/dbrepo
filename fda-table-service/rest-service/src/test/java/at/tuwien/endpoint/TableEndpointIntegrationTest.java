@@ -14,6 +14,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
@@ -72,7 +74,8 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
                 .withName(CONTAINER_3_INTERNALNAME)
                 .withIpv4Address(CONTAINER_3_IP)
                 .withHostName(CONTAINER_3_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=traffic")
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+                        "MARIADB_DATABASE=traffic")
                 .exec();
         CONTAINER_3.setHash(response.getId());
 
@@ -111,19 +114,22 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ArbitraryPrimaryKeysException, TableMalformedException,
-            AmqpException, TableNameExistsException, InterruptedException, ContainerNotFoundException {
+            TableMalformedException, AmqpException, TableNameExistsException, InterruptedException,
+            ContainerNotFoundException,
+            UserNotFoundException {
         final TableCreateDto request = TableCreateDto.builder()
                 .name(TABLE_3_NAME)
                 .description(TABLE_3_DESCRIPTION)
                 .columns(COLUMNS_CSV_CH)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_3);
 
         /* test */
-        final ResponseEntity<TableBriefDto> response = tableEndpoint.create(CONTAINER_3_ID, DATABASE_3_ID, request);
+        final ResponseEntity<TableBriefDto> response = tableEndpoint.create(CONTAINER_3_ID, DATABASE_3_ID, request,
+                principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 

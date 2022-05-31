@@ -4,9 +4,7 @@ import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
-import org.bouncycastle.pqc.math.linearalgebra.PolynomialRingGF2;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -42,9 +40,9 @@ public interface IdentifierService {
      * @return The created identifier from the metadata database if successful.
      * @throws IdentifierPublishingNotAllowedException When the visibility is not self.
      */
-    Identifier create(Long containerId, Long databaseId, IdentifierDto data)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierAlreadyExistsException;
+    Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
+            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.

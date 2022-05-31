@@ -4,7 +4,7 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="persistQueryDialog = true">
+        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
@@ -47,7 +47,7 @@
         </p>
         <div>
           <p v-if="!identifier.description">
-            (empty) &#8212; <a href="#" @click.stop="persistQueryDialog = true">modify</a>
+            (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
           </p>
           <p v-if="identifier.description">{{ identifier.description }}</p>
         </div>
@@ -63,11 +63,18 @@
         <p>
           Executed: <code v-if="query.execution">{{ query.execution }}</code><span v-if="!query.execution">(empty)</span>
         </p>
-        <p class="mt-2">
-          <strong>Creator</strong>
-        </p>
         <p>
-          Username: <code v-if="query.username">{{ query.username }}</code><span v-if="!query.username">(empty)</span>
+          Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
+        </p>
+        <p class="mt-2">
+          <strong>Creator(s)</strong>
+        </p>
+        <p v-if="identifier.creators.length === 0">
+          (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
+        </p>
+        <p v-for="(creator,i) in identifier.creators" :key="i">
+          <span>{{ creator.lastname }} {{ creator.firstname }}</span>
+          <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
       </v-card-text>
       <QueryResults ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
@@ -77,7 +84,7 @@
       v-model="persistQueryDialog"
       persistent
       max-width="640">
-      <PersistQuery @close="persistQueryDialog = false" />
+      <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
 </template>
@@ -183,6 +190,15 @@ export default {
         this.$toast.error('Could not re-execute query')
       }
       this.loading = false
+    },
+    openDialog () {
+      this.persistQueryDialog = true
+    },
+    closeDialog (event) {
+      this.persistQueryDialog = false
+      if (event.action === 'persisted') {
+        this.loadMetadata()
+      }
     }
   }
 }

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 
-
 @Slf4j
 @Service
 public class SeederImpl implements Seeder {
