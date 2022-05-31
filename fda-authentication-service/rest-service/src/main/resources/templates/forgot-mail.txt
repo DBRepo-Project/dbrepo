@@ -1,0 +1,13 @@
+Dear [[${username}]],
+
+You can reset your password using the link below:
+
+https://dbrepo.ossdip.at/reset?token=[[${token}]]
+
+Kind regards,
+DBRepo
+
+--------
+
+https://dbrepo.ossdip.at/
+https://dbrepo-docs.ossdip.at/

@@ -4,6 +4,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -54,6 +55,15 @@ public interface UserService {
      * @throws RoleNotFoundException    The role specified was not found.
      */
     User create(SignupRequestDto user) throws UserEmailExistsException, UserNameExistsException, RoleNotFoundException;
+
+    /**
+     * Resets the user information
+     *
+     * @param data The user username or email
+     * @return The user.
+     * @throws UserNotFoundException The user was not found.
+     */
+    User forgot(UserForgotDto data) throws UserNotFoundException;
 
     /**
      * Updates a user with given id and updated information.

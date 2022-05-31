@@ -61,7 +61,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     @Transactional
-    public void invalidate(String token) throws TokenInvalidException {
+    public User invalidate(String token) throws TokenInvalidException {
         /* check */
         final Token token1 = find(token);
         /* verify */
@@ -75,6 +75,7 @@ public class TokenServiceImpl implements TokenService {
         final Token out = tokenRepository.save(token1);
         log.info("Invalidated token with id {}", out.getId());
         log.debug("Invalidated token {}", out);
+        return user;
     }
 
 }

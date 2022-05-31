@@ -24,10 +24,11 @@ public interface TokenService {
     Token create(User user);
 
     /**
-     * Invalidate a token
+     * Invalidate a token for a given user.
      *
      * @param token The token.
+     * @return The user, if successful.
      * @throws TokenInvalidException THe token was not found or has expired.
      */
-    void invalidate(String token) throws TokenInvalidException;
+    User invalidate(String token) throws TokenInvalidException;
 }

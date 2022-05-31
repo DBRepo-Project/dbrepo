@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.config.SecurityConfig;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RoleNotFoundException;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -40,14 +42,16 @@ public class UserEndpoint {
     private final UserService userService;
     private final MailService mailService;
     private final TokenService tokenService;
+    private final SecurityConfig securityConfig;
 
     @Autowired
     public UserEndpoint(UserMapper userMapper, UserService userService, MailService mailService,
-                        TokenService tokenService) {
+                        TokenService tokenService, SecurityConfig securityConfig) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.mailService = mailService;
         this.tokenService = tokenService;
+        this.securityConfig = securityConfig;
     }
 
     @GetMapping
@@ -74,6 +78,35 @@ public class UserEndpoint {
         mailService.send(user, "Account Creation", "welcome-mail.txt", context);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userMapper.userToUserDto(user));
+    }
+
+    @PutMapping
+    @Transactional
+    @Operation(summary = "Forgot user information")
+    public ResponseEntity<UserDto> forgot(@Valid @RequestBody UserForgotDto data)
+            throws UserNotFoundException, UserEmailFailedException {
+        final User user = userService.forgot(data);
+        final Token token = tokenService.create(user);
+        final Context context = new Context();
+        context.setVariable("username", user.getUsername());
+        context.setVariable("token", token.getToken());
+        mailService.send(user, "Account Information", "forgot-mail.txt", context);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(userMapper.userToUserDto(user));
+    }
+
+    @PutMapping("/reset")
+    @Transactional
+    @Operation(summary = "Reset user information")
+    public void reset(@Valid @RequestBody UserResetDto data,
+                                         HttpServletResponse httpServletResponse)
+            throws UserEmailFailedException, TokenInvalidException {
+        final User user = tokenService.invalidate(data.getToken());
+        final Context context = new Context();
+        context.setVariable("username", user.getUsername());
+        mailService.send(user, "Password Reset Successful!", "reset-mail.txt", context);
+        httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?password_reset");
+        httpServletResponse.setStatus(302);
     }
 
     @GetMapping("/{id}")

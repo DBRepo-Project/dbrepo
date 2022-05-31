@@ -41,6 +41,7 @@ eureka:
 fda:
   ready.path: ./ready
   mail.prefix: /
+  website: https://dbrepo.ossdip.at
   mail.from: Database Repository <noreply@dbrepo.ossdip.at>
   mail.replyto: Martin Weise <martin.weise@tuwien.ac.at>
 jwt:

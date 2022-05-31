@@ -10,7 +10,7 @@
           <v-alert
             border="left"
             color="info">
-            If you need an account, create one <a @click="signup">here</a>.
+            If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
           <v-row>
             <v-col cols="6">
@@ -73,7 +73,14 @@ export default {
       return this.$store.state.token
     }
   },
-  beforeMount () {
+  mounted () {
+    if (this.$route.query.email_verified !== undefined) {
+      console.info('Successfully verified your E-Mail Address')
+      this.$toast.success('Successfully verified your E-Mail Address!')
+    } else if (this.$route.query.password_reset !== undefined) {
+      console.info('Successfully reset password')
+      this.$toast.success('Successfully reset password!')
+    }
   },
   methods: {
     submit () {
@@ -105,6 +112,9 @@ export default {
     },
     signup () {
       this.$router.push('/signup')
+    },
+    forgot () {
+      this.$router.push('/forgot')
     }
   }
 }

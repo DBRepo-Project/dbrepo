@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.config.SecurityConfig;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 
+import javax.servlet.http.HttpServletResponse;
+
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
@@ -25,21 +28,25 @@ public class TokenEndpoint {
     private final UserService userService;
     private final MailService mailService;
     private final TokenService tokenService;
+    private final SecurityConfig securityConfig;
 
     @Autowired
-    public TokenEndpoint(UserService userService, MailService mailService, TokenService tokenService) {
+    public TokenEndpoint(UserService userService, MailService mailService, TokenService tokenService,
+                         SecurityConfig securityConfig) {
         this.userService = userService;
         this.mailService = mailService;
         this.tokenService = tokenService;
+        this.securityConfig = securityConfig;
     }
 
     @GetMapping
     @Transactional
     @Operation(summary = "verify user email")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token) throws TokenInvalidException {
+    public void verifyEmail(@RequestParam String token,
+                            HttpServletResponse httpServletResponse) throws TokenInvalidException {
         tokenService.invalidate(token);
-        return ResponseEntity.accepted()
-                .body("Verification successful.");
+        httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?email_verified");
+        httpServletResponse.setStatus(302);
     }
 
     @GetMapping("/resend")

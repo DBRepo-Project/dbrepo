@@ -1,14 +1,13 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserEmailDto;
-import at.tuwien.api.user.UserPasswordDto;
-import at.tuwien.api.user.UserRolesDto;
-import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
+import at.tuwien.repositories.TokenRepository;
 import at.tuwien.repositories.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -111,6 +110,17 @@ public class UserServiceImpl implements UserService {
         log.info("Created user with id {}", entity.getId());
         log.debug("created user {}", entity);
         return entity;
+    }
+
+    @Override
+    @Transactional
+    public User forgot(UserForgotDto data) throws UserNotFoundException {
+        /* check */
+        final User user = findByUsernameOrEmail(data.getUsername(), data.getEmail());
+        /* save */
+        log.info("Forgot user with id {}", user.getId());
+        log.debug("forgot user {}", user);
+        return user;
     }
 
     @Override

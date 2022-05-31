@@ -88,6 +88,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/user/token").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/user/token/resend").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/user").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/user").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/user/reset").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
