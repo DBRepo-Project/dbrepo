@@ -1,5 +1,11 @@
 <template>
   <div>
+    <v-alert
+      v-if="needsSequence"
+      border="left"
+      color="amber lighten-4 black--text">
+      We create a column named <code>id</code> with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior.
+    </v-alert>
     <v-form ref="form" v-model="valid">
       <div v-for="(c, idx) in columns" :key="idx">
         <v-row dense class="column pa-2 ml-1 mr-1 mb-2">
@@ -124,11 +130,13 @@ export default {
     }
   },
   computed: {
+    needsSequence () {
+      return this.columns.filter(c => c.primary_key).length === 0
+    }
   },
   mounted () {
     this.valid = this.form
     this.loadDateFormats()
-    this.addColumn('id', 'NUMBER', false, true, true)
   },
   methods: {
     async loadDateFormats () {

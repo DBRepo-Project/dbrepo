@@ -126,14 +126,14 @@ public interface QueryMapper {
                 .append(table.getInternalName())
                 .append("_temporary")
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
-                .append(table.getSeparator())
+                .append(data.getSeparator())
                 .append("'");
-        if (table.getQuote() != null) {
+        if (data.getQuote() != null) {
             query.append(" OPTIONALLY ENCLOSED BY '")
-                    .append(table.getQuote())
+                    .append(data.getQuote())
                     .append("'");
         }
-        query.append(table.getSkipLines() != null ? (" IGNORE " + table.getSkipLines() + " LINES") : "")
+        query.append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
@@ -148,13 +148,13 @@ public interface QueryMapper {
                             .append(column.getInternalName());
                     if (column.getDateFormat() != null) {
                         /* reformat dates */
-                        columnToDateSet(table, column, set);
+                        columnToDateSet(data, table, column, set);
                     } else if (column.getColumnType().equals(TableColumnType.BOOLEAN)) {
                         /* reformat booleans */
-                        columnToBoolSet(table, column, set);
+                        columnToBoolSet(data, table, column, set);
                     } else {
                         /* reformat others */
-                        columnToTextSet(table, column, set);
+                        columnToTextSet(data, table, column, set);
                     }
                     idx[0]++;
                 });
@@ -168,37 +168,37 @@ public interface QueryMapper {
                 .build();
     }
 
-    default void columnToBoolSet(Table table, TableColumn column, StringBuilder set) {
+    default void columnToBoolSet(ImportDto data, Table table, TableColumn column, StringBuilder set) {
         set.append(set.length() != 0 ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        if (table.getNullElement() != null) {
+        if (data.getNullElement() != null) {
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
-                    .append(table.getNullElement())
+                    .append(data.getNullElement())
                     .append("'),NULL,");
-            columnToBoolSet2(table, column, set);
+            columnToBoolSet2(data, table, column, set);
             set.append(")");
             return;
         }
-        columnToBoolSet2(table, column, set);
+        columnToBoolSet2(data, table, column, set);
     }
 
-    default void columnToBoolSet2(Table table, TableColumn column, StringBuilder set) {
-        if (table.getTrueElement() != null) {
+    default void columnToBoolSet2(ImportDto data, Table table, TableColumn column, StringBuilder set) {
+        if (data.getTrueElement() != null) {
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
-                    .append(table.getTrueElement())
+                    .append(data.getTrueElement())
                     .append("'),TRUE,");
-            if (table.getFalseElement() != null) {
+            if (data.getFalseElement() != null) {
                 /* can map both true/false */
                 set.append("IF(!STRCMP(@")
                         .append(column.getInternalName())
                         .append(",'")
-                        .append(table.getFalseElement())
+                        .append(data.getFalseElement())
                         .append("'),FALSE,@")
                         .append(column.getInternalName())
                         .append("))");
@@ -210,18 +210,18 @@ public interface QueryMapper {
             }
             return;
         }
-        if (table.getFalseElement() != null) {
+        if (data.getFalseElement() != null) {
             set.append("IF(!STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
-                    .append(table.getFalseElement())
+                    .append(data.getFalseElement())
                     .append("'),FALSE,");
-            if (table.getTrueElement() != null) {
+            if (data.getTrueElement() != null) {
                 /* can map both true/false */
                 set.append("IF(!STRCMP(@")
                         .append(column.getInternalName())
                         .append(",'")
-                        .append(table.getTrueElement())
+                        .append(data.getTrueElement())
                         .append("'),TRUE,@")
                         .append(column.getInternalName())
                         .append("))");
@@ -237,16 +237,16 @@ public interface QueryMapper {
                 .append(column.getInternalName());
     }
 
-    default void columnToTextSet(Table table, TableColumn column, StringBuilder set) {
+    default void columnToTextSet(ImportDto data, Table table, TableColumn column, StringBuilder set) {
         set.append(set.length() != 0 ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        if (table.getNullElement() != null) {
+        if (data.getNullElement() != null) {
             set.append("IF(STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
-                    .append(table.getNullElement())
+                    .append(data.getNullElement())
                     .append("'), @")
                     .append(column.getInternalName())
                     .append(", NULL)");
@@ -256,16 +256,16 @@ public interface QueryMapper {
                 .append(column.getInternalName());
     }
 
-    default void columnToDateSet(Table table, TableColumn column, StringBuilder set) {
+    default void columnToDateSet(ImportDto data, Table table, TableColumn column, StringBuilder set) {
         set.append(set.length() != 0 ? ", " : "")
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = STR_TO_DATE(");
-        if (table.getNullElement() != null) {
+        if (data.getNullElement() != null) {
             set.append("IF(STRCMP(@")
                     .append(column.getInternalName())
                     .append(",'")
-                    .append(table.getNullElement())
+                    .append(data.getNullElement())
                     .append("'), @")
                     .append(column.getInternalName())
                     .append(", NULL), '")
@@ -297,14 +297,7 @@ public interface QueryMapper {
                 .append(table.getInternalName())
                 .append("` INTO OUTFILE '/tmp/")
                 .append(filename)
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY '")
-                .append(table.getSeparator())
-                .append("'");
-        if (table.getQuote() != null) {
-            query.append(" OPTIONALLY ENCLOSED BY '")
-                    .append(table.getQuote())
-                    .append("'");
-        }
+                .append("' CHARACTER SET utf8");
         if (timestamp != null) {
             query.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                     .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))

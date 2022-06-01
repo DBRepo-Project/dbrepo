@@ -2,6 +2,13 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>Import Data</v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}`">
+          <v-icon left>mdi-table</v-icon>
+          View Table
+        </v-btn>
+      </v-toolbar-title>
     </v-toolbar>
     <v-card>
       <v-card-title v-if="!loading">
@@ -12,53 +19,62 @@
         <v-row dense>
           <v-col cols="8">
             <v-select
-              v-model="table.separator"
+              v-model="tableImport.separator"
               :items="separators"
-              disabled
+              item-text="key"
+              item-value="value"
               required
               hint="Character separating the values"
-              label="Separator" />
+              label="Separator *" />
           </v-col>
         </v-row>
         <v-row dense>
           <v-col cols="8">
             <v-text-field
-              v-model="table.skip_lines"
+              v-model.number="tableImport.skip_lines"
+              :rules="[v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
               type="number"
-              disabled
               required
-              hint="Skip n lines from the top"
-              label="Skip Lines"
+              hint="Skip n lines from the top. These may include comments or the header of column names."
+              label="Number of lines to skip *"
               placeholder="e.g. 0" />
           </v-col>
         </v-row>
         <v-row dense>
           <v-col cols="8">
+            <v-select
+              v-model="tableImport.quote"
+              :items="quotes"
+              item-text="key"
+              item-value="value"
+              hint="Character quoting the values"
+              label="Value quotes" />
+          </v-col>
+        </v-row>
+        <v-row dense>
+          <v-col cols="8">
             <v-text-field
-              v-model="table.null_element"
+              v-model="tableImport.null_element"
               hint="Representation of 'no value present'"
               placeholder="e.g. NA"
-              disabled
               label="NULL Element" />
           </v-col>
         </v-row>
         <v-row dense>
           <v-col cols="8">
             <v-text-field
-              v-model="table.true_element"
+              v-model="tableImport.true_element"
               label="True Element"
               hint="Representation of boolean 'true'"
-              disabled
               placeholder="e.g. 1, true, YES" />
           </v-col>
         </v-row>
         <v-row dense>
           <v-col cols="8">
             <v-text-field
-              v-model="table.false_element"
+              v-model="tableImport.false_element"
               label="False Element"
               hint="Representation of boolean 'false'"
-              disabled
               placeholder="e.g. 0, false, NO" />
           </v-col>
         </v-row>
@@ -66,24 +82,21 @@
           <v-col cols="8">
             <v-file-input
               v-model="file"
-              accept="text/csv"
+              accept=".csv,.tsv"
               show-size
-              label="CSV File" />
+              label="CSV/TSV File" />
           </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions>
         <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
-        <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}`" outlined>
-          <v-icon>mdi-table</v-icon>
-          View
-        </v-btn>
       </v-card-actions>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
+const { isNonNegativeInteger } = require('@/utils')
 export default {
   name: 'TableImportCSV',
   components: {
@@ -92,22 +105,27 @@ export default {
     return {
       loading: false,
       separators: [
-        ',',
-        ';',
-        '-',
-        '|',
-        '$',
-        '%',
-        '#'
+        { key: ',', value: ',' },
+        { key: ';', value: ';' },
+        { key: '[Tab]', value: '\t' }
+      ],
+      quotes: [
+        { key: 'Double "', value: '"' },
+        { key: 'Single \'', value: '\'' }
       ],
       table: {
+        id: null,
         name: null,
-        internal_name: null,
-        separator: null,
-        skip_lines: null,
-        null_element: null,
+        internal_name: null
+      },
+      tableImport: {
+        location: null,
+        quote: null,
+        false_element: null,
         true_element: null,
-        false_element: null
+        null_element: null,
+        separator: ',',
+        skip_lines: 1
       },
       file: null,
       fileLocation: null,
@@ -136,6 +154,7 @@ export default {
     this.info()
   },
   methods: {
+    isNonNegativeInteger,
     async info () {
       this.loading = true
       const infoUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`
@@ -162,6 +181,7 @@ export default {
         })
         if (res.data.success) {
           this.fileLocation = res.data.file.filename
+          this.tableImport.location = `/tmp/${this.fileLocation}`
           console.debug('upload csv', res.data)
         } else {
           console.error('Could not upload CSV data', res.data)
@@ -174,7 +194,7 @@ export default {
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, { location: '/tmp/' + this.fileLocation }, {
+        insertResult = await this.$axios.post(insertUrl, this.tableImport, {
           headers: { Authorization: `Bearer ${this.token}` }
         })
         console.debug('inserted table', insertResult.data)
@@ -185,6 +205,7 @@ export default {
       }
       this.$toast.success('Uploaded csv into table.')
       this.loading = false
+      this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
     }
   }
 }

@@ -15,6 +15,7 @@
               <v-text-field
                 v-model="tableCreate.name"
                 :rules="[v => notEmpty(v) || $t('Required')]"
+                :error-messages="!validTableName ? ['Table with this name exists!'] : []"
                 autocomplete="off"
                 label="Name *" />
             </v-col>
@@ -125,18 +126,18 @@
             <v-col cols="4">
               <v-file-input
                 v-model="file"
-                accept="text/csv"
+                accept=".csv,.tsv"
                 show-size
-                label="File Upload (.csv)" />
+                label="CSV/TSV File" />
             </v-col>
             <v-col cols="4">
               <v-text-field
                 v-model="url"
                 disabled
-                accept=".csv,text/csv"
+                accept=".csv,.tsv"
                 show-size
                 hint="e.g. http://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-verbindungen.csv"
-                label="File URL (.csv)" />
+                label="CSV/TSV File URL" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -211,6 +212,7 @@ export default {
         required: value => !!value || 'Required'
       },
       dateFormats: [],
+      tableNames: [],
       tableCreate: {
         name: null,
         description: null,
@@ -246,10 +248,26 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    validTableName () {
+      if (this.tableCreate.name === null) {
+        return true
+      }
+      if (this.tableCreate.name.length < 3) {
+        return true
+      }
+      return !this.tableNames.includes(this.tableCreate.name.toString()
+        .normalize('NFKD')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '_'))
     }
   },
   mounted () {
     this.loadDateFormats()
+    this.listTables()
   },
   methods: {
     notEmpty,
@@ -286,6 +304,21 @@ export default {
       } catch (err) {
         this.$toast.error('Could not upload data.')
         return
+      }
+      this.loading = false
+    },
+    async listTables () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, {
+          headers: { Authorization: `Bearer ${this.token}` }
+        })
+        console.debug('tables', res.data)
+        this.tableNames = res.data.map(t => t.internal_name)
+      } catch (err) {
+        this.error = true
+        console.error('could not list tables', err)
+        this.$toast.error('Could not list tables')
       }
       this.loading = false
     },
