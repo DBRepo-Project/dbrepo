@@ -17,14 +17,15 @@
         Table Information
       </v-stepper-step>
 
-      <v-stepper-content class="pt-0 pb-1" step="1">
+      <v-stepper-content step="1">
         <v-form ref="form" v-model="valid" @submit.prevent="submit">
           <v-row dense>
             <v-col cols="8">
               <v-text-field
                 v-model="tableCreate.name"
                 name="name"
-                label="Table Name"
+                label="Table Name *"
+                autocomplete="off"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -34,7 +35,10 @@
               <v-text-field
                 v-model="tableCreate.description"
                 name="description"
-                label="Description" />
+                label="Description *"
+                autocomplete="off"
+                :rules="[v => !!v || $t('Required')]"
+                required />
             </v-col>
           </v-row>
           <v-row dense>
@@ -51,101 +55,32 @@
         Table Schema
       </v-stepper-step>
 
-      <v-stepper-content class="pt-0 pb-1" step="2">
-        <v-form ref="form" v-model="valid" @submit.prevent="submit">
-          <div v-for="(c, idx) in tableCreate.columns" :key="idx">
-            <v-row dense class="column pa-2 mb-2">
-              <v-col cols="2">
-                <v-text-field v-model="c.name" required label="Name" />
-              </v-col>
-              <v-col cols="2">
-                <v-select
-                  v-model="c.type"
-                  :items="columnTypes"
-                  item-value="value"
-                  required
-                  label="Data Type" />
-              </v-col>
-              <v-col cols="2" :hidden="c.type !== 'ENUM'">
-                <v-select
-                  v-model="c.enum_values"
-                  :disabled="c.type !== 'ENUM'"
-                  :menu-props="{ maxHeight: '400' }"
-                  label="Enumeration"
-                  multiple />
-              </v-col>
-              <v-col cols="2" class="pl-10" :hidden="c.type !== 'DATE'">
-                <v-select
-                  v-model="c.dfid"
-                  :disabled="c.type !== 'DATE'"
-                  :items="dateFormats"
-                  item-text="example"
-                  item-value="id" />
-              </v-col>
-              <v-col cols="auto" class="pl-10" :hidden="c.type !== 'STRING' || c.type !== 'VARCHAR'">
-                <v-text-field v-model="c.check_expression" label="Check Expression" />
-              </v-col>
-              <v-col cols="auto" class="pl-2">
-                <v-checkbox v-model="c.primary_key" label="Primary Key" @click="setOthers(c)" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-checkbox v-model="c.null_allowed" :disabled="c.primary_key" label="Null Allowed" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-checkbox v-model="c.unique" :hidden="c.primary_key" label="Unique" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-text-field v-model="c.foreign_key" hidden required label="Foreign Key" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-text-field v-model="c.references" hidden required label="References" />
-              </v-col>
-              <v-col>
-                <v-btn @click.stop="removeColumn(idx)">Remove</v-btn>
-              </v-col>
-            </v-row>
-          </div>
-          <div>
-            <v-btn class="mt-2" color="primary" :loading="loading" @click="addColumn()">
-              Add
-            </v-btn>
-          </div>
-        </v-form>
+      <v-stepper-content step="2">
+        <TableSchema :form="valid" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
     </v-stepper>
   </div>
 </template>
 
 <script>
+import TableSchema from '@/components/TableSchema'
 export default {
+  components: {
+    TableSchema
+  },
   data () {
     return {
       columns: [],
       name: null,
       valid: false,
       description: null,
-      dateFormats: [],
       loading: false,
       step: 1,
       error: false,
-      columnTypes: [
-        { value: 'ENUM', text: 'ENUM' },
-        { value: 'BOOLEAN', text: 'BOOLEAN' },
-        { value: 'NUMBER', text: 'NUMBER' },
-        { value: 'BLOB', text: 'BLOB' },
-        { value: 'DATE', text: 'DATE' },
-        { value: 'STRING', text: 'STRING' },
-        { value: 'TEXT', text: 'TEXT' }
-      ],
       tableCreate: {
         name: null,
         description: null,
-        false_element: null,
-        true_element: null,
-        null_element: null,
-        columns: [],
-        separator: ',',
-        skip_lines: 0
+        columns: []
       }
     }
   },
@@ -170,63 +105,10 @@ export default {
     }
   },
   mounted () {
-    this.loadDateFormats()
-    this.addColumn('id', 'NUMBER', false, true, true)
   },
   methods: {
     submit () {
       this.$refs.form.validate()
-    },
-    setOthers (column) {
-      column.null_allowed = false
-      column.unique = true
-    },
-    checkForm (e) {
-      e.preventDefault()
-    },
-    async loadDateFormats () {
-      const getUrl = `/api/container/${this.$route.params.container_id}`
-      let getResult
-      try {
-        this.loading = true
-        getResult = await this.$axios.get(getUrl)
-        this.dateFormats = getResult.data.image.date_formats
-        console.debug('retrieve image date formats', this.dateFormats)
-        this.loading = false
-      } catch (err) {
-        this.loading = false
-        console.error('retrieve image date formats failed', err)
-      }
-    },
-    onChange (idx, val, name) {
-      const c = this.tableCreate.columns[idx]
-      if (name === 'null_allowed' && val === true) {
-        if (c.primary_key) {
-          c.primary_key = false
-        }
-      }
-      if (name === 'primary_key' && val === true) {
-        if (c.null_allowed) {
-          c.null_allowed = false
-        }
-      }
-      this.tableCreate.columns[idx] = c
-    },
-    addColumn (name = '', type = '', null_allowed = true, primary_key = false, unique = true) {
-      this.tableCreate.columns.push({
-        name,
-        type,
-        null_allowed,
-        primary_key,
-        check_expression: null,
-        date_format: null,
-        foreign_key: null,
-        references: null,
-        unique
-      })
-    },
-    removeColumn (idx) {
-      this.tableCreate.columns.splice(idx, 1)
     },
     async createTable () {
       try {
@@ -248,6 +130,10 @@ export default {
         console.error('could not create table', err)
         this.$toast.error('Could not create table.')
       }
+    },
+    schemaClose (event) {
+      console.trace('schema closed', event)
+      this.createTable()
     }
   }
 }
