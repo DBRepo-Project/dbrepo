@@ -20,11 +20,6 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import java.text.Normalizer;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -267,7 +262,9 @@ public interface TableMapper {
     }
 
     default String tableToCreateHistoryViewRawQuery(Table data) {
-        final StringBuilder builder = new StringBuilder("CREATE VIEW `t_history` AS SELECT ");
+        final StringBuilder builder = new StringBuilder("CREATE VIEW `hs_")
+                .append(data.getInternalName())
+                .append("` AS SELECT ");
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()

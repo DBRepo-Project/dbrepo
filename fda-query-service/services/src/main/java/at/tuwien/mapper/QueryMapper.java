@@ -627,7 +627,9 @@ public interface QueryMapper {
                         .append("`")
                         .append(c.getInternalName())
                         .append("`"));
-        builder.append(", `inserted_at`, `deleted_at` FROM `t_history`;");
+        builder.append(", `inserted_at`, `deleted_at` FROM `hs_")
+                .append(data.getInternalName())
+                .append("`;");
         log.trace("mapped find all from history view query [{}]", builder);
         return builder.toString();
     }

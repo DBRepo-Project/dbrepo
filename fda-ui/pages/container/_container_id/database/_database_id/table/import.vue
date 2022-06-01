@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Table Schema (and Import Data) from .csv</v-toolbar-title>
+      <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat>
       <v-stepper-step :complete="step > 1" step="1">
@@ -125,9 +125,9 @@
             <v-col cols="4">
               <v-file-input
                 v-model="file"
-                accept="text/csv"
+                accept=".csv,.tsv"
                 show-size
-                label="File Upload (.csv)" />
+                label="File Upload (.csv/.tsv)" />
             </v-col>
             <v-col cols="4">
               <v-text-field
