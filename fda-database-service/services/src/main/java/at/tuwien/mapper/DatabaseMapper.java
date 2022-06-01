@@ -45,7 +45,7 @@ public interface DatabaseMapper {
     DatabaseDto databaseToDatabaseDto(Database data);
 
     default String databaseToRawCreateDatabaseQuery(Database database) {
-        final String statement = "CREATE DATABASE " + database.getInternalName() + ";";
+        final String statement = "CREATE DATABASE `" + database.getInternalName() + "`;";
         log.trace("raw create statement [{}]", statement);
         return statement;
     }
@@ -57,7 +57,7 @@ public interface DatabaseMapper {
     }
 
     default String databaseToRawDeleteDatabaseQuery(Database database) {
-        final String statement = "DROP DATABASE " + database.getInternalName() + ";";
+        final String statement = "DROP DATABASE `" + database.getInternalName() + "`;";
         log.trace("raw grant readonly statement [{}]", statement);
         return statement;
     }

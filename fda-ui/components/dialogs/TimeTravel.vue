@@ -120,9 +120,8 @@ export default {
         })
         this.error = false
         let data = res.data
-        data = _.reject(data, { deleted_at: null })
         this.totalChanges = data.length
-        data = _.partition(data, o => o.deleted_at)
+        data = _.partition(data, o => o.inserted_at)
         data = _.reject(data, o => o.length === 0)
         console.debug('table history', data)
         this.values = this.aggregateChanges(data)
