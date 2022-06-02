@@ -134,6 +134,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SMTP_USERNAME: ${MAIL_USERNAME}
       SMTP_PASSWORD: ${MAIL_PASSWORD}
+      SYSTEM_PASSWORD: ${ADMIN_PASSWORD:-admin}
       TZ: Europe/Vienna
     ports:
       - "9097:9097"
@@ -180,6 +181,7 @@ services:
       fda-userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SYSTEM_PASSWORD: ${ADMIN_PASSWORD:-admin}
       multipart.location: /tmp
       TZ: Europe/Vienna
     ports:

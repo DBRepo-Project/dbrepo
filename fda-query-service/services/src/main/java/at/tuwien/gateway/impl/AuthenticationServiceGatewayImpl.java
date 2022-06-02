@@ -5,8 +5,6 @@ import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,10 +26,8 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
 
     @Override
     public UserDetails validate(String token) {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
         final ResponseEntity<UserDto> response = restTemplate.exchange("/api/auth", HttpMethod.PUT,
-                new HttpEntity<>("", headers), UserDto.class);
+                null, UserDto.class);
         return userMapper.userDtoToUserDetailsDto(response.getBody());
     }
 

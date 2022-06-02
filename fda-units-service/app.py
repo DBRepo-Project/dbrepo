@@ -2,13 +2,33 @@ import os
 from flask import Flask, flash, request, redirect, url_for, Response, abort, jsonify
 import logging
 import py_eureka_client.eureka_client as eureka_client
-import json
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyString, LazyJSONEncoder
 from list import list_units, get_uri
 from validate import validator, stringmapper
+from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_columns_concepts
+
+from logging.config import dictConfig
+
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config["SWAGGER"] = {"title": "FDA-Units-Service", "uiversion": 3}
@@ -42,9 +62,10 @@ def suggest():
         unit = str(input_json['ustring'])
         offset = int(input_json['offset'])
         res = list_units(stringmapper(unit),offset)
+        logging.info('Suggested units successfully: %s',res)
         return jsonify(res), 200
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
@@ -53,9 +74,10 @@ def suggest():
 def valitate(unit):
     try:
         res = validator(unit)
+        logging.info('Validate unit against OM2, result: %s', res)
         return str(res), 200
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": str(e)}
         return jsonify(res)
 
@@ -64,9 +86,10 @@ def valitate(unit):
 def geturi(uname):
     try:
         res = get_uri(uname)
+        logging.info(f'Get units URI {res}.')
         return jsonify(res), 200
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
@@ -78,17 +101,18 @@ def saveconcept():
         uri = str(input_json['uri'])
         c_name = str(input_json['name'])
         if insert_mdb_concepts(uri, c_name) > 0:
+            logging.info(f"Inserted values {uri}, {c_name} into mdb_concepts.")
             return jsonify({'uri': uri}), 201
         else:
             return jsonify({'status': 'error'}), 400
     except Exception as e:
-        print(e)
+        logging.error(e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
 @app.route('/api/units/savecolumnsconcept', methods=["POST"], endpoint='savecolumnsconcept')
 @swag_from('savecolumnsconcept.yml')
-def saveconcept():
+def savecolumnconcept():
     input_json = request.get_json()
     try:
         uri = str(input_json['uri'])
@@ -96,6 +120,7 @@ def saveconcept():
         tid = int(input_json['tid'])
         cdbid = int(input_json['cdbid'])
         if insert_mdb_columns_concepts(cdbid, tid, cid, uri)>0:
+            logging.info(f"Inserted values {uri},{cid},{tid},{cdbid} into mdb_columns_concepts.")
             return jsonify({'uri': uri}), 201
         else:
             return jsonify({'status': 'error'}), 400

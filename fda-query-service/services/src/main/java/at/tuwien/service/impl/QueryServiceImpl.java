@@ -120,7 +120,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
                                   Long size) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
