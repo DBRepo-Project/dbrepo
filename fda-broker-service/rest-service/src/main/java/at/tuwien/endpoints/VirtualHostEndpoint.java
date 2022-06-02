@@ -1,8 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.GrantComponentDto;
-import at.tuwien.exception.*;
+import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.exception.ProcessCompletionException;
 import at.tuwien.service.QueueService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
@@ -17,29 +16,21 @@ import javax.validation.constraints.NotNull;
 @RestController
 @CrossOrigin(origins = "*")
 @ControllerAdvice
-@RequestMapping("/api/broker/user")
-public class UserEndpoint {
+@RequestMapping("/api/broker/vhost")
+public class VirtualHostEndpoint {
 
     private final QueueService queueService;
 
     @Autowired
-    public UserEndpoint(QueueService queueService) {
+    public VirtualHostEndpoint(QueueService queueService) {
         this.queueService = queueService;
     }
 
     @PostMapping
-    @Operation(summary = "Create user")
-    public ResponseEntity<?> create(@NotNull @Valid @RequestBody CreateUserDto data) throws ProcessCompletionException {
-        queueService.createUser(data);
-        return ResponseEntity.accepted()
-                .build();
-    }
-
-    @PutMapping
-    @Operation(summary = "Grants user permissions")
-    public ResponseEntity<?> modify(@NotNull @Valid @RequestBody GrantComponentDto data)
+    @Operation(summary = "Create virtual host")
+    public ResponseEntity<?> create(@NotNull @Valid @RequestBody CreateVirtualHostDto data)
             throws ProcessCompletionException {
-        queueService.grantVirtualHost(data);
+        queueService.createVirtualHost(data);
         return ResponseEntity.accepted()
                 .build();
     }

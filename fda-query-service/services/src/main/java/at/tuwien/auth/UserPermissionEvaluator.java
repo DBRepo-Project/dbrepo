@@ -25,6 +25,7 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
 
     @Override
     public boolean hasPermission(Authentication auth, Object targetDomainObject, Object permission) {
+        log.trace("has permission auth {} target domain {} permission {}", auth, targetDomainObject, permission);
         if (auth == null) {
             log.error("Authentication principal is null");
             return false;

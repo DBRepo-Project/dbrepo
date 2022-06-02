@@ -15,9 +15,7 @@ def send(exchange, routing_key):
     data = {'timestamp': dt.now().strftime('%Y-%m-%d %H:%M:%d'), 'location': 'somelocation',
             'value': random.randint(20, 30)}
 
-    channel.basic_publish(exchange='test',
-                          routing_key='sensor',
-                          body=bytes(json.dumps(data), encoding='utf8'))
+    channel.basic_publish(exchange=exchange, routing_key=routing_key, body=bytes(json.dumps(data), encoding='utf8'))
     print('submitted', data)
 
     connection.close()
@@ -31,4 +29,4 @@ if __name__ == "__main__":
     if len(argv) != 3:
         usage()
         exit(1)
-    send(exchange=argv[0], routing_key=argv[1])
+    send(exchange=argv[1], routing_key=argv[2])

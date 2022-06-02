@@ -38,9 +38,10 @@ public class TableDataEndpoint {
         this.storeService = storeService;
     }
 
+    // FIXME non-trivial authentication for 1) direct JWT coming e.g from swagger 2) indirect service auth coming from
+    //  table service 3) direct JWT coming from fda-public network =system
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_INSERT')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,

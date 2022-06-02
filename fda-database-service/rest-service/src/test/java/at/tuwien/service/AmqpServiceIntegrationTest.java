@@ -10,6 +10,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
@@ -107,8 +109,10 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void createExchange_succeeds() throws AmqpException, IOException {
-        amqpService.createExchange(DATABASE_1);
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        amqpService.createExchange(DATABASE_1, principal);
         channel.queueDeclare(TABLE_1_TOPIC, false, false, false, null);
         channel.queueBind(TABLE_1_TOPIC, DATABASE_1_EXCHANGE, TABLE_1_TOPIC);
 
