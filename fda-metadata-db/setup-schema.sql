@@ -359,7 +359,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     URI        TEXT,
     name       TEXT,
     created    timestamp without time zone NOT NULL DEFAULT NOW(),
-    created_by bigint                      NOT NULL,
+    created_by bigint                      ,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
     PRIMARY KEY (URI)
 );
