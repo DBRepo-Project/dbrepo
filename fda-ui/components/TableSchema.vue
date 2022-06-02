@@ -14,6 +14,7 @@
               v-model="c.name"
               required
               :rules="[v => !!v || $t('Required')]"
+              :error-messages="needsSequence && c.name === 'id' ? ['Column with this name already present'] : []"
               label="Name *" />
           </v-col>
           <v-col cols="2">
@@ -72,7 +73,7 @@
           <v-col v-if="false" cols="auto" class="pl-10">
             <v-text-field v-model="c.references" hidden required label="References" />
           </v-col>
-          <v-col v-if="idx !== 0" cols="auto" class="mt-5 ml-5">
+          <v-col v-if="canRemove(idx)" cols="auto" class="mt-5 ml-5">
             <v-btn x-small @click="removeColumn(idx)">
               Remove Column
             </v-btn>
@@ -113,7 +114,7 @@ export default {
     return {
       loading: false,
       dateFormats: [],
-      valid: false,
+      valid: true,
       finished: false,
       tableColumns: [],
       columnTypes: [
@@ -160,6 +161,18 @@ export default {
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
+    },
+    canRemove (idx) {
+      if (idx > 0) {
+        return true
+      }
+      if (this.needsSequence) {
+        return true
+      }
+      if (this.columns[0].primary_key) {
+        return false
+      }
+      return false
     },
     removeColumn (idx) {
       this.columns.splice(idx, 1)
