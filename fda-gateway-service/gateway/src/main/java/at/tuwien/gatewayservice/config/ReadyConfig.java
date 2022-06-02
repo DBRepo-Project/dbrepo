@@ -1,6 +1,7 @@
 package at.tuwien.gatewayservice.config;
 
 import com.google.common.io.Files;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.context.event.EventListener;
 import java.io.File;
 import java.io.IOException;
 
+@Log4j2
 @Configuration
 public class ReadyConfig {
 
@@ -16,7 +18,9 @@ public class ReadyConfig {
     private String readyPath;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void init() throws IOException {
+    public void init() throws IOException, InterruptedException {
+        log.info("Wait more for gateway start");
+        Thread.sleep(10 * 1000L);
         Files.touch(new File(readyPath));
     }
 
