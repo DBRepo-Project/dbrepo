@@ -107,7 +107,13 @@ export default {
       return changes
     },
     aggregateLabels (data) {
-      const labels = _.map(data, o => format(new Date(_.head(o).deleted_at), 'dd.MM.'))
+      const labels = _.map(data, (o) => {
+        const first = _.head(o)
+        if (first.deleted_at === null) {
+          return format(new Date(first.inserted_at), 'dd.MM.')
+        }
+        return format(new Date(first.deleted_at), 'dd.MM.')
+      })
       labels.unshift('*')
       console.debug('mapped labels', labels)
       return labels
