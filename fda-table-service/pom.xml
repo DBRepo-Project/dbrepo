@@ -34,6 +34,7 @@
         <btrace-client.version>2.2.0</btrace-client.version>
         <random-utils.version>2.0.0</random-utils.version>
         <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <jsql.version>3.1</jsql.version>
     </properties>
 
     <dependencies>
@@ -97,6 +98,13 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
+        </dependency>
+        <!-- SQL Parser -->
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsql.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- CSV -->
         <dependency>

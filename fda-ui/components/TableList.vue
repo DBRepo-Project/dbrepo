@@ -43,19 +43,6 @@
                 </v-list-item>
                 <v-list-item>
                   <v-list-item-icon>
-                    <v-icon>mdi-road-variant</v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      AMQP Routing Key
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.topic }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-icon>
                     <v-icon>mdi-table</v-icon>
                   </v-list-item-icon>
                   <v-list-item-content>
@@ -64,6 +51,32 @@
                     </v-list-item-title>
                     <v-list-item-content>
                       {{ tableDetails.columns.length }}
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-icon>
+                    <v-icon>mdi-road-variant</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      AMQP Exchange
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      {{ database.exchange }}
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-icon>
+                    <v-icon>mdi-road-variant</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      AMQP Routing Key
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      {{ tableDetails.topic }}
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -100,12 +113,13 @@
             <v-col>
               <v-simple-table class="colTable">
                 <thead>
-                  <th>Column Name</th>
+                  <th>Name</th>
                   <th>Type</th>
                   <th>Unit</th>
                   <th>Primary Key</th>
                   <th>Unique</th>
-                  <th>NULL Allowed</th>
+                  <th>Nullable</th>
+                  <th>Sequence</th>
                 </thead>
                 <tbody>
                   <tr v-for="(col, idx) in tableDetails.columns" :key="idx">
@@ -126,6 +140,9 @@
                     </td>
                     <td>
                       <v-simple-checkbox v-model="col.is_null_allowed" disabled aria-readonly="true" />
+                    </td>
+                    <td>
+                      <v-simple-checkbox v-model="col.auto_generated" disabled aria-readonly="true" />
                     </td>
                   </tr>
                 </tbody>
@@ -165,6 +182,9 @@ export default {
       loading: false,
       tables: [],
       panel: null,
+      database: {
+        exchange: null
+      },
       tableDetails: {
         id: null,
         internal_name: null,
@@ -179,8 +199,17 @@ export default {
     this.$root.$on('table-create', this.refresh)
     const table = this.$store.state.table
     this.refresh(table ? table.id : null)
+    this.databaseDetails()
   },
   methods: {
+    async databaseDetails () {
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        this.database = res.data
+      } catch (err) {
+        this.$toast.error('Could not get database details.')
+      }
+    },
     async details (tableId, clicked = false) {
       // don't fetch details when we click-close an open accordion
       if (clicked && this.tables[this.panel] && this.tables[this.panel].id === tableId) {

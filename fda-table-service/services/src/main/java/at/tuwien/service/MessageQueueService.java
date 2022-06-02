@@ -9,13 +9,6 @@ import java.io.IOException;
 public interface MessageQueueService {
 
     /**
-     * Declares the exchange, the topics and the consumers
-     *
-     * @throws IOException Error on any of these actions.
-     */
-    void init() throws IOException, AmqpException;
-
-    /**
      * Creates a queue and consumer that re-routes the insert requests to the Query Service. Therefore and due to the
      * dependency this method cannot take any input during startup or seeding phase as it would introduce a deadlock.
      * Seeding is solely performed by the Query Service on startup.

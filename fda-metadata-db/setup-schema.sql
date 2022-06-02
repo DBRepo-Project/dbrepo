@@ -359,7 +359,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     URI        TEXT,
     name       TEXT,
     created    timestamp without time zone NOT NULL DEFAULT NOW(),
-    created_by bigint                      NOT NULL,
+    created_by bigint                      ,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
     PRIMARY KEY (URI)
 );
@@ -481,12 +481,5 @@ CREATE TABLE IF NOT EXISTS mdb_owns
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
 );
-
-COMMIT;
-
-BEGIN;
-
-INSERT INTO mdb_users (username, Main_Email, password)
-VALUES ('system', 'noreply@dbrepo.ossdip.at', (SELECT md5(random()::text)));
 
 COMMIT;
