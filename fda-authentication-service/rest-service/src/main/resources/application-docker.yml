@@ -41,11 +41,11 @@ eureka:
 fda:
   ready.path: ./ready
   website: https://dbrepo.ossdip.at
+  gateway.endpoint: http://fda-gateway-service:9095
   mail:
     prefix: /
     from: Database Repository <noreply@dbrepo.ossdip.at>
     replyto: Martin Weise <martin.weise@tuwien.ac.at>
-  system.passwd: "${SYSTEM_PASSWORD}"
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret

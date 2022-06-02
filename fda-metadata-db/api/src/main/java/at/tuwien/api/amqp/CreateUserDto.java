@@ -19,6 +19,7 @@ public class CreateUserDto {
     private String username;
 
     @NotNull
+    @ToString.Exclude
     @Parameter(name = "password hash")
     private String password;
 

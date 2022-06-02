@@ -21,7 +21,5 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    @Value("${fda.system.passwd}")
-    private String systemPassword;
 
 }

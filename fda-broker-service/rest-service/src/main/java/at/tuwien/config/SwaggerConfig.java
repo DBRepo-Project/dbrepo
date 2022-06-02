@@ -20,11 +20,11 @@ public class SwaggerConfig {
     public OpenAPI springShopOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Database Repository Authentication Service API")
+                        .title("Database Repository Broker Service API")
                         .contact(new Contact()
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
-                        .description("Service that manages the authentication")
+                        .description("Service that manages the broker")
                         .version(version)
                         .license(new License()
                                 .name("Apache 2.0")
@@ -37,7 +37,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("container-service")
+                .group("broker-service")
                 .pathsToMatch("/api/**")
                 .build();
     }

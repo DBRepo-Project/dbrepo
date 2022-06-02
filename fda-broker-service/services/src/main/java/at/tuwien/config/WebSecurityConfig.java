@@ -1,22 +1,12 @@
 package at.tuwien.config;
 
-import at.tuwien.auth.AuthTokenFilter;
-import at.tuwien.auth.JwtUtils;
-import at.tuwien.service.impl.UserDetailsServiceImpl;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -24,38 +14,7 @@ import org.springframework.web.filter.CorsFilter;
 import javax.servlet.http.HttpServletResponse;
 
 @Configuration
-@EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
-@SecurityScheme(
-        name = "bearerAuth",
-        type = SecuritySchemeType.HTTP,
-        bearerFormat = "JWT",
-        scheme = "bearer"
-)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final JwtUtils jwtUtils;
-    private final SecurityConfig securityConfig;
-    private final UserDetailsServiceImpl userDetailsService;
-
-    @Autowired
-    public WebSecurityConfig(JwtUtils jwtUtils, SecurityConfig securityConfig,
-                             UserDetailsServiceImpl userDetailsService) {
-        this.jwtUtils = jwtUtils;
-        this.securityConfig = securityConfig;
-        this.userDetailsService = userDetailsService;
-    }
-
-    @Bean
-    public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter(jwtUtils, userDetailsService);
-    }
-
-    @Override
-    public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-        authenticationManagerBuilder.userDetailsService(userDetailsService)
-                .passwordEncoder(securityConfig.passwordEncoder());
-    }
 
     @Bean
     @Override
@@ -85,22 +44,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         /* set permissions on endpoints */
         http.authorizeRequests()
                 /* our public endpoints */
-                .antMatchers(HttpMethod.GET, "/api/user/token").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/user/token/resend").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/user").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/user").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/user/reset").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/auth").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/broker/user").hasIpAddress("172.29.0.0/16")
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
-        /* add JWT token filter */
-        http.addFilterBefore(authTokenFilter(),
-                UsernamePasswordAuthenticationFilter.class
-        );
     }
 
     @Bean

@@ -28,7 +28,7 @@ public class UserEndpoint {
 
     @PostMapping
     @Operation(summary = "Create user")
-    public ResponseEntity<?> create(@NotNull @Valid CreateUserDto data) throws ProcessCompletionException {
+    public ResponseEntity<?> create(@NotNull @Valid @RequestBody CreateUserDto data) throws ProcessCompletionException {
         queueService.createUser(data);
         return ResponseEntity.accepted()
                 .build();

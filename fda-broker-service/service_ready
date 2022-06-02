@@ -1,7 +1,8 @@
 #!/bin/bash
-HOST_COUNT=$(rabbitmqctl status --quiet | grep -o "Virtual host count: \d*" | grep -o "\d*")
-if [ $HOST_COUNT -ge 1 ]; then
-  echo "service is ready and accepting connections"
+#HOST_COUNT=$(rabbitmqctl status --quiet | grep -o "Virtual host count: \d*" | grep -o "\d*")
+#if [ $HOST_COUNT -ge 1 && -f /ready ]; then
+if [ -f /ready ]; then
+  echo "service is ready"
   exit 0
 fi
 exit 1

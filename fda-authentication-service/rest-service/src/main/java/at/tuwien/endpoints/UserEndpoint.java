@@ -12,6 +12,7 @@ import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.MailService;
+import at.tuwien.service.QueueService;
 import at.tuwien.service.TokenService;
 import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,15 +43,17 @@ public class UserEndpoint {
     private final UserService userService;
     private final MailService mailService;
     private final TokenService tokenService;
+    private final QueueService queueService;
     private final SecurityConfig securityConfig;
 
     @Autowired
     public UserEndpoint(UserMapper userMapper, UserService userService, MailService mailService,
-                        TokenService tokenService, SecurityConfig securityConfig) {
+                        TokenService tokenService, QueueService queueService, SecurityConfig securityConfig) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.mailService = mailService;
         this.tokenService = tokenService;
+        this.queueService = queueService;
         this.securityConfig = securityConfig;
     }
 
@@ -69,8 +72,9 @@ public class UserEndpoint {
     @Transactional
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@Valid @RequestBody SignupRequestDto data) throws UserEmailExistsException,
-            UserNameExistsException, RoleNotFoundException, UserEmailFailedException {
+            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException {
         final User user = userService.create(data);
+        queueService.createUser(data);
         final Token token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());

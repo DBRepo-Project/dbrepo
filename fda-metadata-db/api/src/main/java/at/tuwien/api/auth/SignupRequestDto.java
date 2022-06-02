@@ -24,6 +24,7 @@ public class SignupRequestDto {
     private String email;
 
     @NotNull
+    @ToString.Exclude
     @Parameter(name = "password hash")
     private String password;
 
