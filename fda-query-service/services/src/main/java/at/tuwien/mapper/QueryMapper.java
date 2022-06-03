@@ -777,8 +777,7 @@ public interface QueryMapper {
         }
         final String str = String.valueOf(data);
         log.trace("mapping string {} to instant", str);
-        return Timestamp.valueOf(str)
-                .toInstant();
+        return Instant.parse(str);
     }
 
 }
