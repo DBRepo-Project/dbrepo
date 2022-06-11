@@ -3,7 +3,7 @@
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title>
-        Persist Query and Result
+        Persist Query
       </v-card-title>
       <v-card-text>
         <v-alert
