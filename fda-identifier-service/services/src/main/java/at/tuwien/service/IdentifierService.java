@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public interface IdentifierService {
+
     /**
      * Finds all identifiers in the metadata database which are not deleted.
      *
@@ -38,10 +39,9 @@ public interface IdentifierService {
      * @param databaseId  The database id.
      * @param data        The identifier.
      * @return The created identifier from the metadata database if successful.
-     * @throws IdentifierPublishingNotAllowedException When the visibility is not self.
      */
     Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
+            throws QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
 
     /**
@@ -64,7 +64,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
      * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
+    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
+            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
 
     /**
      * Publishes the identifier for a given identifier id in the metadata database.
@@ -77,7 +78,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
      */
-    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
+    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+            throws IdentifierNotFoundException,
             IdentifierAlreadyPublishedException;
 
     /**

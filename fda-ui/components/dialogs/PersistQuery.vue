@@ -34,25 +34,23 @@
           <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
             <v-col cols="4">
               <v-text-field
-                v-model="creator.lastname"
-                name="lastname"
-                label="Lastname"
+                v-model="creator.name"
+                name="name"
+                label="Name *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
             <v-col cols="4">
               <v-text-field
-                v-model="creator.firstname"
-                name="firstname"
-                label="Firstname"
-                :rules="[v => !!v || $t('Required')]"
-                required />
+                v-model="creator.affiliation"
+                name="affiliation"
+                label="Affiliation *" />
             </v-col>
             <v-col cols="3">
               <v-text-field
-                v-model="creator.affiliation"
-                name="affiliation"
-                label="Affiliation" />
+                v-model="creator.orcid"
+                name="orcid"
+                label="ORCID" />
             </v-col>
             <v-col cols="1" class="mt-5">
               <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
@@ -128,7 +126,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        visibility: 'SELF',
+        visibility: 'EVERYONE',
         doi: null,
         creators: []
       }
@@ -159,8 +157,7 @@ export default {
     },
     addCreator () {
       this.identifier.creators.push({
-        firstname: null,
-        lastname: null,
+        name: null,
         affiliation: null,
         orcid: null
       })

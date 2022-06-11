@@ -73,7 +73,7 @@
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
         <p v-for="(creator,i) in identifier.creators" :key="i">
-          <span>{{ creator.lastname }} {{ creator.firstname }}</span>
+          <span>{{ creator.name }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
       </v-card-text>
@@ -205,4 +205,7 @@ export default {
 </script>
 
 <style>
+pre {
+  white-space: break-spaces;
+}
 </style>
