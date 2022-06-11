@@ -66,6 +66,9 @@ public class Identifier {
     @Column
     private String doi;
 
+    @Column(nullable = false)
+    private Short publicationYear;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
     private List<Creator> creators;
 

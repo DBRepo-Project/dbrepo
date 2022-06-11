@@ -6,4 +6,6 @@ import at.tuwien.exception.UserNotFoundException;
 public interface UserService {
 
     User findByUsername(String username) throws UserNotFoundException;
+
+    User find(Long id) throws UserNotFoundException;
 }

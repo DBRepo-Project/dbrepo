@@ -18,7 +18,7 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
-                label="Query Title"
+                label="Query Title *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
@@ -26,7 +26,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Query Description"
+                label="Query Description *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -67,13 +67,24 @@
           </v-row>
           <v-row>
             <v-col>
+              <v-text-field
+                id="publication_year"
+                v-model.number="identifier.publication_year"
+                type="number"
+                label="Publication Year *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
               <v-select
                 id="visibility"
                 v-model="identifier.visibility"
                 :items="visibility"
                 item-value="value"
                 item-text="name"
-                label="Visibility"
+                label="Visibility *"
                 :rules="[v => !!v || $t('Required')]"
                 disabled
                 required />
@@ -126,6 +137,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
+        publication_year: parseInt(new Date().getFullYear()),
         visibility: 'EVERYONE',
         doi: null,
         creators: []
