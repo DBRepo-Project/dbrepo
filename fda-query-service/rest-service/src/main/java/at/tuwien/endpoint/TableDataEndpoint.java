@@ -38,10 +38,11 @@ public class TableDataEndpoint {
         this.storeService = storeService;
     }
 
+    // TODO second endpoint that has external authorization too
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
+//    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Insert data")
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long id,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,

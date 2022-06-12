@@ -1,11 +1,10 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.gateway.QueryServiceGateway;
+import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.MessageQueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,12 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
-import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -34,44 +31,29 @@ public class RabbitMqService implements MessageQueueService {
 
     private final Channel channel;
     private final ObjectMapper objectMapper;
+    private final TableRepository tableRepository;
     private final QueryServiceGateway queryServiceGateway;
-    private final ScheduledExecutorService executorService;
-    private final AuthenticationServiceGateway authenticationServiceGateway;
-
-    private JwtResponseDto response;
 
     @Autowired
-    public RabbitMqService(Channel channel, ObjectMapper objectMapper, QueryServiceGateway queryServiceGateway,
-                           AuthenticationServiceGateway authenticationServiceGateway) {
+    public RabbitMqService(Channel channel, ObjectMapper objectMapper, TableRepository tableRepository,
+                           QueryServiceGateway queryServiceGateway) {
         this.channel = channel;
         this.objectMapper = objectMapper;
+        this.tableRepository = tableRepository;
         this.queryServiceGateway = queryServiceGateway;
-        this.executorService = Executors.newScheduledThreadPool(1);
-        this.authenticationServiceGateway = authenticationServiceGateway;
     }
 
     @Transactional(readOnly = true)
     @EventListener(ApplicationReadyEvent.class)
-    public void init() {
-        final Runnable tokenRunnable = this::obtainToken;
-        this.executorService.schedule(tokenRunnable, 1L, TimeUnit.HOURS);
-        this.obtainToken();
-    }
-
-    /**
-     * Obtains a new JWT token from the authentication service (via the gateway) as the "system" user
-     */
-    protected void obtainToken() {
-        response = authenticationServiceGateway.obtain();
-        log.info("Fetched new token from authentication service for username {}", response.getUsername());
-        log.debug("fetched new token from authentication service {}", response);
-        queryServiceGateway.setToken(response.getToken());
-    }
-
-    @PreDestroy
-    @Transactional(readOnly = true)
-    public void teardown() {
-        this.executorService.shutdown();
+    public void init() throws AmqpException {
+        final List<Table> tables = tableRepository.findAll();
+        for (Table table : tables) {
+            createConsumer(table.getDatabase().getContainer().getId(), table.getDatabase().getId(), table);
+        }
+        log.info("Re-created {} consumers", tables.size());
+        log.debug("re-created consumers: {}", tables.stream()
+                .map(Table::getInternalName)
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -87,6 +69,11 @@ public class RabbitMqService implements MessageQueueService {
         }
         log.info("Created queue for table with id {}", table.getId());
         log.debug("created queue for table {}", table);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void createConsumer(Long containerId, Long databaseId, Table table) throws AmqpException {
         try {
             channel.basicConsume(table.getTopic(), true, new DefaultConsumer(channel) {
                 @Override
@@ -98,8 +85,7 @@ public class RabbitMqService implements MessageQueueService {
                                 .data(objectMapper.readValue(body, payloadReference))
                                 .build();
                         log.debug("received tuple data {}", data);
-                        queryServiceGateway.publish(table.getDatabase().getContainer().getId(),
-                                table.getDatabase().getId(), table.getId(), data);
+                        queryServiceGateway.publish(containerId, databaseId, table.getId(), data);
                     } catch (IOException e) {
                         log.error("Failed to parse for table with id {}", table.getId());
                         log.debug("Failed to parse for table {} because {}", table, e.getMessage());
