@@ -4,6 +4,7 @@ package at.tuwien.gateway;
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.exception.BrokerUserCreationException;
 
+
 public interface BrokerServiceGateway {
 
     /**
@@ -13,4 +14,12 @@ public interface BrokerServiceGateway {
      * @throws BrokerUserCreationException The broker did not create a user.
      */
     void createUser(CreateUserDto data) throws BrokerUserCreationException;
+
+    /**
+     * Modify a user password
+     *
+     * @param data The user modification data.
+     * @throws BrokerUserCreationException The broker did not modify a user.
+     */
+    void modifyUserPassword(CreateUserDto data) throws BrokerUserCreationException;
 }

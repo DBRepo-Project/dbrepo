@@ -54,6 +54,9 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
                 if (database.getIsPublic()) {
                     return true;
                 }
+                if (auth.getAuthorities().isEmpty()) {
+                    return false;
+                }
                 final UserDetailsDto detailsDto = (UserDetailsDto) auth.getPrincipal();
                 /* only the creator can view */
                 return database.getCreator().getId().equals(detailsDto.getId());

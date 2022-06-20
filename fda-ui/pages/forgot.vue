@@ -10,7 +10,7 @@
           <v-alert
             border="left"
             color="info">
-            If you need an account, <a @click="signup">create one</a>. You can also <a @click="login">login</a> instead.
+            Please provide either your username or e-mail address, or both.
           </v-alert>
           <v-row>
             <v-col cols="6">
@@ -39,7 +39,7 @@
             color="primary"
             type="submit"
             @click="forgot">
-            Send Information
+            Reset password
           </v-btn>
         </v-card-actions>
       </v-card>

@@ -93,7 +93,6 @@ export default {
         const res = await this.$axios.put('/api/user/reset', this.data)
         this.loading = false
         console.debug('reset user', res.data)
-        this.$toast.success('Password successfully reset!')
         this.$router.push('/login?password_reset')
       } catch (err) {
         this.loading = false

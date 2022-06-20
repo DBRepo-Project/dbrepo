@@ -38,7 +38,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(GrantComponentDto data) throws BrokerVirtualHostCreationException {
         log.debug("grant virtual host at broker service {}", data);
-        final ResponseEntity<Void> response = restTemplate.exchange("/api/broker/user", HttpMethod.PUT,
+        final ResponseEntity<Void> response = restTemplate.exchange("/api/broker/user/permission", HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());

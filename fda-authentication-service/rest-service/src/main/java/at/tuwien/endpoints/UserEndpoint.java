@@ -71,7 +71,8 @@ public class UserEndpoint {
     @PostMapping
     @Transactional
     @Operation(summary = "Create user")
-    public ResponseEntity<UserDto> register(@Valid @RequestBody SignupRequestDto data) throws UserEmailExistsException,
+    public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
+            throws UserEmailExistsException,
             UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException {
         final User user = userService.create(data);
         queueService.createUser(data);
@@ -87,7 +88,7 @@ public class UserEndpoint {
     @PutMapping
     @Transactional
     @Operation(summary = "Forgot user information")
-    public ResponseEntity<UserDto> forgot(@Valid @RequestBody UserForgotDto data)
+    public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException {
         final User user = userService.forgot(data);
         final Token token = tokenService.create(user);
@@ -102,10 +103,13 @@ public class UserEndpoint {
     @PutMapping("/reset")
     @Transactional
     @Operation(summary = "Reset user information")
-    public void reset(@Valid @RequestBody UserResetDto data,
-                                         HttpServletResponse httpServletResponse)
-            throws UserEmailFailedException, TokenInvalidException {
+    public void reset(@NotNull @Valid @RequestBody UserResetDto data,
+                      @NotNull HttpServletResponse httpServletResponse)
+            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException {
         final User user = tokenService.invalidate(data.getToken());
+        final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
+        userService.updatePassword(user.getId(), userPasswordDto);
+        queueService.modifyUserPassword(user, userPasswordDto);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         mailService.send(user, "Password Reset Successful!", "reset-mail.txt", context);
@@ -128,7 +132,8 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_USER')")
     @Operation(summary = "Update user", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> update(@NotNull @PathVariable("id") Long id,
-                                          @Valid @RequestBody UserUpdateDto data) throws UserNotFoundException {
+                                          @NotNull @Valid @RequestBody UserUpdateDto data)
+            throws UserNotFoundException {
         final User entity = userService.update(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userMapper.userToUserDto(entity));
@@ -139,7 +144,7 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Update user roles", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateRoles(@NotNull @PathVariable("id") Long id,
-                                               @Valid @RequestBody UserRolesDto data)
+                                               @NotNull @Valid @RequestBody UserRolesDto data)
             throws UserNotFoundException, RoleNotFoundException, RoleUniqueException {
         final User entity = userService.updateRoles(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -151,9 +156,10 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_PASSWORD')")
     @Operation(summary = "Update user password", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
-                                                  @Valid @RequestBody UserPasswordDto data)
-            throws UserNotFoundException {
+                                                  @NotNull @Valid @RequestBody UserPasswordDto data)
+            throws UserNotFoundException, BrokerUserCreationException {
         final User entity = userService.updatePassword(id, data);
+        queueService.modifyUserPassword(entity, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userMapper.userToUserDto(entity));
     }
@@ -163,7 +169,8 @@ public class UserEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_EMAIL')")
     @Operation(summary = "Update user email", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateEmail(@NotNull @PathVariable("id") Long id,
-                                               @Valid @RequestBody UserEmailDto data) throws UserNotFoundException {
+                                               @NotNull @Valid @RequestBody UserEmailDto data)
+            throws UserNotFoundException {
         final User entity = userService.updateEmail(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userMapper.userToUserDto(entity));

@@ -217,7 +217,7 @@ export default {
   methods: {
     async databaseDetails () {
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
       } catch (err) {
         this.$toast.error('Could not get database details.')

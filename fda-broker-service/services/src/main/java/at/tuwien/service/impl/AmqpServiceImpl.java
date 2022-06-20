@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantComponentDto;
+import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.exception.ProcessCompletionException;
 import at.tuwien.service.QueueService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,15 @@ public class AmqpServiceImpl implements QueueService {
                 .append(" ")
                 .append(data.getPassword());
         executeSync(addUserCmd.toString());
+    }
+
+    @Override
+    public void modifyPassword(UserModifyPasswordDto data) throws ProcessCompletionException {
+        final StringBuilder modifyUserCmd = new StringBuilder("rabbitmqctl change_password ")
+                .append(data.getUsername())
+                .append(" ")
+                .append(data.getPassword());
+        executeSync(modifyUserCmd.toString());
     }
 
     @Override

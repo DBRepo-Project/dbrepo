@@ -44,8 +44,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         /* set permissions on endpoints */
         http.authorizeRequests()
                 /* our public endpoints */
-                .antMatchers("/api/broker/user").hasIpAddress("172.29.0.0/16")
-                .antMatchers("/api/broker/vhost").hasIpAddress("172.29.0.0/16")
+                .antMatchers("/api/broker/user/**").hasIpAddress("172.29.0.0/16")
+                .antMatchers("/api/broker/vhost/**").hasIpAddress("172.29.0.0/16")
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",

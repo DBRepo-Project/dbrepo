@@ -3,10 +3,7 @@ package at.tuwien.mapper;
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.GrantedAuthorityDto;
-import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import org.mapstruct.Mapper;
@@ -30,6 +27,8 @@ public interface UserMapper {
     UserDetailsDto userToUserDetailsDto(User data);
 
     CreateUserDto signupRequestDtoToCreateUserDto(SignupRequestDto data);
+
+    UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
     @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {

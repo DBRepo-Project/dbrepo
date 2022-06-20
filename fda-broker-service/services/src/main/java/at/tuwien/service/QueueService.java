@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantComponentDto;
+import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.exception.ProcessCompletionException;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,8 @@ public interface QueueService {
      * @throws ProcessCompletionException The process failed to complete.
      */
     void createUser(CreateUserDto data) throws ProcessCompletionException;
+
+    void modifyPassword(UserModifyPasswordDto data) throws ProcessCompletionException;
 
     /**
      * Creates a virtual host

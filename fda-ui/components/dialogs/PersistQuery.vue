@@ -18,7 +18,7 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
-                label="Query Title"
+                label="Query Title *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
@@ -26,7 +26,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Query Description"
+                label="Query Description *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -36,7 +36,7 @@
               <v-text-field
                 v-model="creator.lastname"
                 name="lastname"
-                label="Lastname"
+                label="Lastname *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -44,7 +44,7 @@
               <v-text-field
                 v-model="creator.firstname"
                 name="firstname"
-                label="Firstname"
+                label="Firstname *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>

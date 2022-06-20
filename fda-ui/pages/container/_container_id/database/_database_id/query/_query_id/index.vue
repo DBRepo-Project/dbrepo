@@ -73,7 +73,7 @@
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
         <p v-for="(creator, i) in creators" :key="i">
-          <OrcidIcon :orcid="creator.orcid" />
+          <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
           <span>{{ creator.lastname }} {{ creator.firstname }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
