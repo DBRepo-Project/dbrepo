@@ -41,10 +41,10 @@ public class Query implements Serializable {
     @javax.persistence.Column
     private Instant execution;
 
-    @javax.persistence.Column(nullable = false)
+    @javax.persistence.Column(nullable = false, columnDefinition = "TEXT")
     private String query;
 
-    @javax.persistence.Column(name = "query_normalized")
+    @javax.persistence.Column(name = "query_normalized", columnDefinition = "TEXT")
     private String queryNormalized;
 
     @javax.persistence.Column(name = "query_hash", nullable = false)

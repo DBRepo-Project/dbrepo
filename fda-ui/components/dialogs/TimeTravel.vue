@@ -16,16 +16,13 @@
         <p v-if="totalChanges > 0">
           The are {{ totalChanges }} total changes in the dataset:
         </p>
-        <v-sparkline
-          v-if="!loading && totalChanges > 0"
-          :labels="labels"
-          :value="values"
-          stroke-linecap="round"
-          type="trend"
-          color="primary"
-          smooth="15"
-          line-width="1"
-          padding="10" />
+        <Bar
+          chart-id="time-travel"
+          :chart-data="chartData"
+          :chart-options="chartOptions"
+          dataset-id-key="label"
+          :height="80"
+          :width="400" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -54,17 +51,35 @@
 </template>
 
 <script>
-import _ from 'lodash'
+import { Bar } from 'vue-chartjs/legacy'
 import { format } from 'date-fns'
+import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
+
+ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale)
+
 export default {
+  components: {
+    Bar
+  },
   data () {
     return {
       formValid: false,
       loading: false,
       error: false,
       datetime: null,
-      labels: [],
-      values: [],
+      chartData: {
+        labels: [],
+        datasets: []
+      },
+      chartOptions: {
+        responsive: true,
+        scales: {
+          y: {
+            display: true,
+            type: 'logarithmic'
+          }
+        }
+      },
       totalChanges: 0
     }
   },
@@ -100,24 +115,6 @@ export default {
       console.debug('selected date', this.datetime)
       return Date.parse(this.datetime)
     },
-    aggregateChanges (data) {
-      const changes = _.map(data, o => o.length)
-      changes.unshift(0)
-      console.debug('mapped changes', changes)
-      return changes
-    },
-    aggregateLabels (data) {
-      const labels = _.map(data, (o) => {
-        const first = _.head(o)
-        if (first.deleted_at === null) {
-          return format(new Date(first.inserted_at), 'dd.MM.')
-        }
-        return format(new Date(first.deleted_at), 'dd.MM.')
-      })
-      labels.unshift('*')
-      console.debug('mapped labels', labels)
-      return labels
-    },
     async loadHistory () {
       try {
         this.loading = true
@@ -125,13 +122,13 @@ export default {
           headers: this.requestHeaders
         })
         this.error = false
-        let data = res.data
-        this.totalChanges = data.length
-        data = _.partition(data, o => o.inserted_at)
-        data = _.reject(data, o => o.length === 0)
-        console.debug('table history', data)
-        this.values = this.aggregateChanges(data)
-        this.labels = this.aggregateLabels(data)
+        this.chartData.labels = res.data.map(d => format(new Date(d.timestamp), 'dd.MM.yyyy HH:mm:ss'))
+        this.chartData.datasets = [{
+          backgroundColor: this.$vuetify.theme.themes.light.primary,
+          data: res.data.map(d => d.total)
+        }]
+        // this.totalChanges = this.res.data.length
+        console.debug('history', this.chartData)
       } catch (err) {
         this.error = true
         console.error('failed to load table history', err)

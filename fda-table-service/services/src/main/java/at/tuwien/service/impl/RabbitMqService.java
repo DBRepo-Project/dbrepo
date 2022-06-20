@@ -48,6 +48,11 @@ public class RabbitMqService implements MessageQueueService {
         }
         log.info("Created queue for table with id {}", table.getId());
         log.debug("created queue for table {}", table);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void createConsumer(Long containerId, Long databaseId, Table table) throws AmqpException {
         try {
             channel.basicConsume(table.getTopic(), true, new DefaultConsumer(channel) {
                 @Override
@@ -59,8 +64,7 @@ public class RabbitMqService implements MessageQueueService {
                                 .data(objectMapper.readValue(body, payloadReference))
                                 .build();
                         log.debug("received tuple data {}", data);
-                        queryServiceGateway.publish(table.getDatabase().getContainer().getId(),
-                                table.getDatabase().getId(), table.getId(), data);
+                        queryServiceGateway.publish(containerId, databaseId, table.getId(), data);
                     } catch (IOException e) {
                         log.error("Failed to parse for table with id {}", table.getId());
                         log.debug("Failed to parse for table {} because {}", table, e.getMessage());

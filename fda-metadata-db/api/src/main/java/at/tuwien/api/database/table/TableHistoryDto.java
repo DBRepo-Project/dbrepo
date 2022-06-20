@@ -1,12 +1,10 @@
 package at.tuwien.api.database.table;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -16,17 +14,16 @@ import java.util.Map;
 @NoArgsConstructor
 public class TableHistoryDto {
 
-    @JsonProperty("inserted_at")
-    @NotNull(message = "inserted timestamp is required")
-    @Parameter(name = "inserted timestamp")
-    private Instant insertedAt;
+    @NotNull(message = "event timestamp is required")
+    @Parameter(name = "event timestamp")
+    private Instant timestamp;
 
-    @JsonProperty("deleted_at")
-    @Parameter(name = "deleted timestamp")
-    private Instant deletedAt;
+    @NotNull(message = "event name is required")
+    @Parameter(name = "event name")
+    private String event;
 
-    @NotNull(message = "primary key map is required")
-    @Parameter(name = "primary key map")
-    private Map<String, Object> keys;
+    @NotNull(message = "total number is required")
+    @Parameter(name = "total number")
+    private Long total;
 
 }

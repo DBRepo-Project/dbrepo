@@ -76,6 +76,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
+                /* our internal endpoints */
+                .antMatchers(HttpMethod.POST, "/api/container/**/database/**/table/**/data").hasIpAddress(
+                        "172.29.0.0/16")
                 /* our private endpoints */
                 .anyRequest().authenticated();
         /* add JWT token filter */

@@ -66,7 +66,7 @@ export default {
       this.loading = true
       try {
         const data = {
-          statement: this.parent.query.sql
+          statement: this.parent.sql
         }
         console.debug('send data', data)
         const page = 0

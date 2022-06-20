@@ -29,6 +29,7 @@ import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -626,18 +627,12 @@ public interface QueryMapper {
 
     @Transactional(readOnly = true)
     default String historyRawQuery(Table data) {
-        final int[] idx = new int[]{0};
-        final StringBuilder builder = new StringBuilder("SELECT ");
-        data.getColumns()
-                .stream()
-                .filter(TableColumn::getIsPrimaryKey)
-                .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
-                        .append("`")
-                        .append(c.getInternalName())
-                        .append("`"));
-        builder.append(", `inserted_at`, `deleted_at` FROM `hs_")
+        final StringBuilder builder = new StringBuilder("SELECT")
+                .append(" IF(`deleted_at` IS NULL, `inserted_at`, `deleted_at`) as `timestamp`")
+                .append(", IF(`deleted_at` IS NULL, 'INSERT', 'DELETE') as `event`")
+                .append(", COUNT(`inserted_at`) as `total` FROM `hs_")
                 .append(data.getInternalName())
-                .append("`;");
+                .append("` GROUP BY `inserted_at`, `deleted_at` ORDER BY `timestamp` ASC;");
         log.trace("mapped find all from history view query [{}]", builder);
         return builder.toString();
     }
@@ -650,14 +645,10 @@ public interface QueryMapper {
             final int[] idx = new int[]{0};
             final Map<String, Object> primaryKeys = new HashMap<>();
             final Object[] row = (Object[]) iterator.next();
-            table.getColumns()
-                    .stream()
-                    .filter(TableColumn::getIsPrimaryKey)
-                    .forEach(c -> primaryKeys.put(c.getInternalName(), row[idx[0]++]));
             history.add(TableHistoryDto.builder()
-                    .keys(primaryKeys)
-                    .insertedAt(objectToInstant(row[idx[0]++]))
-                    .deletedAt(objectToInstant(row[idx[0]++]))
+                    .timestamp(objectToInstant(row[idx[0]++]))
+                    .event(String.valueOf(row[idx[0]++]))
+                    .total(Long.parseLong(String.valueOf(row[idx[0]++])))
                     .build());
         }
         return history;
@@ -777,7 +768,20 @@ public interface QueryMapper {
         }
         final String str = String.valueOf(data);
         log.trace("mapping string {} to instant", str);
-        return Instant.parse(str);
+        final Instant out;
+        if (str.length() == 26) {
+            /* e.g. 2022-06-20 09:08:13.416567 */
+            out = Timestamp.valueOf(str.substring(0, 19))
+                    .toInstant();
+        } else if (str.length() == 19) {
+            /* e.g. 2022-06-20 09:08:13 */
+            out = Timestamp.valueOf(str)
+                    .toInstant();
+        } else {
+            out = Instant.parse(str);
+        }
+        log.trace("instant is {}", out);
+        return out;
     }
 
 }
