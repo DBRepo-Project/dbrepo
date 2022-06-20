@@ -19,8 +19,6 @@ import java.util.List;
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private static final String AMQP_EXCHANGE = "fda";
-
     private final Channel channel;
     private final DatabaseRepository databaseRepository;
 
@@ -33,7 +31,6 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     @PostConstruct
     public void init() throws IOException {
-        channel.exchangeDeclare(AMQP_EXCHANGE, BuiltinExchangeType.TOPIC, true);
         final List<Database> databases = databaseRepository.findAll();
         for (Database database : databases) {
             create(database);
@@ -62,10 +59,8 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     public void create(Database database) throws IOException {
-        channel.exchangeDeclare(AMQP_EXCHANGE + "." + database.getExchange(), BuiltinExchangeType.FANOUT, true);
-        log.debug("declare fanout exchange {}", AMQP_EXCHANGE + "." + database.getExchange());
-        channel.exchangeBind(AMQP_EXCHANGE + "." + database.getExchange(), AMQP_EXCHANGE, AMQP_EXCHANGE + "." + database.getExchange());
-        log.debug("bind exchange {} to {}", AMQP_EXCHANGE + "." + database.getExchange(), AMQP_EXCHANGE);
+        channel.exchangeDeclare(database.getExchange(), BuiltinExchangeType.FANOUT, true);
+        log.debug("declare fanout exchange {}", database.getExchange());
     }
 
     public void delete(Database database) throws IOException {

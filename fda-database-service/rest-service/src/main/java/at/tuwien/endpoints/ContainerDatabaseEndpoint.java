@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -64,6 +65,19 @@ public class ContainerDatabaseEndpoint {
         log.info("Created database with id {}", database.getId());
         log.debug("created database {}", database);
         return ResponseEntity.status(HttpStatus.CREATED)
+                .body(databaseMapper.databaseToDatabaseDto(database));
+    }
+
+    @PutMapping("/{databaseId}")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long id,
+                                              @NotBlank @PathVariable Long databaseId,
+                                              @Valid @RequestBody DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException {
+        final Database database = databaseService.modify(id, databaseId, modifyDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(databaseMapper.databaseToDatabaseDto(database));
     }
 

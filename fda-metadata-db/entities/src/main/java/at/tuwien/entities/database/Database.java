@@ -66,6 +66,12 @@ public class Database {
     @Column
     private String description;
 
+    @Column
+    private String license;
+
+    @Column
+    private String publisher;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)

@@ -91,7 +91,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* find */
         final Container container = containerService.find(containerId);
         final Database database = databaseService.findDatabase(databaseId);
-        final Optional<Table> optional = tableRepository.findByInternalName(tableMapper.nameToInternalName(createDto.getName()));
+        final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
+                tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
             log.error("Table name exists in database with id {} as table id {}", database.getId(), optional.get().getId());
             throw new TableNameExistsException("Table name exists");

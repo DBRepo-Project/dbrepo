@@ -152,10 +152,13 @@ clean-ide:
 clean-frontend:
 	rm -f ./fda-ui/videos/*.webm
 
+clean-tmp:
+	./.fda-deployment/clean-tmp
+
 clean-docker:
 	./.fda-deployment/clean
 
-clean: clean-ide clean-frontend clean-docker
+clean: clean-ide clean-frontend clean-docker clean-tmp
 
 teardown:
 	./.fda-deployment/teardown

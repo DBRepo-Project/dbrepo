@@ -3,7 +3,7 @@
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title>
-        Persist Query and Result
+        Persist Query
       </v-card-title>
       <v-card-text>
         <v-alert
@@ -18,7 +18,7 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
-                label="Query Title"
+                label="Query Title *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
@@ -26,7 +26,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Query Description"
+                label="Query Description *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -34,25 +34,23 @@
           <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
             <v-col cols="4">
               <v-text-field
-                v-model="creator.lastname"
-                name="lastname"
-                label="Lastname"
+                v-model="creator.name"
+                name="name"
+                label="Name *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
             <v-col cols="4">
               <v-text-field
-                v-model="creator.firstname"
-                name="firstname"
-                label="Firstname"
-                :rules="[v => !!v || $t('Required')]"
-                required />
+                v-model="creator.affiliation"
+                name="affiliation"
+                label="Affiliation *" />
             </v-col>
             <v-col cols="3">
               <v-text-field
-                v-model="creator.affiliation"
-                name="affiliation"
-                label="Affiliation" />
+                v-model="creator.orcid"
+                name="orcid"
+                label="ORCID" />
             </v-col>
             <v-col cols="1" class="mt-5">
               <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
@@ -69,13 +67,24 @@
           </v-row>
           <v-row>
             <v-col>
+              <v-text-field
+                id="publication_year"
+                v-model.number="identifier.publication_year"
+                type="number"
+                label="Publication Year *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
               <v-select
                 id="visibility"
                 v-model="identifier.visibility"
                 :items="visibility"
                 item-value="value"
                 item-text="name"
-                label="Visibility"
+                label="Visibility *"
                 :rules="[v => !!v || $t('Required')]"
                 disabled
                 required />
@@ -128,7 +137,8 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        visibility: 'SELF',
+        publication_year: parseInt(new Date().getFullYear()),
+        visibility: 'EVERYONE',
         doi: null,
         creators: []
       }
@@ -159,8 +169,7 @@ export default {
     },
     addCreator () {
       this.identifier.creators.push({
-        firstname: null,
-        lastname: null,
+        name: null,
         affiliation: null,
         orcid: null
       })

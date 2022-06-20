@@ -65,8 +65,8 @@ public class IdentifierEndpoint {
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody IdentifierDto data,
                                                 Principal principal)
-            throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException {
+            throws IdentifierAlreadyExistsException, QueryNotFoundException, RemoteUnavailableException,
+            UserNotFoundException {
         final Identifier identifier = identifierService.create(id, databaseId, data, principal);
         log.info("Found identifier with id {}", identifier.getId());
         log.debug("found identifier {}", identifier);

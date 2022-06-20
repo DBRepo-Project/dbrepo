@@ -4,7 +4,7 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !!identifier.id || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loading" color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
@@ -25,12 +25,23 @@
         </span>
       </v-card-subtitle>
       <v-card-text>
+        <p v-if="database.publisher">
+          <strong>Database</strong>
+        </p>
+        <div v-if="database.publisher">
+          <p>
+            Publisher: <code>{{ database.publisher }}</code>
+          </p>
+        </div>
         <p>
           <strong>Query</strong>
         </p>
         <div>
-          <p>
-            Persistent Identifier: <code v-if="identifier.id">https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code><span v-if="!identifier.id">(empty)</span>
+          <p v-if="identifier.id">
+            Persistent Identifier: <code>https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code>
+          </p>
+          <p v-if="identifier.publication_year">
+            Publication Year: <code>{{ identifier.publication_year }}</code>
           </p>
           <p>Statement</p>
           <v-alert
@@ -38,7 +49,7 @@
             color="grey lighten-4 black--text">
             <pre>{{ query.query }}</pre>
           </v-alert>
-          <p>
+          <p v-if="query.query_hash">
             Hash: <code>sha256:{{ query.query_hash }}</code>
           </p>
         </div>
@@ -54,14 +65,14 @@
         <p class="mt-2">
           <strong>Result</strong>
         </p>
-        <p>
-          Hash: <code v-if="query.result_hash">{{ query.result_hash }}</code><span v-if="!query.result_hash">(empty)</span>
+        <p v-if="query.result_hash">
+          Hash: <code v-if="query.result_hash">sha256:{{ query.result_hash }}</code>
         </p>
         <p>
           Rows: <code v-if="query.result_number">{{ query.result_number }}</code><span v-if="!query.result_number">(empty)</span>
         </p>
-        <p>
-          Executed: <code v-if="query.execution">{{ query.execution }}</code><span v-if="!query.execution">(empty)</span>
+        <p v-if="execution">
+          Executed: <code>{{ execution }}</code>
         </p>
         <p v-if="query.creator">
           Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
@@ -73,7 +84,7 @@
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
         <p v-for="(creator,i) in identifier.creators" :key="i">
-          <span>{{ creator.lastname }} {{ creator.firstname }}</span>
+          <span>{{ creator.name }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
       </v-card-text>
@@ -122,8 +133,13 @@ export default {
         title: null,
         description: null,
         visibility: null,
+        publication_year: null,
         doi: null,
         creators: []
+      },
+      database: {
+        id: null,
+        publisher: null
       },
       persistQueryExists: false,
       persistQueryDialog: false,
@@ -139,6 +155,12 @@ export default {
         return null
       }
       return { Authorization: `Bearer ${this.token}` }
+    },
+    execution () {
+      if (this.query.execution === null) {
+        return null
+      }
+      return this.formatDate(this.query.execution)
     }
   },
   mounted () {
@@ -157,6 +179,15 @@ export default {
       } catch (err) {
         console.error('Could not load query', err)
         this.$toast.error('Could not load query')
+        this.loading = false
+      }
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        console.debug('database', res.data)
+        this.database = res.data
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
         this.loading = false
       }
       try {
@@ -205,4 +236,7 @@ export default {
 </script>
 
 <style>
+pre {
+  white-space: break-spaces;
+}
 </style>

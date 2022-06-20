@@ -61,13 +61,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional
     public Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
-        if (!data.getVisibility().equals(VisibilityTypeDto.SELF)) {
-            log.error("Identifier must be self visible for creation");
-            log.debug("identifier is not self-visible {}", data);
-            throw new IdentifierPublishingNotAllowedException("Identifier not self-visible");
-        }
+            throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
+            UserNotFoundException {
         /* find */
         final Optional<Identifier> optional = identifierRepository.findByQid(data.getQid());
         if (optional.isPresent()) {
