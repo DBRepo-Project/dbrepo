@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +42,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     // FIXME non-trivial authentication for 1) direct JWT coming e.g from swagger 2) indirect service auth coming from
     //  table service 3) direct JWT coming from fda-public network =system
-    //  @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @PostMapping
     @Transactional
     @Operation(summary = "Insert data")
@@ -63,7 +61,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasPermission(#tableId, 'DATA_UPDATE')")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -81,7 +78,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasPermission(#tableId, 'DATA_DELETE')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -100,7 +96,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @PostMapping("/import")
     @Transactional
-    @PreAuthorize("hasPermission(#tableId, 'DATA_INSERT')")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
@@ -119,7 +114,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#tableId, 'DATA_VIEW')")
     @Operation(summary = "Find data")
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,

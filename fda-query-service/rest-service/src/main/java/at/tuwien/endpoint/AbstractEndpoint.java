@@ -12,6 +12,8 @@ import at.tuwien.service.IdentifierService;
 import at.tuwien.service.TableService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
@@ -51,13 +53,13 @@ public abstract class AbstractEndpoint {
         if (principal == null) {
             return false;
         }
-        final UserDetails userDetails = (UserDetailsDto) principal /* with pre-authorization this always holds */;
-        if (userDetails.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Current user has insufficient authorities");
             log.debug("current user misses ROLE_RESEARCHER");
             return false;
         }
-        return table.getDatabase().getCreator().getUsername().equals(userDetails.getUsername());
+        return table.getDatabase().getCreator().getUsername().equals(principal.getName());
     }
 
     protected Boolean hasQueryPermission(Long databaseId, Long queryId, String permissionCode, Principal principal) {
@@ -79,14 +81,14 @@ public abstract class AbstractEndpoint {
         if (principal == null) {
             return false;
         }
-        final UserDetails userDetails = (UserDetailsDto) principal /* with pre-authorization this always holds */;
-        if (userDetails.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Current user has insufficient authorities");
             log.debug("current user misses ROLE_RESEARCHER");
             return false;
         }
         /* modification operations are limited to the creator */
-        return database.getCreator().getUsername().equals(userDetails.getUsername());
+        return database.getCreator().getUsername().equals(principal.getName());
     }
 
     /**
@@ -110,8 +112,7 @@ public abstract class AbstractEndpoint {
         if (principal == null) {
             return false;
         }
-        final UserDetails userDetails = (UserDetails) principal;
-        return identifier.getCreator().getUsername().equals(userDetails.getUsername());
+        return identifier.getCreator().getUsername().equals(principal.getName());
     }
 
 }
