@@ -4,11 +4,14 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id" color="accent" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
           <v-icon left>mdi-run</v-icon> Re-Execute
+        </v-btn>
+        <v-btn v-if="result_visibility" color="primary" :href="downloadLink" :disabled="!token">
+          <v-icon left>mdi-download</v-icon> Download
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
@@ -16,21 +19,32 @@
       <v-card-title>
         Query Information
       </v-card-title>
-      <v-card-subtitle>
-        <span v-if="query.created != null">
-          Created {{ formatDate(query.created) }}
-        </span>
-        <span v-if="execution == null">
-          Query was never executed
-        </span>
-      </v-card-subtitle>
       <v-card-text>
+        <p v-if="database.publisher">
+          <strong>Database</strong>
+        </p>
+        <div v-if="database.publisher">
+          <p>
+            Publisher: <code>{{ database.publisher }}</code>
+          </p>
+        </div>
         <p>
           <strong>Query</strong>
         </p>
         <div>
           <p>
-            Persistent Identifier: <code v-if="identifier.id">https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code><span v-if="!identifier.id">(empty)</span>
+            Visiblity
+            <span v-if="query_visibility"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
+            <span v-if="!query_visibility"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
+          </p>
+          <p v-if="identifier.id">
+            Persistent Identifier: <code>https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code>
+          </p>
+          <p v-if="identifier.publication_year">
+            Publication Year: <code>{{ identifier.publication_year }}</code>
+          </p>
+          <p v-if="creator">
+            Owner: <code>{{ creator.username }}</code><span v-if="!creator.username">(empty)</span>
           </p>
           <p>Statement</p>
           <v-alert
@@ -38,7 +52,7 @@
             color="code">
             <pre>{{ statement }}</pre>
           </v-alert>
-          <p>
+          <p v-if="query_hash">
             Hash: <code>{{ query_hash }}</code>
           </p>
         </div>
@@ -52,33 +66,35 @@
           <p v-if="identifier.description">{{ identifier.description }}</p>
         </div>
         <p class="mt-2">
-          <strong>Result</strong>
-        </p>
-        <p>
-          Hash: <code v-if="result_hash">{{ result_hash }}</code><span v-if="!result_hash">(empty)</span>
-        </p>
-        <p>
-          Rows: <code v-if="result_number">{{ result_number }}</code><span v-if="!result_number">(empty)</span>
-        </p>
-        <p>
-          Executed: <code v-if="execution">{{ execution }}</code><span v-if="!execution">(empty)</span>
-        </p>
-        <p v-if="creator">
-          Owner: <code>{{ creator.username }}</code><span v-if="!creator.username">(empty)</span>
-        </p>
-        <p class="mt-2">
           <strong>Creator(s)</strong>
         </p>
         <p v-if="identifier.creators.length === 0">
           (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
         </p>
-        <p v-for="(creator, i) in creators" :key="i">
+        <p v-for="(creator,i) in identifier.creators" :key="i">
           <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
-          <span>{{ creator.lastname }} {{ creator.firstname }}</span>
+          <span>{{ creator.name }}</span>
           <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
         </p>
+        <p class="mt-2">
+          <strong>Result</strong>
+        </p>
+        <p>
+          Visiblity
+          <span v-if="result_visibility"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
+          <span v-if="!result_visibility"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
+        </p>
+        <p v-if="result_hash">
+          Hash: <code v-if="result_hash">{{ result_hash }}</code>
+        </p>
+        <p>
+          Rows: <code v-if="result_number">{{ result_number }}</code><span v-if="!result_number">(empty)</span>
+        </p>
+        <p v-if="execution">
+          Executed: <code>{{ execution }}</code>
+        </p>
+        <QueryResults v-if="identifier.visibility !== 'SELF'" ref="queryResults" v-model="query.id" class="mt-0" />
       </v-card-text>
-      <QueryResults v-if="identifier.visibility !== 'SELF'" ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
@@ -131,13 +147,15 @@ export default {
         query_hash: null,
         result_number: null,
         execution: null,
+        publication_year: null,
         doi: null,
         creators: []
       },
       database: {
         id: null,
         name: null,
-        is_public: null
+        is_public: null,
+        publisher: null
       },
       persistQueryExists: false,
       persistQueryDialog: false,
@@ -153,6 +171,9 @@ export default {
     loadingColor () {
       return this.error ? 'red' : 'primary'
     },
+    downloadLink () {
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -160,6 +181,15 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    query_visibility () {
+      return this.database.is_public || this.identifier.id
+    },
+    result_visibility () {
+      if (this.query_visibility) {
+        return true
+      }
+      return this.identifier.id
     },
     statement () {
       return this.identifier.id ? this.identifier.query : this.query.query
@@ -263,4 +293,7 @@ export default {
 </script>
 
 <style>
+pre {
+  white-space: break-spaces;
+}
 </style>

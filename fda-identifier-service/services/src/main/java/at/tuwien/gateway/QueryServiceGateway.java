@@ -13,11 +13,11 @@ public interface QueryServiceGateway {
      * Finds a query by given id from the query service that internally looks in the query store of a container.
      *
      * @param identifier The identifier containing the query id and database id.
-     * @param bearer     The authorization bearer.
+     * @param authorization      The authorization token.
      * @return The query information if successful.
      * @throws QueryNotFoundException     The query was not found.
      * @throws RemoteUnavailableException The remote service is not available.
      */
-    QueryDto find(IdentifierCreateDto identifier, String bearer)
-            throws QueryNotFoundException, RemoteUnavailableException;
+    QueryDto find(IdentifierCreateDto identifier, String authorization) throws QueryNotFoundException,
+            RemoteUnavailableException;
 }

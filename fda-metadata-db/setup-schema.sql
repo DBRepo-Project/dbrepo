@@ -388,7 +388,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     URI        TEXT,
     name       TEXT,
     created    timestamp without time zone NOT NULL DEFAULT NOW(),
-    created_by bigint                      ,
+    created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
     PRIMARY KEY (URI)
 );
@@ -429,6 +429,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     title            VARCHAR(255)                NOT NULL,
     description      TEXT                        NOT NULL,
     visibility       VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
+    publication_year SMALLINT                    NOT NULL,
     query            TEXT                        NOT NULL,
     query_normalized TEXT                        NOT NULL,
     query_hash       VARCHAR(255)                NOT NULL,
@@ -451,8 +452,7 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 (
     id            bigint                               DEFAULT nextval('mdb_creators_seq'),
     pid           bigint                      NOT NULL,
-    firstname     VARCHAR(255)                NOT NULL,
-    lastname      VARCHAR(255)                NOT NULL,
+    name          VARCHAR(255)                NOT NULL,
     affiliation   VARCHAR(255),
     orcid         VARCHAR(255),
     created       timestamp without time zone NOT NULL DEFAULT NOW(),

@@ -68,24 +68,21 @@ public abstract class BaseUnitTest {
     public final static Long CREATOR_1_QUERY_ID = 1L;
     public final static String CREATOR_1_ORCID = "00000-00000-00000";
     public final static String CREATOR_1_AFFIL = "TU Graz";
-    public final static String CREATOR_1_FIRSTNAME = "Max";
-    public final static String CREATOR_1_LASTNAME = "Mustermann";
+    public final static String CREATOR_1_NAME = "Mustermann, Max";
     public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Creator CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
             .orcid(CREATOR_1_ORCID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
+            .name(CREATOR_1_NAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
 
     public final static Creator CREATOR_1_REQUEST = Creator.builder()
             .orcid(CREATOR_1_ORCID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
+            .name(CREATOR_1_NAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
@@ -94,24 +91,21 @@ public abstract class BaseUnitTest {
     public final static Long CREATOR_2_QUERY_ID = 1L;
     public final static String CREATOR_2_ORCID = "00000-00000-00000";
     public final static String CREATOR_2_AFFIL = "TU Wien";
-    public final static String CREATOR_2_FIRSTNAME = "Martina";
-    public final static String CREATOR_2_LASTNAME = "Mustermann";
+    public final static String CREATOR_2_NAME = "Mustermann, Martina";
     public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Creator CREATOR_2 = Creator.builder()
             .id(CREATOR_2_ID)
             .orcid(CREATOR_2_ORCID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
+            .name(CREATOR_2_NAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
 
     public final static Creator CREATOR_2_REQUEST = Creator.builder()
             .orcid(CREATOR_2_ORCID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
+            .name(CREATOR_2_NAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
@@ -120,16 +114,14 @@ public abstract class BaseUnitTest {
             .id(CREATOR_1_ID)
             .affiliation(CREATOR_1_AFFIL)
             .orcid(CREATOR_1_ORCID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
+            .name(CREATOR_1_NAME)
             .build();
 
     public final static CreatorDto CREATOR_2_DTO = CreatorDto.builder()
             .id(CREATOR_2_ID)
             .affiliation(CREATOR_2_AFFIL)
             .orcid(CREATOR_2_ORCID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
+            .name(CREATOR_2_NAME)
             .build();
 
     public final static Long IMAGE_1_ID = 1L;
@@ -143,7 +135,8 @@ public abstract class BaseUnitTest {
     public final static Long IMAGE_1_SIZE = 12000L;
     public final static String IMAGE_1_LOGO = "AAAA";
     public final static Instant IMAGE_1_BUILT = Instant.ofEpochSecond(1441588352);
-    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(ContainerImageEnvironmentItem.builder()
+    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
+            ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
                     .key("POSTGRES_USER")
                     .value("postgres")

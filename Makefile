@@ -43,7 +43,7 @@ build-backend-query: build-backend-metadata
 build-backend-table: build-backend-metadata
 	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
 
-build-backend: build-backend-metadata build-backend-authentication build-backend-container build-backend-database build-backend-discovery build-backend-gateway build-backend-query build-backend-table
+build-backend: build-backend-metadata build-backend-authentication build-backend-container build-backend-database build-backend-discovery build-backend-gateway build-backend-query build-backend-table build-backend-identifier
 
 build-docker:
 	docker-compose build fda-metadata-db

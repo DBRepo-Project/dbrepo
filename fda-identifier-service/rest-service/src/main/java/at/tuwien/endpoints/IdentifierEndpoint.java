@@ -65,11 +65,11 @@ public class IdentifierEndpoint {
     public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody IdentifierCreateDto data,
-                                                @NotNull @RequestHeader(name = "Authorization") String bearer,
-                                                Principal principal)
+                                                @NotNull @RequestHeader(name = "Authorization") String authorization,
+                                                @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException {
-        final Identifier identifier = identifierService.create(containerId, databaseId, data, principal, bearer);
+        final Identifier identifier = identifierService.create(containerId, databaseId, data, principal, authorization);
         log.info("Found identifier with id {}", identifier.getId());
         log.debug("found identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)

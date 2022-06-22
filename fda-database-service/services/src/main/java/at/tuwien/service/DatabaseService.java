@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
@@ -31,12 +32,13 @@ public interface DatabaseService {
     /**
      * Finds a specific database for a given id in the metadata database.
      *
+     * @param containerId The container id.
      * @param databaseId The database id.
      * @param principal  The principal.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException;
 
     /**
      * Find a database by id, only used in the authentication service
@@ -78,6 +80,10 @@ public interface DatabaseService {
     Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
+
+    @Transactional
+    Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException;
 
     /**
      * Returns a new session for a given {@link Database} entity.

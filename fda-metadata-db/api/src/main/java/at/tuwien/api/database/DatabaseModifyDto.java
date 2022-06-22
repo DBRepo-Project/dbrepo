@@ -20,6 +20,7 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publicity", example = "true")
     private Boolean isPublic;
 
+    @NotBlank
     @Parameter(name = "database description", example = "Sample")
     private String description;
 

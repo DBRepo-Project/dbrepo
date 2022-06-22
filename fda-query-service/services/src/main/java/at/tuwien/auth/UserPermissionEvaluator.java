@@ -1,9 +1,10 @@
 package at.tuwien.auth;
 
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.entities.database.Database;
-import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.PermissionEvaluator;
@@ -17,10 +18,12 @@ import java.io.Serializable;
 public class UserPermissionEvaluator implements PermissionEvaluator {
 
     private final DatabaseService databaseService;
+    private final IdentifierService identifierService;
 
     @Autowired
-    public UserPermissionEvaluator(DatabaseService databaseService) {
+    public UserPermissionEvaluator(DatabaseService databaseService, IdentifierService identifierService) {
         this.databaseService = databaseService;
+        this.identifierService = identifierService;
     }
 
     @Override
@@ -48,16 +51,15 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
         }
         final Long targetDomainId = (Long) targetDomainObject;
         final String permissionCode = (String) permission;
-        final Database database;
+        final Identifier identifier;
         try {
-            database = databaseService.find(targetDomainId);
-        } catch (DatabaseNotFoundException e) {
-            log.error("Failed to find database with id {}", targetDomainId);
+            identifier = identifierService.findByQueryId(targetDomainId);
+        } catch (IdentifierNotFoundException e) {
             return false;
         }
         switch (permissionCode) {
             case "DATA_VIEW":
-                if (database.getIsPublic()) {
+                if (identifier.getDa()) {
                     return true;
                 }
                 if (principal == null) {
@@ -94,9 +96,7 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
                 if (database.getIsPublic()) {
                     return true;
                 }
-                if (principal == null) {
-                    return false;
-                }
+                if (identifierService.findByQueryId())
                 /* only the creator can execute/export non-public databases */
                 return database.getCreator().getId().equals(principal.getId());
         }

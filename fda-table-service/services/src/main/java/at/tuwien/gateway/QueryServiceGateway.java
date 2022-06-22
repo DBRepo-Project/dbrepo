@@ -14,4 +14,5 @@ public interface QueryServiceGateway {
      * @return The number of inserted tuples.
      */
     Integer publish(Long containerId, Long databaseId, Long tableId, TableCsvDto data);
+
 }

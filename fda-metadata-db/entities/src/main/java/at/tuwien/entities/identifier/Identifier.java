@@ -1,5 +1,6 @@
 package at.tuwien.entities.identifier;
 
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -77,12 +78,21 @@ public class Identifier {
     @Column(nullable = false)
     private Long resultNumber;
 
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn
+    })
+    private Database database;
+
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;
 
     @Column
     private String doi;
+
+    @Column(nullable = false)
+    private Short publicationYear;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
     private List<Creator> creators;

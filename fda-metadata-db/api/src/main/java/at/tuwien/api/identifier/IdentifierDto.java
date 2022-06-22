@@ -77,6 +77,11 @@ public class IdentifierDto {
     private String doi;
 
     @NotNull
+    @JsonProperty("publication_year")
+    @Parameter(name = "publication year", example = "2022")
+    private Short publicationYear;
+
+    @NotNull
     @Parameter(name = "creators")
     private List<CreatorDto> creators;
 

@@ -61,9 +61,10 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String token)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
+    public Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal,
+                             String authorization)
+            throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
+            UserNotFoundException {
         /* find */
         final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(databaseId, data.getQid());
         if (optional.isPresent()) {
@@ -71,7 +72,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("identifier already exists similar to request {}", data);
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
-        final QueryDto query = queryServiceGateway.find(data, token) /* check if exists */;
+        final QueryDto query = queryServiceGateway.find(data, authorization) /* check if exists */;
         log.debug("found query in query service {}", query);
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
         tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
@@ -119,8 +120,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* check */
         find(identifierId);
         /* update */
-        final Identifier identifier = identifierMapper.identifierDtoToIdentifier(data);
-        final Identifier entityUpdated = identifierRepository.save(identifier);
+        final Identifier entityUpdated = identifierRepository.save(identifierMapper.identifierDtoToIdentifier(data));
         log.info("Updated identifier with id {}", identifierId);
         log.debug("updated identifier {}", entityUpdated);
         return entityUpdated;
@@ -151,6 +151,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* delete */
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);
+        log.debug("deleted identifier {}", identifier);
     }
 
 }

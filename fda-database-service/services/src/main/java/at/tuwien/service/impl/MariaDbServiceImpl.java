@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
@@ -68,7 +69,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional(readOnly = true)
-    public Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException {
+    public Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException {
         final Optional<Database> database;
         if (principal == null) {
             database = databaseRepository.findPublic(databaseId);
@@ -83,7 +84,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Database findById(Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
@@ -95,9 +96,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public void delete(Long id, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+    public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, ContainerConnectionException {
-        final Database database = findPublicOrMineById(databaseId, principal);
+        final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -166,6 +167,27 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         // save in database_index - elastic search
         databaseidxRepository.save(database);
         log.debug("created exchange {}", database.getExchange());
+        return out;
+    }
+
+    @Override
+    @Transactional
+    public Database modify(Long containerId, Long databaseId, DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException {
+        final Database database = findById(databaseId);
+        if (modifyDto.getContactPerson() != null) {
+            database.setCreator(userService.find(modifyDto.getContactPerson()));
+        }
+        database.setIsPublic(modifyDto.getIsPublic());
+        database.setDescription(modifyDto.getDescription());
+        database.setPublisher(modifyDto.getPublisher());
+        database.setLicense(modifyDto.getLicense());
+        final Database out = databaseRepository.save(database);
+        /* update entity in metadata database */
+        log.info("Updated database with id {}", out.getId());
+        log.debug("updated database {}", out);
+        // save in database_index - elastic search
+        databaseidxRepository.save(database);
         return out;
     }
 

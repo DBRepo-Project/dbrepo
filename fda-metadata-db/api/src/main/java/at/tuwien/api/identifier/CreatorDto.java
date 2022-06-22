@@ -18,12 +18,8 @@ public class CreatorDto {
     private Long id;
 
     @NotBlank
-    @Parameter(name = "firstname", example = "Maximilian")
-    private String firstname;
-
-    @NotBlank
-    @Parameter(name = "lastname", example = "Mustermann")
-    private String lastname;
+    @Parameter(name = "name", example = "Mustermann, Maximilian")
+    private String name;
 
     @Parameter(name = "affiliation", example = "TU Wien")
     private String affiliation;

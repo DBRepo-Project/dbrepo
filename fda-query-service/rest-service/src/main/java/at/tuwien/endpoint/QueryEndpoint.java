@@ -79,14 +79,14 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#id, 'DATA_EXPORT')")
+    @PreAuthorize("hasPermission(#queryId, 'DATA_EXPORT')")
     @Operation(summary = "Exports some query")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("queryId") Long queryId)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException {
-        final Query query = storeService.findOne(id, databaseId, queryId);
+        storeService.findOne(id, databaseId, queryId);
         final HttpHeaders headers = new HttpHeaders();
         final ExportResource resource = queryService.findOne(id, databaseId, queryId);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

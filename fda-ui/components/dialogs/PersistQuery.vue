@@ -31,20 +31,36 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
-            <v-col cols="3">
+          <v-row>
+            <v-col>
               <v-text-field
-                v-model="creator.lastname"
-                name="lastname"
-                label="Lastname *"
+                id="publication_year"
+                v-model.number="identifier.publication_year"
+                type="number"
+                label="Publication Year *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-select
+                id="visibility"
+                v-model="identifier.visibility"
+                :items="visibility"
+                item-value="value"
+                item-text="name"
+                label="Visibility *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
             <v-col cols="3">
               <v-text-field
-                v-model="creator.firstname"
-                name="firstname"
-                label="Firstname *"
+                v-model="creator.name"
+                name="name"
+                label="Name *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -52,13 +68,15 @@
               <v-text-field
                 v-model="creator.affiliation"
                 name="affiliation"
-                label="Affiliation" />
+                label="Affiliation *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
             </v-col>
-            <v-col cols="2">
+            <v-col cols="3">
               <v-text-field
                 v-model="creator.orcid"
                 name="orcid"
-                label="ORCiD" />
+                label="ORCID" />
             </v-col>
             <v-col cols="1" class="mt-5">
               <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
@@ -71,19 +89,6 @@
               <v-btn x-small @click="addCreator">
                 Add Creator
               </v-btn>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-select
-                id="visibility"
-                v-model="identifier.visibility"
-                :items="visibility"
-                item-value="value"
-                item-text="name"
-                label="Visibility"
-                :rules="[v => !!v || $t('Required')]"
-                required />
             </v-col>
           </v-row>
         </v-form>
@@ -129,6 +134,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
+        publication_year: parseInt(new Date().getFullYear()),
         visibility: 'EVERYONE',
         doi: null,
         creators: []
@@ -160,8 +166,7 @@ export default {
     },
     addCreator () {
       this.identifier.creators.push({
-        firstname: null,
-        lastname: null,
+        name: null,
         affiliation: null,
         orcid: null
       })
@@ -178,6 +183,8 @@ export default {
         })
         console.debug('persist', res.data)
       } catch (err) {
+        this.error = true
+        this.loading = false
         this.$toast.error('Failed to persist query')
         console.error('persist failed', err)
         return
@@ -203,3 +210,11 @@ export default {
   }
 }
 </script>
+<style>
+#creators,
+#creators-btn {
+  background-color: #f00;
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+}
+</style>

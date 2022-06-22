@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -81,15 +82,28 @@ public class ContainerDatabaseEndpoint {
                 .body(databaseMapper.databaseToDatabaseDto(database));
     }
 
+    @PutMapping("/{databaseId}")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long id,
+                                              @NotBlank @PathVariable Long databaseId,
+                                              @Valid @RequestBody DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException {
+        final Database database = databaseService.modify(id, databaseId, modifyDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(databaseMapper.databaseToDatabaseDto(database));
+    }
+
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
     @PreAuthorize("hasPermission(#databaseId, 'DATABASE_VIEW')")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId,
                                                 Principal principal)
             throws DatabaseNotFoundException {
-        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getIsPublic() && !principal.getName().equals(database.getCreator().getUsername())) {
             log.error("Found database but is private and creator does not match");
             log.debug("found database {}", database);
@@ -106,13 +120,13 @@ public class ContainerDatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
         final Database database = databaseService.findById(databaseId);
         messageQueueService.deleteExchange(database);
-        databaseService.delete(id, databaseId, principal);
+        databaseService.delete(containerId, databaseId, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

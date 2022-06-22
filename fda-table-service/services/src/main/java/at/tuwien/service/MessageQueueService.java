@@ -17,4 +17,6 @@ public interface MessageQueueService {
      * @throws AmqpException The broker service did not allow to create a consumer.
      */
     void create(Table table) throws AmqpException;
+
+    void createConsumer(Long containerId, Long databaseId, Table table) throws AmqpException;
 }
