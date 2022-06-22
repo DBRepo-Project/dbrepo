@@ -73,7 +73,6 @@ public class Table {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
-    @Field(type = FieldType.Nested)
     private List<TableColumn> columns;
 
     @Column(name = "separator")

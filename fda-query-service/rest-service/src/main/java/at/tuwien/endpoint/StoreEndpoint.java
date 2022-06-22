@@ -6,8 +6,7 @@ import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
-import at.tuwien.service.StoreService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/query")
-public class StoreEndpoint {
+public class StoreEndpoint extends AbstractEndpoint {
 
     private final UserMapper userMapper;
     private final QueryMapper queryMapper;
@@ -28,8 +28,10 @@ public class StoreEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService,
-                         StoreService storeService) {
+    public StoreEndpoint(TableService tableService, UserMapper userMapper, QueryMapper queryMapper,
+                         UserService userService, StoreService storeService, DatabaseService databaseService,
+                         IdentifierService identifierService) {
+        super(tableService, databaseService, identifierService);
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
@@ -38,12 +40,16 @@ public class StoreEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW')")
+    @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW_ALL')")
     @Operation(summary = "Find queries")
     public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long id,
-                                                  @NotNull @PathVariable("databaseId") Long databaseId)
+                                                  @NotNull @PathVariable("databaseId") Long databaseId,
+                                                  @NotNull Principal principal)
             throws QueryStoreException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+        if (!hasQueryPermission(databaseId, null, "QUERY_VIEW_ALL", principal)) {
+            throw new NotAllowedException("Query view all not allowed");
+        }
         final List<Query> queries = storeService.findAll(id, databaseId);
         return ResponseEntity.ok(queryMapper.queryListToQueryDtoList(queries));
     }
@@ -54,9 +60,14 @@ public class StoreEndpoint {
     @Operation(summary = "Find some query")
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long id,
                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                         @NotNull @PathVariable Long queryId)
+                                         @NotNull @PathVariable Long queryId,
+                                         @NotNull Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryStoreException, QueryNotFoundException, ContainerNotFoundException, UserNotFoundException {
+            QueryStoreException, QueryNotFoundException, ContainerNotFoundException, UserNotFoundException,
+            NotAllowedException {
+        if (!hasQueryPermission(databaseId, queryId, "QUERY_VIEW", principal)) {
+            throw new NotAllowedException("Query view not allowed");
+        }
         final Query query = storeService.findOne(id, databaseId, queryId);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.find(query.getCreatedBy());

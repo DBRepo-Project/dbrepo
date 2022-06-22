@@ -5,6 +5,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.impl.QueryServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,11 +38,12 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_timestampNull_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException {
+            PaginationException, ContainerNotFoundException, NotAllowedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, null);
+                TABLE_1_ID, null, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -48,13 +51,14 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, NotAllowedException {
         final Instant request = Instant.now()
                 .minusMillis(1000 * 1000);
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, request);
+                TABLE_1_ID, request, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -63,13 +67,14 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_inFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException {
+            PaginationException, ContainerNotFoundException, NotAllowedException {
         final Instant request = Instant.now()
                 .plusMillis(1000 * 1000);
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, request);
+                TABLE_1_ID, request, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }

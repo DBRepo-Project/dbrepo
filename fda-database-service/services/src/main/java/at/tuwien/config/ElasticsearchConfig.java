@@ -21,11 +21,11 @@ public class ElasticsearchConfig {
 
     @Bean
     public RestHighLevelClient client() {
-        ClientConfiguration clientConfiguration = ClientConfiguration.builder()
+        final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
                 .connectedTo(elasticEndpoint)
                 .build();
-
-        return RestClients.create(clientConfiguration).rest();
+        return RestClients.create(clientConfiguration)
+                .rest();
     }
 
     @Bean

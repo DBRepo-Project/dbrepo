@@ -9,7 +9,10 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -31,6 +34,7 @@ import java.util.List;
 })
 public class Database {
 
+    @Field(type = FieldType.Integer)
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "database-sequence")
@@ -54,21 +58,27 @@ public class Database {
     })
     private Container container;
 
+    @Field(type = FieldType.Text)
     @Column(nullable = false)
     private String name;
 
+    @Field(type = FieldType.Text)
     @Column(nullable = false)
     private String internalName;
 
+    @Field(type = FieldType.Text)
     @Column(nullable = false, updatable = false)
     private String exchange;
 
+    @Field(type = FieldType.Text)
     @Column
     private String description;
 
+    @Field(type = FieldType.Text)
     @Column
     private String license;
 
+    @Field(type = FieldType.Text)
     @Column
     private String publisher;
 
@@ -84,6 +94,7 @@ public class Database {
     })
     private List<Table> tables;
 
+    @Field(type = FieldType.Boolean)
     @Column(nullable = false)
     private Boolean isPublic;
 

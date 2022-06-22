@@ -2,6 +2,7 @@ version: "3.6"
 
 volumes:
   fda-metadata-db-data:
+  fda-search-service-data:
   fda-broker-service-data:
 
 networks:
@@ -308,6 +309,8 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - fda-search-service-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 

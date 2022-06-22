@@ -80,7 +80,7 @@ public class Identifier {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn
+            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
 

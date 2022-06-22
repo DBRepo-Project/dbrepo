@@ -6,8 +6,7 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
-import at.tuwien.service.QueryService;
-import at.tuwien.service.StoreService;
+import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -21,63 +20,79 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.Instant;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/data")
-public class TableDataEndpoint {
+public class TableDataEndpoint extends AbstractEndpoint {
 
     private final QueryService queryService;
     private final StoreService storeService;
 
     @Autowired
-    public TableDataEndpoint(QueryService queryService, StoreService storeService) {
+    public TableDataEndpoint(TableService tableService, QueryService queryService, StoreService storeService,
+                             DatabaseService databaseService,
+                             IdentifierService identifierService) {
+        super(tableService, databaseService, identifierService);
         this.queryService = queryService;
         this.storeService = storeService;
     }
 
     // FIXME non-trivial authentication for 1) direct JWT coming e.g from swagger 2) indirect service auth coming from
     //  table service 3) direct JWT coming from fda-public network =system
-    //    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    //  @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @PostMapping
     @Transactional
-    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Insert data")
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
-                                          @Valid @RequestBody TableCsvDto data)
+                                          @NotNull @Valid @RequestBody TableCsvDto data,
+                                          @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+        if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
+            throw new NotAllowedException("Insert data not allowed");
+        }
         return ResponseEntity.accepted()
                 .body(queryService.insert(containerId, databaseId, tableId, data));
     }
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_UPDATE')")
+    @PreAuthorize("hasPermission(#tableId, 'DATA_UPDATE')")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
-                                          @Valid @RequestBody TableCsvUpdateDto data)
+                                          @NotNull @Valid @RequestBody TableCsvUpdateDto data,
+                                          @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, NotAllowedException {
+        if (!hasDatabasePermission(databaseId, tableId, "DATA_UPDATE", principal)) {
+            throw new NotAllowedException("Update data not allowed");
+        }
         return ResponseEntity.accepted()
                 .body(queryService.update(containerId, databaseId, tableId, data));
     }
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasPermission(#databaseId, 'DATA_DELETE')")
+    @PreAuthorize("hasPermission(#tableId, 'DATA_DELETE')")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
-                                       @Valid @RequestBody TableCsvDeleteDto data)
+                                       @NotNull @Valid @RequestBody TableCsvDeleteDto data,
+                                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, TupleDeleteException {
+            ImageNotSupportedException, TupleDeleteException, NotAllowedException {
+        if (!hasDatabasePermission(databaseId, tableId, "DATA_DELETE", principal)) {
+            throw new NotAllowedException("Delete data not allowed");
+        }
         queryService.delete(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();
@@ -85,14 +100,18 @@ public class TableDataEndpoint {
 
     @PostMapping("/import")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'DATA_INSERT')")
+    @PreAuthorize("hasPermission(#tableId, 'DATA_INSERT')")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             @Valid @RequestBody ImportDto data)
+                                             @NotNull @Valid @RequestBody ImportDto data,
+                                             @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+        if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
+            throw new NotAllowedException("Insert data not allowed");
+        }
         log.info("Insert data from location {} into database id {}", data, databaseId);
         return ResponseEntity.accepted()
                 .body(queryService.insert(containerId, databaseId, tableId, data));
@@ -100,17 +119,21 @@ public class TableDataEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#databaseId, 'DATA_VIEW')")
+    @PreAuthorize("hasPermission(#tableId, 'DATA_VIEW')")
     @Operation(summary = "Find data")
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
                                                  @RequestParam(required = false) Instant timestamp,
                                                  @RequestParam(required = false) Long page,
-                                                 @RequestParam(required = false) Long size)
+                                                 @RequestParam(required = false) Long size,
+                                                 @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException {
+            QueryStoreException, NotAllowedException {
+        if (!hasDatabasePermission(databaseId, tableId, "DATA_VIEW", principal)) {
+            throw new NotAllowedException("View data not allowed");
+        }
         if ((page == null && size != null) || (page != null && size == null)) {
             log.error("Cannot perform pagination with only one of page/size set.");
             log.debug(

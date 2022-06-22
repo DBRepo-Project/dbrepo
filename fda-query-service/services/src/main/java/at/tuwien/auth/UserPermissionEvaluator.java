@@ -1,10 +1,9 @@
 package at.tuwien.auth;
 
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.entities.database.Database;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.PermissionEvaluator;
@@ -18,12 +17,10 @@ import java.io.Serializable;
 public class UserPermissionEvaluator implements PermissionEvaluator {
 
     private final DatabaseService databaseService;
-    private final IdentifierService identifierService;
 
     @Autowired
-    public UserPermissionEvaluator(DatabaseService databaseService, IdentifierService identifierService) {
+    public UserPermissionEvaluator(DatabaseService databaseService) {
         this.databaseService = databaseService;
-        this.identifierService = identifierService;
     }
 
     @Override
@@ -44,61 +41,40 @@ public class UserPermissionEvaluator implements PermissionEvaluator {
         log.trace("principal is {}", auth.getPrincipal());
         final UserDetailsDto principal;
         if (!(auth.getPrincipal() instanceof UserDetailsDto) || auth.getPrincipal() == null) {
+            log.warn("Principal is null");
             principal = null;
         } else {
-            log.warn("Principal is null");
             principal = (UserDetailsDto) auth.getPrincipal();
         }
         final Long targetDomainId = (Long) targetDomainObject;
         final String permissionCode = (String) permission;
-        final Identifier identifier;
-        try {
-            identifier = identifierService.findByQueryId(targetDomainId);
-        } catch (IdentifierNotFoundException e) {
-            return false;
-        }
         switch (permissionCode) {
-            case "DATA_VIEW":
-                if (identifier.getDa()) {
-                    return true;
-                }
-                if (principal == null) {
+            case "QUERY_VIEW_ALL":
+            case "QUERY_EXECUTE":
+            case "QUERY_RE_EXECUTE":
+            case "QUERY_EXPORT":
+            case "QUERY_VIEW":
+                final Database database;
+                try {
+                    database = databaseService.find(targetDomainId);
+                } catch (DatabaseNotFoundException e) {
+                    log.error("Failed to find database with id {}", targetDomainId);
                     return false;
                 }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-                    /* only the creator can delete his/her database */
-                    return database.getCreator().getId().equals(principal.getId());
+                /* view-only operations are allowed on public databases */
+                if (database.getIsPublic() && permissionCode.equals("QUERY_VIEW_ALL")) {
+                    return true;
                 }
-            case "DATA_INSERT":
-            case "DATA_UPDATE":
+                /* modification operations are limited to the creator */
                 if (principal == null) {
                     return false;
                 }
                 if (principal.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+                    log.error("Current user has insufficient authorities");
+                    log.debug("current user misses ROLE_RESEARCHER");
                     return false;
                 }
-                /* only the creator can insert/update/delete */
-                return database.getCreator().getId().equals(principal.getId());
-            case "QUERY_VIEW":
-            case "DATA_DELETE":
-                if (principal == null) {
-                    return false;
-                }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DATA_STEWARD"))) {
-                    return true;
-                }
-                if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-                    /* only the creator can delete his/her database */
-                    return database.getCreator().getId().equals(principal.getId());
-                }
-            case "QUERY_EXECUTE":
-            case "DATA_EXPORT":
-                if (database.getIsPublic()) {
-                    return true;
-                }
-                if (identifierService.findByQueryId())
-                /* only the creator can execute/export non-public databases */
-                return database.getCreator().getId().equals(principal.getId());
+                return database.getCreator().getUsername().equals(principal.getUsername());
         }
         return false;
     }
