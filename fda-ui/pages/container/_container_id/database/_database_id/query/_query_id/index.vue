@@ -10,7 +10,7 @@
         <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
           <v-icon left>mdi-run</v-icon> Re-Execute
         </v-btn>
-        <v-btn v-if="result_visibility" color="primary" :href="downloadLink" :disabled="!token">
+        <v-btn v-if="result_visibility" color="primary" :loading="exportLoading" :disabled="!token" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
       </v-toolbar-title>
@@ -160,6 +160,7 @@ export default {
       persistQueryExists: false,
       persistQueryDialog: false,
       loading: true,
+      exportLoading: false,
       error: false,
       promises: []
     }
@@ -170,9 +171,6 @@ export default {
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'
-    },
-    downloadLink () {
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`
     },
     config () {
       if (this.token === null) {
@@ -221,6 +219,27 @@ export default {
   methods: {
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
+    },
+    async download () {
+      this.exportLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('export query result', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'query.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        this.error = true
+        console.error('Could not export query result', err)
+        this.$toast.error('Could not export query result')
+      }
+      this.exportLoading = false
     },
     async loadDatabase () {
       this.loading = true
