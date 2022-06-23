@@ -10,7 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DraftLinksDto {
+public class LinksDto {
 
     @Parameter(name = "latest")
     private String latest;
@@ -34,6 +34,9 @@ public class DraftLinksDto {
 
     @Parameter(name = "files")
     private String files;
+
+    @Parameter(name = "commit")
+    private String commit;
 
     @JsonProperty("access_links")
     @Parameter(name = "access links")

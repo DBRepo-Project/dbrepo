@@ -13,4 +13,6 @@ public interface DocumentService {
     DraftDto create(CreateDraftDto data, Principal principal) throws DraftRecordCreateException;
 
     DraftDto reserveDoi(String id, Principal principal) throws DraftRecordCreateException;
+
+    void delete(String id, Principal principal) throws DraftRecordCreateException;
 }

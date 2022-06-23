@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class DocumentEndpointIntegrationTest extends BaseUnitTest {
+public class DocumentServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private DocumentService documentService;

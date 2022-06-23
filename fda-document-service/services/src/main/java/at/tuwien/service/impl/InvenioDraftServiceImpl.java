@@ -14,13 +14,13 @@ import java.security.Principal;
 
 @Slf4j
 @Service
-public class InvenioDocumentServiceImpl implements DocumentService {
+public class InvenioDraftServiceImpl implements DocumentService {
 
     private final DocumentGateway documentGateway;
     private final InvenioConfig invenioConfig;
 
     @Autowired
-    public InvenioDocumentServiceImpl(DocumentGateway documentGateway, InvenioConfig invenioConfig) {
+    public InvenioDraftServiceImpl(DocumentGateway documentGateway, InvenioConfig invenioConfig) {
         this.documentGateway = documentGateway;
         this.invenioConfig = invenioConfig;
     }
@@ -50,6 +50,14 @@ public class InvenioDocumentServiceImpl implements DocumentService {
         log.info("Reserved DOI {} for draft record with id {}", document.getPids().getDoi(), document.getId());
         log.debug("reserved PID {} for draft record with id {}", document.getPids(), document);
         return document;
+    }
+
+    @Override
+    public void delete(String id, Principal principal) throws DraftRecordCreateException {
+        /* get token */
+        /* remote */
+        documentGateway.delete(id, invenioConfig.getDebugToken());
+        log.info("Deleted draft record with id {}", id);
     }
 
 }
