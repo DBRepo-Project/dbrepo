@@ -131,6 +131,7 @@ services:
     networks:
       fda-public:
     environment:
+      TOKEN: ${INVENIO_TOKEN}
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:

@@ -54,7 +54,7 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
 
     @Override
     public DraftDto findDraft(String id, String token) throws DraftRecordCreateException {
-        final String url = "/api/records/" + id +"/draft";
+        final String url = "/api/records/" + id + "/draft";
         final ResponseEntity<DraftDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET,
@@ -68,7 +68,7 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
 
     @Override
     public FileStartDto startUpload(String id, String token) throws DraftRecordCreateException {
-        final String url = "/api/records/" + id +"/draft/files";
+        final String url = "/api/records/" + id + "/draft/files";
         final ResponseEntity<FileStartDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.POST,
@@ -82,7 +82,7 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
 
     @Override
     public void delete(String id, String token) throws DraftRecordCreateException {
-        final String url = "/api/records" + id +"/draft";
+        final String url = "/api/records" + id + "/draft";
         try {
             restTemplate.exchange(url, HttpMethod.DELETE,
                     new HttpEntity<>(null, headers(token)), Void.class);
