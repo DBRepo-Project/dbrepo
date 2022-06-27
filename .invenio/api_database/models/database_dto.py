@@ -84,12 +84,14 @@ class DatabaseDto(object):
             self.license = license
         if contact is not None:
             self.contact = contact
-        self.tables = tables
+        if tables is not None:
+            self.tables = tables
         self.exchange = exchange
-        self.image = image
-        self.container = container
-        if created is not None:
-            self.created = created
+        if image is not None:
+            self.image = image
+        if container is not None:
+            self.container = container
+        self.created = created
         if deleted is not None:
             self.deleted = deleted
         self.internal_name = internal_name
@@ -244,8 +246,6 @@ class DatabaseDto(object):
         :param tables: The tables of this DatabaseDto.  # noqa: E501
         :type: list[TableDto]
         """
-        if tables is None:
-            raise ValueError("Invalid value for `tables`, must not be `None`")  # noqa: E501
 
         self._tables = tables
 
@@ -290,8 +290,6 @@ class DatabaseDto(object):
         :param image: The image of this DatabaseDto.  # noqa: E501
         :type: ImageDto
         """
-        if image is None:
-            raise ValueError("Invalid value for `image`, must not be `None`")  # noqa: E501
 
         self._image = image
 
@@ -313,8 +311,6 @@ class DatabaseDto(object):
         :param container: The container of this DatabaseDto.  # noqa: E501
         :type: ContainerDto
         """
-        if container is None:
-            raise ValueError("Invalid value for `container`, must not be `None`")  # noqa: E501
 
         self._container = container
 
@@ -336,6 +332,8 @@ class DatabaseDto(object):
         :param created: The created of this DatabaseDto.  # noqa: E501
         :type: datetime
         """
+        if created is None:
+            raise ValueError("Invalid value for `created`, must not be `None`")  # noqa: E501
 
         self._created = created
 

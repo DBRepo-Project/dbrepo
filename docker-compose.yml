@@ -154,7 +154,6 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SMTP_USERNAME: ${MAIL_USERNAME:-local}
       SMTP_PASSWORD: ${MAIL_PASSWORD:-local}
-      SYSTEM_PASSWORD: ${ADMIN_PASSWORD:-admin}
       TZ: Europe/Vienna
     ports:
       - "9097:9097"

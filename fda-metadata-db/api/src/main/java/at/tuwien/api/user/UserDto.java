@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDto {
 
+    @NotNull
     @Parameter(name = "id")
     private Long id;
 
@@ -26,35 +27,27 @@ public class UserDto {
     @Parameter(name = "user name")
     private String username;
 
-    @NotNull
     @Parameter(name = "titles before the first name")
     private String titlesBefore;
 
-    @NotNull
     @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @NotNull
     @Parameter(name = "first name")
     private String firstname;
 
-    @NotNull
     @Parameter(name = "last name")
     private String lastname;
 
-    @NotNull
     @Parameter(name = "list of containers")
     private List<ContainerDto> containers;
 
-    @NotNull
     @Parameter(name = "list of databases")
     private List<ContainerDto> databases;
 
-    @NotNull
     @Parameter(name = "list of identifiers")
     private List<ContainerDto> identifiers;
 
-    @NotNull
     @ToString.Exclude
     @JsonIgnore
     @Parameter(name = "password hash")

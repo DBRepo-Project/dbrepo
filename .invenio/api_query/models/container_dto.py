@@ -72,14 +72,20 @@ class ContainerDto(object):
         self.id = id
         self.hash = hash
         self.name = name
-        self.state = state
-        self.databases = databases
-        self.image = image
-        self.port = port
+        if state is not None:
+            self.state = state
+        if databases is not None:
+            self.databases = databases
+        if image is not None:
+            self.image = image
+        if port is not None:
+            self.port = port
         self.created = created
         self.internal_name = internal_name
-        self.ip_address = ip_address
-        self.is_public = is_public
+        if ip_address is not None:
+            self.ip_address = ip_address
+        if is_public is not None:
+            self.is_public = is_public
 
     @property
     def id(self):
@@ -168,8 +174,6 @@ class ContainerDto(object):
         :param state: The state of this ContainerDto.  # noqa: E501
         :type: str
         """
-        if state is None:
-            raise ValueError("Invalid value for `state`, must not be `None`")  # noqa: E501
         allowed_values = ["ContainerStateDto.CREATED", "ContainerStateDto.RESTARTING", "ContainerStateDto.RUNNING", "ContainerStateDto.PAUSED", "ContainerStateDto.EXITED", "ContainerStateDto.DEAD"]  # noqa: E501
         if state not in allowed_values:
             raise ValueError(
@@ -197,8 +201,6 @@ class ContainerDto(object):
         :param databases: The databases of this ContainerDto.  # noqa: E501
         :type: list[DatabaseDto]
         """
-        if databases is None:
-            raise ValueError("Invalid value for `databases`, must not be `None`")  # noqa: E501
 
         self._databases = databases
 
@@ -220,8 +222,6 @@ class ContainerDto(object):
         :param image: The image of this ContainerDto.  # noqa: E501
         :type: ImageDto
         """
-        if image is None:
-            raise ValueError("Invalid value for `image`, must not be `None`")  # noqa: E501
 
         self._image = image
 
@@ -243,8 +243,6 @@ class ContainerDto(object):
         :param port: The port of this ContainerDto.  # noqa: E501
         :type: int
         """
-        if port is None:
-            raise ValueError("Invalid value for `port`, must not be `None`")  # noqa: E501
 
         self._port = port
 
@@ -312,8 +310,6 @@ class ContainerDto(object):
         :param ip_address: The ip_address of this ContainerDto.  # noqa: E501
         :type: str
         """
-        if ip_address is None:
-            raise ValueError("Invalid value for `ip_address`, must not be `None`")  # noqa: E501
 
         self._ip_address = ip_address
 
@@ -335,8 +331,6 @@ class ContainerDto(object):
         :param is_public: The is_public of this ContainerDto.  # noqa: E501
         :type: bool
         """
-        if is_public is None:
-            raise ValueError("Invalid value for `is_public`, must not be `None`")  # noqa: E501
 
         self._is_public = is_public
 

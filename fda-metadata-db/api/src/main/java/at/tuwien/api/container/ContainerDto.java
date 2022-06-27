@@ -37,29 +37,23 @@ public class ContainerDto {
     @Parameter(name = "container internal name", example = "weather-world")
     private String internalName;
 
-    @NotNull
     @Parameter(name = "state", example = "RUNNING")
     private ContainerStateDto state;
 
-    @NotNull
     @ToString.Exclude
     @Parameter(name = "databases")
     private List<DatabaseDto> databases;
 
-    @NotNull
     @JsonProperty("ip_address")
     private String ipAddress;
 
-    @NotNull
     @JsonProperty("is_public")
     @Parameter(name = "container public", example = "true")
     private Boolean isPublic;
 
-    @NotNull
     @Parameter(name = "container image")
     private ImageDto image;
 
-    @NotNull
     @Parameter(name = "container port")
     private Integer port;
 

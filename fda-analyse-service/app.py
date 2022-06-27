@@ -36,13 +36,16 @@ dictConfig({
 })
 
 app = Flask(__name__)
-app.config["SWAGGER"] = {"title": "FDA-Analyse-Service", "uiversion": 3}
+app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {
     "headers": [],
     "specs": [
         {
-            "title": "analyze",
+            "title": "Database Repository Analyse Service API",
+            "openapi": "3.0.1",
+            "description": "Service that analyses data structures",
+            "version": " 1.1.0-alpha",
             "endpoint": "api-analyze",
             "route": "/api-analyze.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('analyze'),
@@ -50,6 +53,8 @@ swagger_config = {
         },
         {
             "title": "MDB operations",
+            "openapi": "3.0.1",
+            "description": "Service that managed the metadata database",
             "endpoint": "api-mdb",
             "route": "/api-mdb.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('mdb'),
@@ -69,7 +74,7 @@ app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
 
 @app.route('/api/analyse/determinedt', methods=["POST"], endpoint='analyze_determinedt')
-@swag_from('/as-yml/determinedt.yml')
+@swag_from('as-yml/determinedt.yml')
 def determinedt():
     input_json = request.get_json()
     try:
@@ -94,7 +99,7 @@ def determinedt():
         return jsonify(res), 500
 
 @app.route('/api/analyse/determinepk', methods=["POST"], endpoint='analyze_determinepk')
-@swag_from('/as-yml/determinepk.yml')
+@swag_from('as-yml/determinepk.yml')
 def determinepk():
     input_json = request.get_json()
     try:
@@ -111,7 +116,7 @@ def determinepk():
         return jsonify(res), 500
 
 @app.route('/api/analyse/update_mdb_col', methods=["POST"], endpoint='mdb_update_col')
-@swag_from('/as-yml/updatecol.yml')
+@swag_from('as-yml/updatecol.yml')
 def updatecol(): 
     input_json = request.get_json() 
     try: 

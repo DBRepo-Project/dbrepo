@@ -55,7 +55,8 @@ class ContainerBriefDto(object):
         self.hash = hash
         self.name = name
         self.internal_name = internal_name
-        self.is_public = is_public
+        if is_public is not None:
+            self.is_public = is_public
 
     @property
     def id(self):
@@ -167,8 +168,6 @@ class ContainerBriefDto(object):
         :param is_public: The is_public of this ContainerBriefDto.  # noqa: E501
         :type: bool
         """
-        if is_public is None:
-            raise ValueError("Invalid value for `is_public`, must not be `None`")  # noqa: E501
 
         self._is_public = is_public
 

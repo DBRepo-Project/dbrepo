@@ -48,7 +48,6 @@ public class DatabaseDto {
     @Parameter(name = "database contact person")
     private UserDto contact;
 
-    @NotNull
     @Parameter(name = "tables")
     private List<TableDto> tables;
 
@@ -56,14 +55,13 @@ public class DatabaseDto {
     @Parameter(name = "database exchange", example = "fda.c1.d1")
     private String exchange;
 
-    @NotBlank
     @Parameter(name = "database container image")
     private ImageDto image;
 
-    @NotBlank
     @Parameter(name = "container")
     private ContainerDto container;
 
+    @NotNull
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
     private Instant created;
 

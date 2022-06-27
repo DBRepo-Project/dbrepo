@@ -55,11 +55,16 @@ class JwtResponseDto(object):
         self._roles = None
         self.discriminator = None
         self.token = token
-        self.type = type
-        self.id = id
-        self.username = username
-        self.email = email
-        self.roles = roles
+        if type is not None:
+            self.type = type
+        if id is not None:
+            self.id = id
+        if username is not None:
+            self.username = username
+        if email is not None:
+            self.email = email
+        if roles is not None:
+            self.roles = roles
 
     @property
     def token(self):
@@ -102,8 +107,6 @@ class JwtResponseDto(object):
         :param type: The type of this JwtResponseDto.  # noqa: E501
         :type: str
         """
-        if type is None:
-            raise ValueError("Invalid value for `type`, must not be `None`")  # noqa: E501
 
         self._type = type
 
@@ -125,8 +128,6 @@ class JwtResponseDto(object):
         :param id: The id of this JwtResponseDto.  # noqa: E501
         :type: int
         """
-        if id is None:
-            raise ValueError("Invalid value for `id`, must not be `None`")  # noqa: E501
 
         self._id = id
 
@@ -148,8 +149,6 @@ class JwtResponseDto(object):
         :param username: The username of this JwtResponseDto.  # noqa: E501
         :type: str
         """
-        if username is None:
-            raise ValueError("Invalid value for `username`, must not be `None`")  # noqa: E501
 
         self._username = username
 
@@ -171,8 +170,6 @@ class JwtResponseDto(object):
         :param email: The email of this JwtResponseDto.  # noqa: E501
         :type: str
         """
-        if email is None:
-            raise ValueError("Invalid value for `email`, must not be `None`")  # noqa: E501
 
         self._email = email
 
@@ -194,8 +191,6 @@ class JwtResponseDto(object):
         :param roles: The roles of this JwtResponseDto.  # noqa: E501
         :type: list[str]
         """
-        if roles is None:
-            raise ValueError("Invalid value for `roles`, must not be `None`")  # noqa: E501
 
         self._roles = roles
 

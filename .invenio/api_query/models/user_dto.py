@@ -69,18 +69,24 @@ class UserDto(object):
         self._identifiers = None
         self._email = None
         self.discriminator = None
-        if id is not None:
-            self.id = id
+        self.id = id
         if authorities is not None:
             self.authorities = authorities
         self.username = username
-        self.titles_before = titles_before
-        self.titles_after = titles_after
-        self.firstname = firstname
-        self.lastname = lastname
-        self.containers = containers
-        self.databases = databases
-        self.identifiers = identifiers
+        if titles_before is not None:
+            self.titles_before = titles_before
+        if titles_after is not None:
+            self.titles_after = titles_after
+        if firstname is not None:
+            self.firstname = firstname
+        if lastname is not None:
+            self.lastname = lastname
+        if containers is not None:
+            self.containers = containers
+        if databases is not None:
+            self.databases = databases
+        if identifiers is not None:
+            self.identifiers = identifiers
         self.email = email
 
     @property
@@ -101,6 +107,8 @@ class UserDto(object):
         :param id: The id of this UserDto.  # noqa: E501
         :type: int
         """
+        if id is None:
+            raise ValueError("Invalid value for `id`, must not be `None`")  # noqa: E501
 
         self._id = id
 
@@ -166,8 +174,6 @@ class UserDto(object):
         :param titles_before: The titles_before of this UserDto.  # noqa: E501
         :type: str
         """
-        if titles_before is None:
-            raise ValueError("Invalid value for `titles_before`, must not be `None`")  # noqa: E501
 
         self._titles_before = titles_before
 
@@ -189,8 +195,6 @@ class UserDto(object):
         :param titles_after: The titles_after of this UserDto.  # noqa: E501
         :type: str
         """
-        if titles_after is None:
-            raise ValueError("Invalid value for `titles_after`, must not be `None`")  # noqa: E501
 
         self._titles_after = titles_after
 
@@ -212,8 +216,6 @@ class UserDto(object):
         :param firstname: The firstname of this UserDto.  # noqa: E501
         :type: str
         """
-        if firstname is None:
-            raise ValueError("Invalid value for `firstname`, must not be `None`")  # noqa: E501
 
         self._firstname = firstname
 
@@ -235,8 +237,6 @@ class UserDto(object):
         :param lastname: The lastname of this UserDto.  # noqa: E501
         :type: str
         """
-        if lastname is None:
-            raise ValueError("Invalid value for `lastname`, must not be `None`")  # noqa: E501
 
         self._lastname = lastname
 
@@ -258,8 +258,6 @@ class UserDto(object):
         :param containers: The containers of this UserDto.  # noqa: E501
         :type: list[ContainerDto]
         """
-        if containers is None:
-            raise ValueError("Invalid value for `containers`, must not be `None`")  # noqa: E501
 
         self._containers = containers
 
@@ -281,8 +279,6 @@ class UserDto(object):
         :param databases: The databases of this UserDto.  # noqa: E501
         :type: list[ContainerDto]
         """
-        if databases is None:
-            raise ValueError("Invalid value for `databases`, must not be `None`")  # noqa: E501
 
         self._databases = databases
 
@@ -304,8 +300,6 @@ class UserDto(object):
         :param identifiers: The identifiers of this UserDto.  # noqa: E501
         :type: list[ContainerDto]
         """
-        if identifiers is None:
-            raise ValueError("Invalid value for `identifiers`, must not be `None`")  # noqa: E501
 
         self._identifiers = identifiers
 

@@ -32,7 +32,6 @@ public class ContainerBriefDto {
     @Parameter(name = "container internal name", example = "weather-world")
     private String internalName;
 
-    @NotNull
     @JsonProperty("is_public")
     @Parameter(name = "container public", example = "true")
     private Boolean isPublic;
