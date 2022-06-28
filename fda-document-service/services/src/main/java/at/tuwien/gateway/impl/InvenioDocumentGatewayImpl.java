@@ -1,23 +1,23 @@
 package at.tuwien.gateway.impl;
 
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileAnnounceDto;
 import at.tuwien.api.document.file.FileDto;
-import at.tuwien.api.document.file.FileKeyDto;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.FileUploadException;
-import at.tuwien.exception.CommitFileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
 import at.tuwien.gateway.DocumentGateway;
 import at.tuwien.mapper.DocumentMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -94,15 +94,15 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
     }
 
     @Override
-    public FileDto uploadFile(String id, MultipartFile file, String token)
+    public FileDto uploadFile(String id, ImportDto file, String token)
             throws FileUploadException {
         /* announce */
         final String url1 = "/api/records/" + id + "/draft/files";
-        final List<FileKeyDto> files = List.of(documentMapper.stringToFileKeyDto(file.getName()));
         final ResponseEntity<FileAnnounceDto> response1;
         try {
             response1 = documentRestTemplate.exchange(url1, HttpMethod.POST,
-                    new HttpEntity<>(files, headers(token)), FileAnnounceDto.class);
+                    new HttpEntity<>(List.of(documentMapper.importDtoToFileKeyDto(file)), headers(token)),
+                    FileAnnounceDto.class);
         } catch (HttpClientErrorException.BadRequest e) {
             log.error("Failed to announce draft file");
             throw new FileUploadException("Failed to announce draft file", e);
@@ -112,11 +112,13 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
             throw new FileUploadException("Failed to announce file upload");
         }
         /* upload */
-        final String url2 = "/api/records/" + id + "/draft/files/" + file.getName() + "/content";
+        final String url2 = "/api/records/" + id + "/draft/files/" + documentMapper.importDtoToFilename(file) +
+                "/content";
         final ResponseEntity<Void> response2;
         try {
+            final byte[] raw = FileUtils.readFileToByteArray(new File(file.getLocation()));
             response2 = documentRestTemplate.exchange(url2, HttpMethod.PUT,
-                    new HttpEntity<>(file.getBytes(), headers(token, OCTET_STREAM)), Void.class);
+                    new HttpEntity<>(raw, headers(token, OCTET_STREAM)), Void.class);
         } catch (HttpClientErrorException.BadRequest e) {
             log.error("Failed to upload draft file");
             throw new FileUploadException("Failed to upload draft file", e);
@@ -129,7 +131,8 @@ public class InvenioDocumentGatewayImpl implements DocumentGateway {
             throw new FileUploadException("Failed to upload file");
         }
         /* commit */
-        final String url3 = "/api/records/" + id + "/draft/files/" + file.getName() + "/commit";
+        final String url3 = "/api/records/" + id + "/draft/files/" + documentMapper.importDtoToFilename(file) +
+                "/commit";
         final ResponseEntity<FileDto> response3;
         try {
             response3 = documentRestTemplate.exchange(url3, HttpMethod.POST,

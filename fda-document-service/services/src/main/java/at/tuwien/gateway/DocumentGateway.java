@@ -1,12 +1,13 @@
 package at.tuwien.gateway;
 
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileDto;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.FileUploadException;
 import at.tuwien.exception.CommitFileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
-import org.springframework.web.multipart.MultipartFile;
+
 
 public interface DocumentGateway {
     RecordDto createDraft(CreateDraftDto data, String token) throws DraftRecordCreateException;
@@ -17,10 +18,8 @@ public interface DocumentGateway {
 
     RecordDto publishDraft(String id, String token) throws DraftRecordCreateException;
 
-    FileDto uploadFile(String id, MultipartFile file, String token)
-            throws DraftRecordCreateException, FileUploadException,
-            org.apache.tomcat.util.http.fileupload.FileUploadException,
-            CommitFileUploadException;
+    FileDto uploadFile(String id, ImportDto file, String token)
+            throws DraftRecordCreateException, FileUploadException, CommitFileUploadException;
 
     void delete(String id, String token) throws DraftRecordCreateException;
 }

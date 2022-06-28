@@ -1,34 +1,72 @@
 #!/usr/bin/env python3
-import re
-import csv
-import requests
+import os.path
+from os import listdir
+from os.path import isfile, join
+from api_document.api.document_endpoint_api import DocumentEndpointApi
+from api_document.api.file_endpoint_api import FileEndpointApi
+from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 
-doi = '10.5281/zenodo.5649276'
-headers = {
-    'Authorize': 'Bearer djCvqkoOW69keHajybZiwE8bBjyir2QSZOLKpAtc4S1Wp17KXgcHmMoWJwft' 
-}
+authentication = AuthenticationEndpointApi()
+document = DocumentEndpointApi()
+file = FileEndpointApi()
 
-# Resolve DOI
-response = requests.get('https://doi.org/' + doi)
-id = re.findall('/([a-z0-9-]+)$', response.url)[0]
-host = re.findall('^https?:\/\/([a-z0-9]+\.[a-z]+)', response.url)[0]
-print("Resolved DOI to", host, "and record id", id)
+response = authentication.authenticate_user1({
+    "username": "user",
+    "password": "user"
+})
+headers = {"Authorization": "Bearer " + response.token}
+document.api_client.default_headers = headers
+file.api_client.default_headers = headers
 
-# Find files
-url = 'https://' + host + '/api/records/' + id
-response = requests.get(url, headers=headers)
-record = response.json()
+# Create document
+response = document.create({
+    "access": {
+        "record": "public",
+        "files": "public"
+    },
+    "files": {
+        "enabled": True
+    },
+    "metadata": {
+        "creators": [
+            {
+                "affiliations": [
+                    {
+                        "name": "TU Wien"
+                    }
+                ],
+                "person_or_org": {
+                    "type": "personal",
+                    "name": "M., Weise",
+                    "identifiers": [
+                        {
+                            "scheme": "orcid",
+                            "identifier": "0000-0003-4216-302X"
+                        }
+                    ],
+                    "given_name": "Martin",
+                    "family_name": "Weise"
+                }
+            }
+        ],
+        "title": "Jupyter Notebook Test",
+        "resource_type": {
+            "id": "other"
+        },
+        "publication_date": "2022-06-28"
+    }
+})
+document_id = response.id
+print(document_id)
 
-# Write some .csv
-i = 0
-with open('./features.csv', 'w') as f:
-    writer = csv.writer(f)
-    writer.writerow(['key', 'size', 'link'])
-    for file in record['files']:
-        requests.get(file['links']['self'])
-        print("... feature extract from", file['links']['self'])
-        writer.writerow([file['key'], file['size'], file['links']['self']])
-        i += 1
-        if i > 10:
-            break
-print("Generated a feature .csv")
+# Upload files
+files = [f for f in listdir("./audio") if isfile(join("./audio", f))]
+for f in files:
+    print("... upload file", "/tmp/" + f)
+    response = file.upload_file({
+        "location": os.path.curdir + "/tmp/" + f
+    }, document_id)
+
+# Publish
+response = document.publish(document_id)
+print(response)

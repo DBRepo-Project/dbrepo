@@ -136,6 +136,8 @@ services:
       TZ: Europe/Vienna
     ports:
       - "9099:9099"
+    volumes:
+      - /tmp:/tmp
     depends_on:
       fda-discovery-service:
         condition: service_healthy

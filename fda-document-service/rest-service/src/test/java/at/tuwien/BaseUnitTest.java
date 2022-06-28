@@ -121,4 +121,6 @@ public abstract class BaseUnitTest {
             .metadata(DOCUMENT_2_METADATA)
             .build();
 
+    public final static String FILE_1_NAME = "mock.png";
+
 }

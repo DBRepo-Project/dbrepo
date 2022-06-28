@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileKeyDto;
 import org.mapstruct.*;
 
@@ -7,10 +8,14 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface DocumentMapper {
 
-    default FileKeyDto stringToFileKeyDto(String data) {
+    default FileKeyDto importDtoToFileKeyDto(ImportDto data) {
         return FileKeyDto.builder()
-                .key(data)
+                .key(importDtoToFilename(data))
                 .build();
+    }
+
+    default String importDtoToFilename(ImportDto data) {
+        return data.getLocation().substring(data.getLocation().lastIndexOf("/") + 1);
     }
 
 }

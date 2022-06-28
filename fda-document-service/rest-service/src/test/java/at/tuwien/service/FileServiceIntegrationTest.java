@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileDto;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
@@ -43,17 +44,17 @@ public class FileServiceIntegrationTest extends BaseUnitTest {
             throws DraftRecordCreateException, IOException, CommitFileUploadException, FileUploadException {
         final CreateDraftDto request = DOCUMENT_2_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        final File mockFile = new File("src/test/resources/images/mock.png");
+        final ImportDto file = ImportDto.builder()
+                .location("src/test/resources/images/" + FILE_1_NAME)
+                .build();
 
         /* mock */
-        final MultipartFile file = new MockMultipartFile(mockFile.getName(), FileUtils.openInputStream(mockFile)
-                .readAllBytes());
         final RecordDto document = documentService.create(request, principal);
         assertFalse(document.getIsPublished());
 
         /* test */
         final FileDto response = fileService.uploadFile(document.getId(), file, principal);
-        assertEquals(file.getName(), response.getKey());
+        assertEquals(FILE_1_NAME, response.getKey());
     }
     @Test
     public void publish_succeeds()

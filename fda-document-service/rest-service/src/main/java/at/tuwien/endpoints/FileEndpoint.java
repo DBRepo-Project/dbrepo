@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileDto;
 import at.tuwien.exception.FileUploadException;
 import at.tuwien.exception.CommitFileUploadException;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
@@ -38,10 +38,9 @@ public class FileEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Upload file", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<FileDto> uploadFile(@NotNull @PathVariable("id") String documentId,
-                                              @NotNull @RequestParam("file") MultipartFile file,
+                                              @NotNull @RequestBody ImportDto file,
                                               @NotNull Principal principal)
-            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException,
-            org.apache.tomcat.util.http.fileupload.FileUploadException {
+            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException {
         final FileDto document = fileService.uploadFile(documentId, file, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(document);

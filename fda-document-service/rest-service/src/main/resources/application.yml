@@ -16,6 +16,10 @@ spring:
     name: fda-document-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 1000MB
 server.port: 9099
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
