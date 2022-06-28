@@ -42,19 +42,12 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "title": "Database Repository Analyse Service API",
-            "openapi": "3.0.1",
-            "description": "Service that analyses data structures",
-            "version": " 1.1.0-alpha",
             "endpoint": "api-analyze",
             "route": "/api-analyze.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('analyze'),
             "model_filter": lambda tag: True,  # all in
         },
         {
-            "title": "MDB operations",
-            "openapi": "3.0.1",
-            "description": "Service that managed the metadata database",
             "endpoint": "api-mdb",
             "route": "/api-mdb.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('mdb'),
@@ -66,9 +59,26 @@ swagger_config = {
     "specs_route": "/swagger-ui/",
 }
 
-template = dict(
-    swaggerUiPrefix=LazyString(lambda: request.environ.get("HTTP_X_SCRIPT_NAME", ""))
-)
+template = {
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Database Repository Analyse Service API",
+        "description": "Service that analyses data structures",
+        "version": "1.1.0-alpha",
+        "contact": {
+            "name": "Prof. Andreas Rauber",
+            "email": "andreas.rauber@tuwien.ac.at"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+    },
+    "servers": [{
+       "url": "http://localhost:5000",
+       "description": "Generated server url"
+    }]
+}
 
 app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
@@ -92,11 +102,11 @@ def determinedt():
             separator = str(input_json['separator'])
         res = determine_datatypes(filepath,enum,enum_tol,separator)
         logging.info('Determined datatypes successfully: %s',res)
-        return jsonify(res), 200
+        return Response(res, mimetype="application/json"), 200
     except Exception as e:
         logging.error(e)
         res = {"success": False, "message": str(e)}
-        return jsonify(res), 500
+        return Response(res, mimetype="application/json"), 500
 
 @app.route('/api/analyse/determinepk', methods=["POST"], endpoint='analyze_determinepk')
 @swag_from('as-yml/determinepk.yml')
@@ -109,11 +119,11 @@ def determinepk():
             seperator = str(input_json['seperator'])
         res = determine_pk(filepath,seperator)
         logging.info('Determined list of primary keys: %s', res)
-        return jsonify(res), 200
+        return Response(res, mimetype="application/json"), 200
     except Exception as e:
         logging.error(e)
         res = {"success": False, "message": str(e)}
-        return jsonify(res), 500
+        return Response(res, mimetype="application/json"), 500
 
 @app.route('/api/analyse/update_mdb_col', methods=["POST"], endpoint='mdb_update_col')
 @swag_from('as-yml/updatecol.yml')
@@ -125,11 +135,11 @@ def updatecol():
         cid=int(input_json['cid'])
         res = update_mdb_col(dbid,tid,cid)
         logging.info('Update metadata database entity mdb_columns')
-        return jsonify(res), 200
+        return Response(res, mimetype="application/json"), 200
     except Exception as e:
         logging.error(e)
         res = {"success": False, "message": "Unknown error"}
-        return jsonify(res), 500
+        return Response(res, mimetype="application/json"), 500
 
 rest_server_port = 5000
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),

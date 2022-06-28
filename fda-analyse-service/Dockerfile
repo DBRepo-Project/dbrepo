@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt > /dev/null
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ./service_ready
 
-COPY ./as-yml ./
+COPY ./as-yml/ ./as-yml/
 COPY ./*.py ./
 COPY ./service_ready ./
 
