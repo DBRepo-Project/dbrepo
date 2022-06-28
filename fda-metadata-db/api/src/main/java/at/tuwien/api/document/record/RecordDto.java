@@ -18,7 +18,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DraftDto {
+public class RecordDto {
 
     @NotNull(message = "access is required")
     @Parameter(name = "access")

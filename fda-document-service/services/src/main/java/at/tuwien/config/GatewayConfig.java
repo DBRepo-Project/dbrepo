@@ -9,11 +9,21 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Configuration
 public class GatewayConfig {
 
+    @Value("${fda.gateway.endpoint}")
+    private String gatewayEndpoint;
+
     @Value("${fda.document.endpoint}")
     private String documentEndpoint;
 
     @Bean
-    public RestTemplate restTemplate() {
+    public RestTemplate gatewayRestTemplate() {
+        final RestTemplate restTemplate =  new RestTemplate();
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
+        return restTemplate;
+    }
+
+    @Bean
+    public RestTemplate documentRestTemplate() {
         final RestTemplate restTemplate =  new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(documentEndpoint));
         return restTemplate;

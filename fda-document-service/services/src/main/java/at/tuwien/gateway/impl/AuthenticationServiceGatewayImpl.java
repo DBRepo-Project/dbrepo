@@ -18,20 +18,20 @@ import org.springframework.web.client.RestTemplate;
 public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGateway {
 
     private final UserMapper userMapper;
-    private final RestTemplate restTemplate;
+    private final RestTemplate gatewayRestTemplate;
 
     @Autowired
-    public AuthenticationServiceGatewayImpl(UserMapper userMapper, RestTemplate restTemplate) {
+    public AuthenticationServiceGatewayImpl(UserMapper userMapper, RestTemplate gatewayRestTemplate) {
         this.userMapper = userMapper;
-        this.restTemplate = restTemplate;
+        this.gatewayRestTemplate = gatewayRestTemplate;
     }
 
     @Override
     public UserDetails validate(String token) {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
-        final ResponseEntity<UserDto> response = restTemplate.exchange("/api/auth", HttpMethod.PUT,
-                new HttpEntity<>("", headers), UserDto.class);
+        final ResponseEntity<UserDto> response = gatewayRestTemplate.exchange("/api/auth", HttpMethod.PUT,
+                new HttpEntity<>(null, headers), UserDto.class);
         return userMapper.userDtoToUserDetailsDto(response.getBody());
     }
 

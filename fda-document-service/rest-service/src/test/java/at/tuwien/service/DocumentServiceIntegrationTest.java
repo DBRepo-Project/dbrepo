@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.document.record.CreateDraftDto;
-import at.tuwien.api.document.record.DraftDto;
+import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.DraftRecordCreateException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -35,7 +35,7 @@ public class DocumentServiceIntegrationTest extends BaseUnitTest {
         /* mock */
 
         /* test */
-        final DraftDto response = documentService.create(request, principal);
+        final RecordDto response = documentService.create(request, principal);
         assertEquals(DOCUMENT_1_TITLE, response.getMetadata().getTitle());
     }
 
@@ -47,8 +47,8 @@ public class DocumentServiceIntegrationTest extends BaseUnitTest {
         /* mock */
 
         /* test */
-        final DraftDto document = documentService.create(request, principal);
-        final DraftDto response = documentService.reserveDoi(document.getId(), principal);
+        final RecordDto document = documentService.create(request, principal);
+        final RecordDto response = documentService.reserveDoi(document.getId(), principal);
         assertNotNull(response.getPids().getDoi());
     }
 

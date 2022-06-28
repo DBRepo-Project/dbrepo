@@ -1,13 +1,16 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.document.file.FileStartDto;
+import at.tuwien.api.document.file.FileDto;
 import at.tuwien.config.InvenioConfig;
+import at.tuwien.exception.FileUploadException;
+import at.tuwien.exception.CommitFileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
 import at.tuwien.gateway.DocumentGateway;
 import at.tuwien.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 
@@ -25,12 +28,14 @@ public class InvenioFileServiceImpl implements FileService {
     }
 
     @Override
-    public FileStartDto start(String id, Principal principal) throws DraftRecordCreateException {
+    public FileDto uploadFile(String id, MultipartFile file, Principal principal)
+            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException,
+            org.apache.tomcat.util.http.fileupload.FileUploadException {
         /* get token */
         /* remote */
-        final FileStartDto document = documentGateway.startUpload(id, invenioConfig.getDebugToken());
-        log.info("Started draft files with id {}", id);
-        log.debug("started draft files {}", document);
+        final FileDto document = documentGateway.uploadFile(id, file, invenioConfig.getDebugToken());
+        log.info("Deposited draft file content for record with id {}", id);
+        log.debug("Deposited draft file content for record {}", document);
         return document;
     }
 

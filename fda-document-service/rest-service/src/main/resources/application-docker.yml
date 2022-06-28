@@ -30,5 +30,6 @@ eureka:
 fda:
   mount.path: /tmp
   ready.path: /ready
+  gateway.endpoint: http://fda-gateway-service:9095
   document.endpoint: https://test.researchdata.tuwien.ac.at
 dev.token: "${TOKEN}"

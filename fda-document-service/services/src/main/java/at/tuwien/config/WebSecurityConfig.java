@@ -65,7 +65,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         /* set permissions on endpoints */
         http.authorizeRequests()
                 /* our public endpoints */
-                .antMatchers(HttpMethod.GET, "/api/document/**").permitAll()
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",

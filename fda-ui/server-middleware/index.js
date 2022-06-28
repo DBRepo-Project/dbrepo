@@ -25,6 +25,7 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
 
   // send path to analyse service
   let analysis
+  let json
   try {
     const analyseUrl = `${process.env.API}/api/analyse/determinedt`
     analysis = await fetch(analyseUrl, {
@@ -35,9 +36,8 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
       console.error('data type determination failed', error)
       throw error
     })
-    const json = await analysis.json()
-    analysis = JSON.parse(json)
-    if (!analysis.columns) {
+    json = await analysis.json()
+    if (!json.columns) {
       return res.json({ success: false, message: 'Columns array missing' })
     }
   } catch (error) {
@@ -47,7 +47,7 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
 
   // map messytables / CoMi's `determine_dt` column types to ours
   // e.g. "Integer" -> "NUMBER"
-  let entries = Object.entries(analysis.columns)
+  let entries = Object.entries(json.columns)
   entries = entries.map(([k, v]) => {
     if (colTypeMap[v]) {
       v = colTypeMap[v]

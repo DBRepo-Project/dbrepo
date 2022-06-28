@@ -1,7 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.document.record.CreateDraftDto;
-import at.tuwien.api.document.record.DraftDto;
+import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.DraftRecordCreateException;
 import at.tuwien.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,9 +20,8 @@ import java.security.Principal;
 
 
 @Log4j2
-@RestController
 @CrossOrigin(origins = "*")
-@ControllerAdvice
+@RestController
 @RequestMapping("/api/document")
 public class DocumentEndpoint {
 
@@ -37,9 +36,9 @@ public class DocumentEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Transactional(readOnly = true)
     @Operation(summary = "Create a draft", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DraftDto> create(@NotNull @Valid @RequestBody CreateDraftDto data,
+    public ResponseEntity<RecordDto> create(@NotNull @Valid @RequestBody CreateDraftDto data,
                                            @NotNull Principal principal) throws DraftRecordCreateException {
-        final DraftDto document = documentService.create(data, principal);
+        final RecordDto document = documentService.create(data, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(document);
     }
@@ -48,12 +47,23 @@ public class DocumentEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Transactional(readOnly = true)
     @Operation(summary = "Find a draft", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DraftDto> find(@NotNull @PathVariable("id") String documentId,
+    public ResponseEntity<RecordDto> find(@NotNull @PathVariable("id") String documentId,
                                          @NotNull Principal principal) throws DraftRecordCreateException {
-        final DraftDto document = documentService.findById(documentId, principal);
+        final RecordDto document = documentService.findById(documentId, principal);
         log.info("Found draft record with id {}", documentId);
         log.debug("found draft record {}", document);
         return ResponseEntity.status(HttpStatus.OK)
+                .body(document);
+    }
+
+    @PutMapping("/{id}/publish")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Transactional(readOnly = true)
+    @Operation(summary = "Publish a draft", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<RecordDto> publish(@NotNull @PathVariable("id") String documentId,
+                                         @NotNull Principal principal) throws DraftRecordCreateException {
+        final RecordDto document = documentService.publish(documentId, principal);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(document);
     }
 
@@ -61,9 +71,9 @@ public class DocumentEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Transactional(readOnly = true)
     @Operation(summary = "Reserve draft DOI", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DraftDto> reserve(@NotNull @PathVariable("id") String documentId,
+    public ResponseEntity<RecordDto> reserve(@NotNull @PathVariable("id") String documentId,
                                             @NotNull Principal principal) throws DraftRecordCreateException {
-        final DraftDto document = documentService.reserveDoi(documentId, principal);
+        final RecordDto document = documentService.reserveDoi(documentId, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(document);
     }
