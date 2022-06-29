@@ -39,8 +39,7 @@ public class QueryEndpoint extends AbstractEndpoint {
     }
 
     @PutMapping
-    @Transactional
-    @PreAuthorize("hasPermission(#databaseId, 'QUERY_EXECUTE')")
+    @Transactional(readOnly = true)
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -52,7 +51,9 @@ public class QueryEndpoint extends AbstractEndpoint {
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
             NotAllowedException {
         if (!hasDatabasePermission(databaseId, databaseId, "QUERY_EXECUTE", principal)) {
-            throw new NotAllowedException("Query execution not allowed");
+            log.error("Missing execute query permission");
+            log.debug("missing permission to {}", "QUERY_EXECUTE");
+            throw new NotAllowedException("Missing execute query permission");
         }
         /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
@@ -66,9 +67,8 @@ public class QueryEndpoint extends AbstractEndpoint {
     }
 
     @PutMapping("/{queryId}")
-    @Transactional
-    @PreAuthorize("hasPermission(#databaseId, 'QUERY_RE_EXECUTE')")
-    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Transactional(readOnly = true)
+    @Operation(summary = "Re-execute some query")
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long id,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
@@ -79,7 +79,9 @@ public class QueryEndpoint extends AbstractEndpoint {
             TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
             ColumnParseException, NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
-            throw new NotAllowedException("Query re-execution not allowed");
+            log.error("Missing re-execute query permission");
+            log.debug("missing permission to {}", "QUERY_RE_EXECUTE");
+            throw new NotAllowedException("Missing re-execute query permission");
         }
         final Query query = storeService.findOne(id, databaseId, queryId);
         final QueryResultDto result = queryService.reExecute(id, databaseId, query, page, size);
@@ -99,7 +101,9 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_EXPORT", principal)) {
-            throw new NotAllowedException("Query export not allowed");
+            log.error("Missing execute query permission");
+            log.debug("missing permission to {}", "QUERY_EXPORT");
+            throw new NotAllowedException("Missing execute query permission");
         }
         storeService.findOne(id, databaseId, queryId);
         final HttpHeaders headers = new HttpHeaders();

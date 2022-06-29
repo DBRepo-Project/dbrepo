@@ -8,6 +8,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 
+@Log4j2
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/query")
 public class StoreEndpoint extends AbstractEndpoint {
@@ -48,7 +50,9 @@ public class StoreEndpoint extends AbstractEndpoint {
             throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
         if (!hasQueryPermission(databaseId, null, "QUERY_VIEW_ALL", principal)) {
-            throw new NotAllowedException("Query view all not allowed");
+            log.error("Missing view all queries permission");
+            log.debug("missing permission to {}", "QUERY_VIEW_ALL");
+            throw new NotAllowedException("Missing view all queries permission");
         }
         final List<Query> queries = storeService.findAll(id, databaseId);
         return ResponseEntity.ok(queryMapper.queryListToQueryDtoList(queries));
@@ -56,7 +60,6 @@ public class StoreEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW')")
     @Operation(summary = "Find some query")
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long id,
                                          @NotNull @PathVariable("databaseId") Long databaseId,
@@ -66,7 +69,9 @@ public class StoreEndpoint extends AbstractEndpoint {
             QueryStoreException, QueryNotFoundException, ContainerNotFoundException, UserNotFoundException,
             NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_VIEW", principal)) {
-            throw new NotAllowedException("Query view not allowed");
+            log.error("Missing view query permission");
+            log.debug("missing permission to {}", "QUERY_VIEW");
+            throw new NotAllowedException("Missing view query permission");
         }
         final Query query = storeService.findOne(id, databaseId, queryId);
         final QueryDto dto = queryMapper.queryToQueryDto(query);

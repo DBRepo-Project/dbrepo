@@ -1,20 +1,19 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.util.List;
@@ -45,6 +44,9 @@ public abstract class AbstractEndpoint {
             log.error("Failed to find table with id {}", tableId);
             return false;
         }
+        if (principal != null && table.getDatabase().getCreator().getUsername().equals(principal.getName())) {
+            return true;
+        }
         /* view-only operations are allowed on public databases */
         if (table.getDatabase().getIsPublic() && List.of("DATA_EXPORT", "DATA_VIEW").contains(permissionCode)) {
             return true;
@@ -70,14 +72,18 @@ public abstract class AbstractEndpoint {
             log.error("Failed to find database with id {}", databaseId);
             return false;
         }
-        if (!database.getIsPublic() && !hasPublicIdentifier(queryId, principal)) {
-            return false;
-        }
-        /* view-only operations are allowed on public databases */
-        if (List.of("QUERY_VIEW_ALL", "QUERY_VIEW", "QUERY_EXPORT").contains(permissionCode)) {
+        if (hasPublicIdentifier(queryId)) {
             return true;
         }
         /* modification operations are limited to the creator */
+        if (isMyPrivateIdentifier(queryId, principal)) {
+            return true;
+        }
+        /* view-only operations are allowed on public databases */
+        if (database.getIsPublic() && List.of("QUERY_VIEW_ALL", "QUERY_VIEW", "QUERY_EXPORT").contains(
+                permissionCode)) {
+            return true;
+        }
         if (principal == null) {
             return false;
         }
@@ -91,14 +97,7 @@ public abstract class AbstractEndpoint {
         return database.getCreator().getUsername().equals(principal.getName());
     }
 
-    /**
-     * Determines if an identifier exists for a query with id and if the principal user is allowed to see it
-     *
-     * @param queryId   The query id.
-     * @param principal The principal.
-     * @return True if the query result set can be viewed, false otherwise.
-     */
-    protected Boolean hasPublicIdentifier(Long queryId, Principal principal) {
+    protected Boolean hasPublicIdentifier(Long queryId) {
         final Identifier identifier;
         try {
             identifier = identifierService.findByQueryId(queryId);
@@ -107,12 +106,35 @@ public abstract class AbstractEndpoint {
             return false;
         }
         if (identifier.getVisibility().equals(EVERYONE)) {
+            log.debug("query {} has public identifier", queryId);
+            return true;
+        }
+        log.debug("query {} does not have a public identifier", queryId);
+        return false;
+    }
+
+    protected Boolean isMyPrivateIdentifier(Long queryId, Principal principal) {
+        final Identifier identifier;
+        try {
+            identifier = identifierService.findByQueryId(queryId);
+        } catch (IdentifierNotFoundException e) {
+            log.warn("Identifier not found");
+            return false;
+        }
+        if (identifier.getDatabase().getIsPublic()) {
+            log.debug("query {} is within a public database", queryId);
             return true;
         }
         if (principal == null) {
+            log.debug("query {} does not have a identifier belonging to me", queryId);
             return false;
         }
-        return identifier.getCreator().getUsername().equals(principal.getName());
+        if (identifier.getCreator().getUsername().equals(principal.getName())) {
+            log.debug("query {} has identifier belonging to {}", queryId, principal.getName());
+            return true;
+        }
+        log.debug("query {} does not have an identifier belonging to {}", queryId, principal.getName());
+        return false;
     }
 
 }
