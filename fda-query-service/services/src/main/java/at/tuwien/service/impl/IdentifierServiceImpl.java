@@ -22,10 +22,10 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    public Identifier findByQueryId(Long id) throws IdentifierNotFoundException {
-        final Optional<Identifier> optional = identifierRepository.findByQid(id);
+    public Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+        final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(databaseId, queryId);
         if (optional.isEmpty()) {
-            log.error("Failed to find identifier for query id {}", id);
+            log.error("Failed to find identifier for database id {} query id {}", databaseId, queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         return optional.get();

@@ -154,7 +154,10 @@ export default {
         id: null,
         name: null,
         is_public: null,
-        publisher: null
+        publisher: null,
+        creator: {
+          username: null
+        }
       },
       persistQueryExists: false,
       persistQueryDialog: false,
@@ -183,7 +186,10 @@ export default {
       return this.$store.state.user && this.$store.state.user.username
     },
     query_visibility () {
-      return this.database.is_public || this.identifier.id
+      if (this.database.is_public) {
+        return true
+      }
+      return this.database.creator.username === this.username
     },
     result_everyone () {
       return this.database.is_public || this.identifier.visibility === 'EVERYONE'
@@ -192,16 +198,10 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      if (!this.query.creator.username) {
-        return false
+      if (this.query.creator.username === this.username) {
+        return true
       }
-      const display = this.identifier.visibility === 'SELF' && this.query.creator.username === this.username
-      if (display) {
-        console.debug('display result for self')
-      } else {
-        console.debug('do not display result', this.identifier.visibility, 'query creator', this.query.creator.username, 'myself', this.username)
-      }
-      return display
+      return this.identifier.visibility === 'EVERYONE'
     },
     statement () {
       return this.identifier.id ? this.identifier.query : this.query.query
@@ -228,7 +228,8 @@ export default {
   mounted () {
     this.loadDatabase()
       .then(() => this.loadQuery())
-    this.loadMetadata()
+      .then(() => this.loadMetadata())
+      .then(() => this.loadResults())
   },
   methods: {
     formatDate (d) {
@@ -249,25 +250,24 @@ export default {
         document.body.appendChild(link)
         link.click()
       } catch (err) {
-        this.error = true
         console.error('Could not export query result', err)
         this.$toast.error('Could not export query result')
+        this.error = true
       }
       this.exportLoading = false
     },
     async loadDatabase () {
-      if (!this.query_visibility) {
-        return
-      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         console.debug('database', res.data)
         this.database = res.data
       } catch (err) {
+        if (err.response.status !== 401) {
+          console.error('Could not load database', err)
+          this.$toast.error('Could not load database')
+        }
         this.error = true
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
       }
       this.loading = false
     },
@@ -281,13 +281,18 @@ export default {
         console.debug('query', res.data)
         this.query = res.data
       } catch (err) {
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('Could not load query', err)
+          this.$toast.error('Could not load query')
+        }
         this.error = true
-        console.error('Could not load query', err)
-        this.$toast.error('Could not load query')
       }
       this.loading = false
     },
     async loadMetadata () {
+      if (!this.query.id) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
@@ -301,14 +306,14 @@ export default {
         }
       }
       this.loading = false
-
-      // refresh QueryResults table
-      if (!this.result_visibility) {
-        console.debug('try to re-execute query')
-        setTimeout(() => {
+    },
+    loadResults () {
+      setTimeout(() => {
+        if (this.result_visibility) {
+          console.debug('try to re-execute query')
           this.$refs.queryResults.execute()
-        }, 200)
-      }
+        }
+      }, 1000)
     },
     openDialog () {
       this.persistQueryDialog = true

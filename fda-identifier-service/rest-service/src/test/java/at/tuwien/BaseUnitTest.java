@@ -343,8 +343,6 @@ public abstract class BaseUnitTest {
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 
@@ -355,8 +353,6 @@ public abstract class BaseUnitTest {
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
-            .created(IDENTIFIER_2_CREATED)
-            .lastModified(IDENTIFIER_2_MODIFIED)
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 

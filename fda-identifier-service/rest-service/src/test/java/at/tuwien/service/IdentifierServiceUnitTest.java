@@ -96,8 +96,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .title(IDENTIFIER_1_TITLE)
                 .doi(IDENTIFIER_1_DOI)
                 .visibility(VisibilityTypeDto.EVERYONE)
-                .created(IDENTIFIER_1_CREATED)
-                .lastModified(IDENTIFIER_1_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);

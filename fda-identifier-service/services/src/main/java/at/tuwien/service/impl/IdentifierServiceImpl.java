@@ -4,6 +4,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
@@ -12,6 +13,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -29,14 +31,16 @@ import java.util.stream.Collectors;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final UserService userService;
+    private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public IdentifierServiceImpl(UserService userService, IdentifierMapper identifierMapper,
+    public IdentifierServiceImpl(UserService userService, DatabaseService databaseService, IdentifierMapper identifierMapper,
                                  QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository) {
         this.userService = userService;
+        this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
@@ -64,7 +68,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal,
                              String authorization)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
-            UserNotFoundException {
+            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException {
+        /* check */
+        final Database database = databaseService.find(databaseId);
+        if (database.getIsPublic() && !data.getVisibility().equals(VisibilityTypeDto.EVERYONE)) {
+            log.error("Identifier cannot restrict the result set");
+            throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
+        }
         /* find */
         final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(databaseId, data.getQid());
         if (optional.isPresent()) {

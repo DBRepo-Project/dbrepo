@@ -6,10 +6,8 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,11 +70,11 @@ public abstract class AbstractEndpoint {
             log.error("Failed to find database with id {}", databaseId);
             return false;
         }
-        if (hasPublicIdentifier(queryId)) {
+        if (hasPublicIdentifier(databaseId, queryId)) {
             return true;
         }
         /* modification operations are limited to the creator */
-        if (isMyPrivateIdentifier(queryId, principal)) {
+        if (isMyPrivateIdentifier(databaseId, queryId, principal)) {
             return true;
         }
         /* view-only operations are allowed on public databases */
@@ -97,10 +95,10 @@ public abstract class AbstractEndpoint {
         return database.getCreator().getUsername().equals(principal.getName());
     }
 
-    protected Boolean hasPublicIdentifier(Long queryId) {
+    protected Boolean hasPublicIdentifier(Long databaseId, Long queryId) {
         final Identifier identifier;
         try {
-            identifier = identifierService.findByQueryId(queryId);
+            identifier = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         } catch (IdentifierNotFoundException e) {
             log.warn("Identifier not found");
             return false;
@@ -113,10 +111,10 @@ public abstract class AbstractEndpoint {
         return false;
     }
 
-    protected Boolean isMyPrivateIdentifier(Long queryId, Principal principal) {
+    protected Boolean isMyPrivateIdentifier(Long databaseId, Long queryId, Principal principal) {
         final Identifier identifier;
         try {
-            identifier = identifierService.findByQueryId(queryId);
+            identifier = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         } catch (IdentifierNotFoundException e) {
             log.warn("Identifier not found");
             return false;

@@ -68,7 +68,7 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException {
         final Identifier identifier = identifierService.create(containerId, databaseId, data, principal, authorization);
         log.info("Found identifier with id {}", identifier.getId());
         log.debug("found identifier {}", identifier);

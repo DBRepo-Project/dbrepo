@@ -8,8 +8,9 @@ public interface IdentifierService {
     /**
      * Finds a user by id.
      *
-     * @param id The query id.
+     * @param databaseId The database id.
+     * @param queryId    The query id.
      * @return The identifier.
      */
-    Identifier findByQueryId(Long id) throws IdentifierNotFoundException;
+    Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException;
 }

@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
-    Optional<Identifier> findByQid(Long id);
+    Optional<Identifier> findByDbidAndQid(Long databaseId, Long queryId);
 
 }

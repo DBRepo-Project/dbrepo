@@ -45,7 +45,8 @@ public interface IdentifierService {
      */
     Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+            DatabaseNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.

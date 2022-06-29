@@ -117,8 +117,10 @@ ${this.$route.params.container_id}/database/${this.$route.params.database_id}/qu
         this.result.rows = res.data.result
         this.total = res.data.resultNumber
       } catch (err) {
-        console.error('query execute', err)
-        this.$toast.error('Could not execute query')
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('query execute', err)
+          this.$toast.error('Could not execute query')
+        }
         this.loading = false
       }
     }

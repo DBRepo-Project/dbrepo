@@ -103,7 +103,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_succeeds() throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException {
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+            DatabaseNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
@@ -132,8 +133,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
                 .visibility(IDENTIFIER_2_VISIBILITY_DTO)
-                .created(IDENTIFIER_2_CREATED)
-                .lastModified(IDENTIFIER_2_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
@@ -159,8 +158,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
                 .visibility(IDENTIFIER_2_VISIBILITY_DTO)
-                .created(IDENTIFIER_2_CREATED)
-                .lastModified(IDENTIFIER_2_MODIFIED)
                 .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);

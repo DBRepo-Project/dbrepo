@@ -49,6 +49,7 @@
                 v-model="identifier.visibility"
                 :items="visibility"
                 item-value="value"
+                :disabled="database.is_public"
                 item-text="name"
                 label="Visibility *"
                 :rules="[v => !!v || $t('Required')]"
@@ -128,6 +129,12 @@ export default {
         name: 'Only me',
         value: 'SELF'
       }],
+      database: {
+        id: null,
+        name: null,
+        is_public: null,
+        publisher: null
+      },
       identifier: {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
@@ -155,9 +162,10 @@ export default {
       return { Authorization: `Bearer ${this.token}` }
     }
   },
-  beforeMount () {
+  mounted () {
     this.loadUser()
     this.addCreator()
+    this.loadDatabase()
   },
   methods: {
     cancel () {
@@ -170,6 +178,21 @@ export default {
         affiliation: null,
         orcid: null
       })
+    },
+    async loadDatabase () {
+      this.loading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, {
+          headers: this.headers
+        })
+        console.debug('database', res.data)
+        this.database = res.data
+      } catch (err) {
+        this.error = true
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     },
     deleteCreator (index) {
       this.identifier.creators.splice(index, 1)
