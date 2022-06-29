@@ -7,9 +7,6 @@
         <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
-        <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
-          <v-icon left>mdi-run</v-icon> Re-Execute
-        </v-btn>
         <v-btn v-if="result_visibility" color="primary" :loading="exportLoading" :disabled="!token" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
@@ -81,8 +78,8 @@
         </p>
         <p>
           Visiblity
-          <span v-if="result_visibility"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
-          <span v-if="!result_visibility"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
+          <span v-if="result_everyone"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
+          <span v-if="!result_everyone"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
         </p>
         <p v-if="result_hash">
           Hash: <code v-if="result_hash">{{ result_hash }}</code>
@@ -93,7 +90,7 @@
         <p v-if="execution">
           Executed: <code>{{ execution }}</code>
         </p>
-        <QueryResults v-if="identifier.visibility !== 'SELF'" ref="queryResults" v-model="query.id" class="mt-0" />
+        <QueryResults v-if="result_visibility" ref="queryResults" v-model="query.id" class="mt-0" />
       </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -133,7 +130,9 @@ export default {
         result_number: null,
         execution: null,
         created: null,
-        creator: null
+        creator: {
+          username: null
+        }
       },
       identifier: {
         id: null,
@@ -180,14 +179,29 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    username () {
+      return this.$store.state.user && this.$store.state.user.username
+    },
     query_visibility () {
       return this.database.is_public || this.identifier.id
     },
+    result_everyone () {
+      return this.database.is_public || this.identifier.visibility === 'EVERYONE'
+    },
     result_visibility () {
-      if (this.query_visibility) {
+      if (this.database.is_public) {
         return true
       }
-      return this.identifier.id
+      if (!this.query.creator.username) {
+        return false
+      }
+      const display = this.identifier.visibility === 'SELF' && this.query.creator.username === this.username
+      if (display) {
+        console.debug('display result for self')
+      } else {
+        console.debug('do not display result', this.identifier.visibility, 'query creator', this.query.creator.username, 'myself', this.username)
+      }
+      return display
     },
     statement () {
       return this.identifier.id ? this.identifier.query : this.query.query
@@ -242,6 +256,9 @@ export default {
       this.exportLoading = false
     },
     async loadDatabase () {
+      if (!this.query_visibility) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
@@ -255,6 +272,9 @@ export default {
       this.loading = false
     },
     async loadQuery () {
+      if (!this.query_visibility) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
@@ -283,20 +303,12 @@ export default {
       this.loading = false
 
       // refresh QueryResults table
-      setTimeout(() => {
-        this.$refs.queryResults.execute()
-      }, 200)
-    },
-    async reExecute () {
-      try {
-        this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
-        console.debug('re-execute query', res.data)
-      } catch (err) {
-        console.error('Could not re-execute query', err)
-        this.$toast.error('Could not re-execute query')
+      if (!this.result_visibility) {
+        console.debug('try to re-execute query')
+        setTimeout(() => {
+          this.$refs.queryResults.execute()
+        }, 200)
       }
-      this.loading = false
     },
     openDialog () {
       this.persistQueryDialog = true
