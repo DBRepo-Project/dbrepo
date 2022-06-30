@@ -1,7 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantComponentDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +36,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     }
 
     @Override
-    public void grantPermission(GrantComponentDto data) throws BrokerVirtualHostCreationException {
-        log.debug("grant virtual host at broker service {}", data);
-        final ResponseEntity<Void> response = restTemplate.exchange("/api/broker/user/permission", HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+    public void grantPermission(String username, GrantVirtualHostPermissionsDto data)
+            throws BrokerVirtualHostCreationException {
+        final ResponseEntity<Void> response = restTemplate.exchange("/api/broker/user/" + username + "/permission",
+                HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to grant virtual host");

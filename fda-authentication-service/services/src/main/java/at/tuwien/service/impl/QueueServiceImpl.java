@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.BrokerUserCreationException;
@@ -33,11 +34,10 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException {
-        final CreateUserDto dto = CreateUserDto.builder()
-                .username(user.getUsername())
+        final UserModifyPasswordDto passwordDto = UserModifyPasswordDto.builder()
                 .password(data.getPassword())
                 .build();
-        brokerServiceGateway.modifyUserPassword(dto);
+        brokerServiceGateway.modifyUserPassword(user.getUsername(), passwordDto);
     }
 
 }

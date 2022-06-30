@@ -1,6 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
@@ -77,6 +78,15 @@ public interface UserMapper {
     default GrantedAuthorityDto grantedAuthorityToGrantedAuthority(GrantedAuthority data) {
         return GrantedAuthorityDto.builder()
                 .authority(data.getAuthority())
+                .build();
+    }
+
+    default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
+        return GrantVirtualHostPermissionsDto.builder()
+                .virtualHost("/")
+                .configure(".*")
+                .write(".*")
+                .read(".*")
                 .build();
     }
 

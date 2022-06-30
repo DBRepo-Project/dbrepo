@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantComponentDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.exception.ProcessCompletionException;
 import at.tuwien.service.QueueService;
@@ -10,7 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.concurrent.TimeUnit;
+
 
 @Slf4j
 @Service
@@ -28,7 +30,8 @@ public class AmqpServiceImpl implements QueueService {
     }
 
     @Override
-    public void modifyPassword(UserModifyPasswordDto data) throws ProcessCompletionException {
+    public void modifyPassword(String username, UserModifyPasswordDto data, Principal principal)
+            throws ProcessCompletionException {
         final StringBuilder modifyUserCmd = new StringBuilder("rabbitmqctl change_password ")
                 .append(data.getUsername())
                 .append(" ")
@@ -54,15 +57,18 @@ public class AmqpServiceImpl implements QueueService {
     }
 
     @Override
-    public void grantVirtualHost(GrantComponentDto data) throws ProcessCompletionException {
-        final StringBuilder setPermissionsCmd = new StringBuilder("rabbitmqctl set_permissions -p / ")
-                .append(data.getUsername())
+    public void grantVirtualHost(String username, GrantVirtualHostPermissionsDto data, Principal principal)
+            throws ProcessCompletionException {
+        final StringBuilder setPermissionsCmd = new StringBuilder("rabbitmqctl set_permissions -p ")
+                .append(data.getVirtualHost())
                 .append(" ")
-                .append(data.getName())
+                .append(username)
                 .append(" ")
-                .append(data.getName())
+                .append(data.getConfigure())
                 .append(" ")
-                .append(data.getName());
+                .append(data.getWrite())
+                .append(" ")
+                .append(data.getRead());
         executeSync(setPermissionsCmd.toString());
     }
 

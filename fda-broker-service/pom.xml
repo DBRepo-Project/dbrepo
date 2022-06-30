@@ -30,6 +30,8 @@
         <spring-saml.version>1.0.10.RELEASE</spring-saml.version>
         <javax-rs.version>2.1.1</javax-rs.version>
         <javax-mail.version>1.4.7</javax-mail.version>
+        <jwt.version>3.18.3</jwt.version>
+        <rabbitmq.version>5.15.0</rabbitmq.version>
     </properties>
 
     <dependencies>
@@ -64,6 +66,12 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-entites</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.security</groupId>
@@ -85,6 +93,12 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+        </dependency>
+        <!-- RabbitMQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbitmq.version}</version>
         </dependency>
         <!-- IDE -->
         <dependency>

@@ -2,6 +2,7 @@ package at.tuwien.gateway;
 
 
 import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.exception.BrokerUserCreationException;
 
 
@@ -16,10 +17,11 @@ public interface BrokerServiceGateway {
     void createUser(CreateUserDto data) throws BrokerUserCreationException;
 
     /**
-     * Modify a user password
+     * Modify a user password for a user at the Queue Service
      *
-     * @param data The user modification data.
+     * @param username The username.
+     * @param data     The user modification data.
      * @throws BrokerUserCreationException The broker did not modify a user.
      */
-    void modifyUserPassword(CreateUserDto data) throws BrokerUserCreationException;
+    void modifyUserPassword(String username, UserModifyPasswordDto data) throws BrokerUserCreationException;
 }
