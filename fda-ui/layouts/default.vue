@@ -42,7 +42,7 @@
         to="/signup">
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
-      <v-btn to="/user" plain>
+      <v-btn v-if="username" to="/user" plain>
         {{ username }}
       </v-btn>
       <v-menu bottom offset-y left>

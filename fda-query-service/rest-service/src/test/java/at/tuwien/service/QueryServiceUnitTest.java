@@ -134,7 +134,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -149,7 +149,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
@@ -166,7 +166,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.empty());
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -184,7 +184,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -201,7 +201,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -217,7 +217,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.findOne(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */

@@ -69,6 +69,39 @@ public abstract class AbstractEndpoint {
         return true;
     }
 
+    protected Boolean hasQueryPermission(Long databaseId, String permissionCode, Principal principal) {
+        final Database database;
+        try {
+            database = databaseService.find(databaseId);
+        } catch (DatabaseNotFoundException e) {
+            log.debug("failed to find database with id {}", databaseId);
+            return false;
+        }
+        if (database.getIsPublic()) {
+            log.debug("grant permission {} because database is public", permissionCode);
+            return true;
+        }
+        if (principal == null) {
+            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            return false;
+        }
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+                    permissionCode);
+            return false;
+        }
+        /* modification operations are limited to the creator */
+        if (database.getCreator().getUsername().equals(principal.getName())) {
+            log.debug("grant permission {} because database is private and creator is the current user",
+                    permissionCode);
+            return true;
+        }
+        log.debug("failed to grant permission {} because database is private and creator is not the " +
+                "current user", permissionCode);
+        return false;
+    }
+
     protected Boolean hasQueryPermission(Long databaseId, Long queryId, String permissionCode, Principal principal) {
         final Database database;
         try {

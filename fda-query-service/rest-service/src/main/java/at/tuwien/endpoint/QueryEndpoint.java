@@ -50,7 +50,7 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
             NotAllowedException {
-        if (!hasDatabasePermission(databaseId, databaseId, "QUERY_EXECUTE", principal)) {
+        if (!hasQueryPermission(databaseId, "QUERY_EXECUTE", principal)) {
             log.error("Missing execute query permission");
             throw new NotAllowedException("Missing execute query permission");
         }
@@ -98,8 +98,8 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_EXPORT", principal)) {
-            log.error("Missing execute query permission");
-            throw new NotAllowedException("Missing execute query permission");
+            log.error("Missing export query permission");
+            throw new NotAllowedException("Missing export query permission");
         }
         storeService.findOne(id, databaseId, queryId);
         final HttpHeaders headers = new HttpHeaders();

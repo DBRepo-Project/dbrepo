@@ -109,6 +109,9 @@ export default {
         res = await this.$axios.get('/api/image')
         this.engines = res.data
         console.debug('engines', this.engines)
+        if (this.engines.length > 0) {
+          this.engine = this.engines[0]
+        }
         this.loading = false
       } catch (err) {
         this.error = true
