@@ -2,6 +2,7 @@ all:
 
 config-backend:
 	./.fda-deployment/fda-authentication-service/install_smtp
+	./.fda-deployment/fda-authentication-service/install_invenio
 
 config-frontend:
 	./.fda-deployment/fda-ui/install_cert
