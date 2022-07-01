@@ -7,6 +7,7 @@ import at.tuwien.service.IdentifierService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -36,7 +37,7 @@ public class ExportEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Operation(summary = "Export table")
+    @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("tableId") Long tableId,
@@ -46,7 +47,8 @@ public class ExportEndpoint extends AbstractEndpoint {
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
             FileStorageException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_EXPORT", principal)) {
-            throw new NotAllowedException("Data export not allowed");
+            log.error("Missing data export permission");
+            throw new NotAllowedException("Missing data export permission");
         }
         final HttpHeaders headers = new HttpHeaders();
         final ExportResource resource = queryService.findAll(id, databaseId, tableId, timestamp);

@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.user.UserForgotDto;
 import at.tuwien.config.SecurityConfig;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @Log4j2
 @RestController
@@ -49,13 +52,12 @@ public class TokenEndpoint {
         httpServletResponse.setStatus(302);
     }
 
-    @GetMapping("/resend")
+    @PostMapping("/resend")
     @Transactional
     @Operation(summary = "resend user token")
-    public ResponseEntity<?> resend(@RequestParam(required = false) String username,
-                                    @RequestParam(required = false) String email)
+    public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {
-        final User user = userService.findByUsernameOrEmail(username, email);
+        final User user = userService.findByUsernameOrEmail(data.getUsername(), data.getEmail());
         if (user.getEmailVerified()) {
             log.warn("User already has a verified email address");
             throw new UserEmailAlreadyVerifiedException("User e-mail already verified");

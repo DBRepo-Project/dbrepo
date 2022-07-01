@@ -53,7 +53,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
-            throw new NotAllowedException("Insert data not allowed");
+            log.error("Missing data insert permission");
+            throw new NotAllowedException("Missing data insert permission");
         }
         return ResponseEntity.accepted()
                 .body(queryService.insert(containerId, databaseId, tableId, data));
@@ -70,7 +71,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_UPDATE", principal)) {
-            throw new NotAllowedException("Update data not allowed");
+            log.error("Missing data update permission");
+            throw new NotAllowedException("Missing data update permission");
         }
         return ResponseEntity.accepted()
                 .body(queryService.update(containerId, databaseId, tableId, data));
@@ -87,7 +89,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_DELETE", principal)) {
-            throw new NotAllowedException("Delete data not allowed");
+            log.error("Missing data delete permission");
+            throw new NotAllowedException("Missing data delete permission");
         }
         queryService.delete(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
@@ -105,7 +108,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
-            throw new NotAllowedException("Insert data not allowed");
+            log.error("Missing data insert permission");
+            throw new NotAllowedException("Missing data insert permission");
         }
         log.info("Insert data from location {} into database id {}", data, databaseId);
         return ResponseEntity.accepted()
@@ -126,7 +130,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException {
         if (!hasDatabasePermission(databaseId, tableId, "DATA_VIEW", principal)) {
-            throw new NotAllowedException("View data not allowed");
+            log.error("Missing data view permission");
+            throw new NotAllowedException("Missing data view permission");
         }
         if ((page == null && size != null) || (page != null && size == null)) {
             log.error("Cannot perform pagination with only one of page/size set.");

@@ -51,7 +51,6 @@ public class StoreEndpoint extends AbstractEndpoint {
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
         if (!hasQueryPermission(databaseId, null, "QUERY_VIEW_ALL", principal)) {
             log.error("Missing view all queries permission");
-            log.debug("missing permission to {}", "QUERY_VIEW_ALL");
             throw new NotAllowedException("Missing view all queries permission");
         }
         final List<Query> queries = storeService.findAll(id, databaseId);
@@ -70,7 +69,6 @@ public class StoreEndpoint extends AbstractEndpoint {
             NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_VIEW", principal)) {
             log.error("Missing view query permission");
-            log.debug("missing permission to {}", "QUERY_VIEW");
             throw new NotAllowedException("Missing view query permission");
         }
         final Query query = storeService.findOne(id, databaseId, queryId);

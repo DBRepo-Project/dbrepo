@@ -35,6 +35,7 @@ public class QueueServiceImpl implements QueueService {
     @Override
     public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException {
         final UserModifyPasswordDto passwordDto = UserModifyPasswordDto.builder()
+                .username(user.getUsername())
                 .password(data.getPassword())
                 .build();
         brokerServiceGateway.modifyUserPassword(user.getUsername(), passwordDto);

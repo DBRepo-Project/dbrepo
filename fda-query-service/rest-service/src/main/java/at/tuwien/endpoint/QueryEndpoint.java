@@ -52,7 +52,6 @@ public class QueryEndpoint extends AbstractEndpoint {
             NotAllowedException {
         if (!hasDatabasePermission(databaseId, databaseId, "QUERY_EXECUTE", principal)) {
             log.error("Missing execute query permission");
-            log.debug("missing permission to {}", "QUERY_EXECUTE");
             throw new NotAllowedException("Missing execute query permission");
         }
         /* validation */
@@ -80,7 +79,6 @@ public class QueryEndpoint extends AbstractEndpoint {
             ColumnParseException, NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");
-            log.debug("missing permission to {}", "QUERY_RE_EXECUTE");
             throw new NotAllowedException("Missing re-execute query permission");
         }
         final Query query = storeService.findOne(id, databaseId, queryId);
@@ -92,8 +90,7 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPermission(#databaseId, 'QUERY_EXPORT')")
-    @Operation(summary = "Exports some query")
+    @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("queryId") Long queryId,
@@ -102,7 +99,6 @@ public class QueryEndpoint extends AbstractEndpoint {
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing execute query permission");
-            log.debug("missing permission to {}", "QUERY_EXPORT");
             throw new NotAllowedException("Missing execute query permission");
         }
         storeService.findOne(id, databaseId, queryId);
@@ -111,7 +107,7 @@ public class QueryEndpoint extends AbstractEndpoint {
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         return ResponseEntity.ok()
                 .headers(headers)
-                .build();
+                .body(resource.getResource());
     }
 
 }

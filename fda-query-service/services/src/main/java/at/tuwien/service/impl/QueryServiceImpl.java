@@ -234,10 +234,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException e) {
-            throw new FileStorageException("Export file not present");
+            log.error("Export file not present");
+            throw new FileStorageException("Export file not present", e);
         }
+        final InputStreamResource resource = new InputStreamResource(inputStream);
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }

@@ -1,8 +1,10 @@
 package at.tuwien.api.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -13,19 +15,19 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class UserUpdateDto {
 
-    @NotNull
+    @JsonProperty("titles_before")
     @Parameter(name = "titles before the first name")
     private String titlesBefore;
 
-    @NotNull
+    @JsonProperty("titles_after")
     @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @NotNull
+    @NotBlank
     @Parameter(name = "first name")
     private String firstname;
 
-    @NotNull
+    @NotBlank
     @Parameter(name = "last name")
     private String lastname;
 

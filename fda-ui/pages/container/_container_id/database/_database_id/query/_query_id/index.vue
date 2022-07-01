@@ -7,7 +7,7 @@
         <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
-        <v-btn v-if="result_visibility" color="primary" :loading="exportLoading" :disabled="!token" @click.stop="download">
+        <v-btn v-if="result_visibility" color="primary" :loading="exportLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
       </v-toolbar-title>
