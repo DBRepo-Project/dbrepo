@@ -82,6 +82,9 @@ ${this.parent.queryId ? `/${this.parent.queryId}` : ''}
       }))
     },
     async execute () {
+      if (this.queryId === 0) {
+        return
+      }
       this.loading = true
       try {
         const page = this.options.page - 1
