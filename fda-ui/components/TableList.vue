@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" indeterminate />
+    <v-progress-linear v-if="loading" :color="loadingColor" />
     <v-card v-if="!loading && tables.length === 0" flat>
       <v-card-title>
         (no tables)
@@ -180,6 +180,7 @@ export default {
   data () {
     return {
       loading: false,
+      error: false,
       tables: [],
       panel: null,
       database: {
@@ -199,6 +200,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    loadingColor () {
+      return this.error ? 'red lighten-2' : 'primary'
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -209,19 +213,35 @@ export default {
     }
   },
   mounted () {
+    console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
-    const table = this.$store.state.table
-    this.refresh(table ? table.id : null)
-    this.databaseDetails()
+    this.loadTables()
   },
   methods: {
-    async databaseDetails () {
+    async loadDatabase () {
       try {
+        this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
+        this.error = false
       } catch (err) {
+        this.error = true
         this.$toast.error('Could not get database details.')
       }
+      this.loading = false
+    },
+    async loadTables () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
+        this.tables = res.data
+        console.debug('tables', this.tables)
+        this.error = false
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to load tables.')
+      }
+      this.loading = false
     },
     async details (tableId, clicked = false) {
       // don't fetch details when we click-close an open accordion

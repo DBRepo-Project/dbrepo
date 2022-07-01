@@ -11,7 +11,7 @@
 <script>
 export default {
   props: {
-    value: { type: Number, default: () => 0 }
+    queryId: { type: Number, default: () => 0 }
   },
   data () {
     return {
@@ -39,26 +39,8 @@ export default {
       return { Authorization: `Bearer ${this.token}` }
     }
   },
-  watch: {
-    value () {
-      if (this.value) {
-        this.execute()
-      }
-    },
-    options (newVal, oldVal) {
-      if (typeof oldVal.groupBy === 'undefined') {
-        // initially, options do not have the groupBy field.
-        // don't run the execute method twice, when a new query is created
-        return
-      }
-      if (!this.value) {
-        this.$toast.error('Cannot paginate invalidated Query: press Execute')
-        return
-      }
-      this.execute()
-    }
-  },
   mounted () {
+    this.execute()
   },
   methods: {
     async executeFirstTime (parent) {
@@ -106,7 +88,7 @@ ${this.parent.queryId ? `/${this.parent.queryId}` : ''}
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
         const res = await this.$axios.put(`/api/container/
 ${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-/${this.value}
+/${this.queryId}
 ?${urlParams}`, {}, {
           headers: this.headers
         })

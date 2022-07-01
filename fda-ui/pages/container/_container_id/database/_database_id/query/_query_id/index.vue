@@ -90,7 +90,7 @@
         <p v-if="execution">
           Executed: <code>{{ execution }}</code>
         </p>
-        <QueryResults v-if="result_visibility" ref="queryResults" v-model="query.id" class="mt-0" />
+        <QueryResults ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0" />
       </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -229,7 +229,6 @@ export default {
     this.loadDatabase()
       .then(() => this.loadQuery())
       .then(() => this.loadMetadata())
-      .then(() => this.loadResults())
   },
   methods: {
     formatDate (d) {
@@ -306,14 +305,6 @@ export default {
         }
       }
       this.loading = false
-    },
-    loadResults () {
-      setTimeout(() => {
-        if (this.result_visibility) {
-          console.debug('try to re-execute query')
-          this.$refs.queryResults.execute()
-        }
-      }, 1000)
     },
     openDialog () {
       this.persistQueryDialog = true
