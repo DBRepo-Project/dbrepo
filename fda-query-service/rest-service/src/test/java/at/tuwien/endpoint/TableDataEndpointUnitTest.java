@@ -8,6 +8,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.impl.QueryServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.Map;
 
@@ -38,66 +40,76 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void insert_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
         final ImportDto request = ImportDto.builder()
                 .location("test:csv/csv_01.csv")
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final ResponseEntity<?> response = dataEndpoint.importCsv(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+        final ResponseEntity<?> response = dataEndpoint.importCsv(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request,
+                principal);
         assertNotNull(response);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     public void insert_locationNull_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, ContainerNotFoundException,
+            NotAllowedException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "value"))
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final ResponseEntity<?> response = dataEndpoint.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+        final ResponseEntity<?> response = dataEndpoint.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request,
+                principal);
         assertNotNull(response);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
     @Test
     public void insert_locationAndDataNull_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            dataEndpoint.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
+            dataEndpoint.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, principal);
         });
     }
 
     @Test
     public void getAll_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException, QueryStoreException {
+            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
+            QueryStoreException, NotAllowedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null);
+        dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, principal);
     }
 
     @Test
     public void findAll_noPagination_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryStoreException {
+            ContainerNotFoundException, QueryStoreException, NotAllowedException {
         final Long page = null;
         final Long size = null;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+        dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
     }
 
     @Test
     public void findAll_pageNull_fails() {
         final Long page = null;
         final Long size = 1L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -105,10 +117,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void findAll_sizeNull_fails() {
         final Long page = 1L;
         final Long size = null;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -116,10 +129,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void findAll_negativePage_fails() {
         final Long page = -1L;
         final Long size = 1L /* arbitrary */;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -127,10 +141,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void findAll_sizeZero_fails() {
         final Long page = 1L /* arbitrary */;
         final Long size = 0L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -138,10 +153,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void findAll_sizeNegative_fails() {
         final Long page = 1L /* arbitrary */;
         final Long size = -1L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -149,10 +165,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void getAll_parameter2_fails() {
         final Long page = 1L;
         final Long size = 0L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
@@ -160,22 +177,24 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void getAll_parameter_fails() {
         final Long page = -1L;
         final Long size = 10L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size);
+            dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1_CREATED, page, size, principal);
         });
     }
 
     @Test
     public void getAllTotal_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException, QueryStoreException {
+            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException {
         final Instant timestamp = Instant.now();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, timestamp, null, null);
+                TABLE_1_ID, timestamp, null, null, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -183,12 +202,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     public void getAllCount_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException, QueryStoreException {
+            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException {
         final Instant timestamp = Instant.now();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, timestamp, null, null);
+                TABLE_1_ID, timestamp, null, null, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertTrue(response.getHeaders().containsKey("FDA-COUNT"));

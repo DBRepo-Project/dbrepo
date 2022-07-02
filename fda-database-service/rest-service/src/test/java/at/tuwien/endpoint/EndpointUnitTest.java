@@ -108,131 +108,149 @@ public class EndpointUnitTest extends BaseUnitTest {
                 });
     }
 
-    @Test
-    public void findAll_succeeds() {
-        when(databaseService.findAll(CONTAINER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-
-        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.findAll(CONTAINER_1_ID);
-
-        /* test */
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1, Objects.requireNonNull(response.getBody()).size());
-    }
-
-    @Test
-    public void create_succeeds() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .description(DATABASE_1_DESCRIPTION)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        when(databaseService.create(CONTAINER_1_ID, request, principal))
-                .thenReturn(DATABASE_1);
-
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(CONTAINER_1_ID, request, principal);
-
-        /* test */
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(DATABASE_1_ID, Objects.requireNonNull(response.getBody()).getId());
-        assertEquals(DATABASE_1_NAME, Objects.requireNonNull(response.getBody()).getName());
-    }
-
-    @Test
-    public void create_containerNotFound_fails() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .description(DATABASE_1_DESCRIPTION)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* test */
-        when(databaseService.create(CONTAINER_1_ID, request, principal))
-                .thenThrow(ContainerNotFoundException.class);
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
-        });
-    }
-
-    @Test
-    public void create_imageNotSupported_fails() throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .description(DATABASE_1_DESCRIPTION)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        when(databaseService.create(CONTAINER_1_ID, request, principal))
-                .thenThrow(ImageNotSupportedException.class);
-
-        /* test */
-        assertThrows(ImageNotSupportedException.class, () -> {
-            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
-        });
-    }
-
-    @Test
-    public void findById_succeeds() throws DatabaseNotFoundException {
-        when(databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(CONTAINER_1_ID, DATABASE_1_ID);
-
-        /* test */
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(DATABASE_1_ID, Objects.requireNonNull(response.getBody()).getId());
-        assertEquals(DATABASE_1_NAME, Objects.requireNonNull(response.getBody()).getName());
-    }
-
-    @Test
-    public void findById_notFound_fails() throws DatabaseNotFoundException {
-        when(databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenThrow(DatabaseNotFoundException.class);
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseEndpoint.findById(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
-
-    @Test
-    public void delete_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        final ResponseEntity<?> response = databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID);
-
-        /* test */
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-    }
-
-    @Test
-    public void delete_invalidImage_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        willThrow(ImageNotSupportedException.class)
-                .given(databaseService)
-                .delete(CONTAINER_1_ID, DATABASE_1_ID);
-
-        /* test */
-        assertThrows(ImageNotSupportedException.class, () -> {
-            databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
-
-    @Test
-    public void delete_notFound_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        willThrow(DatabaseNotFoundException.class)
-                .given(databaseService)
-                .delete(CONTAINER_1_ID, DATABASE_1_ID);
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
+//    @Test
+//    public void findAll_succeeds() {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseService.findAll(CONTAINER_1_ID, principal))
+//                .thenReturn(List.of(DATABASE_1));
+//
+//        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.findAll(CONTAINER_1_ID, principal);
+//
+//        /* test */
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(1, Objects.requireNonNull(response.getBody()).size());
+//    }
+//
+//    @Test
+//    public void create_succeeds() throws ImageNotSupportedException, ContainerNotFoundException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
+//        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+//                .name(DATABASE_1_NAME)
+//                .description(DATABASE_1_DESCRIPTION)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseService.create(CONTAINER_1_ID, request, principal))
+//                .thenReturn(DATABASE_1);
+//
+//        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(CONTAINER_1_ID, request, principal);
+//
+//        /* test */
+//        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+//        assertEquals(DATABASE_1_ID, Objects.requireNonNull(response.getBody()).getId());
+//        assertEquals(DATABASE_1_NAME, Objects.requireNonNull(response.getBody()).getName());
+//    }
+//
+//    @Test
+//    public void create_containerNotFound_fails() throws ImageNotSupportedException, ContainerNotFoundException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
+//        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+//                .name(DATABASE_1_NAME)
+//                .description(DATABASE_1_DESCRIPTION)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* test */
+//        when(databaseService.create(CONTAINER_1_ID, request, principal))
+//                .thenThrow(ContainerNotFoundException.class);
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void create_imageNotSupported_fails() throws ImageNotSupportedException, ContainerNotFoundException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
+//        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+//                .name(DATABASE_1_NAME)
+//                .description(DATABASE_1_DESCRIPTION)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        when(databaseService.create(CONTAINER_1_ID, request, principal))
+//                .thenThrow(ImageNotSupportedException.class);
+//
+//        /* test */
+//        assertThrows(ImageNotSupportedException.class, () -> {
+//            databaseEndpoint.create(CONTAINER_1_ID, request, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void findById_succeeds() throws DatabaseNotFoundException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID, principal))
+//                .thenReturn(DATABASE_1);
+//
+//        final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//
+//        /* test */
+//        assertEquals(HttpStatus.OK, response.getStatusCode());
+//        assertEquals(DATABASE_1_ID, Objects.requireNonNull(response.getBody()).getId());
+//        assertEquals(DATABASE_1_NAME, Objects.requireNonNull(response.getBody()).getName());
+//    }
+//
+//    @Test
+//    public void findById_notFound_fails() throws DatabaseNotFoundException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID, principal))
+//                .thenThrow(DatabaseNotFoundException.class);
+//
+//        /* test */
+//        assertThrows(DatabaseNotFoundException.class, () -> {
+//            databaseEndpoint.findById(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void delete_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* test */
+//        final ResponseEntity<?> response = databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+//    }
+//
+//    @Test
+//    public void delete_invalidImage_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        willThrow(ImageNotSupportedException.class)
+//                .given(databaseService)
+//                .delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//
+//        /* test */
+//        assertThrows(ImageNotSupportedException.class, () -> {
+//            databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void delete_notFound_fails() throws DatabaseNotFoundException, ImageNotSupportedException,
+//            DatabaseMalformedException, AmqpException, ContainerConnectionException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        willThrow(DatabaseNotFoundException.class)
+//                .given(databaseService)
+//                .delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//
+//        /* test */
+//        assertThrows(DatabaseNotFoundException.class, () -> {
+//            databaseEndpoint.delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        });
+//    }
 
 }

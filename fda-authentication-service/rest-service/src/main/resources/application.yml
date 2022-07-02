@@ -40,10 +40,12 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
-  mail.prefix: /
-  system.passwd: "${SYSTEM_PASSWORD}"
-  mail.from: DBREPO <noreply@dbrepo.ossdip.at>
-  mail.replyto: Martin Weise <martin.weise@tuwien.ac.at>
+  website: http://localhost:3000
+  gateway.endpoint: http://localhost:9095
+  mail:
+    prefix: /
+    from: Database Repository <noreply@dbrepo.ossdip.at>
+    replyto: Martin Weise <martin.weise@tuwien.ac.at>
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret

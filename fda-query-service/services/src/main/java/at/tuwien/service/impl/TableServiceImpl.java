@@ -32,8 +32,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final DatabaseRepository databaseRepository;
 
     @Autowired
-    public TableServiceImpl(QueryMapper queryMapper, TableRepository tableRepository,
-                            DatabaseRepository databaseRepository) {
+    public TableServiceImpl(QueryMapper queryMapper, TableRepository tableRepository, DatabaseRepository databaseRepository) {
         this.queryMapper = queryMapper;
         this.tableRepository = tableRepository;
         this.databaseRepository = databaseRepository;
@@ -42,15 +41,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional(readOnly = true)
     public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
-        final Optional<Database> database = databaseRepository.findById(databaseId);
-        if (database.isEmpty()) {
-            log.error("Database with id {} not found in metadata database", databaseId);
-            throw new DatabaseNotFoundException("Database not found in metadata database");
-        }
-        final Optional<Table> table = tableRepository.findByDatabaseAndId(database.get(), tableId);
+        final Optional<Table> table = tableRepository.findOne(databaseId, tableId);
         if (table.isEmpty()) {
-            log.error("Table with id {} not found in metadata database", tableId);
-            throw new TableNotFoundException("Table not found in metadata database");
+            log.error("Failed to find table with id {} of database with id {} in metadata database", tableId,
+                    databaseId);
+            throw new TableNotFoundException("Failed to find table in metadata database");
         }
         return table.get();
     }

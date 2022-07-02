@@ -56,6 +56,13 @@ CREATE SEQUENCE public.mdb_user_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_user_role_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_data_seq
     START WITH 1
     INCREMENT BY 1
@@ -119,6 +126,13 @@ CREATE SEQUENCE public.mdb_creators_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_tokens_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE IF NOT EXISTS mdb_users
 (
     UserID               bigint                      not null DEFAULT nextval('mdb_user_seq'),
@@ -131,6 +145,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Preceding_titles     VARCHAR(50),
     Postpositioned_title VARCHAR(50),
     Main_Email           VARCHAR(255)                not null,
+    main_email_verified  bool                        not null default false,
     password             VARCHAR(255)                not null,
     created              timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified        timestamp without time zone,
@@ -157,6 +172,18 @@ CREATE TABLE public.mdb_images
     last_modified timestamp without time zone,
     PRIMARY KEY (id),
     UNIQUE (repository, tag)
+);
+
+CREATE TABLE public.mdb_tokens
+(
+    id        bigint                      not null default nextval('mdb_tokens_seq'),
+    uid       bigint                      not null,
+    token     character varying(255)      NOT NULL,
+    processed boolean                     NOT NULL default false,
+    created   timestamp without time zone NOT NULL DEFAULT NOW(),
+    valid_to  timestamp without time zone NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE public.mdb_images_date
@@ -221,7 +248,9 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
     role          varchar(255)                not null,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
-    PRIMARY KEY (uid)
+    PRIMARY KEY (uid),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
+    UNIQUE (uid, role)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_databases
@@ -401,6 +430,12 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     description      TEXT                        NOT NULL,
     visibility       VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
     publication_year SMALLINT                    NOT NULL,
+    query            TEXT                        NOT NULL,
+    query_normalized TEXT                        NOT NULL,
+    query_hash       VARCHAR(255)                NOT NULL,
+    execution        timestamp                   NOT NULL,
+    result_hash      VARCHAR(255)                NOT NULL,
+    result_number    bigint                      NOT NULL,
     doi              VARCHAR(255),
     created          timestamp without time zone NOT NULL DEFAULT NOW(),
     created_by       bigint                      NOT NULL,

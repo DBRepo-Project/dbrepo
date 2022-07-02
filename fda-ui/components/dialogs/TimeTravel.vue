@@ -13,9 +13,8 @@
           v-model="datetime"
           label="Timestamp"
           type="datetime-local" />
-        <p v-if="totalChanges > 0">
-          The are {{ totalChanges }} total changes in the dataset:
-        </p>
+        The following chart summarizes changes (insert/update/delete) in the dataset and give an indication where
+        versions of interest may be.
         <Bar
           chart-id="time-travel"
           :chart-data="chartData"
@@ -89,6 +88,7 @@ export default {
     }
   },
   mounted () {
+    console.log('mounted')
     this.loadHistory()
   },
   methods: {

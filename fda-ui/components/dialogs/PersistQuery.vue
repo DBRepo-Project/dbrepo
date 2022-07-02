@@ -3,12 +3,12 @@
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title>
-        Persist Query
+        Persist Query and Result
       </v-card-title>
       <v-card-text>
         <v-alert
           border="left"
-          color="amber lighten-4 black--text">
+          color="info">
           Choose an expressive query title and describe what result the query produces.
         </v-alert>
         <v-form v-model="formValid" autocomplete="off">
@@ -31,40 +31,6 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
-            <v-col cols="4">
-              <v-text-field
-                v-model="creator.name"
-                name="name"
-                label="Name *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-            <v-col cols="4">
-              <v-text-field
-                v-model="creator.affiliation"
-                name="affiliation"
-                label="Affiliation *" />
-            </v-col>
-            <v-col cols="3">
-              <v-text-field
-                v-model="creator.orcid"
-                name="orcid"
-                label="ORCID" />
-            </v-col>
-            <v-col cols="1" class="mt-5">
-              <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
-                <v-icon>mdi-delete</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col>
-              <v-btn x-small @click="addCreator">
-                Add Creator
-              </v-btn>
-            </v-col>
-          </v-row>
           <v-row>
             <v-col>
               <v-text-field
@@ -83,11 +49,47 @@
                 v-model="identifier.visibility"
                 :items="visibility"
                 item-value="value"
+                :disabled="database.is_public"
                 item-text="name"
                 label="Visibility *"
                 :rules="[v => !!v || $t('Required')]"
-                disabled
                 required />
+            </v-col>
+          </v-row>
+          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
+            <v-col cols="3">
+              <v-text-field
+                v-model="creator.name"
+                name="name"
+                label="Name *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="creator.affiliation"
+                name="affiliation"
+                label="Affiliation *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="creator.orcid"
+                name="orcid"
+                label="ORCID" />
+            </v-col>
+            <v-col cols="1" class="mt-5">
+              <v-btn v-if="i !== 0" color="red darken-2" icon x-small @click="deleteCreator(i)">
+                <v-icon>mdi-delete</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small @click="addCreator">
+                Add Creator
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -124,13 +126,15 @@ export default {
         value: 'EVERYONE'
       },
       {
-        name: 'Organization',
-        value: 'TRUSTED'
-      },
-      {
-        name: 'Hidden',
+        name: 'Only me',
         value: 'SELF'
       }],
+      database: {
+        id: null,
+        name: null,
+        is_public: null,
+        publisher: null
+      },
       identifier: {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
@@ -158,9 +162,10 @@ export default {
       return { Authorization: `Bearer ${this.token}` }
     }
   },
-  beforeMount () {
+  mounted () {
     this.loadUser()
     this.addCreator()
+    this.loadDatabase()
   },
   methods: {
     cancel () {
@@ -174,6 +179,21 @@ export default {
         orcid: null
       })
     },
+    async loadDatabase () {
+      this.loading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, {
+          headers: this.headers
+        })
+        console.debug('database', res.data)
+        this.database = res.data
+      } catch (err) {
+        this.error = true
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
+    },
     deleteCreator (index) {
       this.identifier.creators.splice(index, 1)
     },
@@ -186,6 +206,8 @@ export default {
         })
         console.debug('persist', res.data)
       } catch (err) {
+        this.error = true
+        this.loading = false
         this.$toast.error('Failed to persist query')
         console.error('persist failed', err)
         return
@@ -211,3 +233,11 @@ export default {
   }
 }
 </script>
+<style>
+#creators,
+#creators-btn {
+  background-color: #f00;
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+}
+</style>

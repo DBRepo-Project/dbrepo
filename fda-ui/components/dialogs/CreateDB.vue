@@ -9,7 +9,7 @@
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Choose an expressive database name and select a database engine.
           </v-alert>
           <v-text-field
@@ -42,7 +42,6 @@
             id="public"
             v-model="isPublic"
             name="public"
-            disabled
             label="Public" />
         </v-card-text>
         <v-card-actions>
@@ -110,6 +109,9 @@ export default {
         res = await this.$axios.get('/api/image')
         this.engines = res.data
         console.debug('engines', this.engines)
+        if (this.engines.length > 0) {
+          this.engine = this.engines[0]
+        }
         this.loading = false
       } catch (err) {
         this.error = true

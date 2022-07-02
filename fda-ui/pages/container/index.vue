@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
+    <v-progress-linear v-if="loadingContainers" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
         <span>Databases</span>
@@ -19,24 +19,30 @@
             <tr>
               <th>Name</th>
               <th>Engine</th>
-              <th>Tables</th>
+              <th>Creator</th>
               <th>Created</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-if="databases.length === 0" aria-readonly="true">
+            <tr v-if="containers.length === 0" aria-readonly="true">
               <td colspan="4">
                 <span v-if="!loading">(no databases)</span>
               </td>
             </tr>
             <tr
-              v-for="item in databases"
+              v-for="item in containers"
               :key="item.id"
               class="database"
               @click="loadDatabase(item)">
               <td>{{ item.name }}</td>
-              <td>{{ item.engine }}</td>
-              <td />
+              <td>
+                <span v-if="item.database">{{ item.database.engine }}</span>
+                <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />
+              </td>
+              <td>
+                <span v-if="item.database">{{ formatCreator(item.database.creator) }}</span>
+                <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />
+              </td>
               <td>{{ formatDate(item.created) }}</td>
             </tr>
           </tbody>
@@ -65,11 +71,12 @@ export default {
   data () {
     return {
       createDbDialog: false,
-      databases: [],
+      containers: [],
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
-      loading: true,
+      loadingContainers: false,
+      loading: false,
       error: false,
       iconSelect: mdiDatabaseArrowRightOutline
     }
@@ -80,42 +87,78 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
-    this.refresh()
+    this.loadContainers()
+      .then(() => this.loadDatabases())
   },
   methods: {
-    async refresh () {
+    formatCreator (creator) {
+      if (creator.firstname && creator.lastname) {
+        let name = ''
+        if (creator.titles_before) {
+          name += creator.titles_before + ' '
+        }
+        name += creator.firstname + ' ' + creator.lastname
+        if (creator.titles_after) {
+          name += ' ' + creator.titles_after
+        }
+        return name
+      }
+      return creator.username
+    },
+    async loadContainers () {
       this.createDbDialog = false
       try {
-        this.loading = true
-        let res = await this.$axios.get('/api/container/')
+        this.loadingContainers = true
+        const res = await this.$axios.get('/api/container/')
         this.containers = res.data
         console.debug('containers', this.containers)
-        for (const container of this.containers) {
-          res = await this.$axios.get(`/api/container/${container.id}/database`)
-          for (const database of res.data) {
-            database.container_id = container.id
-            this.databases.push(database)
-          }
-        }
-        console.debug('databases', this.databases)
-        this.loading = false
         this.error = false
       } catch (err) {
         console.error('containers', err)
         this.error = true
       }
+      this.loadingContainers = false
     },
-    loadDatabase (database) {
-      this.$router.push(`/container/${database.container_id}/database/${database.id}/info`)
+    async loadDatabases () {
+      if (this.containers.length === 0) {
+        return
+      }
+      const containers = []
+      for (const container of this.containers) {
+        try {
+          const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
+          for (const database of res.data) {
+            container.database = database
+            containers.push(container)
+          }
+        } catch (err) {
+          if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
+            console.error('Failed to load databases for container', err)
+          }
+        }
+      }
+      this.containers = containers
+      console.debug('databases loaded', this.containers)
+    },
+    loadDatabase (container) {
+      this.$router.push(`/container/${container.id}/database/${container.database.id}/info`)
     },
     trim (s) {
       return s.slice(0, 12)
     },
     formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm')
+      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
     relativeDate (d) {
       let options = { addSuffix: true }

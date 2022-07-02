@@ -769,8 +769,8 @@ public interface QueryMapper {
         final String str = String.valueOf(data);
         log.trace("mapping string {} to instant", str);
         final Instant out;
-        if (str.length() == 26) {
-            /* e.g. 2022-06-20 09:08:13.416567 */
+        if (str.length() > 19 && str.length() < 27) {
+            /* e.g. 2022-06-20 09:08:13.416567, 2022-06-20 09:08:13.41656 */
             out = Timestamp.valueOf(str.substring(0, 19))
                     .toInstant();
         } else if (str.length() == 19) {

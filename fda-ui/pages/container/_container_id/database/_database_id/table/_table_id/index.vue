@@ -12,13 +12,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="primary" class="mr-2 white--text" @click="addTuple">
+        <v-btn color="primary" :disabled="!token" class="mr-2 white--text" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEdit" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
+        <v-btn v-if="canEdit" :disabled="!token" color="amber darken-2" class="mr-2 white--text" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="canDelete" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
+        <v-btn v-if="canDelete" :disabled="!token" color="red darken-2" class="mr-2 white--text" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
@@ -36,13 +36,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn @click="pickVersionDialog = true">
+        <v-btn @click="pick()">
           <v-icon left>mdi-update</v-icon> Pick
         </v-btn>
         <v-dialog
           v-model="pickVersionDialog"
           max-width="640">
-          <TimeTravel @close="pickVersionDialog = false" />
+          <TimeTravel ref="timeTravel" @close="pickVersionDialog = false" />
         </v-dialog>
       </v-toolbar-title>
     </v-toolbar>
@@ -55,7 +55,7 @@
         :server-items-length="total"
         :footer-props="footerProps"
         class="elevation-1">
-        <template v-slot:item.selection="{ item }">
+        <template v-if="token" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
       </v-data-table>
@@ -134,11 +134,13 @@ export default {
     token () {
       return this.$store.state.token
     },
-    requestHeaders () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     },
     versionColor () {
       if (this.version === null) {
@@ -183,6 +185,9 @@ export default {
       this.selection = [data]
       this.editTupleDialog = true
     },
+    pick () {
+      this.pickVersionDialog = true
+    },
     async deleteItems () {
       if (this.selection.length < 1) {
         return
@@ -197,7 +202,7 @@ export default {
               constraints[c.internal_name] = select[c.internal_name]
             })
           const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-            headers: this.requestHeaders,
+            headers: { Authorization: `Bearer ${this.token}` },
             data: { keys: constraints }
           })
           console.debug('tuple delete result', res)
@@ -214,7 +219,7 @@ export default {
     },
     async loadProperties () {
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.table = res.data
         console.debug('headers', res.data.columns, 'table', this.table)
         this.headers = [{ value: 'selection', text: '', sortable: false }]
@@ -240,7 +245,7 @@ export default {
           console.info('versioning active', this.version)
           url += `&timestamp=${new Date(this.version).toISOString()}`
         }
-        const res = await this.$axios.get(url)
+        const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])
         this.rows = res.data.result.map((row) => {
           for (const col in row) {
