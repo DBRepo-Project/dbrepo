@@ -53,8 +53,7 @@
         :loading="loadingData"
         :options.sync="options"
         :server-items-length="total"
-        :footer-props="footerProps"
-        class="elevation-1">
+        :footer-props="footerProps">
         <template v-if="token" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
@@ -66,18 +65,6 @@
         <EditTuple :tuple="selection[0]" :edit="edit" @close="editTupleDialog = false" />
       </v-dialog>
     </v-card>
-    <div class="mt-3">
-      <v-chip
-        class="mr-2"
-        label>
-        ‡ Primary Key
-      </v-chip>
-      <v-chip
-        class="mr-2"
-        label>
-        † Unique Column
-      </v-chip>
-    </div>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -226,7 +213,7 @@ export default {
         res.data.columns.map((c) => {
           return {
             value: c.internal_name,
-            text: this.columnAddition(c) + c.name,
+            text: c.name,
             sortable: false
           }
         }).forEach(header => this.headers.push(header))
@@ -261,15 +248,6 @@ export default {
         this.$toast.error('Could not load table data.')
       }
       this.loadingData = false
-    },
-    columnAddition (column) {
-      if (column.is_primary_key) {
-        return '‡ '
-      }
-      if (column.unique) {
-        return '† '
-      }
-      return ''
     },
     formatDate (d) {
       return format(new Date(d), 'yyyy-MM-dd HH:mm:ss')

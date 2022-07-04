@@ -769,11 +769,18 @@ public interface QueryMapper {
         final String str = String.valueOf(data);
         log.trace("mapping string {} to instant", str);
         final Instant out;
-        if (str.length() > 19 && str.length() < 27) {
+        if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")) {
+            /* e.g. 2022-07-04T11:31:46Z */
+            out = Timestamp.valueOf(str.substring(0,10) + " " + str.substring(12,19))
+                    .toInstant();
+        } else if (str.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.?\\d{0,6}")) {
             /* e.g. 2022-06-20 09:08:13.416567, 2022-06-20 09:08:13.41656 */
             out = Timestamp.valueOf(str.substring(0, 19))
                     .toInstant();
-        } else if (str.length() == 19) {
+            if (str.length() > 19) {
+                out.plus(Integer.parseInt(str.substring(20)), ChronoUnit.NANOS);
+            }
+        } else if (str.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
             /* e.g. 2022-06-20 09:08:13 */
             out = Timestamp.valueOf(str)
                     .toInstant();

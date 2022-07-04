@@ -17,81 +17,131 @@
         Query Information
       </v-card-title>
       <v-card-text>
-        <p v-if="database.publisher">
-          <strong>Database</strong>
-        </p>
-        <div v-if="database.publisher">
-          <p>
-            Publisher: <code>{{ database.publisher }}</code>
-          </p>
-        </div>
-        <p>
-          <strong>Query</strong>
-        </p>
-        <div>
-          <p>
-            Visibility
-            <span v-if="query_visibility"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
-            <span v-if="!query_visibility"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
-          </p>
-          <p v-if="identifier.id">
-            Persistent Identifier: <code>https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code>
-          </p>
-          <p v-if="identifier.publication_year">
-            Publication Year: <code>{{ identifier.publication_year }}</code>
-          </p>
-          <p v-if="creator">
-            Owner: <code>{{ creator.username }}</code><span v-if="!creator.username">(empty)</span>
-          </p>
-          <p>Statement</p>
-          <v-alert
-            border="left"
-            color="code">
-            <pre>{{ statement }}</pre>
-          </v-alert>
-          <p v-if="query_hash">
-            Hash: <code>{{ query_hash }}</code>
-          </p>
-        </div>
-        <p class="mt-2">
-          <strong>Description</strong>
-        </p>
-        <div>
-          <p v-if="!identifier.description">
-            (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
-          </p>
-          <p v-if="identifier.description">{{ identifier.description }}</p>
-        </div>
-        <p class="mt-2">
-          <strong>Creator(s)</strong>
-        </p>
-        <p v-if="identifier.creators.length === 0">
-          (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
-        </p>
-        <p v-for="(creator,i) in identifier.creators" :key="i">
-          <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
-          <span>{{ creator.name }}</span>
-          <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
-        </p>
-        <p class="mt-2">
-          <strong>Result</strong>
-        </p>
-        <p>
-          Visiblity
-          <span v-if="result_everyone"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
-          <span v-if="!result_everyone"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
-        </p>
-        <p v-if="result_hash">
-          Hash: <code v-if="result_hash">{{ result_hash }}</code>
-        </p>
-        <p>
-          Rows: <code v-if="result_number">{{ result_number }}</code><span v-if="!result_number">(empty)</span>
-        </p>
-        <p v-if="execution">
-          Executed: <code>{{ execution }}</code>
-        </p>
-        <QueryResults ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0" />
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="database.is_public ? 'success' : 'error'">mdi-database</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Database Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ database.is_public ? 'Public' : 'Private' }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Database Publisher
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ publisher }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="identifier.id">
+            <v-list-item-icon>
+              <v-icon>mdi-lock-clock</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Persistent Identifier
+              </v-list-item-title>
+              <v-list-item-content>
+                <a :href="`https://dbrepo.ossdip.at/pid/${identifier.id}`">https://dbrepo.ossdip.at/pid/{{ identifier.id }}</a>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Title
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.title }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Description
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.description }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Creators
+              </v-list-item-title>
+              <v-list-item-content>
+                <span v-for="(creator, i) in identifier.creators" :key="i" class="mt-1">
+                  <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
+                  {{ creator.name }} <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
+                </span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Publication Date
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.publication_year }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-text-short</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Query Statement
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ query.query }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Hash
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ query_hash }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Creator
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ creator }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Execution
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ execution }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Creation
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ query_creation }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="result_visibility_icon ? 'success' : 'error'">mdi-table</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Result Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ result_visibility_icon ? 'Public' : 'Private' }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Result Hash
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ result_hash }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Result Number
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ result_number }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
       </v-card-text>
+      <QueryResults ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 ml-4 mr-4 mb-2" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
@@ -131,7 +181,9 @@ export default {
         execution: null,
         created: null,
         creator: {
-          username: null
+          username: null,
+          firstname: null,
+          lastname: null
         }
       },
       identifier: {
@@ -182,6 +234,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    publisher () {
+      if (this.database.publisher === null) {
+        return 'NA'
+      }
+      return this.database.publisher
+    },
     username () {
       return this.$store.state.user && this.$store.state.user.username
     },
@@ -203,6 +261,12 @@ export default {
       }
       return this.identifier.visibility === 'EVERYONE'
     },
+    result_visibility_icon () {
+      if (this.database.is_public) {
+        return true
+      }
+      return this.identifier.visibility === 'EVERYONE'
+    },
     statement () {
       return this.identifier.id ? this.identifier.query : this.query.query
     },
@@ -218,8 +282,17 @@ export default {
     execution () {
       return this.identifier.id ? this.formatDate(this.identifier.execution) : this.formatDate(this.query.execution)
     },
+    query_creation () {
+      return this.formatDate(this.query.created)
+    },
     creator () {
-      return null
+      if (this.query.creator.username === null) {
+        return null
+      }
+      if (this.query.creator.firstname === null || this.query.creator.lastname === null) {
+        return this.query.creator.username
+      }
+      return this.query.creator.firstname + ' ' + this.query.creator.lastname
     },
     creators () {
       return this.identifier.id ? this.identifier.creators : null
@@ -322,5 +395,8 @@ export default {
 <style>
 pre {
   white-space: break-spaces;
+}
+.v-card__text {
+  font-size: initial;
 }
 </style>

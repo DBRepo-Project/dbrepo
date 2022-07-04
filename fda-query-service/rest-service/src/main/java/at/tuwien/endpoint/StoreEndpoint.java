@@ -8,6 +8,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -43,7 +44,7 @@ public class StoreEndpoint extends AbstractEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @PreAuthorize("hasPermission(#databaseId, 'QUERY_VIEW_ALL')")
-    @Operation(summary = "Find queries")
+    @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
                                                   @NotNull Principal principal)
@@ -59,7 +60,7 @@ public class StoreEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
-    @Operation(summary = "Find some query")
+    @Operation(summary = "Find some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long id,
                                          @NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable Long queryId,

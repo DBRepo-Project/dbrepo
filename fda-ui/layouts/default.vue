@@ -83,7 +83,7 @@
         flat
         tile
         width="100%"
-        class="red lighten-1 text-center">
+        class="error text-center">
         <v-card-text class="black--text">
           This is a <strong>TEST</strong> environment, do not use production/confidential data! — <a href="//github.com/fair-data-austria/dbrepo/issues/new" class="black--text">Report a bug</a>
         </v-card-text>
