@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Service
 public interface IdentifierService {
+
     /**
      * Finds all identifiers in the metadata database which are not deleted.
      *
@@ -35,15 +37,17 @@ public interface IdentifierService {
     /**
      * Creates a new identifier in the metadata database which is not yet published
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param data        The identifier.
+     * @param containerId   The container id.
+     * @param databaseId    The database id.
+     * @param data          The identifier.
+     * @param principal     The authorization principal.
+     * @param authorization The authorization bearer.
      * @return The created identifier from the metadata database if successful.
-     * @throws IdentifierPublishingNotAllowedException When the visibility is not self.
      */
-    Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
+    Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+            DatabaseNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.

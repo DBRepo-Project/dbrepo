@@ -1,68 +1,90 @@
 <template>
   <div>
-    <v-form ref="form">
-      <v-toolbar flat>
-        <v-toolbar-title>Create Query</v-toolbar-title>
-        <v-spacer />
-        <v-toolbar-title>
-          <v-btn v-if="false" :disabled="!valid || !token" color="blue-grey white--text" @click="save">
-            Save without execution
-          </v-btn>
-          <v-btn :disabled="!valid || !token" color="primary" @click="execute">
-            <v-icon left>mdi-run</v-icon>
-            Execute
-          </v-btn>
-        </v-toolbar-title>
-      </v-toolbar>
-      <v-card flat>
-        <v-card-text>
-          <v-row>
-            <v-col cols="6">
-              <v-select
-                v-model="table"
-                :items="tables"
-                item-text="name"
-                return-object
-                label="Table"
-                @change="loadColumns" />
-            </v-col>
-            <v-col cols="6">
-              <v-select
-                v-model="select"
-                item-text="name"
-                :disabled="!table"
-                :items="selectItems"
-                label="Columns"
-                return-object
-                multiple
-                @change="buildQuery" />
-            </v-col>
-          </v-row>
-          <QueryFilters
-            v-if="table"
-            v-model="clauses"
-            :columns="columnNames" />
-          <v-row v-if="query.formatted">
-            <v-col>
-              <highlightjs autodetect :code="query.formatted" />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <p>Results</p>
-              <QueryResults ref="queryResults" v-model="queryId" />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <v-btn v-if="queryId" color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
-                More
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-form>
+    <v-toolbar flat>
+      <v-toolbar-title>Create Query</v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="false" :disabled="!canExecute || !token" color="blue-grey white--text" @click="save">
+          Save without execution
+        </v-btn>
+        <v-btn :disabled="!canExecute || !token" color="primary" @click="execute">
+          <v-icon left>mdi-run</v-icon>
+          Execute
+        </v-btn>
+      </v-toolbar-title>
+    </v-toolbar>
+    <v-tabs
+      v-model="tabs"
+      centered>
+      <v-tab>
+        Query Builder
+      </v-tab>
+      <v-tab>
+        Raw SQL
+      </v-tab>
+    </v-tabs>
+    <v-card flat>
+      <v-tabs-items v-model="tabs">
+        <v-tab-item>
+          <v-card-text>
+            <v-row>
+              <v-col cols="6">
+                <v-select
+                  v-model="table"
+                  :items="tables"
+                  item-text="name"
+                  return-object
+                  label="Table"
+                  @change="loadColumns" />
+              </v-col>
+              <v-col cols="6">
+                <v-select
+                  v-model="select"
+                  item-text="name"
+                  :disabled="!table"
+                  :items="selectItems"
+                  label="Columns"
+                  return-object
+                  multiple
+                  @change="buildQuery" />
+              </v-col>
+            </v-row>
+            <QueryFilters
+              v-if="table"
+              v-model="clauses"
+              :columns="columnNames" />
+            <v-row v-if="query.formatted">
+              <v-col>
+                <QueryRaw
+                  v-model="query.formatted"
+                  disabled
+                  class="mt-2 ml-3" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-tab-item>
+        <v-tab-item>
+          <QueryRaw
+            v-model="rawSQL"
+            class="mt-2 ml-3" />
+        </v-tab-item>
+      </v-tabs-items>
+      <v-card-text>
+        <v-row>
+          <v-col>
+            <p>Results</p>
+            <QueryResults ref="queryResults" v-model="queryId" />
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col>
+            <v-btn v-if="queryId" color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+              More
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
@@ -77,8 +99,10 @@ export default {
       query: {
         sql: ''
       },
+      rawSQL: '',
       select: [],
-      clauses: []
+      clauses: [],
+      tabs: 0
     }
   },
   computed: {
@@ -104,9 +128,24 @@ export default {
       }
       return { Authorization: `Bearer ${this.token}` }
     },
-    valid () {
-      // we need to have at least one column selected
-      return this.select.length
+    sql () {
+      if (this.tabs === 0) {
+        // builder
+        return this.query.sql
+      } else {
+        // raw sql
+        return this.rawSQL
+      }
+    },
+    canExecute () {
+      if (this.tabs === 0) {
+        // builder
+        return this.sql.length &&
+                 this.select.length // select `*` columns not supported in backend
+      } else {
+        // raw sql
+        return this.sql.length
+      }
     }
   },
   watch: {
@@ -118,6 +157,9 @@ export default {
       }
     },
     table () {
+      this.queryId = null
+    },
+    sql () {
       this.queryId = null
     },
     select () {

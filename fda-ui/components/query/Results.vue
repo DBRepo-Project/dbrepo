@@ -11,7 +11,7 @@
 <script>
 export default {
   props: {
-    value: { type: Number, default: () => 0 }
+    queryId: { type: Number, default: () => 0 }
   },
   data () {
     return {
@@ -39,26 +39,8 @@ export default {
       return { Authorization: `Bearer ${this.token}` }
     }
   },
-  watch: {
-    value () {
-      if (this.value) {
-        this.execute()
-      }
-    },
-    options (newVal, oldVal) {
-      if (typeof oldVal.groupBy === 'undefined') {
-        // initially, options do not have the groupBy field.
-        // don't run the execute method twice, when a new query is created
-        return
-      }
-      if (!this.value) {
-        this.$toast.error('Cannot paginate invalidated Query: press Execute')
-        return
-      }
-      this.execute()
-    }
-  },
   mounted () {
+    this.execute()
   },
   methods: {
     async executeFirstTime (parent) {
@@ -66,7 +48,7 @@ export default {
       this.loading = true
       try {
         const data = {
-          statement: this.parent.query.sql
+          statement: this.parent.sql
         }
         console.debug('send data', data)
         const page = 0
@@ -100,13 +82,16 @@ ${this.parent.queryId ? `/${this.parent.queryId}` : ''}
       }))
     },
     async execute () {
+      if (this.queryId === 0) {
+        return
+      }
       this.loading = true
       try {
         const page = this.options.page - 1
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
         const res = await this.$axios.put(`/api/container/
 ${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-/${this.value}
+/${this.queryId}
 ?${urlParams}`, {}, {
           headers: this.headers
         })
@@ -117,8 +102,10 @@ ${this.$route.params.container_id}/database/${this.$route.params.database_id}/qu
         this.result.rows = res.data.result
         this.total = res.data.resultNumber
       } catch (err) {
-        console.error('query execute', err)
-        this.$toast.error('Could not execute query')
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('query execute', err)
+          this.$toast.error('Could not execute query')
+        }
         this.loading = false
       }
     }

@@ -4,6 +4,7 @@ import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -190,7 +191,7 @@ public interface TableMapper {
             final ColumnCreateDto[] columns = new ColumnCreateDto[data.getColumns().length + 1];
             columns[0] = idColumn;
             for (int i = 0; i < data.getColumns().length; i++) {
-                columns[i+1] = data.getColumns()[i];
+                columns[i + 1] = data.getColumns()[i];
             }
             data.setColumns(columns);
         }
@@ -206,7 +207,7 @@ public interface TableMapper {
                         .append(c.getNullAllowed() ? " NULL" : " NOT NULL")
                         /* default expressions */
                         .append(!primaryColumnExists && c.getName().equals(
-                                "id") ? " DEFAULT NEXTVAL(" + tableCreateDtoToSequenceName(data) + ")" : "")
+                                "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
                         /* check expressions */
                         .append(c.getCheckExpression() != null &&
                                 !c.getCheckExpression().isEmpty() ? " CHECK (" + c.getCheckExpression() + ")" : ""));
@@ -249,7 +250,7 @@ public interface TableMapper {
     }
 
     default String tableCreateDtoToSequenceName(TableCreateDto data) {
-        return "`seq_" + nameToInternalName(data.getName()) + "_id`";
+        return "seq_" + nameToInternalName(data.getName()) + "_id";
     }
 
     default String tableToCreateSequenceRawQuery(Database database, TableCreateDto data)
@@ -257,7 +258,26 @@ public interface TableMapper {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        return "CREATE SEQUENCE " + tableCreateDtoToSequenceName(data) + " START WITH 1 INCREMENT BY 1;";
+        return "CREATE SEQUENCE `" + tableCreateDtoToSequenceName(data) + "` START WITH 1 INCREMENT BY 1;";
+    }
+
+    default String tableToCreateHistoryViewRawQuery(Table data) {
+        final StringBuilder builder = new StringBuilder("CREATE VIEW `hs_")
+                .append(data.getInternalName())
+                .append("` AS SELECT ");
+        final int[] idx = new int[]{0};
+        data.getColumns()
+                .stream()
+                .filter(TableColumn::getIsPrimaryKey)
+                .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`"));
+        builder.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
+                .append(data.getInternalName())
+                .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC");
+        log.trace("created history view query [{}]", builder);
+        return builder.toString();
     }
 
 }

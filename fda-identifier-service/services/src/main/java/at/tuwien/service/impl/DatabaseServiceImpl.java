@@ -4,13 +4,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.DatabaseService;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Slf4j
+@Log4j2
 @Service
 public class DatabaseServiceImpl implements DatabaseService {
 
@@ -22,8 +22,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Database find(Long id) throws DatabaseNotFoundException {
-        final Optional<Database> database = databaseRepository.findById(id);
+    public Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException {
+        final Optional<Database> database = databaseRepository.findByContainerAndDatabaseId(containerId, databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database");
             throw new DatabaseNotFoundException("Failed to find database");

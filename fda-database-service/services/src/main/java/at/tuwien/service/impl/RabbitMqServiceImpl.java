@@ -1,84 +1,66 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Log4j2
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private static final String AMQP_EXCHANGE = "fda";
-
     private final Channel channel;
+    private final AmqpConfig amqpConfig;
     private final DatabaseRepository databaseRepository;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, DatabaseRepository databaseRepository) {
+    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, DatabaseRepository databaseRepository) {
         this.channel = channel;
+        this.amqpConfig = amqpConfig;
         this.databaseRepository = databaseRepository;
     }
 
-    @Override
     @PostConstruct
-    public void init() throws IOException {
-        channel.exchangeDeclare(AMQP_EXCHANGE, BuiltinExchangeType.TOPIC, true);
+    public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
+        final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
         for (Database database : databases) {
-            create(database);
+            createExchange(database, principal);
         }
     }
 
     @Override
-    public void createExchange(Database database) throws AmqpException {
+    public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
-            create(database);
-            log.info("Created exchange {}", database.getExchange());
+            channel.exchangeDeclare(database.getExchange(), BuiltinExchangeType.FANOUT, true);
+            log.info("Declared exchange {}", database.getExchange());
         } catch (IOException e) {
-            log.error("Could not create exchange and consumer: {}", e.getMessage());
-            throw new AmqpException("Could not create exchange and consumer", e);
+            log.error("Failed to declare exchange {}", database.getExchange());
+            throw new AmqpException("Failed to declare exchange", e);
         }
     }
 
     @Override
     public void deleteExchange(Database database) throws AmqpException {
         try {
-            delete(database);
+            channel.exchangeDelete(database.getExchange());
+            log.info("Deleted exchange {}", database.getExchange());
         } catch (IOException e) {
-            log.error("Could not delete exchange: {}", e.getMessage());
-            throw new AmqpException("Could not delete exchange", e);
+            log.error("Failed to delete exchange {}", database.getExchange());
+            throw new AmqpException("Failed to delete exchange", e);
         }
-    }
-
-    public void create(Database database) throws IOException {
-        channel.exchangeDeclare(AMQP_EXCHANGE + "." + database.getExchange(), BuiltinExchangeType.FANOUT, true);
-        log.debug("declare fanout exchange {}", AMQP_EXCHANGE + "." + database.getExchange());
-        channel.exchangeBind(AMQP_EXCHANGE + "." + database.getExchange(), AMQP_EXCHANGE, AMQP_EXCHANGE + "." + database.getExchange());
-        log.debug("bind exchange {} to {}", AMQP_EXCHANGE + "." + database.getExchange(), AMQP_EXCHANGE);
-    }
-
-    public void delete(Database database) throws IOException {
-        channel.exchangeDelete(database.getExchange());
-        log.debug("delete exchange {}", database.getExchange());
-        for (Table table : database.getTables()) {
-            delete(table);
-        }
-    }
-
-    public void delete(Table table) throws IOException {
-        channel.queueDelete(table.getTopic());
-        log.debug("delete queue {}", table.getTopic());
     }
 
 }

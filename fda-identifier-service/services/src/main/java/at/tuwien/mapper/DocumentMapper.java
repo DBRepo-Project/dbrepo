@@ -31,19 +31,24 @@ public interface DocumentMapper {
                 .append("xmlns=\"http://datacite.org/schema/kernel-4\" ")
                 .append("xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 ")
                 .append("https://schema.datacite.org/meta/kernel-4.4/metadata.xsd\">");
-        builder.append("<identifier identifierType=\"DOI\"></identifier>");
+        builder.append("<identifier identifierType=\"DOI\">")
+                .append(data.getDoi())
+                .append("</identifier>");
         if (data.getCreators().size() == 0) {
             builder.append("<creators>");
             data.getCreators()
-                    .forEach(creator -> builder.append("<creator><creatorName>")
-                            .append(creator.getLastname())
-                            .append(", ")
-                            .append(creator.getFirstname())
-                            .append("</creatorName><givenName>")
-                            .append(creator.getFirstname())
-                            .append("</givenName><familyName>")
-                            .append(creator.getLastname())
-                            .append("</familyName></creator>"));
+                    .forEach(creator -> {
+                        builder.append("<creator><creatorName nameType=\"Personal\">")
+                                .append(creator.getName())
+                                .append("</creatorName>");
+                        if (creator.getOrcid() != null) {
+                            builder.append("<nameIdentifier schemeURI=\"https://orcid.org\"")
+                                    .append(" nameIdentifierScheme=\"ORCID\">")
+                                    .append(creator.getOrcid())
+                                    .append("</nameIdentifier>");
+                        }
+                        builder.append("</creator>");
+                    });
             builder.append("</creators>");
         }
         builder.append("<titles><title xml:lang=\"en\">")

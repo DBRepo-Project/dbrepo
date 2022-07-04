@@ -1,10 +1,10 @@
 Dear [[${username}]],
 
-You have successfully created an account on the demo instance of DBRepo, a joint deployment of the TU Vienna and the University of Vienna as part of the FAIR Data Austria project. 
+You have successfully created an account on the demo instance of DBRepo, a joint deployment of the TU Vienna and the University of Vienna as part of the FAIR Data Austria project. Now please verify your e-mail address by clicking this link:
 
-Please note that we reserve the right to make changes and new deployments to this demo instance. Your data will not be saved in such a case, and you may need to create a new account.
+https://dbrepo.ossdip.at/api/user/token?token=[[${token}]]
 
-If you want to receive updates on DBRepo, please subscribe to our mailing list: https://lists.univie.ac.at/mailman/listinfo/fairdata_dbrepo
+Please note that we reserve the right to make changes and new deployments to this demo instance. Your data will not be saved in such a case, and you may need to create a new account. If you want to receive updates on DBRepo, please subscribe to our mailing list: https://lists.univie.ac.at/mailman/listinfo/fairdata_dbrepo
 
 We are looking forward to your test data in the repository!
 

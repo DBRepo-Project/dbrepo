@@ -17,6 +17,11 @@ public class GatewayConfig {
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://fda-authentication-service"))
+                .route("fda-broker-service", r -> r.path("/api/broker/**")
+                        .and()
+                        .method("POST", "GET", "PUT", "DELETE")
+                        .and()
+                        .uri("lb://fda-broker-service"))
                 .route("fda-analyse-service", r -> r.path("/api/analyse/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
@@ -29,6 +34,7 @@ public class GatewayConfig {
                         .and()
                         .uri("lb://fda-identifier-service"))
                 .route("fda-query-service", r -> r.path("/api/container/**/database/**/query/**",
+                                "/api/container/**/database/**/table/**/history/**",
                                 "/api/container/**/database/**/table/**/data/**", // TODO
                                 "/api/container/**/database/**/table/**/query/**", // TODO
                                 "/api/container/**/database/**/version/**")

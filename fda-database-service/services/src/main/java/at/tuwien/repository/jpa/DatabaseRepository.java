@@ -7,11 +7,26 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.container.id = :containerId")
-    List<Database> findAllByContainerId(@Param("containerId") Long containerId);
+    @Query("select d from Database d where d.container.id = :containerId and (d.isPublic = true or (d.isPublic = " +
+            "false and d.creator.username = :username))")
+    List<Database> findAllByPublicAndContainerIdOrMine(@Param("containerId") Long containerId,
+                                             @Param("username") String username);
+
+    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true")
+    List<Database> findAllByPublicAndContainerId(@Param("containerId") Long containerId);
+
+    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and (d.isPublic = " +
+            "true or d.creator.username = " +
+            ":username)")
+    Optional<Database> findPublicOrMine(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId,
+                                        @Param("username") String username);
+
+    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true and d.id = :databaseId")
+    Optional<Database> findPublic(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
 
 }

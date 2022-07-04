@@ -4,6 +4,7 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
@@ -47,30 +48,48 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final DatabaseidxRepository databaseidxRepository;
 
     @Autowired
-    public MariaDbServiceImpl(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository, DatabaseMapper databaseMapper,
-                              RabbitMqServiceImpl amqpService, AmqpMapper amqpMapper, UserService userService,
-                              LicenseService licenseService) {
-        this.containerRepository = containerRepository;
-        this.databaseRepository = databaseRepository;
-        this.databaseMapper = databaseMapper;
-        this.databaseidxRepository = databaseidxRepository;
-        this.amqpService = amqpService;
+    public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, LicenseService licenseService,
+                              DatabaseMapper databaseMapper, RabbitMqServiceImpl amqpService,
+                              DatabaseRepository databaseRepository, ContainerRepository containerRepository,
+                              DatabaseidxRepository databaseidxRepository) {
         this.amqpMapper = amqpMapper;
         this.userService = userService;
         this.licenseService = licenseService;
+        this.databaseMapper = databaseMapper;
+        this.amqpService = amqpService;
+        this.databaseRepository = databaseRepository;
+        this.containerRepository = containerRepository;
+        this.databaseidxRepository = databaseidxRepository;
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Database> findAllPublic(Long containerId) {
+        return databaseRepository.findAllByPublicAndContainerId(containerId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Database> findAll(Long id) {
-        return databaseRepository.findAllByContainerId(id);
+    public List<Database> findAllPublicOrMine(Long containerId, Principal principal) {
+        return databaseRepository.findAllByPublicAndContainerIdOrMine(containerId, principal.getName());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Database> findAll() {
-        return databaseRepository.findAll();
+    public Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException {
+        final Optional<Database> database;
+        if (principal == null) {
+            database = databaseRepository.findPublic(containerId, databaseId);
+        } else {
+            database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
+        }
+        if (database.isEmpty()) {
+            log.warn("could not find database with id {}", databaseId);
+            throw new DatabaseNotFoundException("could not find database with this id");
+        }
+        return database.get();
     }
 
     @Override
@@ -86,9 +105,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        final Database database = findById(id, databaseId);
+    public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, ContainerConnectionException, AmqpException {
+        final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -179,8 +198,30 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.debug("created database {}", out);
         // save in database_index - elastic search
         databaseidxRepository.save(database);
-        amqpService.createExchange(database);
+        amqpService.createExchange(database, principal);
         log.debug("created exchange {}", database.getExchange());
+        return out;
+    }
+
+    @Override
+    @Transactional
+    public Database modify(Long containerId, Long databaseId, DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
+        final Database database = findById(containerId, databaseId);
+        if (modifyDto.getContactPerson() != null) {
+            database.setCreator(userService.findByUsername(modifyDto.getContactPerson()));
+        }
+        final License license = licenseService.find(modifyDto.getLicense());
+        database.setIsPublic(modifyDto.getIsPublic());
+        database.setDescription(modifyDto.getDescription());
+        database.setPublisher(modifyDto.getPublisher());
+        database.setLicense(license);
+        final Database out = databaseRepository.save(database);
+        /* update entity in metadata database */
+        log.info("Updated database with id {}", out.getId());
+        log.debug("updated database {}", out);
+        // save in database_index - elastic search
+        databaseidxRepository.save(database);
         return out;
     }
 

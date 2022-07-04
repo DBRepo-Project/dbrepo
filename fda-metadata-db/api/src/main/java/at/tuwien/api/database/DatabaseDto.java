@@ -3,6 +3,7 @@ package at.tuwien.api.database;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,6 +29,10 @@ public class DatabaseDto {
     @NotBlank
     @Parameter(name = "database name", example = "Weather Australia")
     private String name;
+
+    @NotNull
+    @Parameter(name = "database creator")
+    private UserDto creator;
 
     @NotBlank
     @JsonProperty("internal_name")

@@ -9,7 +9,7 @@
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Before you can use the repository sandbox, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
           <v-row>
@@ -122,6 +122,20 @@ export default {
         this.$toast.success('Success. Check your inbox!')
         this.$router.push('/login')
       } catch (err) {
+        if (err.response !== undefined && err.response.status !== undefined) {
+          if (err.response.status === 417) {
+            this.$toast.error('User with this e-mail exists!')
+            console.error('email taken', err)
+            this.loading = false
+            return
+          }
+          if (err.response.status === 409) {
+            this.$toast.error('User with this username exists!')
+            console.error('username taken', err)
+            this.loading = false
+            return
+          }
+        }
         console.error('create user failed', err)
         this.$toast.error('Failed to create user')
       }

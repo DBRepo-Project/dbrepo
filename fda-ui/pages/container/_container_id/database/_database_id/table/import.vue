@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Table Schema (and Import Data) from .csv</v-toolbar-title>
+      <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat>
       <v-stepper-step :complete="step > 1" step="1">
@@ -125,9 +125,9 @@
             <v-col cols="4">
               <v-file-input
                 v-model="file"
-                accept="text/csv"
+                accept=".csv,.tsv"
                 show-size
-                label="File Upload (.csv)" />
+                label="File Upload (.csv/.tsv)" />
             </v-col>
             <v-col cols="4">
               <v-text-field
@@ -311,6 +311,14 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -362,7 +370,7 @@ export default {
       let getResult
       try {
         this.loading = true
-        getResult = await this.$axios.get(getUrl)
+        getResult = await this.$axios.get(getUrl, this.config)
         this.dateFormats = getResult.data.image.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
         this.loading = false
@@ -395,9 +403,7 @@ export default {
       let createResult
       try {
         this.loading = true
-        createResult = await this.$axios.post(createUrl, this.tableCreate, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        createResult = await this.$axios.post(createUrl, this.tableCreate, this.config)
         this.newTableId = createResult.data.id
         console.debug('created table', createResult.data)
       } catch (err) {
@@ -413,9 +419,7 @@ export default {
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${createResult.data.id}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, { location: `/tmp/${this.fileLocation}` }, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        insertResult = await this.$axios.post(insertUrl, { location: `/tmp/${this.fileLocation}` }, this.config)
         console.debug('inserted table', insertResult.data)
       } catch (err) {
         this.loading = false

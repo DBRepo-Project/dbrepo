@@ -12,11 +12,12 @@ CREATE
 CREATE
     TYPE role_type AS ENUM ('ROLE_RESEARCHER', 'ROLE_DEVELOPER', 'ROLE_DATA_STEWARD');
 
-CREATE CAST
+CREATE
+    CAST
     (character varying AS image_environment_type)
     WITH INOUT AS ASSIGNMENT;
-
-CREATE CAST
+CREATE
+    CAST
     (character varying AS role_type)
     WITH INOUT AS ASSIGNMENT;
 
@@ -49,6 +50,13 @@ CREATE SEQUENCE public.mdb_containers_seq
     CACHE 1;
 
 CREATE SEQUENCE public.mdb_user_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE public.mdb_user_role_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -118,6 +126,13 @@ CREATE SEQUENCE public.mdb_creators_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_tokens_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE IF NOT EXISTS mdb_users
 (
     UserID               bigint                      not null DEFAULT nextval('mdb_user_seq'),
@@ -130,6 +145,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Preceding_titles     VARCHAR(50),
     Postpositioned_title VARCHAR(50),
     Main_Email           VARCHAR(255)                not null,
+    main_email_verified  bool                        not null default false,
     password             VARCHAR(255)                not null,
     created              timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified        timestamp without time zone,
@@ -156,6 +172,18 @@ CREATE TABLE public.mdb_images
     last_modified timestamp without time zone,
     PRIMARY KEY (id),
     UNIQUE (repository, tag)
+);
+
+CREATE TABLE public.mdb_tokens
+(
+    id        bigint                      not null default nextval('mdb_tokens_seq'),
+    uid       bigint                      not null,
+    token     character varying(255)      NOT NULL,
+    processed boolean                     NOT NULL default false,
+    created   timestamp without time zone NOT NULL DEFAULT NOW(),
+    valid_to  timestamp without time zone NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE public.mdb_images_date
@@ -220,7 +248,9 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
     role          varchar(255)                not null,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
-    PRIMARY KEY (uid)
+    PRIMARY KEY (uid),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
+    UNIQUE (uid, role)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_licenses
@@ -377,7 +407,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     URI        TEXT,
     name       TEXT,
     created    timestamp without time zone NOT NULL DEFAULT NOW(),
-    created_by bigint                      NOT NULL,
+    created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
     PRIMARY KEY (URI)
 );
@@ -411,18 +441,25 @@ CREATE TABLE IF NOT EXISTS mdb_VIEW
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers
 (
-    id            bigint                               DEFAULT nextval('mdb_identifiers_seq'),
-    cid           bigint                      NOT NULL,
-    dbid          bigint                      NOT NULL,
-    qid           bigint                      NOT NULL,
-    title         VARCHAR(255)                NOT NULL,
-    description   TEXT                        NOT NULL,
-    visibility    VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
-    doi           VARCHAR(255),
-    created       timestamp without time zone NOT NULL DEFAULT NOW(),
-    created_by    bigint                      NOT NULL,
-    last_modified timestamp without time zone,
-    deleted       timestamp without time zone,
+    id               bigint                               DEFAULT nextval('mdb_identifiers_seq'),
+    cid              bigint                      NOT NULL,
+    dbid             bigint                      NOT NULL,
+    qid              bigint                      NOT NULL,
+    title            VARCHAR(255)                NOT NULL,
+    description      TEXT                        NOT NULL,
+    visibility       VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
+    publication_year SMALLINT                    NOT NULL,
+    query            TEXT                        NOT NULL,
+    query_normalized TEXT                        NOT NULL,
+    query_hash       VARCHAR(255)                NOT NULL,
+    execution        timestamp                   NOT NULL,
+    result_hash      VARCHAR(255)                NOT NULL,
+    result_number    bigint                      NOT NULL,
+    doi              VARCHAR(255),
+    created          timestamp without time zone NOT NULL DEFAULT NOW(),
+    created_by       bigint                      NOT NULL,
+    last_modified    timestamp without time zone,
+    deleted          timestamp without time zone,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
@@ -434,8 +471,7 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 (
     id            bigint                               DEFAULT nextval('mdb_creators_seq'),
     pid           bigint                      NOT NULL,
-    firstname     VARCHAR(255)                NOT NULL,
-    lastname      VARCHAR(255)                NOT NULL,
+    name          VARCHAR(255)                NOT NULL,
     affiliation   VARCHAR(255),
     orcid         VARCHAR(255),
     created       timestamp without time zone NOT NULL DEFAULT NOW(),

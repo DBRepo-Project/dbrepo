@@ -1,10 +1,10 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.GrantedAuthorityDto;
-import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import org.mapstruct.Mapper;
@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.Objects;
@@ -26,6 +27,11 @@ public interface UserMapper {
 
     UserDetailsDto userToUserDetailsDto(User data);
 
+    CreateUserDto signupRequestDtoToCreateUserDto(SignupRequestDto data);
+
+    UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
+
+    @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {
         final UserDetailsDto details = (UserDetailsDto) data;
         return JwtResponseDto.builder()
@@ -40,12 +46,18 @@ public interface UserMapper {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     default UserDto userToUserDto(User data) {
         return UserDto.builder()
                 .id(data.getId())
                 .username(data.getUsername())
                 .email(data.getEmail())
                 .password(data.getPassword())
+                .firstname(data.getFirstname())
+                .lastname(data.getLastname())
+                .titlesBefore(data.getTitlesBefore())
+                .titlesAfter(data.getTitlesAfter())
+                .emailVerified(data.getEmailVerified())
                 .authorities(data.getRoles()
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)
@@ -69,6 +81,16 @@ public interface UserMapper {
                 .build();
     }
 
+    default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
+        return GrantVirtualHostPermissionsDto.builder()
+                .virtualHost("/")
+                .configure(".*")
+                .write(".*")
+                .read(".*")
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     default UserDto userDetailsToUserDto(UserDetails data, Principal principal) {
         final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) principal;
         final UserDto user = UserDto.builder()

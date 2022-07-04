@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -17,17 +18,17 @@ public class DatabaseModifyDto {
 
     @NotNull
     @JsonProperty("is_public")
-    @Parameter(name = "database publicity")
+    @Parameter(name = "database publicity", example = "true")
     private Boolean isPublic;
 
     @Parameter(name = "database subjects", example = "[\"test\"]")
     private List<String> subject;
 
-    @Parameter(name = "database description", example = "Description")
+    @NotBlank
+    @Parameter(name = "database description", example = "Sample")
     private String description;
 
-    @NotNull
-    @Parameter(name = "database publisher", example = "Publisher")
+    @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
     @NotNull
