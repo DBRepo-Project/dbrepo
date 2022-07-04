@@ -12,7 +12,11 @@
         <v-text-field
           v-model="datetime"
           label="Timestamp"
-          type="datetime-local" />
+          required
+          :rules="[v => !!v || $t('Required'), v => v && /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(v) || $t('Please us the pattern yyyy-MM-dd HH:mm:ss')]"
+          hint="e.g. 2022-07-04 12:53:00"
+          class="mb-4"
+          type="text" />
         The following chart summarizes changes (insert/update/delete) in the dataset and give an indication where
         versions of interest may be.
         <Bar
@@ -68,10 +72,12 @@ export default {
       datetime: null,
       chartData: {
         labels: [],
-        datasets: []
+        datasets: [],
+        dates: []
       },
       chartOptions: {
         responsive: true,
+        onClick: this.handle,
         scales: {
           y: {
             display: true,
@@ -100,6 +106,14 @@ export default {
         setTimeout(resolve, ms)
       })
     },
+    handle (point, event) {
+      if (event.length !== 1 || event[0].index === undefined) {
+        return
+      }
+      const idx = event[0].index
+      this.datetime = this.chartData.dates[idx]
+      console.debug('date time', this.datetime, 'idx', idx)
+    },
     reset () {
       this.$parent.$parent.$parent.$parent.version = null
       this.cancel()
@@ -123,6 +137,7 @@ export default {
         })
         this.error = false
         this.chartData.labels = res.data.map(d => format(new Date(d.timestamp), 'dd.MM.yyyy HH:mm:ss'))
+        this.chartData.dates = res.data.map(d => format(new Date(d.timestamp), 'yyyy-MM-dd HH:mm:ss'))
         this.chartData.datasets = [{
           backgroundColor: this.$vuetify.theme.themes.light.primary,
           data: res.data.map(d => d.total)

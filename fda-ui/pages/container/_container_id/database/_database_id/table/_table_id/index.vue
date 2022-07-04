@@ -144,7 +144,7 @@ export default {
     },
     versionColor () {
       if (this.version === null) {
-        return 'secondary black--text'
+        return 'secondary white--text'
       }
       return 'primary white--text'
     },

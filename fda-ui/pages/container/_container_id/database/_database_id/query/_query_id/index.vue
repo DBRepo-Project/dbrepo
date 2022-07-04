@@ -30,7 +30,7 @@
         </p>
         <div>
           <p>
-            Visiblity
+            Visibility
             <span v-if="query_visibility"><v-icon small color="teal" title="Public">mdi-eye</v-icon></span>
             <span v-if="!query_visibility"><v-icon small color="red accent-3" title="Private">mdi-eye-off</v-icon></span>
           </p>
