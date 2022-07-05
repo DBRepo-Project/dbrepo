@@ -28,12 +28,6 @@
             label="Description *"
             :rules="[v => !!v || $t('Required')]"
             required />
-          <v-text-field
-            id="publisher"
-            v-model="database.contact_person"
-            name="contact-person"
-            label="Contact Person"
-            hint="Username, e.g. foobar" />
           <v-select
             id="language"
             v-model="database.language"
@@ -108,8 +102,7 @@ export default {
         description: null,
         language: null,
         publication_year: null,
-        license: null,
-        contact_person: null
+        license: null
       },
       licenses: [],
       languages: [
