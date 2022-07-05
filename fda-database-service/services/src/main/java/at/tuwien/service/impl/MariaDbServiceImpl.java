@@ -4,6 +4,7 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -134,27 +135,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database update(Long id, Long databaseId, DatabaseModifyDto data, Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, LicenseNotFoundException {
-        final User contactPerson = userService.findByUsername(data.getContactPerson());
-        final Database entity = findById(id, databaseId);
-        entity.setIsPublic(data.getIsPublic());
-        entity.setSubjects(data.getSubject());
-        entity.setDescription(data.getDescription());
-        entity.setPublisher(data.getPublisher());
-        entity.setPublicationYear(data.getPublicationYear());
-        entity.setLicense(licenseService.find(data.getLicense()));
-        entity.setLanguage(databaseMapper.languageTypeDtoToLanguageType(data.getLanguage()));
-        entity.setContact(contactPerson);
-        /* save in metadata database */
-        final Database database = databaseRepository.save(entity);
-        log.info("Updated database with id {}", databaseId);
-        log.debug("updated database {}", database);
-        return database;
-    }
-
-    @Override
-    @Transactional
     public Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
@@ -209,19 +189,21 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
         final Database database = findById(containerId, databaseId);
         if (modifyDto.getContactPerson() != null) {
-            database.setCreator(userService.findByUsername(modifyDto.getContactPerson()));
+            database.setContact(userService.findByUsername(modifyDto.getContactPerson()));
         }
-        final License license = licenseService.find(modifyDto.getLicense());
+        final License license = licenseService.find(modifyDto.getLicense().getIdentifier());
         database.setIsPublic(modifyDto.getIsPublic());
         database.setDescription(modifyDto.getDescription());
         database.setPublisher(modifyDto.getPublisher());
+        database.setPublicationYear(modifyDto.getPublicationYear());
+        database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
         database.setLicense(license);
         final Database out = databaseRepository.save(database);
         /* update entity in metadata database */
         log.info("Updated database with id {}", out.getId());
         log.debug("updated database {}", out);
         // save in database_index - elastic search
-        databaseidxRepository.save(database);
+//        databaseidxRepository.save(database);
         return out;
     }
 

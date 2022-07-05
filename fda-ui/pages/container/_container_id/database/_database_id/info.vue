@@ -45,15 +45,30 @@
                     <span v-if="!loading">{{ language }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
+                    Publication Year
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ publication_year }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
                     License
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ license }}</span>
+                    <a v-if="database.license" target="_blank" :href="database.license.uri">{{ database.license.identifier }}</a>
+                    <span v-if="!database.license">(none)</span>
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
+            <v-btn color="secondary" @click="editDbDialog = true">Edit</v-btn>
+            <v-dialog
+              v-model="editDbDialog"
+              persistent
+              max-width="640">
+              <EditDB :database="database" @close-dialog="editDbDialog = false" />
+            </v-dialog>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -64,15 +79,18 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar'
+import EditDB from '@/components/dialogs/EditDB'
 import { format } from 'date-fns'
 
 export default {
   components: {
-    DBToolbar
+    DBToolbar,
+    EditDB
   },
   data () {
     return {
       loading: false,
+      editDbDialog: false,
       database: {
         id: null,
         name: null,
@@ -80,8 +98,12 @@ export default {
         is_public: null,
         publisher: null,
         created: null,
+        subject: [],
         language: null,
-        license: null,
+        license: {
+          uri: null,
+          identifier: null
+        },
         creator: {
           titles_before: null,
           firstname: null,
@@ -124,11 +146,11 @@ export default {
     language () {
       return this.database.language === null ? '(none)' : this.database.language
     },
-    license () {
-      return this.database.license === null ? '(none)' : this.database.license
-    },
     created () {
       return format(new Date(this.database.created), 'dd.MM.yyyy HH:mm:ss')
+    },
+    publication_year () {
+      return this.database.publication_year === null ? '(none)' : this.database.publication_year
     },
     creator () {
       if (this.database.creator.firstname && this.database.creator.lastname) {

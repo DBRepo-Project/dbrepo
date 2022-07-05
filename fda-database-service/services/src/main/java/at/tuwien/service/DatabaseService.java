@@ -6,7 +6,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -33,18 +32,19 @@ public interface DatabaseService {
      * Finds a specific database for a given id in the metadata database.
      *
      * @param containerId The container id.
-     * @param databaseId The database id.
-     * @param principal  The principal.
+     * @param databaseId  The database id.
+     * @param principal   The principal.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException;
 
     /**
      * Find a database by id, only used in the authentication service
      *
      * @param containerId the container id.
-     * @param databaseId the database id.
+     * @param databaseId  the database id.
      * @return The database.
      * @throws DatabaseNotFoundException The database was not found.
      */
@@ -66,21 +66,6 @@ public interface DatabaseService {
             DatabaseMalformedException, AmqpException, ContainerConnectionException;
 
     /**
-     * Updates the database metadata.
-     *
-     * @param id         The container id.
-     * @param databaseId The database id.
-     * @param data       The metadata.
-     * @param principal  The current user.
-     * @return The database.
-     * @throws DatabaseNotFoundException The database was not found.
-     * @throws UserNotFoundException     The contact person was not found.
-     * @throws LicenseNotFoundException  The license was not found in the metadata database.
-     */
-    Database update(Long id, Long databaseId, DatabaseModifyDto data, Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, LicenseNotFoundException;
-
-    /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
      * @param id        The container id.
@@ -97,7 +82,17 @@ public interface DatabaseService {
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
 
-    @Transactional
+    /**
+     * Updates the database metadata.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @param modifyDto  The metadata.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     * @throws UserNotFoundException     The contact person was not found.
+     * @throws LicenseNotFoundException  The license was not found in the metadata database.
+     */
     Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
 

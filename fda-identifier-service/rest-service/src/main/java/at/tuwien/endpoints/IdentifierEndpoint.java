@@ -78,7 +78,7 @@ public class IdentifierEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEACHER') or hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
@@ -88,14 +88,14 @@ public class IdentifierEndpoint {
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException {
         final Identifier identifier = identifierService.create(containerId, databaseId, data, principal, authorization);
-        log.info("Found identifier with id {}", identifier.getId());
-        log.debug("found identifier {}", identifier);
+        log.info("Created identifier with id {}", identifier.getId());
+        log.debug("created identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
     @PutMapping("/{identiferId}")
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,

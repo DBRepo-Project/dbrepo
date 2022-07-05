@@ -99,7 +99,6 @@
           <v-row dense>
             <v-col>
               <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
-                <v-icon left>mdi-table</v-icon>
                 View
               </v-btn>
             </v-col>
@@ -206,6 +205,7 @@ export default {
   mounted () {
     console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
+    this.loadDatabase()
     this.loadTables()
   },
   methods: {
@@ -214,6 +214,7 @@ export default {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
+        console.debug('database', this.database)
         this.error = false
       } catch (err) {
         this.error = true

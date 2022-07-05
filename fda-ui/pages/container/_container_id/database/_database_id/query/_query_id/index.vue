@@ -7,10 +7,10 @@
         <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
-        <v-btn v-if="result_visibility" color="primary" :loading="exportLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
-        <v-btn v-if="identifier.id" color="secondary" @click="download()">
+        <v-btn v-if="identifier.id" color="secondary" class="ml-2" :loading="metadataLoading" @click.stop="metadata">
           <v-icon left>mdi-code-tags</v-icon> Metadata
         </v-btn>
       </v-toolbar-title>
@@ -21,25 +21,6 @@
       </v-card-title>
       <v-card-text>
         <v-list dense>
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon :color="database.is_public ? 'success' : 'error'">mdi-database</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                Database Visibility
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ database.is_public ? 'Public' : 'Private' }}
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Database Publisher
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ publisher }}
-              </v-list-item-content>
-            </v-list-item-content>
-          </v-list-item>
           <v-list-item v-if="identifier.id">
             <v-list-item-icon>
               <v-icon>mdi-lock-clock</v-icon>
@@ -217,7 +198,8 @@ export default {
       persistQueryExists: false,
       persistQueryDialog: false,
       loading: true,
-      exportLoading: false,
+      metadataLoading: false,
+      downloadLoading: false,
       error: false,
       promises: []
     }
@@ -310,9 +292,47 @@ export default {
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
-    download () {
-      const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`
-      window.location.href = url
+    async metadata () {
+      this.metadataLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('identifier result', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'metadata.xml')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export metadata', err)
+        this.$toast.error('Could not export metadata')
+        this.error = true
+      }
+      this.metadataLoading = false
+    },
+    async download () {
+      this.downloadLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('export query result', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'query.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export query result', err)
+        this.$toast.error('Could not export query result')
+        this.error = true
+      }
+      this.downloadLoading = false
     },
     async loadQuery () {
       this.loading = true

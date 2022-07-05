@@ -27,7 +27,7 @@ public class LicenseServiceImpl implements LicenseService {
 
     @Override
     public License find(String identifier) throws LicenseNotFoundException {
-        final Optional<License> license = licenseRepository.findById(identifier);
+        final Optional<License> license = licenseRepository.findByIdentifier(identifier);
         if (license.isEmpty()) {
             log.error("Failed to find license for identifier {}", identifier);
             throw new LicenseNotFoundException("Failed to find license");

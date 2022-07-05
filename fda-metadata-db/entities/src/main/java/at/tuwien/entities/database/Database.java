@@ -44,12 +44,14 @@ public class Database {
     )
     private Long id;
 
+    @Field(index = false)
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "Creator", referencedColumnName = "UserID")
     })
     private User creator;
 
+    @Field(index = false)
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -61,6 +63,7 @@ public class Database {
     @Column(nullable = false)
     private String name;
 
+    @Field(index = false)
     @ElementCollection
     @CollectionTable(name = "mdb_databases_subjects", joinColumns = {
             @JoinColumn(name = "dbid", referencedColumnName = "id")
@@ -83,15 +86,18 @@ public class Database {
     @Column
     private String publisher;
 
+    @Field(type = FieldType.Integer)
     @Column
     private Short publicationYear;
 
+    @Field(index = false)
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
     })
     private User contact;
 
+    @Field(index = false)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -102,11 +108,12 @@ public class Database {
     @Column(nullable = false)
     private Boolean isPublic;
 
+    @Field(index = false)
     @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @Field(type = FieldType.Text)
+    @Field(index = false)
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "License", referencedColumnName = "identifier")

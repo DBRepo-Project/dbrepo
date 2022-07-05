@@ -36,8 +36,8 @@ public class DatabaseModifyDto {
     @Parameter(name = "database year", example = "2022")
     private Short publicationYear;
 
-    @Parameter(name = "database license", example = "MIT")
-    private String license;
+    @Parameter(name = "database license")
+    private LicenseDto license;
 
     @Parameter(name = "database language", example = "EN")
     private LanguageTypeDto language;

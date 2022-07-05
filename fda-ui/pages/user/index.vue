@@ -44,6 +44,20 @@
       <v-card-text>
         <v-form v-model="valid2">
           <v-row dense>
+            <v-col cols="2">
+              <v-text-field
+                v-model="user.id"
+                disabled
+                label="ID" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="user.username"
+                disabled
+                label="Username" />
+            </v-col>
+          </v-row>
+          <v-row dense>
             <v-col cols="5">
               <v-text-field
                 v-model="user.titles_before"

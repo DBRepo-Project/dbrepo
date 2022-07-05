@@ -30,14 +30,14 @@
       <v-spacer />
       <v-btn
         v-if="!token"
-        class="mr-2 white--text"
-        color="blue-grey"
+        class="mr-2"
+        color="secondary"
         to="/login">
         <v-icon left>mdi-login</v-icon> Login
       </v-btn>
       <v-btn
         v-if="!token"
-        class="mr-2 white--text"
+        class="mr-2"
         color="primary"
         to="/signup">
         <v-icon left>mdi-account-plus</v-icon> Signup
