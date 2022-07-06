@@ -12,6 +12,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
+import at.tuwien.entities.user.User;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -23,26 +24,12 @@ import java.util.Map;
 public abstract class BaseUnitTest {
 
     public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_PASSWORD = "junit";
 
-    public final static String GATEWAY_SERVICE_REPOSITORY = "fda-gateway-service:latest";
-    public final static String GATEWAY_SERVICE_INTERNAL_NAME = "fda-gateway-service";
-    public final static String GATEWAY_SERVICE_IP = "172.29.0.4";
-    public final static String[] GATEWAY_SERVICE_ENV = new String[]{"SPRING_PROFILES_ACTIVE=docker"};
-
-    public final static String DISCOVERY_SERVICE_REPOSITORY = "fda-discovery-service:latest";
-    public final static String DISCOVERY_SERVICE_INTERNAL_NAME = "fda-discovery-service";
-    public final static String DISCOVERY_SERVICE_IP = "172.29.0.5";
-    public final static String[] DISCOVERY_SERVICE_ENV = new String[]{"SPRING_PROFILES_ACTIVE=docker"};
-
-    public final static String QUERY_SERVICE_REPOSITORY = "fda-query-service:latest";
-    public final static String QUERY_SERVICE_INTERNAL_NAME = "fda-query-service";
-    public final static String QUERY_SERVICE_IP = "172.29.0.6";
-    public final static String[] QUERY_SERVICE_ENV = new String[]{"SPRING_PROFILES_ACTIVE=docker"};
-
-    public final static String METADATA_DB_REPOSITORY = "fda-metadata-db:latest";
-    public final static String METADATA_DB_INTERNAL_NAME = "fda-metadata-db";
-    public final static String METADATA_DB_IP = "172.29.0.7";
-    public final static String[] METADATA_DB_ENV = new String[]{"POSTGRES_USER=postgres", "POSTGRES_PASSWORD=postgres", "POSTGRES_DB=fda"};
+    public final static User USER_1 = User.builder()
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .build();
 
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Test Database";
@@ -214,6 +201,7 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_1_INTERNAL_NAME)
             .exchange(DATABASE_1_EXCHANGE)
             .tables(List.of())
+            .isPublic(DATABASE_1_PUBLIC)
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
@@ -222,6 +210,7 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_2_INTERNAL_NAME)
             .exchange(DATABASE_2_EXCHANGE)
             .tables(List.of())
+            .isPublic(DATABASE_2_PUBLIC)
             .build();
 
     public final static Table TABLE_1 = Table.builder()

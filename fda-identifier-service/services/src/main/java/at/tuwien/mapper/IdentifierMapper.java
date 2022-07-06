@@ -11,20 +11,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
-    @Transactional(readOnly = true)
+    @Transactional
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
-    @Transactional(readOnly = true)
+    @Transactional
     Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
+    @Transactional
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
+    @Transactional
     Creator creatorDtoToCreator(CreatorDto data);
 
+    @Transactional
     Creator creatorCreateDtoToCreator(CreatorCreateDto data);
 
+    @Transactional
     RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierCreateDto data);
 
+    @Transactional
     VisibilityType visibilityTypeDtoToVisibilityType(VisibilityTypeDto data);
 
 }

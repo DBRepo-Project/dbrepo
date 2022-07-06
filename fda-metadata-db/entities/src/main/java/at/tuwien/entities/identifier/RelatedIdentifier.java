@@ -49,16 +49,9 @@ public class RelatedIdentifier {
     @Enumerated(EnumType.STRING)
     private RelationType relation;
 
-    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
-    private Identifier identifier;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "UserID", insertable = false, updatable = false)
+            @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
     private User creator;
 

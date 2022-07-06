@@ -113,16 +113,17 @@ public class IdentifierServiceImpl implements IdentifierService {
                     return creatorDto;
                 })
                 .collect(Collectors.toList()));
-        entity.setRelatedIdentifiers(data.getRelatedIdentifiers()
-                .stream()
-                .map(r -> {
-                    final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
-                    id.setIid(entity.getId());
-                    id.setIdentifier(entity);
-                    id.setCreator(creator);
-                    return id;
-                })
-                .collect(Collectors.toList()));
+        if (data.getRelatedIdentifiers() != null) {
+            entity.setRelatedIdentifiers(data.getRelatedIdentifiers()
+                    .stream()
+                    .map(r -> {
+                        final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
+                        id.setIid(entity.getId());
+                        id.setCreator(creator);
+                        return id;
+                    })
+                    .collect(Collectors.toList()));
+        }
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.debug("created identifier {}", identifier);

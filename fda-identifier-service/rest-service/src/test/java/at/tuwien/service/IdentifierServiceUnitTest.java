@@ -1,11 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.exception.IdentifierPublishingNotAllowedException;
+import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 import java.util.List;
@@ -21,6 +25,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -34,11 +39,20 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     @MockBean
     private IdentifierRepository identifierRepository;
 
+    @MockBean
+    private DatabaseService databaseService;
+
+    @MockBean
+    private RestTemplate restTemplate;
+
+    @MockBean
+    private UserService userService;
+
     @Test
     public void findAll_succeeds() {
 
         /* mock */
-        when(identifierRepository.findAll())
+        when(identifierRepository.findByDbid(DATABASE_1_ID))
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
@@ -88,7 +102,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_notSelfVisible_fails() {
+    public void create_succeeds()
+            throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
+            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
@@ -100,10 +116,19 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
+        /* mock */
+        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
+                .thenReturn(ResponseEntity.ok(QUERY_1_DTO));
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
+        when(identifierRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_1);
+
+
         /* test */
-        assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
-        });
+        identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
     }
 
     @Test
