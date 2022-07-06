@@ -21,6 +21,32 @@
       </v-card-title>
       <v-card-text>
         <v-list dense>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="database_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Database Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <span v-if="database_visibility">Public</span>
+                <span v-if="!database_visibility">Private</span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Database Name
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ database.name }}
+              </v-list-item-content>
+              <v-list-item-title v-if="database.license" class="mt-2">
+                Database License
+              </v-list-item-title>
+              <v-list-item-content v-if="database.license">
+                <a :href="database.license.uri">{{ database.license.identifier }}</a>
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item v-if="identifier.id">
             <v-list-item-icon>
               <v-icon>mdi-lock-clock</v-icon>
@@ -193,6 +219,10 @@ export default {
         publisher: null,
         creator: {
           username: null
+        },
+        license: {
+          identifier: null,
+          uri: null
         }
       },
       persistQueryExists: false,
@@ -233,6 +263,9 @@ export default {
         return true
       }
       return this.database.creator.username === this.username
+    },
+    database_visibility () {
+      return this.database.is_public
     },
     result_everyone () {
       return this.database.is_public || this.identifier.visibility === 'EVERYONE'
