@@ -99,6 +99,7 @@ ${this.$route.params.container_id}/database/${this.$route.params.database_id}/qu
         if (res.data.result.length) {
           this.result.headers = this.buildHeaders(res.data.result[0])
         }
+        console.debug('query result', res.data)
         this.result.rows = res.data.result
         this.total = res.data.resultNumber
       } catch (err) {

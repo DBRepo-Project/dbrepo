@@ -69,22 +69,21 @@
             class="mt-2 ml-3" />
         </v-tab-item>
       </v-tabs-items>
-      <v-card-text>
-        <v-row>
-          <v-col>
-            <p>Results</p>
-            <QueryResults ref="queryResults" v-model="queryId" />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <v-btn v-if="queryId" color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
-              More
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
     </v-card>
+    <div>
+      <v-row>
+        <v-col>
+          <QueryResults ref="queryResults" v-model="queryId" />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-btn v-if="queryId" color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+            More
+          </v-btn>
+        </v-col>
+      </v-row>
+    </div>
   </div>
 </template>
 

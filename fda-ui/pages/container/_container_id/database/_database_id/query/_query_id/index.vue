@@ -15,7 +15,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card v-if="!loading" class="pb-2" flat>
+    <v-card v-if="!loading" flat>
       <v-card-title>
         Query Information
       </v-card-title>
@@ -125,7 +125,7 @@
           </v-list-item>
         </v-list>
       </v-card-text>
-      <QueryResults ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 ml-4 mr-4 mb-2" />
+      <QueryResults id="query-results" ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 mb-0" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
