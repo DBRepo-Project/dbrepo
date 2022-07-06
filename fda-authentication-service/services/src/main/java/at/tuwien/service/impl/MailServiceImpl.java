@@ -37,6 +37,7 @@ public class MailServiceImpl implements MailService {
     public void send(User user, String subject, String path, Context context) throws UserEmailFailedException {
         if (mailConfig.getMailUsername().equals("local")) {
             /* local instance, not the deployment instance */
+            log.debug("local instance, do not send mail.");
             return;
         }
         final SimpleMailMessage message = new SimpleMailMessage();

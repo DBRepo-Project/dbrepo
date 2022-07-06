@@ -4,11 +4,10 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.exception.UserEmailExistsException;
-import at.tuwien.exception.UserEmailFailedException;
-import at.tuwien.exception.UserNameExistsException;
+import at.tuwien.exception.*;
+import at.tuwien.repositories.TokenRepository;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,14 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @BeforeEach
+    public void beforeEach() {
+        tokenRepository.save(TOKEN_1);
+    }
 
     @Test
     public void create_succeeds()

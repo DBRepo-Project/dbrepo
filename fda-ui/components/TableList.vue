@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" />
+    <v-progress-linear v-if="loading" :color="loadingColor" />
     <v-card v-if="!loading && tables.length === 0" flat>
       <v-card-title>
         (no tables)
@@ -98,56 +98,39 @@
           </v-row>
           <v-row dense>
             <v-col>
-              <v-btn outlined :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
-                <v-icon>mdi-table</v-icon>
+              <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View
               </v-btn>
             </v-col>
             <v-col class="align-right">
-              <v-btn outlined color="error" @click="showDeleteTableDialog(item.id)">
+              <v-btn v-if="false" outlined color="error" @click="showDeleteTableDialog(item.id)">
                 Delete
               </v-btn>
             </v-col>
           </v-row>
           <v-row v-if="tableDetails.columns">
-            <v-col>
-              <v-simple-table class="colTable">
-                <thead>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Unit</th>
-                  <th>Primary Key</th>
-                  <th>Unique</th>
-                  <th>Nullable</th>
-                  <th>Sequence</th>
-                </thead>
-                <tbody>
-                  <tr v-for="(col, idx) in tableDetails.columns" :key="idx">
-                    <td>
-                      {{ col.name }}
-                    </td>
-                    <td>
-                      {{ col.column_type }}
-                    </td>
-                    <td>
-                      <DialogsColumnUnit :column="col" :table-id="tableDetails.id" @save="details" />
-                    </td>
-                    <td>
-                      <v-simple-checkbox v-model="col.is_primary_key" disabled aria-readonly="true" />
-                    </td>
-                    <td>
-                      <v-simple-checkbox v-model="col.unique" disabled aria-readonly="true" />
-                    </td>
-                    <td>
-                      <v-simple-checkbox v-model="col.is_null_allowed" disabled aria-readonly="true" />
-                    </td>
-                    <td>
-                      <v-simple-checkbox v-model="col.auto_generated" disabled aria-readonly="true" />
-                    </td>
-                  </tr>
-                </tbody>
-              </v-simple-table>
-            </v-col>
+            <v-data-table
+              class="full-width"
+              disable-sort
+              hide-default-footer
+              :headers="headers"
+              :items="tableDetails.columns">
+              <template v-slot:item.is_null_allowed="{ item }">
+                <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
+              </template>
+              <template v-slot:item.unique="{ item }">
+                <span v-if="item.unique">●</span> {{ item.unique }}
+              </template>
+              <template v-slot:item.is_primary_key="{ item }">
+                <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
+              </template>
+              <template v-slot:item.auto_generated="{ item }">
+                <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
+              </template>
+              <template v-slot:item.column_concept="{ item }">
+                <DialogsColumnUnit :column="item" :table-id="tableDetails.id" @save="details" />
+              </template>
+            </v-data-table>
           </v-row>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -180,6 +163,7 @@ export default {
   data () {
     return {
       loading: false,
+      error: false,
       tables: [],
       panel: null,
       database: {
@@ -192,23 +176,64 @@ export default {
         topic: null,
         columns: []
       },
-      dialogDelete: false
+      dialogDelete: false,
+      headers: [{ value: 'name', text: 'Name' },
+        { value: 'column_type', text: 'Type' },
+        { value: 'column_concept', text: 'Unit of Measurement' },
+        { value: 'is_primary_key', text: 'Primary Key' },
+        { value: 'unique', text: 'Unique' },
+        { value: 'is_null_allowed', text: 'Nullable' },
+        { value: 'auto_generated', text: 'Sequence' }]
+    }
+  },
+  computed: {
+    token () {
+      return this.$store.state.token
+    },
+    loadingColor () {
+      return this.error ? 'red lighten-2' : 'primary'
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
+    console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
-    const table = this.$store.state.table
-    this.refresh(table ? table.id : null)
-    this.databaseDetails()
+    this.loadDatabase()
+    this.loadTables()
   },
   methods: {
-    async databaseDetails () {
+    async loadDatabase () {
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
+        console.debug('database', this.database)
+        this.error = false
       } catch (err) {
+        this.error = true
         this.$toast.error('Could not get database details.')
       }
+      this.loading = false
+    },
+    async loadTables () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
+        this.tables = res.data
+        console.debug('tables', this.tables)
+        this.error = false
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to load tables.')
+      }
+      this.loading = false
     },
     async details (tableId, clicked = false) {
       // don't fetch details when we click-close an open accordion
@@ -216,7 +241,7 @@ export default {
         return
       }
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
         this.tableDetails = res.data
         this.$store.commit('SET_TABLE', this.tableDetails)
       } catch (err) {
@@ -232,7 +257,7 @@ export default {
       let res
       try {
         this.loading = true
-        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`)
+        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
         this.tables = res.data
         this.loading = false
         if (tableId) { this.openPanelByTableId(tableId) }
@@ -244,7 +269,7 @@ export default {
     async deleteTable () {
       try {
         this.loading = true
-        await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.deleteTableId}`)
+        await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.deleteTableId}`, this.config)
         this.loading = false
         this.refresh()
       } catch (err) {
@@ -275,5 +300,8 @@ export default {
 }
 .align-right {
   text-align: right;
+}
+.full-width {
+  width: 100%;
 }
 </style>

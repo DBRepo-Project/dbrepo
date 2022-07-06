@@ -61,7 +61,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
                                   Principal principal, Long page, Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
@@ -73,7 +73,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
             ColumnParseException, TableMalformedException {
@@ -120,7 +120,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
                                   Long size) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
@@ -234,10 +234,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException e) {
-            throw new FileStorageException("Export file not present");
+            log.error("Export file not present");
+            throw new FileStorageException("Export file not present", e);
         }
+        final InputStreamResource resource = new InputStreamResource(inputStream);
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }

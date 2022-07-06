@@ -31,6 +31,7 @@
         <spring-saml.version>1.0.10.RELEASE</spring-saml.version>
         <javax-rs.version>2.1.1</javax-rs.version>
         <javax-mail.version>1.4.7</javax-mail.version>
+        <jwt.version>3.18.3</jwt.version>
     </properties>
 
     <dependencies>
@@ -123,11 +124,17 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
+        <!-- AMPQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbit-amqp-client.version}</version>
+        </dependency>
         <!-- JWT -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.18.3</version>
+            <version>${jwt.version}</version>
         </dependency>
     </dependencies>
 

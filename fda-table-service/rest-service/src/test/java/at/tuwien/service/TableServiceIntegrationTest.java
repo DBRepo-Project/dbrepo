@@ -423,16 +423,16 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         assertEquals(2, response.getColumns().size());
     }
 
-    @Test
-    public void deleteTable_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            InterruptedException, TableNotFoundException, DataProcessingException, ContainerNotFoundException {
-
-        /* mock */
-        DockerConfig.startContainer(CONTAINER_1);
-
-        /* test */
-        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
-    }
+//    @Test
+//    public void deleteTable_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+//            InterruptedException, TableNotFoundException, DataProcessingException, ContainerNotFoundException {
+//
+//        /* mock */
+//        DockerConfig.startContainer(CONTAINER_1);
+//
+//        /* test */
+//        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+//    }
 
     /**
      * TODO https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues/99
@@ -510,17 +510,17 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
     }
 
-    @Test
-    public void deleteTable_notRunning_fails() {
-
-        /* start */
-        DockerConfig.stopContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(HibernateException.class, () -> {
-            tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
-        });
-    }
+//    @Test
+//    public void deleteTable_notRunning_fails() {
+//
+//        /* start */
+//        DockerConfig.stopContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(HibernateException.class, () -> {
+//            tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+//        });
+//    }
 
     @Test
     public void createTable_issue106_succeeds() throws InterruptedException, SQLException, TableMalformedException,

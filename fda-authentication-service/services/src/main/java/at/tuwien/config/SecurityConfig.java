@@ -1,22 +1,25 @@
 package at.tuwien.config;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.thymeleaf.spring5.SpringTemplateEngine;
-import org.thymeleaf.templatemode.TemplateMode;
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.nio.charset.StandardCharsets;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 @Getter
 @Configuration
 public class SecurityConfig {
 
-    @Value("${fda.system.passwd}")
-    private String systemPassword;
+    @Value("${fda.website}")
+    private String website;
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
 }

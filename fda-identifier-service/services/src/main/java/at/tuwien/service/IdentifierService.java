@@ -1,5 +1,7 @@
 package at.tuwien.service;
 
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
@@ -11,6 +13,7 @@ import java.util.List;
 
 @Service
 public interface IdentifierService {
+
     /**
      * Finds all identifiers in the metadata database which are not deleted.
      *
@@ -34,15 +37,17 @@ public interface IdentifierService {
     /**
      * Creates a new identifier in the metadata database which is not yet published
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param data        The identifier.
+     * @param containerId   The container id.
+     * @param databaseId    The database id.
+     * @param data          The identifier.
+     * @param principal     The authorization principal.
+     * @param authorization The authorization bearer.
      * @return The created identifier from the metadata database if successful.
-     * @throws IdentifierPublishingNotAllowedException When the visibility is not self.
      */
-    Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
+    Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+            DatabaseNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.
@@ -52,6 +57,18 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
     Identifier find(Long identifierId) throws IdentifierNotFoundException;
+
+    /**
+     * Export metadata for a identifier
+     *
+     * @param containerId  The container id.
+     * @param databaseId   The database id.
+     * @param identifierId The identifier id.
+     * @return The export, if successful.
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     */
+    ExportResource exportMetadata(Long containerId, Long databaseId, Long identifierId)
+            throws IdentifierNotFoundException, DatabaseNotFoundException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.
@@ -64,7 +81,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
      * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
+    Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
+            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException;
 
     /**
      * Publishes the identifier for a given identifier id in the metadata database.
@@ -77,7 +95,8 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
      */
-    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
+    Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+            throws IdentifierNotFoundException,
             IdentifierAlreadyPublishedException;
 
     /**

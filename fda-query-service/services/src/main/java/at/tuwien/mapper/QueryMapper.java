@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.QueryMalformedException;
@@ -28,6 +29,7 @@ import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -617,6 +619,35 @@ public interface QueryMapper {
     }
 
     @Transactional(readOnly = true)
+    default String historyRawQuery(Table data) {
+        final StringBuilder builder = new StringBuilder("SELECT")
+                .append(" IF(`deleted_at` IS NULL, `inserted_at`, `deleted_at`) as `timestamp`")
+                .append(", IF(`deleted_at` IS NULL, 'INSERT', 'DELETE') as `event`")
+                .append(", COUNT(`inserted_at`) as `total` FROM `hs_")
+                .append(data.getInternalName())
+                .append("` GROUP BY `inserted_at`, `deleted_at` ORDER BY `timestamp` ASC;");
+        log.trace("mapped find all from history view query [{}]", builder);
+        return builder.toString();
+    }
+
+    @Transactional(readOnly = true)
+    default List<TableHistoryDto> resultListToTableHistoryDto(Table table, List<?> resultList) {
+        final Iterator<?> iterator = resultList.iterator();
+        final List<TableHistoryDto> history = new LinkedList<>();
+        while (iterator.hasNext()) {
+            final int[] idx = new int[]{0};
+            final Map<String, Object> primaryKeys = new HashMap<>();
+            final Object[] row = (Object[]) iterator.next();
+            history.add(TableHistoryDto.builder()
+                    .timestamp(objectToInstant(row[idx[0]++]))
+                    .event(String.valueOf(row[idx[0]++]))
+                    .total(Long.parseLong(String.valueOf(row[idx[0]++])))
+                    .build());
+        }
+        return history;
+    }
+
+    @Transactional(readOnly = true)
     default Object dataColumnToObject(Object data, TableColumn column) throws DateTimeException {
         if (data == null) {
             return null;
@@ -722,6 +753,35 @@ public interface QueryMapper {
         generateTable.append(";");
         log.debug("Insert Query: {}", generateTable);
         return generateTable.toString();
+    }
+
+    default Instant objectToInstant(Object data) {
+        if (data == null) {
+            return null;
+        }
+        final String str = String.valueOf(data);
+        log.trace("mapping string {} to instant", str);
+        final Instant out;
+        if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")) {
+            /* e.g. 2022-07-04T11:31:46Z */
+            out = Timestamp.valueOf(str.substring(0,10) + " " + str.substring(12,19))
+                    .toInstant();
+        } else if (str.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.?\\d{0,6}")) {
+            /* e.g. 2022-06-20 09:08:13.416567, 2022-06-20 09:08:13.41656 */
+            out = Timestamp.valueOf(str.substring(0, 19))
+                    .toInstant();
+            if (str.length() > 19) {
+                out.plus(Integer.parseInt(str.substring(20)), ChronoUnit.NANOS);
+            }
+        } else if (str.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+            /* e.g. 2022-06-20 09:08:13 */
+            out = Timestamp.valueOf(str)
+                    .toInstant();
+        } else {
+            out = Instant.parse(str);
+        }
+        log.trace("instant is {}", out);
+        return out;
     }
 
 }

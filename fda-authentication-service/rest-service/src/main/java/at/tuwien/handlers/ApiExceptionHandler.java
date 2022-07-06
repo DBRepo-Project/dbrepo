@@ -47,6 +47,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(RoleUniqueException.class)
+    public ResponseEntity<ApiErrorDto> handle(RoleUniqueException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.auth.unique-role")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(UserEmailExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(UserEmailExistsException e, WebRequest request) {

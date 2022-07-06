@@ -107,6 +107,13 @@ public abstract class AbstractSeeder {
     public final static String IMAGE_DATE_7_EXAMPLE = "2022-01-30 13:44:25";
     public final static Boolean IMAGE_DATE_7_HAS_TIME = true;
 
+    public final static Long IMAGE_DATE_8_ID = 8L;
+    public final static Long IMAGE_DATE_8_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_8_DATABASE_FORMAT = "%d.%c.%Y %H:%i:%S";
+    public final static String IMAGE_DATE_8_UNIX_FORMAT = "dd.MM.yyyy HH:mm:ss";
+    public final static String IMAGE_DATE_8_EXAMPLE = "30.01.2022 13:44:25";
+    public final static Boolean IMAGE_DATE_8_HAS_TIME = true;
+
     public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
             .id(IMAGE_DATE_1_ID)
             .iid(IMAGE_DATE_1_IMAGE_ID)
@@ -168,6 +175,15 @@ public abstract class AbstractSeeder {
             .unixFormat(IMAGE_DATE_7_UNIX_FORMAT)
             .example(IMAGE_DATE_7_EXAMPLE)
             .hasTime(IMAGE_DATE_7_HAS_TIME)
+            .build();
+
+    public final static ContainerImageDate IMAGE_DATE_8 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_8_ID)
+            .iid(IMAGE_DATE_8_IMAGE_ID)
+            .databaseFormat(IMAGE_DATE_8_DATABASE_FORMAT)
+            .unixFormat(IMAGE_DATE_8_UNIX_FORMAT)
+            .example(IMAGE_DATE_8_EXAMPLE)
+            .hasTime(IMAGE_DATE_8_HAS_TIME)
             .build();
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()

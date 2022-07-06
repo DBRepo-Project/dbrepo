@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Table Schema (and Import Data) from .csv</v-toolbar-title>
+      <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat>
       <v-stepper-step :complete="step > 1" step="1">
@@ -128,7 +128,7 @@
                 v-model="file"
                 accept=".csv,.tsv"
                 show-size
-                label="CSV/TSV File" />
+                label="File Upload (.csv/.tsv)" />
             </v-col>
             <v-col cols="4">
               <v-text-field
@@ -137,7 +137,7 @@
                 accept=".csv,.tsv"
                 show-size
                 hint="e.g. http://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-verbindungen.csv"
-                label="CSV/TSV File URL" />
+                label="File URL (.csv/.tsv)" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -249,6 +249,14 @@ export default {
     token () {
       return this.$store.state.token
     },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
     validTableName () {
       if (this.tableCreate.name === null) {
         return true
@@ -336,7 +344,7 @@ export default {
       let getResult
       try {
         this.loading = true
-        getResult = await this.$axios.get(getUrl)
+        getResult = await this.$axios.get(getUrl, this.config)
         this.dateFormats = getResult.data.image.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
         this.loading = false
@@ -369,9 +377,7 @@ export default {
       let createResult
       try {
         this.loading = true
-        createResult = await this.$axios.post(createUrl, this.tableCreate, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        createResult = await this.$axios.post(createUrl, this.tableCreate, this.config)
         this.newTableId = createResult.data.id
         console.debug('created table', createResult.data)
       } catch (err) {
@@ -387,9 +393,7 @@ export default {
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${createResult.data.id}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, this.tableImport, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)
         console.debug('inserted table', insertResult.data)
       } catch (err) {
         this.loading = false

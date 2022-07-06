@@ -1,26 +1,20 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 
-import java.io.IOException;
+import java.security.Principal;
 
 public interface MessageQueueService {
-    /**
-     * In case of server downtime this method restores all exchanges and bindings
-     *
-     * @throws IOException Exchange or queue was not declarable.
-     */
-    void init() throws IOException;
 
     /**
      * Creates an exchange for a database.
      *
-     * @param database The database.
+     * @param database  The database.
+     * @param principal The user.
      * @throws AmqpException Could not create the exchange.
      */
-    void createExchange(Database database) throws AmqpException;
+    void createExchange(Database database, Principal principal) throws AmqpException;
 
     /**
      * Deletes an exchange for a database.

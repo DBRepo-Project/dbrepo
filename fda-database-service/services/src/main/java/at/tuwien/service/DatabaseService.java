@@ -1,40 +1,54 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
 
 public interface DatabaseService {
     /**
-     * Finds all known databases in the metadata database for a given container id.
+     * Finds all public databases in the metadata database for a given container id.
      *
-     * @param id The container id.
+     * @param containerId The container id.
      * @return A list of databases
      */
-    List<Database> findAll(Long id);
+    List<Database> findAllPublic(Long containerId);
 
     /**
-     * Finds all known databases in the metadata database.
+     * Finds all public databases or my private database in the metadata database for a given container id.
      *
-     * @return List of databases.
+     * @param containerId The container id.
+     * @param principal   The principal.
+     * @return A list of databases
      */
-    List<Database> findAll();
+    List<Database> findAllPublicOrMine(Long containerId, Principal principal);
 
     /**
      * Finds a specific database for a given id in the metadata database.
      *
-     * @param id         The container id.
-     * @param databaseId The database id.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param principal   The principal.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findById(Long id, Long databaseId) throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException;
+
+    /**
+     * Find a database by id, only used in the authentication service
+     *
+     * @param containerId the container id.
+     * @param databaseId  the database id.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     */
+    Database findById(Long containerId, Long databaseId) throws DatabaseNotFoundException;
 
     /**
      * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
@@ -47,7 +61,8 @@ public interface DatabaseService {
      * @throws DatabaseMalformedException The query string is malformed.
      * @throws AmqpException              The exchange could not be deleted.
      */
-    void delete(Long id, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
+    void delete(Long id, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException;
 
     /**
@@ -66,6 +81,20 @@ public interface DatabaseService {
     Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
+
+    /**
+     * Updates the database metadata.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @param modifyDto  The metadata.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     * @throws UserNotFoundException     The contact person was not found.
+     * @throws LicenseNotFoundException  The license was not found in the metadata database.
+     */
+    Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
 
     /**
      * Returns a new session for a given {@link Database} entity.

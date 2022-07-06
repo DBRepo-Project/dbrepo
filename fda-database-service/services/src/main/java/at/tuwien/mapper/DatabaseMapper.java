@@ -1,13 +1,19 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.LanguageType;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
+import java.security.Principal;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -16,6 +22,11 @@ import java.util.regex.Pattern;
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
+
+    @Mappings({
+            @Mapping(target = "name", source = "internalName")
+    })
+    CreateVirtualHostDto databaseToCreateVirtualHostDto(Database data);
 
     @Named("internalMapping")
     default String nameToInternalName(String data) {
@@ -29,6 +40,8 @@ public interface DatabaseMapper {
         String slug = NONLATIN.matcher(normalized).replaceAll("");
         return slug.toLowerCase(Locale.ENGLISH);
     }
+
+    LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
@@ -45,7 +58,7 @@ public interface DatabaseMapper {
     DatabaseDto databaseToDatabaseDto(Database data);
 
     default String databaseToRawCreateDatabaseQuery(Database database) {
-        final String statement = "CREATE DATABASE " + database.getInternalName() + ";";
+        final String statement = "CREATE DATABASE `" + database.getInternalName() + "`;";
         log.trace("raw create statement [{}]", statement);
         return statement;
     }
@@ -57,9 +70,13 @@ public interface DatabaseMapper {
     }
 
     default String databaseToRawDeleteDatabaseQuery(Database database) {
-        final String statement = "DROP DATABASE " + database.getInternalName() + ";";
+        final String statement = "DROP DATABASE `" + database.getInternalName() + "`;";
         log.trace("raw grant readonly statement [{}]", statement);
         return statement;
+    }
+
+    default Principal userDetailsDtoToPrincipal(UserDetailsDto data) {
+        return new BasicUserPrincipal(data.getUsername());
     }
 
 }

@@ -2,7 +2,6 @@
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" />
     <v-toolbar v-if="db" flat>
-      <img id="engine-logo" :alt="`${db.image.repository}`" :src="`data:image/png;base64,${db.image.logo}`">
       <v-toolbar-title>
         {{ db.name }}
       </v-toolbar-title>
@@ -11,7 +10,7 @@
         <v-btn class="mr-2" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn color="blue-grey" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn color="secondary" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Query Builder
         </v-btn>
         <v-btn color="primary" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
@@ -59,6 +58,14 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -71,7 +78,7 @@ export default {
       }
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
         this.loading = false

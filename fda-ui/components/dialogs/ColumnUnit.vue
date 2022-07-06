@@ -3,7 +3,7 @@
     v-model="dialog"
     max-width="600px">
     <template v-slot:activator="{ on, attrs }">
-      <span v-if="column.column_concept">
+      <span v-if="column.column_concept" :title="column.column_concept.uri">
         {{ column.column_concept.name }}
       </span>
       <v-btn
@@ -12,7 +12,7 @@
         small
         v-bind="attrs"
         v-on="on">
-        <v-icon>
+        <v-icon color="secondary">
           mdi-pencil-outline
         </v-icon>
       </v-btn>

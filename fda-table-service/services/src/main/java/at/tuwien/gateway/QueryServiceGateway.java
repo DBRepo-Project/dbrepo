@@ -15,10 +15,4 @@ public interface QueryServiceGateway {
      */
     Integer publish(Long containerId, Long databaseId, Long tableId, TableCsvDto data);
 
-    /**
-     * Sets the current authentication token.
-     *
-     * @param token The token.
-     */
-    void setToken(String token);
 }

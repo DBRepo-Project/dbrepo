@@ -25,6 +25,7 @@ logging:
     at.tuwien.mapper.: trace
     at.tuwien.service.: trace
     at.tuwien.config.: trace
+    at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-query-service
