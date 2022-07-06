@@ -1,0 +1,32 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
+  jpa:
+    spring.jpa.database-platform: org.hibernate.dialect.H2Dialect
+  application:
+    name: fda-broker-service
+  rabbitmq:
+    host: fda-broker-service
+    username: fda
+    password: fda
+  cloud:
+    loadbalancer.ribbon.enabled: false
+server:
+  port: 9098
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+eureka:
+  instance.hostname: fda-broker-service
+  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+fda:
+  ready.path: /ready
+  gateway.endpoint: http://localhost:9095

@@ -4,97 +4,160 @@
       <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loading" color="blue-grey white--text" class="mr-2" :disabled="!query.execution || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
-        <v-btn v-if="false" color="primary" :disabled="!token" @click.stop="reExecute">
-          <v-icon left>mdi-run</v-icon> Re-Execute
+        <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
+          <v-icon left>mdi-download</v-icon> Download
+        </v-btn>
+        <v-btn v-if="identifier.id" color="secondary" class="ml-2" :loading="metadataLoading" @click.stop="metadata">
+          <v-icon left>mdi-code-tags</v-icon> Metadata
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card v-if="!loading" class="pb-2" flat>
+    <v-card v-if="!loading" flat>
       <v-card-title>
         Query Information
       </v-card-title>
-      <v-card-subtitle>
-        <span v-if="query.created != null">
-          Created {{ formatDate(query.created) }}
-        </span>
-        <span v-if="query.execution == null">
-          Query was never executed
-        </span>
-      </v-card-subtitle>
       <v-card-text>
-        <p v-if="database.publisher">
-          <strong>Database</strong>
-        </p>
-        <div v-if="database.publisher">
-          <p>
-            Publisher: <code>{{ database.publisher }}</code>
-          </p>
-        </div>
-        <p>
-          <strong>Query</strong>
-        </p>
-        <div>
-          <p v-if="identifier.id">
-            Persistent Identifier: <code>https://dbrepo.ossdip.at/pid/{{ identifier.id }}</code>
-          </p>
-          <p v-if="identifier.publication_year">
-            Publication Year: <code>{{ identifier.publication_year }}</code>
-          </p>
-          <p>Statement</p>
-          <v-alert
-            border="left"
-            color="grey lighten-4 black--text">
-            <pre>{{ query.query }}</pre>
-          </v-alert>
-          <p v-if="query.query_hash">
-            Hash: <code>sha256:{{ query.query_hash }}</code>
-          </p>
-        </div>
-        <p class="mt-2">
-          <strong>Description</strong>
-        </p>
-        <div>
-          <p v-if="!identifier.description">
-            (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
-          </p>
-          <p v-if="identifier.description">{{ identifier.description }}</p>
-        </div>
-        <p class="mt-2">
-          <strong>Result</strong>
-        </p>
-        <p v-if="query.result_hash">
-          Hash: <code v-if="query.result_hash">sha256:{{ query.result_hash }}</code>
-        </p>
-        <p>
-          Rows: <code v-if="query.result_number">{{ query.result_number }}</code><span v-if="!query.result_number">(empty)</span>
-        </p>
-        <p v-if="execution">
-          Executed: <code>{{ execution }}</code>
-        </p>
-        <p v-if="query.creator">
-          Owner: <code v-if="query.creator.username">{{ query.creator.username }}</code><span v-if="!query.creator.username">(empty)</span>
-        </p>
-        <p class="mt-2">
-          <strong>Creator(s)</strong>
-        </p>
-        <p v-if="identifier.creators.length === 0">
-          (empty) &#8212; <a href="#" @click.stop="openDialog()">modify</a>
-        </p>
-        <p v-for="(creator,i) in identifier.creators" :key="i">
-          <span>{{ creator.name }}</span>
-          <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
-        </p>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="database_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Database Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <span v-if="database_visibility">Public</span>
+                <span v-if="!database_visibility">Private</span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Database Name
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ database.name }}
+              </v-list-item-content>
+              <v-list-item-title v-if="database.license" class="mt-2">
+                Database License
+              </v-list-item-title>
+              <v-list-item-content v-if="database.license">
+                <a :href="database.license.uri">{{ database.license.identifier }}</a>
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="identifier.id">
+            <v-list-item-icon>
+              <v-icon>mdi-lock-clock</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Persistent Identifier
+              </v-list-item-title>
+              <v-list-item-content>
+                <a :href="`https://dbrepo.ossdip.at/pid/${identifier.id}`">https://dbrepo.ossdip.at/pid/{{ identifier.id }}</a>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Title
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.title }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Description
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.description }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Creators
+              </v-list-item-title>
+              <v-list-item-content>
+                <span v-for="(creator, i) in identifier.creators" :key="i" class="mt-1">
+                  <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
+                  {{ creator.name }} <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
+                </span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Publication Date
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.publication_year }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-text-short</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Query Statement
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ query.query }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Hash
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ query_hash }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Creator
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ creator }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Execution
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ execution }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Query Creation
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ query_creation }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="result_visibility_icon ? 'success' : 'error'">mdi-table</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Result Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ result_visibility_icon ? 'Public' : 'Private' }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Result Hash
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre>{{ result_hash }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Result Number
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ result_number }}
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
       </v-card-text>
-      <QueryResults ref="queryResults" v-model="query.id" class="ml-2 mr-2 mt-0" />
+      <QueryResults id="query-results" ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 mb-0" />
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="persistQueryDialog"
       persistent
-      max-width="640">
+      max-width="860">
       <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
@@ -102,11 +165,13 @@
 <script>
 import { format } from 'date-fns'
 import PersistQuery from '@/components/dialogs/PersistQuery'
+import OrcidIcon from '@/components/icons/OrcidIcon'
 
 export default {
   name: 'QueryShow',
   components: {
-    PersistQuery
+    PersistQuery,
+    OrcidIcon
   },
   data () {
     return {
@@ -117,14 +182,19 @@ export default {
         { text: `${this.$route.params.query_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, activeClass: '' }
       ],
       query: {
-        id: this.$route.params.query_id,
+        id: parseInt(this.$route.params.query_id),
         database_id: null,
         query: null,
         query_hash: null,
         result_hash: null,
         result_number: null,
         execution: null,
-        created: null
+        created: null,
+        creator: {
+          username: null,
+          firstname: null,
+          lastname: null
+        }
       },
       identifier: {
         id: null,
@@ -133,92 +203,215 @@ export default {
         title: null,
         description: null,
         visibility: null,
+        query: null,
+        query_normalized: null,
+        query_hash: null,
+        result_number: null,
+        execution: null,
         publication_year: null,
         doi: null,
         creators: []
       },
       database: {
         id: null,
-        publisher: null
+        name: null,
+        is_public: null,
+        publisher: null,
+        creator: {
+          username: null
+        },
+        license: {
+          identifier: null,
+          uri: null
+        }
       },
       persistQueryExists: false,
       persistQueryDialog: false,
-      loading: true
+      loading: true,
+      metadataLoading: false,
+      downloadLoading: false,
+      error: false,
+      promises: []
     }
   },
   computed: {
     token () {
       return this.$store.state.token
     },
-    headers () {
+    loadingColor () {
+      return this.error ? 'red' : 'primary'
+    },
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    publisher () {
+      if (this.database.publisher === null) {
+        return 'NA'
+      }
+      return this.database.publisher
+    },
+    username () {
+      return this.$store.state.user && this.$store.state.user.username
+    },
+    query_visibility () {
+      if (this.database.is_public) {
+        return true
+      }
+      return this.database.creator.username === this.username
+    },
+    database_visibility () {
+      return this.database.is_public
+    },
+    result_everyone () {
+      return this.database.is_public || this.identifier.visibility === 'EVERYONE'
+    },
+    result_visibility () {
+      if (this.database.is_public) {
+        return true
+      }
+      if (this.query.creator.username === this.username) {
+        return true
+      }
+      return this.identifier.visibility === 'EVERYONE'
+    },
+    result_visibility_icon () {
+      if (this.database.is_public) {
+        return true
+      }
+      return this.identifier.visibility === 'EVERYONE'
+    },
+    statement () {
+      return this.identifier.id ? this.identifier.query : this.query.query
+    },
+    query_hash () {
+      return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
+    },
+    result_number () {
+      return this.identifier.id ? this.identifier.result_number : this.query.result_number
+    },
+    result_hash () {
+      return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     execution () {
-      if (this.query.execution === null) {
+      return this.identifier.id ? this.formatDate(this.identifier.execution) : this.formatDate(this.query.execution)
+    },
+    query_creation () {
+      return this.formatDate(this.query.created)
+    },
+    creator () {
+      if (this.query.creator.username === null) {
         return null
       }
-      return this.formatDate(this.query.execution)
+      if (this.query.creator.firstname === null || this.query.creator.lastname === null) {
+        return this.query.creator.username
+      }
+      return this.query.creator.firstname + ' ' + this.query.creator.lastname
+    },
+    creators () {
+      return this.identifier.id ? this.identifier.creators : null
     }
   },
   mounted () {
-    this.loadMetadata()
+    this.loadDatabase()
+      .then(() => this.loadQuery())
+      .then(() => this.loadMetadata())
   },
   methods: {
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
-    async loadMetadata () {
+    async metadata () {
+      this.metadataLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('identifier result', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'metadata.xml')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export metadata', err)
+        this.$toast.error('Could not export metadata')
+        this.error = true
+      }
+      this.metadataLoading = false
+    },
+    async download () {
+      this.downloadLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('export query result', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'query.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export query result', err)
+        this.$toast.error('Could not export query result')
+        this.error = true
+      }
+      this.downloadLoading = false
+    },
+    async loadQuery () {
       this.loading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
         console.debug('query', res.data)
         this.query = res.data
       } catch (err) {
-        console.error('Could not load query', err)
-        this.$toast.error('Could not load query')
-        this.loading = false
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('Could not load query', err)
+          this.$toast.error('Could not load query')
+        }
+        this.error = true
       }
+      this.loading = false
+    },
+    async loadDatabase () {
+      this.loading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         console.debug('database', res.data)
         this.database = res.data
       } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-        this.loading = false
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('Could not load database', err)
+          this.$toast.error('Could not load database')
+        }
+        this.error = true
       }
+      this.loading = false
+    },
+    async loadMetadata () {
+      if (!this.query.id) {
+        return
+      }
+      this.loading = true
       try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
         this.identifier = res.data[0]
         console.debug('identifier', res.data[0])
       } catch (err) {
         if (err.response.status !== 404) {
+          this.error = true
           console.error('Could not load identifier', err)
           this.$toast.error('Could not load identifier')
         }
-        this.loading = false
-      }
-      this.loading = false
-
-      // refresh QueryResults table
-      setTimeout(() => {
-        this.$refs.queryResults.execute()
-      }, 200)
-    },
-    async reExecute () {
-      try {
-        this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, {
-          headers: this.headers
-        })
-        console.debug('re-execute query', res.data)
-      } catch (err) {
-        console.error('Could not re-execute query', err)
-        this.$toast.error('Could not re-execute query')
       }
       this.loading = false
     },
@@ -238,5 +431,8 @@ export default {
 <style>
 pre {
   white-space: break-spaces;
+}
+.v-card__text {
+  font-size: initial;
 }
 </style>

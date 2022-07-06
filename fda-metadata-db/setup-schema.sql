@@ -56,6 +56,13 @@ CREATE SEQUENCE public.mdb_user_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_user_role_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_data_seq
     START WITH 1
     INCREMENT BY 1
@@ -112,7 +119,21 @@ CREATE SEQUENCE public.mdb_identifiers_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_related_identifiers_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_creators_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE public.mdb_tokens_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -131,7 +152,9 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Preceding_titles     VARCHAR(50),
     Postpositioned_title VARCHAR(50),
     Main_Email           VARCHAR(255)                not null,
+    main_email_verified  bool                        not null default false,
     password             VARCHAR(255)                not null,
+    invenio_token        VARCHAR(255),
     created              timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified        timestamp without time zone,
     PRIMARY KEY (UserID),
@@ -157,6 +180,18 @@ CREATE TABLE public.mdb_images
     last_modified timestamp without time zone,
     PRIMARY KEY (id),
     UNIQUE (repository, tag)
+);
+
+CREATE TABLE public.mdb_tokens
+(
+    id        bigint                      not null default nextval('mdb_tokens_seq'),
+    uid       bigint                      not null,
+    token     character varying(255)      NOT NULL,
+    processed boolean                     NOT NULL default false,
+    created   timestamp without time zone NOT NULL DEFAULT NOW(),
+    valid_to  timestamp without time zone NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE public.mdb_images_date
@@ -221,31 +256,52 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
     role          varchar(255)                not null,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
-    PRIMARY KEY (uid)
+    PRIMARY KEY (uid),
+    FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
+    UNIQUE (uid, role)
+);
+
+CREATE TABLE IF NOT EXISTS mdb_licenses
+(
+    identifier character varying(255) NOT NULL,
+    uri        TEXT                   NOT NULL,
+    PRIMARY KEY (identifier),
+    UNIQUE (uri)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_databases
 (
-    id            bigint                      NOT NULL DEFAULT nextval('mdb_databases_seq'),
-    name          character varying(255)      NOT NULL,
-    internal_name character varying(255)      NOT NULL,
-    exchange      character varying(255)      NOT NULL,
-    ResourceType  TEXT,
-    Description   TEXT,
-    Engine        VARCHAR(20)                          DEFAULT 'Postgres',
-    Publisher     VARCHAR(50),
-    Year          DATE                                 DEFAULT CURRENT_DATE,
-    License       TEXT,
-    is_public     BOOLEAN                     NOT NULL DEFAULT TRUE,
-    Creator       BIGINT REFERENCES mdb_USERS (UserID),
-    Contactperson BIGINT REFERENCES mdb_USERS (UserID),
-    created       timestamp without time zone NOT NULL DEFAULT NOW(),
-    last_modified timestamp without time zone,
-    deleted       timestamp without time zone NULL,
+    id               bigint                      NOT NULL DEFAULT nextval('mdb_databases_seq'),
+    name             character varying(255)      NOT NULL,
+    internal_name    character varying(255)      NOT NULL,
+    exchange         character varying(255)      NOT NULL,
+    subject          character varying(255),
+    publication_year SMALLINT,
+    ResourceType     TEXT,
+    Description      TEXT,
+    Engine           VARCHAR(20)                          DEFAULT 'Postgres',
+    Publisher        VARCHAR(255),
+    Year             DATE                                 DEFAULT CURRENT_DATE,
+    License          character varying(255),
+    language         character varying(2),
+    is_public        BOOLEAN                     NOT NULL DEFAULT TRUE,
+    Creator          BIGINT REFERENCES mdb_USERS (UserID),
+    Contactperson    BIGINT REFERENCES mdb_USERS (UserID),
+    created          timestamp without time zone NOT NULL DEFAULT NOW(),
+    last_modified    timestamp without time zone,
+    deleted          timestamp without time zone NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (Creator) REFERENCES mdb_USERS (UserID),
     FOREIGN KEY (Contactperson) REFERENCES mdb_USERS (UserID),
+    FOREIGN KEY (License) REFERENCES mdb_licenses (identifier),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
+);
+
+CREATE TABLE IF NOT EXISTS mdb_databases_subjects
+(
+    dbid     BIGINT                 NOT NULL,
+    subjects character varying(255) NOT NULL,
+    PRIMARY KEY (dbid, subjects)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_tables
@@ -401,6 +457,12 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     description      TEXT                        NOT NULL,
     visibility       VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
     publication_year SMALLINT                    NOT NULL,
+    query            TEXT                        NOT NULL,
+    query_normalized TEXT                        NOT NULL,
+    query_hash       VARCHAR(255)                NOT NULL,
+    execution        timestamp                   NOT NULL,
+    result_hash      VARCHAR(255)                NOT NULL,
+    result_number    bigint                      NOT NULL,
     doi              VARCHAR(255),
     created          timestamp without time zone NOT NULL DEFAULT NOW(),
     created_by       bigint                      NOT NULL,
@@ -411,6 +473,22 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     UNIQUE (cid, dbid, qid)
+);
+
+CREATE TABLE IF NOT EXISTS mdb_related_identifiers
+(
+    id            bigint                               DEFAULT nextval('mdb_related_identifiers_seq'),
+    iid           bigint                      NOT NULL,
+    value         text                        NOT NULL,
+    type          varchar(255),
+    relation      varchar(255),
+    created       timestamp without time zone NOT NULL DEFAULT NOW(),
+    created_by    bigint                      NOT NULL,
+    last_modified timestamp without time zone,
+    deleted       timestamp without time zone,
+    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_creators
@@ -481,5 +559,21 @@ CREATE TABLE IF NOT EXISTS mdb_owns
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
 );
+
+COMMIT;
+
+BEGIN;
+
+INSERT INTO mdb_users (username, Main_Email, password)
+VALUES ('system', 'noreply@dbrepo.ossdip.at', (SELECT md5(random()::text)));
+
+INSERT INTO mdb_licenses (identifier, uri)
+VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
+       ('GPL-3.0-only', 'https://www.gnu.org/licenses/gpl-3.0-standalone.html'),
+       ('BSD-3-Clause', 'https://opensource.org/licenses/BSD-3-Clause'),
+       ('BSD-4-Clause', 'http://directory.fsf.org/wiki/License:BSD_4Clause'),
+       ('Apache-2.0', 'https://opensource.org/licenses/Apache-2.0'),
+       ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
+       ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
 COMMIT;

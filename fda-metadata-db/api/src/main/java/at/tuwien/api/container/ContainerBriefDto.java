@@ -1,11 +1,13 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -27,6 +29,9 @@ public class ContainerBriefDto {
     @Parameter(name = "container name", example = "Weather World")
     private String name;
 
+    @Parameter(name = "container creator")
+    private UserDto creator;
+
     @NotBlank
     @JsonProperty("internal_name")
     @Parameter(name = "container internal name", example = "weather-world")
@@ -35,4 +40,7 @@ public class ContainerBriefDto {
     @JsonProperty("is_public")
     @Parameter(name = "container public", example = "true")
     private Boolean isPublic;
+
+    @Parameter(name = "container created")
+    private Instant created;
 }

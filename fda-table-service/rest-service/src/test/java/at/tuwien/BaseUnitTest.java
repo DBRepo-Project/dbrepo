@@ -340,11 +340,6 @@ public abstract class BaseUnitTest extends CsvUnitTest {
             .columns(TABLE_1_COLUMNS)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
-            .separator(TABLE_1_SEPARATOR)
-            .nullElement(TABLE_1_NULL_ELEMENT)
-            .trueElement(TABLE_1_TRUE_ELEMENT)
-            .falseElement(TABLE_1_FALSE_ELEMENT)
-            .skipLines(TABLE_1_SKIP_HEADERS)
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -356,11 +351,6 @@ public abstract class BaseUnitTest extends CsvUnitTest {
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_2_TOPIC)
-            .separator(TABLE_2_SEPARATOR)
-            .nullElement(TABLE_2_NULL_ELEMENT)
-            .trueElement(TABLE_2_TRUE_ELEMENT)
-            .falseElement(TABLE_2_FALSE_ELEMENT)
-            .skipLines(TABLE_2_SKIP_HEADERS)
             .build();
 
     public final static Table TABLE_3 = Table.builder()
@@ -372,11 +362,6 @@ public abstract class BaseUnitTest extends CsvUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
-            .separator(TABLE_3_SEPARATOR)
-            .nullElement(TABLE_3_NULL_ELEMENT)
-            .trueElement(TABLE_3_TRUE_ELEMENT)
-            .falseElement(TABLE_3_FALSE_ELEMENT)
-            .skipLines(TABLE_3_SKIP_HEADERS)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()

@@ -30,7 +30,6 @@ public class CreatorDto {
     @NotNull
     private Instant created;
 
-    @NotNull
     @JsonProperty("last_modified")
     private Instant lastModified;
 

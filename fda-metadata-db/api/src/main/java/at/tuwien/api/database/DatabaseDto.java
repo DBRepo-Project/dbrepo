@@ -3,12 +3,12 @@ package at.tuwien.api.database;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -30,10 +30,23 @@ public class DatabaseDto {
     @Parameter(name = "database name", example = "Weather Australia")
     private String name;
 
+    @NotNull
+    @Parameter(name = "database creator")
+    private UserDto creator;
+
     @NotBlank
     @JsonProperty("internal_name")
     @Parameter(name = "database internal name", example = "weather_australia")
     private String internalName;
+
+    @Parameter(name = "database subjects")
+    private List<String> subjects;
+
+    @Parameter(name = "database language", example = "EN")
+    private LanguageTypeDto language;
+
+    @Parameter(name = "database license", example = "MIT2")
+    private LicenseDto license;
 
     @NotBlank
     @Parameter(name = "database description", example = "Weather Australia 2009-2021")
@@ -42,18 +55,20 @@ public class DatabaseDto {
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
-    @Parameter(name = "database license", example = "MIT")
-    private String license;
-
     @Parameter(name = "database contact person")
     private UserDto contact;
 
+    @JsonProperty("publication_year")
+    @Parameter(name = "database publication year")
+    private Short publicationYear;
+
+    @NotNull
     @Parameter(name = "tables")
     private List<TableDto> tables;
 
-    @NotBlank
-    @Parameter(name = "database exchange", example = "fda.c1.d1")
-    private String exchange;
+    @JsonProperty("is_public")
+    @Parameter(name = "database public")
+    private Boolean isPublic;
 
     @Parameter(name = "database container image")
     private ImageDto image;

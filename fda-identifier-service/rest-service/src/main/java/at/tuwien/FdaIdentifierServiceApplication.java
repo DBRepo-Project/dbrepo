@@ -8,12 +8,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication
+
 @EnableJpaAuditing
+@SpringBootApplication
 @EnableTransactionManagement
+@EntityScan(basePackages = "at.tuwien.entities")
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
-@EntityScan(basePackages = {"at.tuwien.entities"})
 public class FdaIdentifierServiceApplication {
 
     public static void main(String[] args) {

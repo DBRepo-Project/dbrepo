@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,6 +21,9 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publicity", example = "true")
     private Boolean isPublic;
 
+    @Parameter(name = "database subjects", example = "[\"test\"]")
+    private List<String> subject;
+
     @NotBlank
     @Parameter(name = "database description", example = "Sample")
     private String description;
@@ -27,11 +31,19 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
-    @Parameter(name = "database license", example = "MIT")
-    private String license;
+    @NotNull
+    @JsonProperty("publication_year")
+    @Parameter(name = "database year", example = "2022")
+    private Short publicationYear;
+
+    @Parameter(name = "database license")
+    private LicenseDto license;
+
+    @Parameter(name = "database language", example = "EN")
+    private LanguageTypeDto language;
 
     @JsonProperty("contact_person")
-    @Parameter(name = "database license", example = "Max Mustermann")
-    private Long contactPerson;
+    @Parameter(name = "database contact person")
+    private String contactPerson;
 
 }

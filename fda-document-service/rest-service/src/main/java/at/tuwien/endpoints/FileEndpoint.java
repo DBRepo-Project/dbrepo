@@ -5,6 +5,7 @@ import at.tuwien.api.document.file.FileDto;
 import at.tuwien.exception.FileUploadException;
 import at.tuwien.exception.CommitFileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -40,7 +41,7 @@ public class FileEndpoint {
     public ResponseEntity<FileDto> uploadFile(@NotNull @PathVariable("id") String documentId,
                                               @NotNull @RequestBody ImportDto file,
                                               @NotNull Principal principal)
-            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException {
+            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException, UserNotFoundException {
         final FileDto document = fileService.uploadFile(documentId, file, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(document);

@@ -73,26 +73,7 @@ public class Table {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
-    @Field(type = FieldType.Nested)
     private List<TableColumn> columns;
-
-    @Column(name = "separator")
-    private Character separator = ',';
-
-    @Column(name = "quote")
-    private Character quote;
-
-    @Column(name = "element_null")
-    private String nullElement = null;
-
-    @Column(name = "skip_lines")
-    private Long skipLines = null;
-
-    @Column(name = "element_true")
-    private String trueElement = "1";
-
-    @Column(name = "element_false")
-    private String falseElement = "0";
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

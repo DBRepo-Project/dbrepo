@@ -9,7 +9,7 @@ import at.tuwien.exception.FileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
 import at.tuwien.gateway.DocumentGateway;
 import at.tuwien.mapper.DocumentMapper;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-@Slf4j
+@Log4j2
 @Component
 public class InvenioDocumentGatewayImpl implements DocumentGateway {
 

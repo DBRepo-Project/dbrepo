@@ -41,11 +41,13 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_VIEW')")
     @Operation(summary = "List all tables")
-    public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long id,
-                                                       @NotNull @PathVariable("databaseId") Long databaseId)
+    public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
+                                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                                       Principal principal)
             throws DatabaseNotFoundException {
-        return ResponseEntity.ok(tableService.findAll(id, databaseId)
+        return ResponseEntity.ok(tableService.findAll(containerId, databaseId, principal)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
@@ -53,17 +55,17 @@ public class TableEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_CREATE')")
     @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
-        final Table table = tableService.createTable(id, databaseId, createDto, principal);
+        final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
-        amqpService.createConsumer(id, databaseId, table);
+        amqpService.createConsumer(containerId, databaseId, table);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(tableMapper.tableToTableBriefDto(table));
     }
@@ -71,12 +73,14 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_VIEW')")
     @Operation(summary = "Get information about table")
-    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
-                                             @NotNull @PathVariable("tableId") Long tableId)
+                                             @NotNull @PathVariable("tableId") Long tableId,
+                                             Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
-        final Table table = tableService.findById(id, databaseId, tableId);
+        final Table table = tableService.findById(containerId, databaseId, tableId, principal);
         log.debug(table);
         TableDto tableDto = tableMapper.tableToTableDto(table);
         log.debug(tableDto);
@@ -85,10 +89,12 @@ public class TableEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_UPDATE')")
     @Operation(summary = "Update a table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId) {
+                                                @NotNull @PathVariable("tableId") Long tableId,
+                                                Principal principal) {
         // TODO
         return ResponseEntity.unprocessableEntity().body(new TableBriefDto());
     }
@@ -98,12 +104,13 @@ public class TableEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@NotNull @PathVariable("id") Long id,
+    public void delete(@NotNull @PathVariable("id") Long containerId,
                        @NotNull @PathVariable("databaseId") Long databaseId,
-                       @NotNull @PathVariable("tableId") Long tableId)
+                       @NotNull @PathVariable("tableId") Long tableId,
+                       Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException {
-        tableService.deleteTable(id, databaseId, tableId);
+        tableService.deleteTable(containerId, databaseId, tableId, principal);
     }
 
 }

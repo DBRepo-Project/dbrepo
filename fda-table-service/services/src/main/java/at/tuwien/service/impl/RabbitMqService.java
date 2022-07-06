@@ -4,7 +4,6 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.MessageQueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,16 +13,12 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -31,29 +26,13 @@ public class RabbitMqService implements MessageQueueService {
 
     private final Channel channel;
     private final ObjectMapper objectMapper;
-    private final TableRepository tableRepository;
     private final QueryServiceGateway queryServiceGateway;
 
     @Autowired
-    public RabbitMqService(Channel channel, ObjectMapper objectMapper, TableRepository tableRepository,
-                           QueryServiceGateway queryServiceGateway) {
+    public RabbitMqService(Channel channel, ObjectMapper objectMapper, QueryServiceGateway queryServiceGateway) {
         this.channel = channel;
         this.objectMapper = objectMapper;
-        this.tableRepository = tableRepository;
         this.queryServiceGateway = queryServiceGateway;
-    }
-
-    @Transactional(readOnly = true)
-    @EventListener(ApplicationReadyEvent.class)
-    public void init() throws AmqpException {
-        final List<Table> tables = tableRepository.findAll();
-        for (Table table : tables) {
-            createConsumer(table.getDatabase().getContainer().getId(), table.getDatabase().getId(), table);
-        }
-        log.info("Re-created {} consumers", tables.size());
-        log.debug("re-created consumers: {}", tables.stream()
-                .map(Table::getInternalName)
-                .collect(Collectors.toList()));
     }
 
     @Override

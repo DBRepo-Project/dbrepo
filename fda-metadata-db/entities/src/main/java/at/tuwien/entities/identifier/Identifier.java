@@ -1,5 +1,6 @@
 package at.tuwien.entities.identifier;
 
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -58,6 +59,33 @@ public class Identifier {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(nullable = false)
+    private String query;
+
+    @Column(nullable = false)
+    private String queryNormalized;
+
+    @Column(nullable = false)
+    private String queryHash;
+
+    @Column(nullable = false)
+    private String resultHash;
+
+    @Column(nullable = false)
+    private Instant execution;
+
+    @Column(nullable = false)
+    private Long resultNumber;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private Database database;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    private List<RelatedIdentifier> relatedIdentifiers;
 
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)

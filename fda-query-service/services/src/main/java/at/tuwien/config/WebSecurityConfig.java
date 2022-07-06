@@ -66,9 +66,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
                 /* our public endpoints */
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/data/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/container/**/database/**/table/**/data").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/container/**/database/**/query/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/data/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/container/**/database/**/table/**/data").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/history/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/export/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/query/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/query/**").permitAll()
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
@@ -76,6 +79,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/swagger-ui.html").permitAll()
                 /* our internal endpoints */
                 .antMatchers(HttpMethod.POST, "/api/container/**/database/**/table/**/data").hasIpAddress(
+                        "172.29.0.0/16")
+                .antMatchers(HttpMethod.GET, "/api/container/**/database/query/**").hasIpAddress(
                         "172.29.0.0/16")
                 /* our private endpoints */
                 .anyRequest().authenticated();

@@ -4,6 +4,8 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.UserInvenioTokenException;
+import at.tuwien.exception.UserNotFoundException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -28,7 +30,7 @@ public class DocumentServiceIntegrationTest extends BaseUnitTest {
     private DocumentService documentService;
 
     @Test
-    public void create_succeeds() throws DraftRecordCreateException {
+    public void create_succeeds() throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final CreateDraftDto request = DOCUMENT_1_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -40,7 +42,7 @@ public class DocumentServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void reserve_succeeds() throws DraftRecordCreateException {
+    public void reserve_succeeds() throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final CreateDraftDto request = DOCUMENT_1_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

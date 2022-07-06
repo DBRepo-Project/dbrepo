@@ -5,23 +5,16 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.document.file.FileDto;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
-import at.tuwien.exception.FileUploadException;
-import at.tuwien.exception.CommitFileUploadException;
-import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.*;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +34,8 @@ public class FileServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void upload_succeeds()
-            throws DraftRecordCreateException, IOException, CommitFileUploadException, FileUploadException {
+            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException,
+            UserNotFoundException, UserInvenioTokenException {
         final CreateDraftDto request = DOCUMENT_2_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final ImportDto file = ImportDto.builder()
@@ -58,7 +52,7 @@ public class FileServiceIntegrationTest extends BaseUnitTest {
     }
     @Test
     public void publish_succeeds()
-            throws DraftRecordCreateException {
+            throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final CreateDraftDto request = DOCUMENT_1_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

@@ -6,11 +6,12 @@ import at.tuwien.api.document.file.FileDto;
 import at.tuwien.exception.FileUploadException;
 import at.tuwien.exception.CommitFileUploadException;
 import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.UserNotFoundException;
 
 import java.security.Principal;
 
 public interface FileService {
 
     FileDto uploadFile(String id, ImportDto file, Principal principal)
-            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException;
+            throws DraftRecordCreateException, CommitFileUploadException, FileUploadException, UserNotFoundException;
 }

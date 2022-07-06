@@ -39,31 +39,6 @@ public class TableDto {
     @Parameter(name = "table description", example = "Predict next-day rain in Australia")
     private String description;
 
-    @NotNull
-    @Parameter(name = "table csv separator", example = ",")
-    private Character separator = ',';
-
-    @NotNull
-    @Parameter(name = "csv quote character when importing", required = true, example = "\"")
-    private Character quote;
-
-    @NotBlank
-    @JsonProperty("null_element")
-    @Parameter(name = "table csv null element", example = "NA")
-    private String nullElement = null;
-
-    @JsonProperty("skip_lines")
-    @Parameter(name = "table csv contains a header row", example = "0")
-    private Long skipLines = 0L;
-
-    @JsonProperty("true_element")
-    @Parameter(name = "table csv element for boolean true", example = "1")
-    private String trueElement = "1";
-
-    @JsonProperty("false_element")
-    @Parameter(name = "table csv element for boolean false", example = "0")
-    private String falseElement = "0";
-
     @Parameter(name = "table creation time")
     private Instant created;
 

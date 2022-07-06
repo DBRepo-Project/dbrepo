@@ -2,6 +2,7 @@ version: "3.6"
 
 volumes:
   fda-metadata-db-data:
+  fda-search-service-data:
   fda-broker-service-data:
 
 networks:
@@ -132,6 +133,9 @@ services:
       fda-public:
     environment:
       TOKEN: ${INVENIO_TOKEN}
+      REFERER: https://dbrepo.ossdip.at
+      DOCUMENT_ENDPOINT: https://test.researchdata.tuwien.ac.at
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -161,6 +165,8 @@ services:
       - "9097:9097"
     depends_on:
       fda-discovery-service:
+        condition: service_healthy
+      fda-broker-service:
         condition: service_healthy
       fda-metadata-db:
         condition: service_healthy
@@ -293,11 +299,13 @@ services:
     build: ./fda-broker-service
     image: fda-broker-service
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     networks:
       fda-public:
     ports:
       - "5672:5672"
+      - "9098:9098"
       - "15672:15672"
     depends_on:
       fda-discovery-service:
@@ -325,6 +333,8 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - fda-search-service-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
@@ -343,6 +353,8 @@ services:
       - "./fda-ui/.prod:/certs"
     depends_on:
       fda-identifier-service:
+        condition: service_healthy
+      fda-database-service:
         condition: service_healthy
     environment:
       HOST: 0.0.0.0

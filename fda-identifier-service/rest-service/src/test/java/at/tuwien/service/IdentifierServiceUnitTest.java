@@ -1,11 +1,9 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.VisibilityType;
-import at.tuwien.exception.IdentifierAlreadyPublishedException;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.IdentifierPublishingNotAllowedException;
 import at.tuwien.repository.jpa.IdentifierRepository;
@@ -91,59 +89,20 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void create_notSelfVisible_fails() {
-        final IdentifierDto request = IdentifierDto.builder()
-                .id(IDENTIFIER_1_ID)
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
                 .doi(IDENTIFIER_1_DOI)
                 .visibility(VisibilityTypeDto.EVERYONE)
-                .created(IDENTIFIER_1_CREATED)
-                .lastModified(IDENTIFIER_1_MODIFIED)
-                .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
+                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final String bearer = "Bearer abcxyz";
 
         /* test */
         assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal);
-        });
-    }
-
-    @Test
-    public void publish_succeeds() throws IdentifierNotFoundException, IdentifierAlreadyPublishedException {
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
-        when(identifierRepository.save(IDENTIFIER_1))
-                .thenReturn(IDENTIFIER_1);
-
-        /* test */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.TRUSTED);
-    }
-
-    @Test
-    public void publish_unpublish_fails() {
-        final Identifier entity = Identifier.builder()
-                .id(IDENTIFIER_1_ID)
-                .qid(IDENTIFIER_1_QUERY_ID)
-                .description(IDENTIFIER_1_DESCRIPTION)
-                .title(IDENTIFIER_1_TITLE)
-                .doi(IDENTIFIER_1_DOI)
-                .visibility(VisibilityType.EVERYONE)
-                .created(IDENTIFIER_1_CREATED)
-                .lastModified(IDENTIFIER_1_MODIFIED)
-                .creators(List.of(CREATOR_1, CREATOR_2))
-                .build();
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(entity));
-
-        /* test */
-        assertThrows(IdentifierAlreadyPublishedException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.SELF);
+            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
         });
     }
 

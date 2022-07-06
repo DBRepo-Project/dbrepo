@@ -18,5 +18,13 @@ public interface MessageQueueService {
      */
     void create(Table table) throws AmqpException;
 
+    /**
+     * Create a consumer
+     *
+     * @param containerId
+     * @param databaseId
+     * @param table
+     * @throws AmqpException
+     */
     void createConsumer(Long containerId, Long databaseId, Table table) throws AmqpException;
 }

@@ -1,20 +1,21 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Table Schema (and Import Data) from .csv</v-toolbar-title>
+      <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat>
       <v-stepper-step :complete="step > 1" step="1">
         Table Information
       </v-stepper-step>
 
-      <v-stepper-content class="pt-0 pb-1" step="1">
+      <v-stepper-content step="1">
         <v-form ref="form" v-model="validStep1" @submit.prevent="submit">
           <v-row dense>
             <v-col cols="8">
               <v-text-field
                 v-model="tableCreate.name"
                 :rules="[v => notEmpty(v) || $t('Required')]"
+                :error-messages="!validTableName ? ['Table with this name exists!'] : []"
                 autocomplete="off"
                 label="Name *" />
             </v-col>
@@ -47,7 +48,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-select
-                v-model="tableCreate.separator"
+                v-model="tableImport.separator"
                 :items="separators"
                 item-text="key"
                 item-value="value"
@@ -59,7 +60,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
-                v-model.number="tableCreate.skip_lines"
+                v-model.number="tableImport.skip_lines"
                 :rules="[
                   v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
                 type="number"
@@ -72,7 +73,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-select
-                v-model="tableCreate.quote"
+                v-model="tableImport.quote"
                 :items="quotes"
                 item-text="key"
                 item-value="value"
@@ -83,7 +84,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
-                v-model="tableCreate.null_element"
+                v-model="tableImport.null_element"
                 hint="Representation of 'no value present'"
                 placeholder="e.g. NA"
                 label="NULL Element" />
@@ -92,7 +93,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
-                v-model="tableCreate.true_element"
+                v-model="tableImport.true_element"
                 label="True Element"
                 hint="Representation of boolean 'true'"
                 placeholder="e.g. 1, true, YES" />
@@ -101,7 +102,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
-                v-model="tableCreate.false_element"
+                v-model="tableImport.false_element"
                 label="False Element"
                 hint="Representation of boolean 'false'"
                 placeholder="e.g. 0, false, NO" />
@@ -125,18 +126,18 @@
             <v-col cols="4">
               <v-file-input
                 v-model="file"
-                accept="text/csv"
+                accept=".csv,.tsv"
                 show-size
-                label="File Upload (.csv)" />
+                label="File Upload (.csv/.tsv)" />
             </v-col>
             <v-col cols="4">
               <v-text-field
                 v-model="url"
                 disabled
-                accept=".csv,text/csv"
+                accept=".csv,.tsv"
                 show-size
                 hint="e.g. http://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-verbindungen.csv"
-                label="File URL (.csv)" />
+                label="File URL (.csv/.tsv)" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -152,75 +153,7 @@
       </v-stepper-step>
 
       <v-stepper-content step="4">
-        <v-form ref="form" v-model="validStep4" @submit.prevent="submit">
-          <div v-for="(c, idx) in tableCreate.columns" :key="idx">
-            <v-row dense class="column pa-2 ml-1 mr-1 mb-2">
-              <v-col cols="2">
-                <v-text-field v-model="c.name" required label="Name" />
-              </v-col>
-              <v-col cols="2">
-                <v-select
-                  v-model="c.type"
-                  :items="columnTypes"
-                  item-value="value"
-                  required
-                  label="Data Type" />
-              </v-col>
-              <v-col cols="2" :hidden="c.type !== 'ENUM'">
-                <v-select
-                  v-model="c.enum_values"
-                  :disabled="c.type !== 'ENUM'"
-                  :items="c.suggestions"
-                  :menu-props="{ maxHeight: '400' }"
-                  label="Enumeration"
-                  multiple />
-              </v-col>
-              <v-col cols="2" class="pl-10" :hidden="!c.type.match('(TIMESTAMP)|(DATE)')">
-                <v-select
-                  v-if="c.type !== 'TIMESTAMP'"
-                  v-model="c.dfid"
-                  required
-                  :items="dateFormats.filter(f => !f.has_time)"
-                  item-text="example"
-                  item-value="id" />
-                <v-select
-                  v-if="c.type !== 'DATE'"
-                  v-model="c.dfid"
-                  required
-                  :items="dateFormats.filter(f => f.has_time)"
-                  item-text="example"
-                  item-value="id" />
-              </v-col>
-              <v-col cols="auto" class="pl-10" :hidden="c.type !== 'STRING' || c.type !== 'VARCHAR'">
-                <v-text-field v-model="c.check_expression" label="Check Expression" />
-              </v-col>
-              <v-col cols="auto" class="pl-2">
-                <v-checkbox v-model="c.primary_key" label="Primary Key" @click="setOthers(c)" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-checkbox v-model="c.null_allowed" :disabled="c.primary_key" label="Null Allowed" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-checkbox v-model="c.unique" :hidden="c.primary_key" label="Unique" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-text-field v-model="c.foreign_key" hidden required label="Foreign Key" />
-              </v-col>
-              <v-col cols="auto" class="pl-10">
-                <v-text-field v-model="c.references" hidden required label="References" />
-              </v-col>
-            </v-row>
-          </div>
-          <v-btn
-            class="mt-2"
-            color="primary"
-            :disabled="!validStep4"
-            :loading="loading"
-            type="submit"
-            @click="createTable">
-            Continue
-          </v-btn>
-        </v-form>
+        <TableSchema :form="validStep4" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
 
       <v-stepper-step
@@ -243,11 +176,12 @@
   </div>
 </template>
 <script>
+import TableSchema from '@/components/TableSchema'
 const { notEmpty, isNonNegativeInteger } = require('@/utils')
-
 export default {
   name: 'TableFromCSV',
   components: {
+    TableSchema
   },
   data () {
     return {
@@ -278,10 +212,14 @@ export default {
         required: value => !!value || 'Required'
       },
       dateFormats: [],
+      tableNames: [],
       tableCreate: {
         name: null,
         description: null,
-        columns: [],
+        columns: []
+      },
+      tableImport: {
+        location: null,
         quote: null,
         false_element: null,
         true_element: null,
@@ -292,7 +230,6 @@ export default {
       loading: false,
       file: null,
       url: null,
-      fileLocation: null,
       columns: [],
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
@@ -311,10 +248,34 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    validTableName () {
+      if (this.tableCreate.name === null) {
+        return true
+      }
+      if (this.tableCreate.name.length < 3) {
+        return true
+      }
+      return !this.tableNames.includes(this.tableCreate.name.toString()
+        .normalize('NFKD')
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '_'))
     }
   },
   mounted () {
     this.loadDateFormats()
+    this.listTables()
   },
   methods: {
     notEmpty,
@@ -337,6 +298,7 @@ export default {
         console.log('data upload result', res.data)
         if (res.data.success) {
           this.tableCreate.columns = res.data.columns
+          this.tableImport.location = `/tmp/${res.data.file.filename}`
           this.fileLocation = res.data.file.filename
           this.step = 4
           this.loading = false
@@ -353,6 +315,26 @@ export default {
       }
       this.loading = false
     },
+    async listTables () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, {
+          headers: { Authorization: `Bearer ${this.token}` }
+        })
+        console.debug('tables', res.data)
+        this.tableNames = res.data.map(t => t.internal_name)
+      } catch (err) {
+        this.error = true
+        console.error('could not list tables', err)
+        this.$toast.error('Could not list tables')
+      }
+      this.loading = false
+    },
+    schemaClose (event) {
+      console.trace('schema closed', event)
+      this.validStep4 = true
+      this.createTable()
+    },
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
@@ -362,7 +344,7 @@ export default {
       let getResult
       try {
         this.loading = true
-        getResult = await this.$axios.get(getUrl)
+        getResult = await this.$axios.get(getUrl, this.config)
         this.dateFormats = getResult.data.image.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
         this.loading = false
@@ -395,9 +377,7 @@ export default {
       let createResult
       try {
         this.loading = true
-        createResult = await this.$axios.post(createUrl, this.tableCreate, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        createResult = await this.$axios.post(createUrl, this.tableCreate, this.config)
         this.newTableId = createResult.data.id
         console.debug('created table', createResult.data)
       } catch (err) {
@@ -413,9 +393,7 @@ export default {
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${createResult.data.id}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, { location: `/tmp/${this.fileLocation}` }, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)
         console.debug('inserted table', insertResult.data)
       } catch (err) {
         this.loading = false

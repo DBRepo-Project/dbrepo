@@ -1,5 +1,7 @@
 package at.tuwien.service;
 
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
@@ -35,14 +37,17 @@ public interface IdentifierService {
     /**
      * Creates a new identifier in the metadata database which is not yet published
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param data        The identifier.
+     * @param containerId   The container id.
+     * @param databaseId    The database id.
+     * @param data          The identifier.
+     * @param principal     The authorization principal.
+     * @param authorization The authorization bearer.
      * @return The created identifier from the metadata database if successful.
      */
-    Identifier create(Long containerId, Long databaseId, IdentifierDto data, Principal principal)
-            throws QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException;
+    Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal, String authorization)
+            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
+            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+            DatabaseNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.
@@ -52,6 +57,18 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
     Identifier find(Long identifierId) throws IdentifierNotFoundException;
+
+    /**
+     * Export metadata for a identifier
+     *
+     * @param containerId  The container id.
+     * @param databaseId   The database id.
+     * @param identifierId The identifier id.
+     * @return The export, if successful.
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     */
+    ExportResource exportMetadata(Long containerId, Long databaseId, Long identifierId)
+            throws IdentifierNotFoundException, DatabaseNotFoundException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.

@@ -3,6 +3,8 @@ package at.tuwien.endpoints;
 import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.UserInvenioTokenException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -37,7 +39,8 @@ public class DocumentEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Create a draft", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<RecordDto> create(@NotNull @Valid @RequestBody CreateDraftDto data,
-                                           @NotNull Principal principal) throws DraftRecordCreateException {
+                                           @NotNull Principal principal)
+            throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final RecordDto document = documentService.create(data, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(document);
@@ -48,7 +51,8 @@ public class DocumentEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find a draft", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<RecordDto> find(@NotNull @PathVariable("id") String documentId,
-                                         @NotNull Principal principal) throws DraftRecordCreateException {
+                                         @NotNull Principal principal)
+            throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final RecordDto document = documentService.findById(documentId, principal);
         log.info("Found draft record with id {}", documentId);
         log.debug("found draft record {}", document);
@@ -61,7 +65,8 @@ public class DocumentEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Publish a draft", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<RecordDto> publish(@NotNull @PathVariable("id") String documentId,
-                                         @NotNull Principal principal) throws DraftRecordCreateException {
+                                         @NotNull Principal principal)
+            throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final RecordDto document = documentService.publish(documentId, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(document);
@@ -72,7 +77,8 @@ public class DocumentEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Reserve draft DOI", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<RecordDto> reserve(@NotNull @PathVariable("id") String documentId,
-                                            @NotNull Principal principal) throws DraftRecordCreateException {
+                                            @NotNull Principal principal)
+            throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final RecordDto document = documentService.reserveDoi(documentId, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(document);

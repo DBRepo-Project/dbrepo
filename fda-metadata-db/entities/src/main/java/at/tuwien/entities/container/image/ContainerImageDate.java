@@ -1,6 +1,7 @@
 package at.tuwien.entities.container.image;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -51,6 +52,7 @@ public class ContainerImageDate {
     private String unixFormat;
 
     @CreatedDate
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

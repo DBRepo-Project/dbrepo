@@ -1,0 +1,34 @@
+package at.tuwien.service.impl;
+
+import at.tuwien.entities.user.User;
+import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Slf4j
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserRepository userRepository;
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public User find(String username) throws UserNotFoundException {
+        final Optional<User> optional = userRepository.findByUsername(username);
+        if (optional.isEmpty()) {
+            log.error("Failed to find user with username {}", username);
+            throw new UserNotFoundException("Failed to find user");
+        }
+        return optional.get();
+    }
+
+}

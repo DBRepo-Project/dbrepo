@@ -5,6 +5,8 @@ import at.tuwien.api.document.record.CreateDraftDto;
 import at.tuwien.api.document.record.RecordDto;
 import at.tuwien.endpoints.DocumentEndpoint;
 import at.tuwien.exception.DraftRecordCreateException;
+import at.tuwien.exception.UserInvenioTokenException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.AuthenticationServiceGateway;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -36,7 +38,7 @@ public class DocumentEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"ROLE_RESEARCHER"})
-    public void create_succeed() throws DraftRecordCreateException {
+    public void create_succeed() throws DraftRecordCreateException, UserNotFoundException, UserInvenioTokenException {
         final CreateDraftDto request = DOCUMENT_1_CREATE_DRAFT;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

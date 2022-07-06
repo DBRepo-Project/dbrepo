@@ -7,6 +7,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.impl.StoreServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,14 +42,15 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, NotAllowedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(List.of(QUERY_1));
 
         /* test */
-        final ResponseEntity<List<QueryDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID);
+        final ResponseEntity<List<QueryDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
@@ -56,14 +59,15 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_succeeds() throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(QUERY_1);
 
         /* test */
-        final ResponseEntity<QueryDto> response = storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+        final ResponseEntity<QueryDto> response = storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(QUERY_1_DTO, response.getBody());
     }
@@ -71,6 +75,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @Test
     public void find_notFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
@@ -78,13 +83,14 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         });
     }
 
     @Test
     public void find_dbNotFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
@@ -92,7 +98,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         });
     }
 
