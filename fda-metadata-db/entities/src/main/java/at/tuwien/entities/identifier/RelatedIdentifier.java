@@ -36,9 +36,6 @@ public class RelatedIdentifier {
     private Long id;
 
     @Column(nullable = false)
-    private Long iid;
-
-    @Column(nullable = false)
     private String value;
 
     @Column
@@ -54,6 +51,13 @@ public class RelatedIdentifier {
             @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
     private User creator;
+
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "identifier_id", referencedColumnName = "id")
+    })
+    private Identifier identifier;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

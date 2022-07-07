@@ -56,8 +56,8 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator,i) in identifier.creators" :key="i" dense>
-            <v-col cols="3">
+          <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
+            <v-col cols="4">
               <v-text-field
                 v-model="creator.name"
                 name="name"
@@ -65,7 +65,7 @@
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
-            <v-col cols="3">
+            <v-col cols="4">
               <v-text-field
                 v-model="creator.affiliation"
                 name="affiliation"
@@ -92,8 +92,8 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-for="(related,j) in identifier.related_identifiers" :key="j" dense>
-            <v-col cols="3">
+          <v-row v-for="(related,i) in identifier.related_identifiers" :key="`r-${i}`" dense>
+            <v-col cols="4">
               <v-text-field
                 v-model="related.value"
                 name="related"
@@ -101,24 +101,24 @@
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
-            <v-col cols="2">
+            <v-col cols="3">
               <v-select
-                v-model="related.identifier_type"
+                v-model="related.type"
                 :items="relatedTypes"
                 item-value="value"
                 item-text="value"
                 label="Type" />
             </v-col>
-            <v-col cols="2">
+            <v-col cols="3">
               <v-select
-                v-model="related.relation_type"
+                v-model="related.relation"
                 :items="relationTypes"
                 item-value="value"
                 item-text="value"
                 label="Relation" />
             </v-col>
             <v-col cols="1" class="mt-5">
-              <v-btn color="error" icon x-small @click="deleteRelatedIdentifier(j)">
+              <v-btn color="error" icon x-small @click="deleteRelatedIdentifier(i)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
             </v-col>
@@ -275,8 +275,8 @@ export default {
     addRelatedIdentifier () {
       this.identifier.related_identifiers.push({
         value: null,
-        relation_type: 'Cites',
-        identifier_type: 'DOI'
+        relation: 'Cites',
+        type: 'DOI'
       })
     },
     async loadDatabase () {

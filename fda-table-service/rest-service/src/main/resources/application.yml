@@ -35,8 +35,5 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
-  system:
-    username: system
-    passwd: "${SYSTEM_PASSWORD}"
-  gateway.endpoint: http://localhost:9095
-  elastic.endpoint: fda-search-service:9200
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  elastic.endpoint: "${SEARCH_ENDPOINT}"

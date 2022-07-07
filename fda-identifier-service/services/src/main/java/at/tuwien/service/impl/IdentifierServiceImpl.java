@@ -118,7 +118,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                     .stream()
                     .map(r -> {
                         final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
-                        id.setIid(entity.getId());
+                        id.setIdentifier(entity);
                         id.setCreator(creator);
                         return id;
                     })

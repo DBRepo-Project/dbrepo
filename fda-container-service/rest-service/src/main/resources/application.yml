@@ -30,4 +30,4 @@ eureka:
 fda:
   mount.path: /tmp
   ready.path: ./ready
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"

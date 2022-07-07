@@ -47,11 +47,13 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            class="mb-2"
             @click="cancel">
             Cancel
           </v-btn>
           <v-btn
             id="createDB"
+            class="mb-2 mr-2 ml-4"
             :disabled="!valid || loading"
             color="primary"
             type="submit"

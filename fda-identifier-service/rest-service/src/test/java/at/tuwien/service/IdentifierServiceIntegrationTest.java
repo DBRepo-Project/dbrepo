@@ -6,10 +6,7 @@ import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.CreatorRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -57,9 +54,13 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private QueryServiceGateway queryServiceGateway;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @BeforeEach
     @Transactional
     public void beforeEach() {
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         identifierRepository.save(IDENTIFIER_1);
@@ -122,6 +123,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_TITLE, response.getTitle());
         assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
         assertEquals(2, response.getCreators().size());
+        assertEquals(1, response.getRelatedIdentifiers().size());
+        assertEquals(IDENTIFIER_2_ID, response.getRelatedIdentifiers().get(0).getIdentifier().getId());
     }
 
     @Test

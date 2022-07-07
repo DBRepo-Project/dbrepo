@@ -35,4 +35,4 @@ fda:
   mount.path: /tmp
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  document.endpoint: https://test.researchdata.tuwien.ac.at
+  document.endpoint: "${DOCUMENT_ENDPOINT}"

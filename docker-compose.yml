@@ -86,6 +86,8 @@ services:
       fda-userdb:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -111,6 +113,7 @@ services:
     networks:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -132,8 +135,6 @@ services:
     networks:
       fda-public:
     environment:
-      TOKEN: ${INVENIO_TOKEN}
-      REFERER: https://dbrepo.ossdip.at
       DOCUMENT_ENDPOINT: https://test.researchdata.tuwien.ac.at
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
@@ -207,8 +208,9 @@ services:
       fda-public:
       fda-userdb:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
-      SYSTEM_PASSWORD: ${ADMIN_PASSWORD:-admin}
       multipart.location: /tmp
       TZ: Europe/Vienna
     ports:
@@ -235,6 +237,7 @@ services:
     networks:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:

@@ -7,7 +7,6 @@ target/
 
 ### Generated ###
 ready
-service_ready
 
 ### STS ###
 .apt_generated

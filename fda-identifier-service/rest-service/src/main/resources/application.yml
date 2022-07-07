@@ -29,4 +29,4 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ~/
-  gateway.endpoint: http://fda-gateway-service:9095
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"

@@ -31,6 +31,6 @@ eureka:
   instance.hostname: fda-database-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
-  elastic.endpoint: localhost:9200
+  elastic.endpoint: "${SEARCH_ENDPOINT}"
   ready.path: ./ready
-  gateway.endpoint: http://fda-gateway-service:9095
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
