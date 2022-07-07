@@ -152,7 +152,12 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ creator }}</span>
+                <span v-if="!loadingQuery">
+                  {{ creator }}
+                  <sup>
+                    <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                  </sup>
+                </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Query Execution
@@ -270,7 +275,8 @@ export default {
         is_public: null,
         publisher: null,
         creator: {
-          username: null
+          username: null,
+          email_verified: false
         },
         license: {
           identifier: null,
