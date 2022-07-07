@@ -478,7 +478,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
 CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 (
     id            bigint                               DEFAULT nextval('mdb_related_identifiers_seq'),
-    identifier_id bigint                      NOT NULL,
+    iid           bigint                      NOT NULL,
     value         text                        NOT NULL,
     type          varchar(255),
     relation      varchar(255),
@@ -486,8 +486,8 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
     created_by    bigint                      NOT NULL,
     last_modified timestamp without time zone,
     deleted       timestamp without time zone,
-    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (identifier_id) REFERENCES mdb_identifiers (id),
+    PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID)
 );
 

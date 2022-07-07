@@ -18,15 +18,17 @@ import java.time.Instant;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@IdClass(RelatedIdentifierKey.class)
 @Where(clause = "deleted is null")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_related_identifiers set deleted = NOW() where id = ?")
-@Table(name = "mdb_related_identifiers")
+@Table(name = "mdb_related_identifiers", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"id", "iid"})
+})
 public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     @GeneratedValue(generator = "related-identifier-sequence")
     @GenericGenerator(
             name = "related-identifier-sequence",
@@ -34,6 +36,10 @@ public class RelatedIdentifier {
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_related_identifiers_seq")
     )
     private Long id;
+
+    @Id
+    @EqualsAndHashCode.Include
+    private Long iid;
 
     @Column(nullable = false)
     private String value;
@@ -51,13 +57,6 @@ public class RelatedIdentifier {
             @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
     private User creator;
-
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "identifier_id", referencedColumnName = "id")
-    })
-    private Identifier identifier;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

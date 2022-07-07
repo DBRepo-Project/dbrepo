@@ -16,6 +16,7 @@ import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.DocumentMapper;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.jpa.RelatedIdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
@@ -39,16 +40,19 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
+    private final RelatedIdentifierRepository relatedIdentifierRepository;
 
     public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper,
                                  DatabaseService databaseService, IdentifierMapper identifierMapper,
-                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository) {
+                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
+                                 RelatedIdentifierRepository relatedIdentifierRepository) {
         this.userService = userService;
         this.documentMapper = documentMapper;
         this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
+        this.relatedIdentifierRepository = relatedIdentifierRepository;
     }
 
     @Override
@@ -114,15 +118,13 @@ public class IdentifierServiceImpl implements IdentifierService {
                 })
                 .collect(Collectors.toList()));
         if (data.getRelatedIdentifiers() != null) {
-            entity.setRelatedIdentifiers(data.getRelatedIdentifiers()
-                    .stream()
-                    .map(r -> {
+            data.getRelatedIdentifiers()
+                    .forEach(r -> {
                         final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
-                        id.setIdentifier(entity);
+                        id.setIid(entity.getId());
                         id.setCreator(creator);
-                        return id;
-                    })
-                    .collect(Collectors.toList()));
+                        relatedIdentifierRepository.save(id);
+                    });
         }
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());

@@ -84,9 +84,6 @@ public class Identifier {
     })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
-    private List<RelatedIdentifier> relatedIdentifiers;
-
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;

@@ -123,8 +123,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_TITLE, response.getTitle());
         assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
         assertEquals(2, response.getCreators().size());
-        assertEquals(1, response.getRelatedIdentifiers().size());
-        assertEquals(IDENTIFIER_2_ID, response.getRelatedIdentifiers().get(0).getIdentifier().getId());
     }
 
     @Test
