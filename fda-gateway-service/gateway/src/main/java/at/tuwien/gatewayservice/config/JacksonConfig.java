@@ -1,4 +1,4 @@
-package at.tuwien.config;
+package at.tuwien.gatewayservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

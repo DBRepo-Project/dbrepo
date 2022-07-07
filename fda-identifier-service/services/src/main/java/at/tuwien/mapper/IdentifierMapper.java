@@ -17,6 +17,10 @@ public interface IdentifierMapper {
     @Transactional
     Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
+    /* keep */
+    @Transactional
+    RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
+
     @Transactional
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 

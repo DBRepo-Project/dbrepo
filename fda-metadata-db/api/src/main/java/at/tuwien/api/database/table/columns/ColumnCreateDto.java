@@ -37,14 +37,6 @@ public class ColumnCreateDto {
     @Parameter(name = "date format id", example = "1")
     private Long dfid;
 
-    @JsonProperty("decimal_digits_before")
-    @Parameter(name = "decimal digits before point", example = "3")
-    private Long decimalDigitsBefore;
-
-    @JsonProperty("decimal_digits_after")
-    @Parameter(name = "decimal digits after point", example = "0")
-    private Long decimalDigitsAfter;
-
     @NotNull
     @Parameter(name = "unique", example = "true")
     private Boolean unique = false;

@@ -2,6 +2,7 @@ package at.tuwien.api.identifier;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import javax.validation.constraints.NotNull;
 
@@ -9,6 +10,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
+@Jacksonized
 public class RelatedIdentifierCreateDto {
 
     @NotNull

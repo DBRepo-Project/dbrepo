@@ -14,7 +14,7 @@
           </v-alert>
           <v-text-field
             id="database"
-            v-model="database"
+            v-model="createContainer.name"
             name="database"
             label="Name *"
             autofocus
@@ -22,7 +22,7 @@
             required />
           <v-textarea
             id="description"
-            v-model="description"
+            v-model="createDatabase.description"
             name="description"
             rows="2"
             label="Description *"
@@ -40,7 +40,7 @@
             required />
           <v-checkbox
             id="public"
-            v-model="isPublic"
+            v-model="createDatabase.is_public"
             name="public"
             label="Public" />
         </v-card-text>
@@ -75,12 +75,18 @@ export default {
       valid: false,
       loading: false,
       error: false,
-      database: null,
-      description: null,
-      isPublic: true,
       engine: null,
       engines: [],
-      container: null
+      createContainer: {
+        name: null,
+        repository: null,
+        tag: null
+      },
+      createDatabase: {
+        name: null,
+        description: null,
+        is_public: true
+      }
     }
   },
   computed: {
@@ -89,6 +95,16 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {
+          headers: {}
+        }
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -133,14 +149,9 @@ export default {
       try {
         this.loading = true
         this.error = false
-        res = await this.$axios.post('/api/container', {
-          name: this.database.trim(),
-          description: this.description.trim(),
-          repository: this.engine.repository,
-          tag: this.engine.tag
-        }, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        this.createContainer.repository = this.engine.repository
+        this.createContainer.tag = this.engine.tag
+        res = await this.$axios.post('/api/container', this.createContainer, this.config)
         containerId = res.data.id
         console.debug('created container', res.data)
         this.loading = false
@@ -161,10 +172,7 @@ export default {
       try {
         this.loading = true
         this.error = false
-        res = await this.$axios.put(`/api/container/${containerId}`,
-          { action: 'START' }, {
-            headers: { Authorization: `Bearer ${this.token}` }
-          })
+        res = await this.$axios.put(`/api/container/${containerId}`, { action: 'START' }, this.config)
         console.debug('started container', res.data)
       } catch (err) {
         this.error = true
@@ -179,15 +187,10 @@ export default {
       // wait for it to finish
       this.loading = true
       this.error = false
+      this.createDatabase.name = this.createContainer.name
       for (let i = 0; i < 5; i++) {
         try {
-          res = await this.$axios.post(`/api/container/${containerId}/database`, {
-            name: this.database.trim(),
-            description: this.description.trim(),
-            is_public: this.isPublic
-          }, {
-            headers: { Authorization: `Bearer ${this.token}` }
-          })
+          res = await this.$axios.post(`/api/container/${containerId}/database`, this.createDatabase, this.config)
           console.debug('created database', res)
           break
         } catch (err) {

@@ -1,10 +1,14 @@
 <template>
   <div>
+    <v-progress-linear v-if="loadingDatabase || loadingIdentifier || loadingQuery" />
     <v-toolbar flat>
-      <v-toolbar-title>{{ identifier.title }}</v-toolbar-title>
+      <v-toolbar-title>
+        <v-skeleton-loader v-if="loadingIdentifier" type="text" class="skeleton-small" />
+        <span v-if="!loadingIdentifier">{{ identifier.title }}</span>
+      </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loading" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
           <v-icon left>mdi-fingerprint</v-icon> Persist
         </v-btn>
         <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
@@ -15,7 +19,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card v-if="!loading" flat>
+    <v-card flat>
       <v-card-title>
         Query Information
       </v-card-title>
@@ -30,20 +34,30 @@
                 Database Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <span v-if="database_visibility">Public</span>
-                <span v-if="!database_visibility">Private</span>
+                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
+                <span v-if="!loadingDatabase && database_visibility">Public</span>
+                <span v-if="!loadingDatabase && !database_visibility">Private</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Database Name
               </v-list-item-title>
               <v-list-item-content>
-                {{ database.name }}
+                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
+                <span v-if="!loadingDatabase">{{ database.name }}</span>
+              </v-list-item-content>
+              <v-list-item-title v-if="database.publisher" class="mt-2">
+                Database Publisher
+              </v-list-item-title>
+              <v-list-item-content v-if="database.publisher">
+                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
+                <span v-if="!loadingDatabase">{{ database.publisher }}</span>
               </v-list-item-content>
               <v-list-item-title v-if="database.license" class="mt-2">
                 Database License
               </v-list-item-title>
               <v-list-item-content v-if="database.license">
-                <a :href="database.license.uri">{{ database.license.identifier }}</a>
+                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-xsmall" />
+                <a v-if="!loadingDatabase" :href="database.license.uri">{{ database.license.identifier }}</a>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -74,7 +88,7 @@
                 Creators
               </v-list-item-title>
               <v-list-item-content>
-                <span v-for="(creator, i) in identifier.creators" :key="i" class="mt-1">
+                <span v-for="(creator, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
                   <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
                   {{ creator.name }} <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
                 </span>
@@ -84,6 +98,33 @@
               </v-list-item-title>
               <v-list-item-content>
                 {{ identifier.publication_year }}
+              </v-list-item-content>
+              <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
+                Related Identifiers
+              </v-list-item-title>
+              <v-list-item-content v-if="identifier.related.length > 0">
+                <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
+                  <span v-if="rel.type === 'DOI'">
+                    {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                    <span v-if="rel.relation">({{ rel.relation }})</span>
+                  </span>
+                  <span v-if="rel.type === 'URL'">
+                    {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
+                    <span v-if="rel.relation">({{ rel.relation }})</span>
+                  </span>
+                  <span v-if="rel.type === 'arXiv'">
+                    {{ rel.type }}: <a :href="`https://arxiv.org/abs/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                    <span v-if="rel.relation">({{ rel.relation }})</span>
+                  </span>
+                  <span v-if="rel.type === 'EISSN'">
+                    {{ rel.type }}: <a :href="`https://portal.issn.org/resource/ISSN/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                    <span v-if="rel.relation">({{ rel.relation }})</span>
+                  </span>
+                  <span v-if="rel.type !== 'DOI' && rel.type !== 'URL' && rel.type !== 'arXiv' && rel.type !== 'EISSN'">
+                    {{ rel.type }}: {{ rel.value }}
+                    <span v-if="rel.relation">({{ rel.relation }})</span>
+                  </span>
+                </div>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -96,31 +137,36 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <pre>{{ query.query }}</pre>
+                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-large" />
+                <pre v-if="!loadingQuery">{{ query.query }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Query Hash
               </v-list-item-title>
               <v-list-item-content>
-                <pre>{{ query_hash }}</pre>
+                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-medium" />
+                <pre v-if="!loadingQuery">{{ query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Query Creator
               </v-list-item-title>
               <v-list-item-content>
-                {{ creator }}
+                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
+                <span v-if="!loadingQuery">{{ creator }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Query Execution
               </v-list-item-title>
               <v-list-item-content>
-                {{ execution }}
+                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
+                <span v-if="!loadingQuery">{{ execution }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Query Creation
               </v-list-item-title>
               <v-list-item-content>
-                {{ query_creation }}
+                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
+                <span v-if="!loadingQuery">{{ query_creation }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -133,25 +179,30 @@
                 Result Visibility
               </v-list-item-title>
               <v-list-item-content>
-                {{ result_visibility_icon ? 'Public' : 'Private' }}
+                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-xsmall" />
+                <span v-if="!metadataLoading">{{ result_visibility_icon ? 'Public' : 'Private' }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Hash
               </v-list-item-title>
               <v-list-item-content>
-                <pre>{{ result_hash }}</pre>
+                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-medium" />
+                <pre v-if="!metadataLoading">{{ result_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Number
               </v-list-item-title>
               <v-list-item-content>
-                {{ result_number }}
+                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-xsmall" />
+                <span v-if="!metadataLoading">{{ result_number }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
         </v-list>
       </v-card-text>
-      <QueryResults id="query-results" ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 mb-0" />
+      <v-card-text>
+        <QueryResults id="query-results" ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 mb-0" />
+      </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
@@ -209,6 +260,7 @@ export default {
         result_number: null,
         execution: null,
         publication_year: null,
+        related: [],
         doi: null,
         creators: []
       },
@@ -227,7 +279,9 @@ export default {
       },
       persistQueryExists: false,
       persistQueryDialog: false,
-      loading: true,
+      loadingDatabase: false,
+      loadingIdentifier: false,
+      loadingQuery: false,
       metadataLoading: false,
       downloadLoading: false,
       error: false,
@@ -368,7 +422,7 @@ export default {
       this.downloadLoading = false
     },
     async loadQuery () {
-      this.loading = true
+      this.loadingQuery = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
         console.debug('query', res.data)
@@ -380,10 +434,10 @@ export default {
         }
         this.error = true
       }
-      this.loading = false
+      this.loadingQuery = false
     },
     async loadDatabase () {
-      this.loading = true
+      this.loadingDatabase = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         console.debug('database', res.data)
@@ -395,13 +449,13 @@ export default {
         }
         this.error = true
       }
-      this.loading = false
+      this.loadingDatabase = false
     },
     async loadMetadata () {
       if (!this.query.id) {
         return
       }
-      this.loading = true
+      this.loadingIdentifier = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
         this.identifier = res.data[0]
@@ -413,7 +467,7 @@ export default {
           this.$toast.error('Could not load identifier')
         }
       }
-      this.loading = false
+      this.loadingIdentifier = false
     },
     openDialog () {
       this.persistQueryDialog = true
@@ -434,5 +488,17 @@ pre {
 }
 .v-card__text {
   font-size: initial;
+}
+.skeleton-large .v-skeleton-loader__text {
+  width: 400px;
+}
+.skeleton-medium .v-skeleton-loader__text {
+  width: 200px;
+}
+.skeleton-small .v-skeleton-loader__text {
+  width: 100px;
+}
+.skeleton-xsmall .v-skeleton-loader__text {
+  width: 50px;
 }
 </style>

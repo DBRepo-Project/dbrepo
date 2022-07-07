@@ -184,7 +184,6 @@ export default {
         null_allowed,
         primary_key,
         check_expression: null,
-        date_format: null,
         foreign_key: null,
         references: null,
         unique

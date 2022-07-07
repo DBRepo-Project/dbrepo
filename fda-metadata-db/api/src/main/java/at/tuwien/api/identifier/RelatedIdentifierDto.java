@@ -1,6 +1,7 @@
 package at.tuwien.api.identifier;
 
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -17,6 +18,7 @@ public class RelatedIdentifierDto {
     @NotNull
     private Long id;
 
+    @JsonIgnore
     @NotNull
     private Long iid;
 
@@ -31,6 +33,7 @@ public class RelatedIdentifierDto {
     private RelationTypeDto relation;
 
     @ToString.Exclude
+    @JsonIgnore
     @NotNull
     private UserDto creator;
 

@@ -42,6 +42,9 @@
               <td>
                 <span v-if="item.database">{{ formatCreator(item.database.creator) }}</span>
                 <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />
+                <sup v-if="item.database">
+                  <v-icon v-if="item.database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                </sup>
               </td>
               <td>{{ formatDate(item.created) }}</td>
             </tr>

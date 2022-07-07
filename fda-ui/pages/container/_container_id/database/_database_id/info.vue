@@ -35,7 +35,19 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ creator }}</span>
+                    <span v-if="!loading">
+                      {{ creator }}
+                      <sup>
+                        <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                      </sup>
+                    </span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Created
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ created }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Language
@@ -67,7 +79,7 @@
               v-model="editDbDialog"
               persistent
               max-width="640">
-              <EditDB :database="database" @close-dialog="editDbDialog = false" />
+              <EditDB :database="database" @close-dialog="closeDialog" />
             </v-dialog>
           </v-card-text>
         </v-card>
@@ -181,6 +193,10 @@ export default {
         this.$toast.error('Could not load database.')
       }
       this.loading = false
+    },
+    closeDialog () {
+      this.loadDatabase()
+      this.editDbDialog = false
     },
     formatDate (d) {
       return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')

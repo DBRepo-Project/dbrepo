@@ -14,7 +14,7 @@
             label="Public" />
           <v-text-field
             id="publisher"
-            v-model="database.publisher"
+            v-model="modify.publisher"
             name="publisher"
             label="Publisher *"
             autofocus
@@ -22,7 +22,7 @@
             required />
           <v-textarea
             id="description"
-            v-model="database.description"
+            v-model="modify.description"
             name="description"
             rows="2"
             label="Description *"
@@ -30,7 +30,7 @@
             required />
           <v-select
             id="language"
-            v-model="database.language"
+            v-model="modify.language"
             name="language"
             label="Language *"
             :items="languages"
@@ -40,7 +40,7 @@
             required />
           <v-text-field
             id="publication-year"
-            v-model.number="database.publication_year"
+            v-model.number="modify.publication_year"
             name="publication_year"
             label="Publication Year *"
             type="number"
@@ -48,7 +48,7 @@
             required />
           <v-select
             id="license"
-            v-model="database.license"
+            v-model="modify.license"
             name="license"
             label="License *"
             :items="licenses"
@@ -133,6 +133,7 @@ export default {
     this.modify.is_public = this.database.is_public
     this.modify.publisher = this.database.publisher
     this.modify.description = this.database.description
+    this.modify.publication_year = this.database.publication_year
     this.modify.language = this.database.language
     this.modify.license = this.database.license
   },
@@ -158,7 +159,7 @@ export default {
     async updateDatabase () {
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.database, this.config)
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.modify, this.config)
         this.database = res.data
         console.debug('database', this.database)
         this.$toast.success('Successfully updated the database.')

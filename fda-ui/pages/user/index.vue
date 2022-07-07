@@ -5,9 +5,8 @@
       <v-toolbar-title>
         <v-skeleton-loader v-if="loading || error" type="text" width="200" />
         <span v-if="!loading && !error">
-          {{ name }} <sup>
-            <v-icon v-if="user.email_verified" color="primary" title="E-Mail verified" small>mdi-shield-check</v-icon>
-            <v-icon v-if="!user.email_verified" color="accent" title="E-Mail not yet verified" small>mdi-alert-decagram</v-icon>
+          {{ name }} <sup v-if="user.email_verified">
+            <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
           </sup>
         </span>
       </v-toolbar-title>

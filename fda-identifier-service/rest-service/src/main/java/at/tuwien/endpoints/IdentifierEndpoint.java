@@ -51,7 +51,8 @@ public class IdentifierEndpoint {
             final Identifier identifier = identifierService.find(containerId, databaseId, qid);
             log.info("Found identifier with id {} filtered by query id {}", identifier.getId(), qid);
             log.debug("found identifier {} filtered by query id {}", identifier, qid);
-            return ResponseEntity.ok(List.of(identifierMapper.identifierToIdentifierDto(identifier)));
+            final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifier);
+            return ResponseEntity.ok(List.of(dto));
         }
         final List<Identifier> identifiers = identifierService.findAll(containerId, databaseId);
         log.info("Found {} identifiers", identifiers.size());

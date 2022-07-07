@@ -78,6 +78,27 @@ public interface DocumentMapper {
                     .append("</language>");
         }
         builder.append("<resourceType resourceTypeGeneral=\"Dataset\">Dataset</resourceType>");
+        if (data.getRelated().size() > 0) {
+            builder.append("<relatedIdentifiers>");
+            data.getRelated()
+                    .forEach(related -> {
+                        builder.append("<relatedIdentifier");
+                        if (related.getType() != null) {
+                            builder.append(" relatedIdentifierType=\"")
+                                    .append(related.getType())
+                                    .append("\"");
+                        }
+                        if (related.getRelation() != null) {
+                            builder.append(" relationType=\"")
+                                    .append(related.getRelation())
+                                    .append("\"");
+                        }
+                        builder.append(">")
+                                .append(related.getValue())
+                                .append("</relatedIdentifier>");
+                    });
+            builder.append("</relatedIdentifiers>");
+        }
         if (database.getLicense() != null) {
             builder.append("<rightsList><rights xml:lang=\"en-US\" schemeURI=\"https://spdx.org/licenses/\" ")
                     .append("rightsIdentifierScheme=\"SPDX\" rightsIdentifier=\"")

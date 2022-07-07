@@ -70,20 +70,22 @@
         </v-tab-item>
       </v-tabs-items>
     </v-card>
-    <div>
-      <v-row>
-        <v-col>
-          <QueryResults ref="queryResults" v-model="queryId" />
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col>
-          <v-btn v-if="queryId" color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
-            More
-          </v-btn>
-        </v-col>
-      </v-row>
-    </div>
+    <v-card flat>
+      <v-card-text>
+        <v-row>
+          <v-col>
+            <QueryResults ref="queryResults" v-model="queryId" />
+          </v-col>
+        </v-row>
+        <v-row v-if="queryId">
+          <v-col>
+            <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+              More
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
@@ -165,8 +167,10 @@ export default {
       this.queryId = null
     }
   },
-  beforeMount () {
+  mounted () {
     this.loadTables()
+      .then(() => this.selectTable())
+      .then(() => this.loadColumns())
   },
   methods: {
     async loadTables () {
@@ -178,6 +182,20 @@ export default {
         console.debug('tables', this.tables)
       } catch (err) {
         this.$toast.error('Could not list table.')
+      }
+    },
+    selectTable () {
+      if (this.$route.query.tid === undefined) {
+        return
+      }
+      const tid = parseInt(this.$route.query.tid)
+      const selection = this.tables.filter(t => t.id === tid)
+      if (selection.length > 0) {
+        this.table = selection[0]
+        console.info('Preselect table with id', tid)
+        console.debug('preselected table', this.table)
+      } else {
+        console.warn('Failed to find table with id', tid)
       }
     },
     execute () {

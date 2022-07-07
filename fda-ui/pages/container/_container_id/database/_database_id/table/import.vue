@@ -163,11 +163,9 @@
       </v-stepper-step>
 
       <v-stepper-content step="5">
-        Proceed to table view.
         <div class="mt-2">
-          <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`" outlined>
-            <v-icon>mdi-table</v-icon>
-            View
+          <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`">
+            View Table
           </v-btn>
         </div>
       </v-stepper-content>
@@ -231,17 +229,6 @@ export default {
       file: null,
       url: null,
       columns: [],
-      columnTypes: [
-        // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'BOOLEAN', text: 'Boolean' },
-        { value: 'NUMBER', text: 'Number' },
-        { value: 'BLOB', text: 'Binary Large Object' },
-        { value: 'DATE', text: 'Date' },
-        { value: 'TIMESTAMP', text: 'Timestamp' },
-        { value: 'DECIMAL', text: 'Decimal' },
-        { value: 'STRING', text: 'Character Varying' },
-        { value: 'TEXT', text: 'Text' }
-      ],
       newTableId: 42 // FIXME ???
     }
   },

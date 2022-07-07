@@ -50,10 +50,9 @@ public class IdentifierDto {
     @Parameter(name = "query normalized")
     private String queryNormalized;
 
-    @NotNull
-    @JsonProperty("related_identifiers")
+    @JsonProperty("related")
     @Parameter(name = "related identifiers")
-    private List<RelatedIdentifierDto> relatedIdentifiers;
+    private List<RelatedIdentifierDto> related;
 
     @NotBlank
     @JsonProperty("query_hash")

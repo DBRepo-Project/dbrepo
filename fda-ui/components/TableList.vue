@@ -7,7 +7,7 @@
       </v-card-title>
     </v-card>
     <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion>
-      <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item.id, true)">
+      <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item.id)">
         <v-expansion-panel-header>
           {{ item.name }}
         </v-expansion-panel-header>
@@ -16,12 +16,9 @@
             <v-col>
               <v-list dense>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-fingerprint</v-icon>
-                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
-                      ID
+                      Table ID
                     </v-list-item-title>
                     <v-list-item-content>
                       {{ tableDetails.id }}
@@ -29,12 +26,9 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-information-variant</v-icon>
-                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
-                      Internal Name
+                      Table Internal Name
                     </v-list-item-title>
                     <v-list-item-content>
                       {{ tableDetails.internal_name }}
@@ -42,22 +36,6 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-table</v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Columns
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.columns.length }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-road-variant</v-icon>
-                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Exchange
@@ -68,9 +46,6 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-road-variant</v-icon>
-                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Routing Key
@@ -81,9 +56,16 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-notebook-outline</v-icon>
-                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Table Creation
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      {{ creation }}
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
                       Description
@@ -98,8 +80,11 @@
           </v-row>
           <v-row dense>
             <v-col>
-              <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
-                View
+              <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+                View Data
+              </v-btn>
+              <v-btn color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
+                Build Query
               </v-btn>
             </v-col>
             <v-col class="align-right">
@@ -120,6 +105,9 @@
               </template>
               <template v-slot:item.unique="{ item }">
                 <span v-if="item.unique">●</span> {{ item.unique }}
+              </template>
+              <template v-slot:item.column_type="{ item }">
+                {{ columnName(item) }}
               </template>
               <template v-slot:item.is_primary_key="{ item }">
                 <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
@@ -159,6 +147,8 @@
 </template>
 
 <script>
+import { format } from 'date-fns'
+
 export default {
   data () {
     return {
@@ -167,23 +157,38 @@ export default {
       tables: [],
       panel: null,
       database: {
-        exchange: null
+        exchange: null,
+        tables: []
       },
       tableDetails: {
         id: null,
         internal_name: null,
         description: null,
         topic: null,
-        columns: []
+        columns: [],
+        created: null
       },
       dialogDelete: false,
-      headers: [{ value: 'name', text: 'Name' },
+      headers: [
+        { value: 'name', text: 'Name' },
         { value: 'column_type', text: 'Type' },
         { value: 'column_concept', text: 'Unit of Measurement' },
         { value: 'is_primary_key', text: 'Primary Key' },
         { value: 'unique', text: 'Unique' },
         { value: 'is_null_allowed', text: 'Nullable' },
-        { value: 'auto_generated', text: 'Sequence' }]
+        { value: 'auto_generated', text: 'Sequence' }
+      ],
+      columnTypes: [
+        // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
+        { value: 'BOOLEAN', text: 'Boolean' },
+        { value: 'NUMBER', text: 'Number' },
+        { value: 'BLOB', text: 'Binary Large Object' },
+        { value: 'DATE', text: 'Date' },
+        { value: 'TIMESTAMP', text: 'Timestamp' },
+        { value: 'DECIMAL', text: 'Decimal' },
+        { value: 'STRING', text: 'Character Varying' },
+        { value: 'TEXT', text: 'Text' }
+      ]
     }
   },
   computed: {
@@ -200,13 +205,15 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    creation () {
+      return this.formatDate(this.tableDetails.created)
     }
   },
   mounted () {
     console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
-    this.loadTables()
   },
   methods: {
     async loadDatabase () {
@@ -215,40 +222,29 @@ export default {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
         console.debug('database', this.database)
-        this.error = false
+        this.tables = this.database.tables
+        console.debug('tables', this.tables)
       } catch (err) {
         this.error = true
         this.$toast.error('Could not get database details.')
       }
       this.loading = false
     },
-    async loadTables () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
-        this.tables = res.data
-        console.debug('tables', this.tables)
-        this.error = false
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to load tables.')
+    columnName (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.column_type)
+      if (filter.length > 0) {
+        return filter[0].text
       }
-      this.loading = false
+      return column.column_type
     },
-    async details (tableId, clicked = false) {
-      // don't fetch details when we click-close an open accordion
-      if (clicked && this.tables[this.panel] && this.tables[this.panel].id === tableId) {
-        return
+    details (tableId) {
+      const select = this.tables.filter(t => t.id === tableId)
+      if (select.length > 0) {
+        this.tableDetails = select[0]
       }
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
-        this.tableDetails = res.data
-        this.$store.commit('SET_TABLE', this.tableDetails)
-      } catch (err) {
-        this.tableDetails = undefined
-        this.$toast.error('Could not get table details.')
-      }
-      this.$forceUpdate()
+    },
+    formatDate (d) {
+      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
     /**
      * if tableId is given, open the table after refresh

@@ -30,6 +30,10 @@ public class DatabaseDto {
     @Parameter(name = "database name", example = "Weather Australia")
     private String name;
 
+    @NotBlank
+    @Parameter(name = "database exchange")
+    private String exchange;
+
     @NotNull
     @Parameter(name = "database creator")
     private UserDto creator;

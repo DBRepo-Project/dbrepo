@@ -88,6 +88,12 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private List<RelatedIdentifier> related;
+
     @Column
     private String doi;
 
