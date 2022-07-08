@@ -61,7 +61,8 @@ class CreatorDto(object):
         if orcid is not None:
             self.orcid = orcid
         self.created = created
-        self.last_modified = last_modified
+        if last_modified is not None:
+            self.last_modified = last_modified
 
     @property
     def id(self):
@@ -192,8 +193,6 @@ class CreatorDto(object):
         :param last_modified: The last_modified of this CreatorDto.  # noqa: E501
         :type: datetime
         """
-        if last_modified is None:
-            raise ValueError("Invalid value for `last_modified`, must not be `None`")  # noqa: E501
 
         self._last_modified = last_modified
 

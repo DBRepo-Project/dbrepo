@@ -25,10 +25,12 @@ from api_query.models.image_date_dto import ImageDateDto
 from api_query.models.image_dto import ImageDto
 from api_query.models.image_env_item_dto import ImageEnvItemDto
 from api_query.models.import_dto import ImportDto
+from api_query.models.license_dto import LicenseDto
 from api_query.models.query_dto import QueryDto
 from api_query.models.query_result_dto import QueryResultDto
 from api_query.models.table_csv_delete_dto import TableCsvDeleteDto
 from api_query.models.table_csv_dto import TableCsvDto
 from api_query.models.table_csv_update_dto import TableCsvUpdateDto
 from api_query.models.table_dto import TableDto
+from api_query.models.table_history_dto import TableHistoryDto
 from api_query.models.user_dto import UserDto

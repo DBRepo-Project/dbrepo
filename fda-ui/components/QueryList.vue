@@ -51,7 +51,7 @@
                         Execution Timestamp
                       </v-list-item-title>
                       <v-list-item-content>
-                        {{ execution }}
+                        {{ queryDetails.execution }}
                       </v-list-item-content>
                     </v-list-item-content>
                   </v-list-item>
@@ -73,7 +73,6 @@
 </template>
 
 <script>
-import { format } from 'date-fns'
 export default {
   data () {
     return {
@@ -104,12 +103,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    execution () {
-      return format(new Date(this.queryDetails.execution), 'dd.MM.yyyy HH:mm:ss')
-    },
-    created () {
-      return format(new Date(this.queryDetails.created), 'dd.MM.yyyy HH:mm:ss')
     }
   },
   mounted () {

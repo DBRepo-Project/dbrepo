@@ -1,12 +1,10 @@
 package at.tuwien.api.user;
 
-import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -38,11 +36,9 @@ public class UserBriefDto {
     @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @NotBlank
     @Parameter(name = "first name")
     private String firstname;
 
-    @NotBlank
     @Parameter(name = "last name")
     private String lastname;
 

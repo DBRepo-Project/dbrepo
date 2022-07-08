@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -39,11 +37,9 @@ public class UserDto {
     @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @NotBlank
     @Parameter(name = "first name")
     private String firstname;
 
-    @NotBlank
     @Parameter(name = "last name")
     private String lastname;
 

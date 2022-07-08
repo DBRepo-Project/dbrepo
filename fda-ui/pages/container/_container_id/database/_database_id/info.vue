@@ -47,7 +47,7 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ created }}</span>
+                    <span v-if="!loading">{{ database.created }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Language
@@ -92,7 +92,6 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
-import { format } from 'date-fns'
 
 export default {
   components: {
@@ -158,9 +157,6 @@ export default {
     language () {
       return this.database.language === null ? '(none)' : this.database.language
     },
-    created () {
-      return format(new Date(this.database.created), 'dd.MM.yyyy HH:mm:ss')
-    },
     publication_year () {
       return this.database.publication_year === null ? '(none)' : this.database.publication_year
     },
@@ -197,9 +193,6 @@ export default {
     closeDialog () {
       this.loadDatabase()
       this.editDbDialog = false
-    },
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     }
   }
 }

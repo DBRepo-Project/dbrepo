@@ -46,7 +46,7 @@
                   <v-icon v-if="item.database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
                 </sup>
               </td>
-              <td>{{ formatDate(item.created) }}</td>
+              <td>{{ item.created }}</td>
             </tr>
           </tbody>
         </template>
@@ -64,8 +64,6 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatDistance, format } from 'date-fns'
-import deLocale from 'date-fns/locale/de'
 
 export default {
   components: {
@@ -156,19 +154,6 @@ export default {
     },
     loadDatabase (container) {
       this.$router.push(`/container/${container.id}/database/${container.database.id}/info`)
-    },
-    trim (s) {
-      return s.slice(0, 12)
-    },
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
-    },
-    relativeDate (d) {
-      let options = { addSuffix: true }
-      if (this.$i18n.locale === 'de') {
-        options = { ...options, locale: deLocale }
-      }
-      return formatDistance(new Date(d), new Date(), options)
     }
   }
 }

@@ -1,6 +1,7 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -25,7 +26,6 @@ public class DatabaseBriefDto {
     @Parameter(name = "database name", example = "Weather Australia")
     private String name;
 
-    @NotBlank(message = "description is required")
     @Parameter(name = "database description", example = "Weather in Australia")
     private String description;
 
@@ -40,6 +40,7 @@ public class DatabaseBriefDto {
     private UserDto creator;
 
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
 }

@@ -5,6 +5,7 @@ import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -52,7 +53,6 @@ public class DatabaseDto {
     @Parameter(name = "database license", example = "MIT2")
     private LicenseDto license;
 
-    @NotBlank
     @Parameter(name = "database description", example = "Weather Australia 2009-2021")
     private String description;
 
@@ -66,7 +66,6 @@ public class DatabaseDto {
     @Parameter(name = "database publication year")
     private Short publicationYear;
 
-    @NotNull
     @Parameter(name = "tables")
     private List<TableDto> tables;
 
@@ -80,11 +79,12 @@ public class DatabaseDto {
     @Parameter(name = "container")
     private ContainerDto container;
 
-    @NotNull
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
     @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant deleted;
 
 }

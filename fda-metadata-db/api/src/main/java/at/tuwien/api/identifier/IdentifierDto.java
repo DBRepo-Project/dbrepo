@@ -1,6 +1,7 @@
 package at.tuwien.api.identifier;
 
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.Builder;
@@ -61,6 +62,7 @@ public class IdentifierDto {
 
     @NotNull
     @Parameter(name = "query execution time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant execution;
 
     @NotBlank
@@ -93,9 +95,11 @@ public class IdentifierDto {
     @Parameter(name = "creators")
     private List<CreatorDto> creators;
 
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
     @JsonProperty("last_modified")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant lastModified;
 
 }

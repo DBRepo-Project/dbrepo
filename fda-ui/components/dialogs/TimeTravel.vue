@@ -55,7 +55,6 @@
 
 <script>
 import { Bar } from 'vue-chartjs/legacy'
-import { format } from 'date-fns'
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale)
@@ -136,8 +135,8 @@ export default {
           headers: this.requestHeaders
         })
         this.error = false
-        this.chartData.labels = res.data.map(d => format(new Date(d.timestamp), 'dd.MM.yyyy HH:mm:ss'))
-        this.chartData.dates = res.data.map(d => format(new Date(d.timestamp), 'yyyy-MM-dd HH:mm:ss'))
+        this.chartData.labels = res.data.map(d => d.timestamp)
+        this.chartData.dates = res.data.map(d => d.timestamp)
         this.chartData.datasets = [{
           backgroundColor: this.$vuetify.theme.themes.light.primary,
           data: res.data.map(d => d.total)

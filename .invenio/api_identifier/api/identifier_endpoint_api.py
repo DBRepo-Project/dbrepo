@@ -32,16 +32,17 @@ class IdentifierEndpointApi(object):
             api_client = ApiClient()
         self.api_client = api_client
 
-    def create(self, body, id, database_id, **kwargs):  # noqa: E501
+    def create(self, body, authorization, id, database_id, **kwargs):  # noqa: E501
         """Create identifier  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.create(body, id, database_id, async_req=True)
+        >>> thread = api.create(body, authorization, id, database_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
-        :param IdentifierDto body: (required)
+        :param IdentifierCreateDto body: (required)
+        :param str authorization: (required)
         :param int id: (required)
         :param int database_id: (required)
         :return: IdentifierDto
@@ -50,21 +51,22 @@ class IdentifierEndpointApi(object):
         """
         kwargs['_return_http_data_only'] = True
         if kwargs.get('async_req'):
-            return self.create_with_http_info(body, id, database_id, **kwargs)  # noqa: E501
+            return self.create_with_http_info(body, authorization, id, database_id, **kwargs)  # noqa: E501
         else:
-            (data) = self.create_with_http_info(body, id, database_id, **kwargs)  # noqa: E501
+            (data) = self.create_with_http_info(body, authorization, id, database_id, **kwargs)  # noqa: E501
             return data
 
-    def create_with_http_info(self, body, id, database_id, **kwargs):  # noqa: E501
+    def create_with_http_info(self, body, authorization, id, database_id, **kwargs):  # noqa: E501
         """Create identifier  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.create_with_http_info(body, id, database_id, async_req=True)
+        >>> thread = api.create_with_http_info(body, authorization, id, database_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
-        :param IdentifierDto body: (required)
+        :param IdentifierCreateDto body: (required)
+        :param str authorization: (required)
         :param int id: (required)
         :param int database_id: (required)
         :return: IdentifierDto
@@ -72,7 +74,7 @@ class IdentifierEndpointApi(object):
                  returns the request thread.
         """
 
-        all_params = ['body', 'id', 'database_id']  # noqa: E501
+        all_params = ['body', 'authorization', 'id', 'database_id']  # noqa: E501
         all_params.append('async_req')
         all_params.append('_return_http_data_only')
         all_params.append('_preload_content')
@@ -91,6 +93,10 @@ class IdentifierEndpointApi(object):
         if ('body' not in params or
                 params['body'] is None):
             raise ValueError("Missing the required parameter `body` when calling `create`")  # noqa: E501
+        # verify the required parameter 'authorization' is set
+        if ('authorization' not in params or
+                params['authorization'] is None):
+            raise ValueError("Missing the required parameter `authorization` when calling `create`")  # noqa: E501
         # verify the required parameter 'id' is set
         if ('id' not in params or
                 params['id'] is None):
@@ -111,6 +117,8 @@ class IdentifierEndpointApi(object):
         query_params = []
 
         header_params = {}
+        if 'authorization' in params:
+            header_params['Authorization'] = params['authorization']  # noqa: E501
 
         form_params = []
         local_var_files = {}
@@ -254,6 +262,115 @@ class IdentifierEndpointApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
+    def export(self, id, database_id, identifier_id, **kwargs):  # noqa: E501
+        """Export some identifier metadata  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.export(id, database_id, identifier_id, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param int id: (required)
+        :param int database_id: (required)
+        :param int identifier_id: (required)
+        :return: str
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+        kwargs['_return_http_data_only'] = True
+        if kwargs.get('async_req'):
+            return self.export_with_http_info(id, database_id, identifier_id, **kwargs)  # noqa: E501
+        else:
+            (data) = self.export_with_http_info(id, database_id, identifier_id, **kwargs)  # noqa: E501
+            return data
+
+    def export_with_http_info(self, id, database_id, identifier_id, **kwargs):  # noqa: E501
+        """Export some identifier metadata  # noqa: E501
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please pass async_req=True
+        >>> thread = api.export_with_http_info(id, database_id, identifier_id, async_req=True)
+        >>> result = thread.get()
+
+        :param async_req bool
+        :param int id: (required)
+        :param int database_id: (required)
+        :param int identifier_id: (required)
+        :return: str
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['id', 'database_id', 'identifier_id']  # noqa: E501
+        all_params.append('async_req')
+        all_params.append('_return_http_data_only')
+        all_params.append('_preload_content')
+        all_params.append('_request_timeout')
+
+        params = locals()
+        for key, val in six.iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method export" % key
+                )
+            params[key] = val
+        del params['kwargs']
+        # verify the required parameter 'id' is set
+        if ('id' not in params or
+                params['id'] is None):
+            raise ValueError("Missing the required parameter `id` when calling `export`")  # noqa: E501
+        # verify the required parameter 'database_id' is set
+        if ('database_id' not in params or
+                params['database_id'] is None):
+            raise ValueError("Missing the required parameter `database_id` when calling `export`")  # noqa: E501
+        # verify the required parameter 'identifier_id' is set
+        if ('identifier_id' not in params or
+                params['identifier_id'] is None):
+            raise ValueError("Missing the required parameter `identifier_id` when calling `export`")  # noqa: E501
+
+        collection_formats = {}
+
+        path_params = {}
+        if 'id' in params:
+            path_params['id'] = params['id']  # noqa: E501
+        if 'database_id' in params:
+            path_params['databaseId'] = params['database_id']  # noqa: E501
+        if 'identifier_id' in params:
+            path_params['identifierId'] = params['identifier_id']  # noqa: E501
+
+        query_params = []
+
+        header_params = {}
+
+        form_params = []
+        local_var_files = {}
+
+        body_params = None
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.select_header_accept(
+            ['*/*'])  # noqa: E501
+
+        # Authentication setting
+        auth_settings = []  # noqa: E501
+
+        return self.api_client.call_api(
+            '/api/container/{id}/database/{databaseId}/identifier/{identifierId}', 'GET',
+            path_params,
+            query_params,
+            header_params,
+            body=body_params,
+            post_params=form_params,
+            files=local_var_files,
+            response_type='str',  # noqa: E501
+            auth_settings=auth_settings,
+            async_req=params.get('async_req'),
+            _return_http_data_only=params.get('_return_http_data_only'),
+            _preload_content=params.get('_preload_content', True),
+            _request_timeout=params.get('_request_timeout'),
+            collection_formats=collection_formats)
+
     def find_all(self, id, database_id, **kwargs):  # noqa: E501
         """Find identifiers  # noqa: E501
 
@@ -352,115 +469,6 @@ class IdentifierEndpointApi(object):
             post_params=form_params,
             files=local_var_files,
             response_type='list[IdentifierDto]',  # noqa: E501
-            auth_settings=auth_settings,
-            async_req=params.get('async_req'),
-            _return_http_data_only=params.get('_return_http_data_only'),
-            _preload_content=params.get('_preload_content', True),
-            _request_timeout=params.get('_request_timeout'),
-            collection_formats=collection_formats)
-
-    def publish(self, id, database_id, identifer_id, **kwargs):  # noqa: E501
-        """Publish some identifier  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.publish(id, database_id, identifer_id, async_req=True)
-        >>> result = thread.get()
-
-        :param async_req bool
-        :param int id: (required)
-        :param int database_id: (required)
-        :param int identifer_id: (required)
-        :return: object
-                 If the method is called asynchronously,
-                 returns the request thread.
-        """
-        kwargs['_return_http_data_only'] = True
-        if kwargs.get('async_req'):
-            return self.publish_with_http_info(id, database_id, identifer_id, **kwargs)  # noqa: E501
-        else:
-            (data) = self.publish_with_http_info(id, database_id, identifer_id, **kwargs)  # noqa: E501
-            return data
-
-    def publish_with_http_info(self, id, database_id, identifer_id, **kwargs):  # noqa: E501
-        """Publish some identifier  # noqa: E501
-
-        This method makes a synchronous HTTP request by default. To make an
-        asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.publish_with_http_info(id, database_id, identifer_id, async_req=True)
-        >>> result = thread.get()
-
-        :param async_req bool
-        :param int id: (required)
-        :param int database_id: (required)
-        :param int identifer_id: (required)
-        :return: object
-                 If the method is called asynchronously,
-                 returns the request thread.
-        """
-
-        all_params = ['id', 'database_id', 'identifer_id']  # noqa: E501
-        all_params.append('async_req')
-        all_params.append('_return_http_data_only')
-        all_params.append('_preload_content')
-        all_params.append('_request_timeout')
-
-        params = locals()
-        for key, val in six.iteritems(params['kwargs']):
-            if key not in all_params:
-                raise TypeError(
-                    "Got an unexpected keyword argument '%s'"
-                    " to method publish" % key
-                )
-            params[key] = val
-        del params['kwargs']
-        # verify the required parameter 'id' is set
-        if ('id' not in params or
-                params['id'] is None):
-            raise ValueError("Missing the required parameter `id` when calling `publish`")  # noqa: E501
-        # verify the required parameter 'database_id' is set
-        if ('database_id' not in params or
-                params['database_id'] is None):
-            raise ValueError("Missing the required parameter `database_id` when calling `publish`")  # noqa: E501
-        # verify the required parameter 'identifer_id' is set
-        if ('identifer_id' not in params or
-                params['identifer_id'] is None):
-            raise ValueError("Missing the required parameter `identifer_id` when calling `publish`")  # noqa: E501
-
-        collection_formats = {}
-
-        path_params = {}
-        if 'id' in params:
-            path_params['id'] = params['id']  # noqa: E501
-        if 'database_id' in params:
-            path_params['databaseId'] = params['database_id']  # noqa: E501
-
-        query_params = []
-        if 'identifer_id' in params:
-            query_params.append(('identiferId', params['identifer_id']))  # noqa: E501
-
-        header_params = {}
-
-        form_params = []
-        local_var_files = {}
-
-        body_params = None
-        # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.select_header_accept(
-            ['*/*'])  # noqa: E501
-
-        # Authentication setting
-        auth_settings = ['bearerAuth']  # noqa: E501
-
-        return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/identifier/{identiferId}', 'PUT',
-            path_params,
-            query_params,
-            header_params,
-            body=body_params,
-            post_params=form_params,
-            files=local_var_files,
-            response_type='object',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),
@@ -574,7 +582,7 @@ class IdentifierEndpointApi(object):
         auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/identifier/{identiferId}', 'POST',
+            '/api/container/{id}/database/{databaseId}/identifier/{identiferId}', 'PUT',
             path_params,
             query_params,
             header_params,

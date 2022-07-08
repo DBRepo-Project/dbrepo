@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 public class ContainerChangeDto {
 
     @NotNull
-    @Parameter(required = true, example = "START")
+    @Parameter(required = true, example = "start")
     private ContainerActionTypeDto action;
 
 }

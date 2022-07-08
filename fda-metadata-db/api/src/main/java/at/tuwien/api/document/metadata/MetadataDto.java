@@ -45,7 +45,7 @@ public class MetadataDto {
      * for DataCite.
      */
     @JsonProperty("publication_date")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC+2")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "UTC")
     @NotNull(message = "publication date is required")
     @Parameter(name = "publication date")
     private Date publicationDate;

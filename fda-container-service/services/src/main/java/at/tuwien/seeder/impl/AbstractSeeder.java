@@ -54,7 +54,7 @@ public abstract class AbstractSeeder {
             ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
                     .key("TZ")
-                    .value("Europe/Vienna")
+                    .value("UTC")
                     .type(ContainerImageEnvironmentItemType.PASSWORD)
                     .build());
 

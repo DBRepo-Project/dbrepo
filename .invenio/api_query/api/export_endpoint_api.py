@@ -127,7 +127,7 @@ class ExportEndpointApi(object):
             ['*/*'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
             '/api/container/{id}/database/{databaseId}/table/{tableId}/export', 'GET',

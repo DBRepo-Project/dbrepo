@@ -1,5 +1,6 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -40,6 +41,7 @@ public class ImageDateDto {
     private Boolean hasTime;
 
     @JsonProperty("created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant createdAt;
 
 }

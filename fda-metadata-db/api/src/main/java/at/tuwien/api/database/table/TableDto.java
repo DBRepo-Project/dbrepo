@@ -2,6 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -40,6 +41,7 @@ public class TableDto {
     private String description;
 
     @Parameter(name = "table creation time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
     @NotNull

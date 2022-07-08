@@ -35,8 +35,6 @@ class ColumnCreateDto(object):
         'references': 'str',
         'primary_key': 'bool',
         'null_allowed': 'bool',
-        'decimal_digits_before': 'int',
-        'decimal_digits_after': 'int',
         'check_expression': 'str',
         'foreign_key': 'str',
         'enum_values': 'list[str]'
@@ -50,14 +48,12 @@ class ColumnCreateDto(object):
         'references': 'references',
         'primary_key': 'primary_key',
         'null_allowed': 'null_allowed',
-        'decimal_digits_before': 'decimal_digits_before',
-        'decimal_digits_after': 'decimal_digits_after',
         'check_expression': 'check_expression',
         'foreign_key': 'foreign_key',
         'enum_values': 'enum_values'
     }
 
-    def __init__(self, name=None, type=None, dfid=None, unique=None, references=None, primary_key=None, null_allowed=None, decimal_digits_before=None, decimal_digits_after=None, check_expression=None, foreign_key=None, enum_values=None):  # noqa: E501
+    def __init__(self, name=None, type=None, dfid=None, unique=None, references=None, primary_key=None, null_allowed=None, check_expression=None, foreign_key=None, enum_values=None):  # noqa: E501
         """ColumnCreateDto - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._type = None
@@ -66,8 +62,6 @@ class ColumnCreateDto(object):
         self._references = None
         self._primary_key = None
         self._null_allowed = None
-        self._decimal_digits_before = None
-        self._decimal_digits_after = None
         self._check_expression = None
         self._foreign_key = None
         self._enum_values = None
@@ -81,10 +75,6 @@ class ColumnCreateDto(object):
             self.references = references
         self.primary_key = primary_key
         self.null_allowed = null_allowed
-        if decimal_digits_before is not None:
-            self.decimal_digits_before = decimal_digits_before
-        if decimal_digits_after is not None:
-            self.decimal_digits_after = decimal_digits_after
         if check_expression is not None:
             self.check_expression = check_expression
         if foreign_key is not None:
@@ -254,48 +244,6 @@ class ColumnCreateDto(object):
             raise ValueError("Invalid value for `null_allowed`, must not be `None`")  # noqa: E501
 
         self._null_allowed = null_allowed
-
-    @property
-    def decimal_digits_before(self):
-        """Gets the decimal_digits_before of this ColumnCreateDto.  # noqa: E501
-
-
-        :return: The decimal_digits_before of this ColumnCreateDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._decimal_digits_before
-
-    @decimal_digits_before.setter
-    def decimal_digits_before(self, decimal_digits_before):
-        """Sets the decimal_digits_before of this ColumnCreateDto.
-
-
-        :param decimal_digits_before: The decimal_digits_before of this ColumnCreateDto.  # noqa: E501
-        :type: int
-        """
-
-        self._decimal_digits_before = decimal_digits_before
-
-    @property
-    def decimal_digits_after(self):
-        """Gets the decimal_digits_after of this ColumnCreateDto.  # noqa: E501
-
-
-        :return: The decimal_digits_after of this ColumnCreateDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._decimal_digits_after
-
-    @decimal_digits_after.setter
-    def decimal_digits_after(self, decimal_digits_after):
-        """Sets the decimal_digits_after of this ColumnCreateDto.
-
-
-        :param decimal_digits_after: The decimal_digits_after of this ColumnCreateDto.  # noqa: E501
-        :type: int
-        """
-
-        self._decimal_digits_after = decimal_digits_after
 
     @property
     def check_expression(self):

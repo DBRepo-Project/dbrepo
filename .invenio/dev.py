@@ -1,72 +1,43 @@
-#!/usr/bin/env python3
 import os.path
-from os import listdir
-from os.path import isfile, join
-from api_document.api.document_endpoint_api import DocumentEndpointApi
-from api_document.api.file_endpoint_api import FileEndpointApi
+import uuid
+import time
+import re
+import csv
+import requests as rq
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
+from api_authentication.api.user_endpoint_api import UserEndpointApi
+from api_container.api.container_endpoint_api import ContainerEndpointApi
+from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_table.api.table_endpoint_api import TableEndpointApi
 
 authentication = AuthenticationEndpointApi()
-document = DocumentEndpointApi()
-file = FileEndpointApi()
+user = UserEndpointApi()
+container = ContainerEndpointApi()
+database = ContainerDatabaseEndpointApi()
+table = TableEndpointApi()
 
-response = authentication.authenticate_user1({
-    "username": "user",
-    "password": "user"
-})
-headers = {"Authorization": "Bearer " + response.token}
-document.api_client.default_headers = headers
-file.api_client.default_headers = headers
+url = "https://test.researchdata.tuwien.ac.at/records/vqpbr-5b889"
 
-# Create document
-response = document.create({
-    "access": {
-        "record": "public",
-        "files": "public"
-    },
-    "files": {
-        "enabled": True
-    },
-    "metadata": {
-        "creators": [
-            {
-                "affiliations": [
-                    {
-                        "name": "TU Wien"
-                    }
-                ],
-                "person_or_org": {
-                    "type": "personal",
-                    "name": "M., Weise",
-                    "identifiers": [
-                        {
-                            "scheme": "orcid",
-                            "identifier": "0000-0003-4216-302X"
-                        }
-                    ],
-                    "given_name": "Martin",
-                    "family_name": "Weise"
-                }
-            }
-        ],
-        "title": "Jupyter Notebook Test",
-        "resource_type": {
-            "id": "other"
-        },
-        "publication_date": "2022-06-28"
-    }
-})
-document_id = response.id
-print(document_id)
+host = re.findall("^https?:\/\/([a-z0-9\.]+)", url)[0]
+id = re.findall("/([a-z0-9-]+)$", url)[0]
 
-# Upload files
-files = [f for f in listdir("./audio") if isfile(join("./audio", f))]
-for f in files:
-    print("... upload file", "/tmp/" + f)
-    response = file.upload_file({
-        "location": os.path.curdir + "/tmp/" + f
-    }, document_id)
+response = rq.get("https://" + host + "/api/records/" + id + "/files")
+record = response.json()
 
-# Publish
-response = document.publish(document_id)
-print(response)
+for file in record["entries"]:
+    print("... save file contents from", file["links"]["content"])
+    wav = rq.get(file["links"]["content"])
+    filename = "/tmp/" + file["key"]
+    open(filename, "wb").write(wav.content)
+    print("... file saved in", filename)
+    audio = "http://localhost:8000/v1/audio"
+    with open(filename, "rb") as f:
+        data = f.read()
+        print("... feature extract to", audio)
+        res = rq.post(audio, data=data, headers={"Content-Type": "audio/wav"})
+        print("... extracted", res.json())
+        payload = []
+        for part in res.json()["track"]["parts"]:
+            payload.append(part)
+        print("... payload", payload)
+print("Finished.")

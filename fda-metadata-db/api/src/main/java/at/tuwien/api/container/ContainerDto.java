@@ -3,6 +3,7 @@ package at.tuwien.api.container;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -59,6 +60,7 @@ public class ContainerDto {
 
     @NotNull
     @Parameter(name = "start time", example = "2021-03-12T15:26:21.678396092Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 
 }

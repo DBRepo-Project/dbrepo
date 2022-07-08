@@ -32,7 +32,9 @@ class DatabaseBriefDto(object):
         'name': 'str',
         'description': 'str',
         'engine': 'str',
-        'created': 'datetime'
+        'creator': 'UserDto',
+        'created': 'datetime',
+        'is_public': 'bool'
     }
 
     attribute_map = {
@@ -40,23 +42,33 @@ class DatabaseBriefDto(object):
         'name': 'name',
         'description': 'description',
         'engine': 'engine',
-        'created': 'created'
+        'creator': 'creator',
+        'created': 'created',
+        'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, name=None, description=None, engine=None, created=None):  # noqa: E501
+    def __init__(self, id=None, name=None, description=None, engine=None, creator=None, created=None, is_public=None):  # noqa: E501
         """DatabaseBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
         self._description = None
         self._engine = None
+        self._creator = None
         self._created = None
+        self._is_public = None
         self.discriminator = None
         self.id = id
         self.name = name
-        self.description = description
-        self.engine = engine
+        if description is not None:
+            self.description = description
+        if engine is not None:
+            self.engine = engine
+        if creator is not None:
+            self.creator = creator
         if created is not None:
             self.created = created
+        if is_public is not None:
+            self.is_public = is_public
 
     @property
     def id(self):
@@ -122,8 +134,6 @@ class DatabaseBriefDto(object):
         :param description: The description of this DatabaseBriefDto.  # noqa: E501
         :type: str
         """
-        if description is None:
-            raise ValueError("Invalid value for `description`, must not be `None`")  # noqa: E501
 
         self._description = description
 
@@ -145,10 +155,29 @@ class DatabaseBriefDto(object):
         :param engine: The engine of this DatabaseBriefDto.  # noqa: E501
         :type: str
         """
-        if engine is None:
-            raise ValueError("Invalid value for `engine`, must not be `None`")  # noqa: E501
 
         self._engine = engine
+
+    @property
+    def creator(self):
+        """Gets the creator of this DatabaseBriefDto.  # noqa: E501
+
+
+        :return: The creator of this DatabaseBriefDto.  # noqa: E501
+        :rtype: UserDto
+        """
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this DatabaseBriefDto.
+
+
+        :param creator: The creator of this DatabaseBriefDto.  # noqa: E501
+        :type: UserDto
+        """
+
+        self._creator = creator
 
     @property
     def created(self):
@@ -170,6 +199,27 @@ class DatabaseBriefDto(object):
         """
 
         self._created = created
+
+    @property
+    def is_public(self):
+        """Gets the is_public of this DatabaseBriefDto.  # noqa: E501
+
+
+        :return: The is_public of this DatabaseBriefDto.  # noqa: E501
+        :rtype: bool
+        """
+        return self._is_public
+
+    @is_public.setter
+    def is_public(self, is_public):
+        """Sets the is_public of this DatabaseBriefDto.
+
+
+        :param is_public: The is_public of this DatabaseBriefDto.  # noqa: E501
+        :type: bool
+        """
+
+        self._is_public = is_public
 
     def to_dict(self):
         """Returns the model properties as a dict"""

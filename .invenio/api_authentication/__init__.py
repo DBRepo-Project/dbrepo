@@ -16,6 +16,7 @@ from __future__ import absolute_import
 
 # import apis into sdk package
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
+from api_authentication.api.token_endpoint_api import TokenEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 # import ApiClient
 from api_authentication.api_client import ApiClient
@@ -31,7 +32,15 @@ from api_authentication.models.image_date_dto import ImageDateDto
 from api_authentication.models.image_dto import ImageDto
 from api_authentication.models.image_env_item_dto import ImageEnvItemDto
 from api_authentication.models.jwt_response_dto import JwtResponseDto
+from api_authentication.models.license_dto import LicenseDto
 from api_authentication.models.login_request_dto import LoginRequestDto
 from api_authentication.models.signup_request_dto import SignupRequestDto
 from api_authentication.models.table_dto import TableDto
 from api_authentication.models.user_dto import UserDto
+from api_authentication.models.user_email_dto import UserEmailDto
+from api_authentication.models.user_forgot_dto import UserForgotDto
+from api_authentication.models.user_password_dto import UserPasswordDto
+from api_authentication.models.user_reset_dto import UserResetDto
+from api_authentication.models.user_roles_dto import UserRolesDto
+from api_authentication.models.user_token_modify_dto import UserTokenModifyDto
+from api_authentication.models.user_update_dto import UserUpdateDto

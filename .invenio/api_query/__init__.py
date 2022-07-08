@@ -19,6 +19,7 @@ from api_query.api.export_endpoint_api import ExportEndpointApi
 from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_query.api.store_endpoint_api import StoreEndpointApi
 from api_query.api.table_data_endpoint_api import TableDataEndpointApi
+from api_query.api.table_history_endpoint_api import TableHistoryEndpointApi
 # import ApiClient
 from api_query.api_client import ApiClient
 from api_query.configuration import Configuration
@@ -34,10 +35,12 @@ from api_query.models.image_date_dto import ImageDateDto
 from api_query.models.image_dto import ImageDto
 from api_query.models.image_env_item_dto import ImageEnvItemDto
 from api_query.models.import_dto import ImportDto
+from api_query.models.license_dto import LicenseDto
 from api_query.models.query_dto import QueryDto
 from api_query.models.query_result_dto import QueryResultDto
 from api_query.models.table_csv_delete_dto import TableCsvDeleteDto
 from api_query.models.table_csv_dto import TableCsvDto
 from api_query.models.table_csv_update_dto import TableCsvUpdateDto
 from api_query.models.table_dto import TableDto
+from api_query.models.table_history_dto import TableHistoryDto
 from api_query.models.user_dto import UserDto

@@ -28,37 +28,72 @@ class DatabaseModifyDto(object):
                             and the value is json key in definition.
     """
     swagger_types = {
+        'subject': 'list[str]',
         'description': 'str',
         'publisher': 'str',
-        'license': 'str',
+        'license': 'LicenseDto',
+        'language': 'str',
         'is_public': 'bool',
-        'contact_person': 'int'
+        'publication_year': 'int',
+        'contact_person': 'str'
     }
 
     attribute_map = {
+        'subject': 'subject',
         'description': 'description',
         'publisher': 'publisher',
         'license': 'license',
+        'language': 'language',
         'is_public': 'is_public',
+        'publication_year': 'publication_year',
         'contact_person': 'contact_person'
     }
 
-    def __init__(self, description=None, publisher=None, license=None, is_public=None, contact_person=None):  # noqa: E501
+    def __init__(self, subject=None, description=None, publisher=None, license=None, language=None, is_public=None, publication_year=None, contact_person=None):  # noqa: E501
         """DatabaseModifyDto - a model defined in Swagger"""  # noqa: E501
+        self._subject = None
         self._description = None
         self._publisher = None
         self._license = None
+        self._language = None
         self._is_public = None
+        self._publication_year = None
         self._contact_person = None
         self.discriminator = None
+        if subject is not None:
+            self.subject = subject
         self.description = description
         if publisher is not None:
             self.publisher = publisher
         if license is not None:
             self.license = license
+        if language is not None:
+            self.language = language
         self.is_public = is_public
+        self.publication_year = publication_year
         if contact_person is not None:
             self.contact_person = contact_person
+
+    @property
+    def subject(self):
+        """Gets the subject of this DatabaseModifyDto.  # noqa: E501
+
+
+        :return: The subject of this DatabaseModifyDto.  # noqa: E501
+        :rtype: list[str]
+        """
+        return self._subject
+
+    @subject.setter
+    def subject(self, subject):
+        """Sets the subject of this DatabaseModifyDto.
+
+
+        :param subject: The subject of this DatabaseModifyDto.  # noqa: E501
+        :type: list[str]
+        """
+
+        self._subject = subject
 
     @property
     def description(self):
@@ -110,7 +145,7 @@ class DatabaseModifyDto(object):
 
 
         :return: The license of this DatabaseModifyDto.  # noqa: E501
-        :rtype: str
+        :rtype: LicenseDto
         """
         return self._license
 
@@ -120,10 +155,37 @@ class DatabaseModifyDto(object):
 
 
         :param license: The license of this DatabaseModifyDto.  # noqa: E501
-        :type: str
+        :type: LicenseDto
         """
 
         self._license = license
+
+    @property
+    def language(self):
+        """Gets the language of this DatabaseModifyDto.  # noqa: E501
+
+
+        :return: The language of this DatabaseModifyDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._language
+
+    @language.setter
+    def language(self, language):
+        """Sets the language of this DatabaseModifyDto.
+
+
+        :param language: The language of this DatabaseModifyDto.  # noqa: E501
+        :type: str
+        """
+        allowed_values = ["ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "km", "ch", "ce", "ny", "zh", "cu", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gd", "gl", "lg", "ka", "de", "ki", "el", "kl", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "is", "io", "ig", "id", "ia", "ie", "iu", "ik", "ga", "it", "ja", "jv", "kn", "kr", "ks", "kk", "rw", "kv", "kg", "ko", "kj", "ku", "ky", "lo", "la", "lv", "lb", "li", "ln", "lt", "lu", "mk", "mg", "ms", "ml", "mt", "gv", "mi", "mr", "mh", "ro", "mn", "na", "nv", "nd", "ng", "ne", "se", "no", "nb", "nn", "ii", "oc", "oj", "or", "om", "os", "pi", "pa", "ps", "fa", "pl", "pt", "qu", "rm", "rn", "ru", "sm", "sg", "sa", "sc", "sr", "sn", "sd", "si", "sk", "sl", "so", "st", "nr", "es", "su", "sw", "ss", "sv", "tl", "ty", "tg", "ta", "tt", "te", "th", "bo", "ti", "to", "ts", "tn", "tr", "tk", "tw", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "fy", "wo", "xh", "yi", "yo", "za", "zu"]  # noqa: E501
+        if language not in allowed_values:
+            raise ValueError(
+                "Invalid value for `language` ({0}), must be one of {1}"  # noqa: E501
+                .format(language, allowed_values)
+            )
+
+        self._language = language
 
     @property
     def is_public(self):
@@ -149,12 +211,35 @@ class DatabaseModifyDto(object):
         self._is_public = is_public
 
     @property
+    def publication_year(self):
+        """Gets the publication_year of this DatabaseModifyDto.  # noqa: E501
+
+
+        :return: The publication_year of this DatabaseModifyDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_year
+
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this DatabaseModifyDto.
+
+
+        :param publication_year: The publication_year of this DatabaseModifyDto.  # noqa: E501
+        :type: int
+        """
+        if publication_year is None:
+            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
+
+        self._publication_year = publication_year
+
+    @property
     def contact_person(self):
         """Gets the contact_person of this DatabaseModifyDto.  # noqa: E501
 
 
         :return: The contact_person of this DatabaseModifyDto.  # noqa: E501
-        :rtype: int
+        :rtype: str
         """
         return self._contact_person
 
@@ -164,7 +249,7 @@ class DatabaseModifyDto(object):
 
 
         :param contact_person: The contact_person of this DatabaseModifyDto.  # noqa: E501
-        :type: int
+        :type: str
         """
 
         self._contact_person = contact_person

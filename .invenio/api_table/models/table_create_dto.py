@@ -30,53 +30,24 @@ class TableCreateDto(object):
     swagger_types = {
         'name': 'str',
         'description': 'str',
-        'separator': 'str',
-        'quote': 'str',
-        'columns': 'list[ColumnCreateDto]',
-        'skip_lines': 'int',
-        'false_element': 'str',
-        'true_element': 'str',
-        'null_element': 'str'
+        'columns': 'list[ColumnCreateDto]'
     }
 
     attribute_map = {
         'name': 'name',
         'description': 'description',
-        'separator': 'separator',
-        'quote': 'quote',
-        'columns': 'columns',
-        'skip_lines': 'skip_lines',
-        'false_element': 'false_element',
-        'true_element': 'true_element',
-        'null_element': 'null_element'
+        'columns': 'columns'
     }
 
-    def __init__(self, name=None, description=None, separator=None, quote=None, columns=None, skip_lines=None, false_element=None, true_element=None, null_element=None):  # noqa: E501
+    def __init__(self, name=None, description=None, columns=None):  # noqa: E501
         """TableCreateDto - a model defined in Swagger"""  # noqa: E501
         self._name = None
         self._description = None
-        self._separator = None
-        self._quote = None
         self._columns = None
-        self._skip_lines = None
-        self._false_element = None
-        self._true_element = None
-        self._null_element = None
         self.discriminator = None
         self.name = name
         self.description = description
-        self.separator = separator
-        if quote is not None:
-            self.quote = quote
         self.columns = columns
-        if skip_lines is not None:
-            self.skip_lines = skip_lines
-        if false_element is not None:
-            self.false_element = false_element
-        if true_element is not None:
-            self.true_element = true_element
-        if null_element is not None:
-            self.null_element = null_element
 
     @property
     def name(self):
@@ -125,50 +96,6 @@ class TableCreateDto(object):
         self._description = description
 
     @property
-    def separator(self):
-        """Gets the separator of this TableCreateDto.  # noqa: E501
-
-
-        :return: The separator of this TableCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._separator
-
-    @separator.setter
-    def separator(self, separator):
-        """Sets the separator of this TableCreateDto.
-
-
-        :param separator: The separator of this TableCreateDto.  # noqa: E501
-        :type: str
-        """
-        if separator is None:
-            raise ValueError("Invalid value for `separator`, must not be `None`")  # noqa: E501
-
-        self._separator = separator
-
-    @property
-    def quote(self):
-        """Gets the quote of this TableCreateDto.  # noqa: E501
-
-
-        :return: The quote of this TableCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._quote
-
-    @quote.setter
-    def quote(self, quote):
-        """Sets the quote of this TableCreateDto.
-
-
-        :param quote: The quote of this TableCreateDto.  # noqa: E501
-        :type: str
-        """
-
-        self._quote = quote
-
-    @property
     def columns(self):
         """Gets the columns of this TableCreateDto.  # noqa: E501
 
@@ -190,90 +117,6 @@ class TableCreateDto(object):
             raise ValueError("Invalid value for `columns`, must not be `None`")  # noqa: E501
 
         self._columns = columns
-
-    @property
-    def skip_lines(self):
-        """Gets the skip_lines of this TableCreateDto.  # noqa: E501
-
-
-        :return: The skip_lines of this TableCreateDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._skip_lines
-
-    @skip_lines.setter
-    def skip_lines(self, skip_lines):
-        """Sets the skip_lines of this TableCreateDto.
-
-
-        :param skip_lines: The skip_lines of this TableCreateDto.  # noqa: E501
-        :type: int
-        """
-
-        self._skip_lines = skip_lines
-
-    @property
-    def false_element(self):
-        """Gets the false_element of this TableCreateDto.  # noqa: E501
-
-
-        :return: The false_element of this TableCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._false_element
-
-    @false_element.setter
-    def false_element(self, false_element):
-        """Sets the false_element of this TableCreateDto.
-
-
-        :param false_element: The false_element of this TableCreateDto.  # noqa: E501
-        :type: str
-        """
-
-        self._false_element = false_element
-
-    @property
-    def true_element(self):
-        """Gets the true_element of this TableCreateDto.  # noqa: E501
-
-
-        :return: The true_element of this TableCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._true_element
-
-    @true_element.setter
-    def true_element(self, true_element):
-        """Sets the true_element of this TableCreateDto.
-
-
-        :param true_element: The true_element of this TableCreateDto.  # noqa: E501
-        :type: str
-        """
-
-        self._true_element = true_element
-
-    @property
-    def null_element(self):
-        """Gets the null_element of this TableCreateDto.  # noqa: E501
-
-
-        :return: The null_element of this TableCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._null_element
-
-    @null_element.setter
-    def null_element(self, null_element):
-        """Sets the null_element of this TableCreateDto.
-
-
-        :param null_element: The null_element of this TableCreateDto.  # noqa: E501
-        :type: str
-        """
-
-        self._null_element = null_element
 
     def to_dict(self):
         """Returns the model properties as a dict"""

@@ -171,7 +171,7 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ query_creation }}</span>
+                <span v-if="!loadingQuery">{{ query.created }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -219,7 +219,6 @@
   </div>
 </template>
 <script>
-import { format } from 'date-fns'
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 
@@ -328,7 +327,7 @@ export default {
       return this.database.is_public
     },
     result_everyone () {
-      return this.database.is_public || this.identifier.visibility === 'EVERYONE'
+      return this.database.is_public || this.identifier.visibility === 'everyone'
     },
     result_visibility () {
       if (this.database.is_public) {
@@ -337,13 +336,13 @@ export default {
       if (this.query.creator.username === this.username) {
         return true
       }
-      return this.identifier.visibility === 'EVERYONE'
+      return this.identifier.visibility === 'everyone'
     },
     result_visibility_icon () {
       if (this.database.is_public) {
         return true
       }
-      return this.identifier.visibility === 'EVERYONE'
+      return this.identifier.visibility === 'everyone'
     },
     statement () {
       return this.identifier.id ? this.identifier.query : this.query.query
@@ -358,10 +357,7 @@ export default {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     execution () {
-      return this.identifier.id ? this.formatDate(this.identifier.execution) : this.formatDate(this.query.execution)
-    },
-    query_creation () {
-      return this.formatDate(this.query.created)
+      return this.identifier.id ? this.identifier.execution : this.query.execution
     },
     creator () {
       if (this.query.creator.username === null) {
@@ -382,9 +378,6 @@ export default {
       .then(() => this.loadMetadata())
   },
   methods: {
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
-    },
     async metadata () {
       this.metadataLoading = true
       try {

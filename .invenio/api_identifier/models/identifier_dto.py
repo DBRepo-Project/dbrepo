@@ -34,10 +34,18 @@ class IdentifierDto(object):
         'qid': 'int',
         'title': 'str',
         'description': 'str',
+        'query': 'str',
+        'execution': 'datetime',
         'visibility': 'str',
         'doi': 'str',
+        'creator': 'UserDto',
         'creators': 'list[CreatorDto]',
         'created': 'datetime',
+        'query_normalized': 'str',
+        'related': 'list[RelatedIdentifierDto]',
+        'query_hash': 'str',
+        'result_hash': 'str',
+        'result_number': 'int',
         'publication_year': 'int',
         'last_modified': 'datetime'
     }
@@ -49,15 +57,23 @@ class IdentifierDto(object):
         'qid': 'qid',
         'title': 'title',
         'description': 'description',
+        'query': 'query',
+        'execution': 'execution',
         'visibility': 'visibility',
         'doi': 'doi',
+        'creator': 'creator',
         'creators': 'creators',
         'created': 'created',
+        'query_normalized': 'query_normalized',
+        'related': 'related',
+        'query_hash': 'query_hash',
+        'result_hash': 'result_hash',
+        'result_number': 'result_number',
         'publication_year': 'publication_year',
         'last_modified': 'last_modified'
     }
 
-    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, visibility=None, doi=None, creators=None, created=None, publication_year=None, last_modified=None):  # noqa: E501
+    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication_year=None, last_modified=None):  # noqa: E501
         """IdentifierDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._cid = None
@@ -65,10 +81,18 @@ class IdentifierDto(object):
         self._qid = None
         self._title = None
         self._description = None
+        self._query = None
+        self._execution = None
         self._visibility = None
         self._doi = None
+        self._creator = None
         self._creators = None
         self._created = None
+        self._query_normalized = None
+        self._related = None
+        self._query_hash = None
+        self._result_hash = None
+        self._result_number = None
         self._publication_year = None
         self._last_modified = None
         self.discriminator = None
@@ -79,12 +103,21 @@ class IdentifierDto(object):
         self.qid = qid
         self.title = title
         self.description = description
+        self.query = query
+        self.execution = execution
         self.visibility = visibility
         if doi is not None:
             self.doi = doi
+        self.creator = creator
         self.creators = creators
         if created is not None:
             self.created = created
+        self.query_normalized = query_normalized
+        if related is not None:
+            self.related = related
+        self.query_hash = query_hash
+        self.result_hash = result_hash
+        self.result_number = result_number
         self.publication_year = publication_year
         if last_modified is not None:
             self.last_modified = last_modified
@@ -226,6 +259,52 @@ class IdentifierDto(object):
         self._description = description
 
     @property
+    def query(self):
+        """Gets the query of this IdentifierDto.  # noqa: E501
+
+
+        :return: The query of this IdentifierDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._query
+
+    @query.setter
+    def query(self, query):
+        """Sets the query of this IdentifierDto.
+
+
+        :param query: The query of this IdentifierDto.  # noqa: E501
+        :type: str
+        """
+        if query is None:
+            raise ValueError("Invalid value for `query`, must not be `None`")  # noqa: E501
+
+        self._query = query
+
+    @property
+    def execution(self):
+        """Gets the execution of this IdentifierDto.  # noqa: E501
+
+
+        :return: The execution of this IdentifierDto.  # noqa: E501
+        :rtype: datetime
+        """
+        return self._execution
+
+    @execution.setter
+    def execution(self, execution):
+        """Sets the execution of this IdentifierDto.
+
+
+        :param execution: The execution of this IdentifierDto.  # noqa: E501
+        :type: datetime
+        """
+        if execution is None:
+            raise ValueError("Invalid value for `execution`, must not be `None`")  # noqa: E501
+
+        self._execution = execution
+
+    @property
     def visibility(self):
         """Gets the visibility of this IdentifierDto.  # noqa: E501
 
@@ -245,7 +324,7 @@ class IdentifierDto(object):
         """
         if visibility is None:
             raise ValueError("Invalid value for `visibility`, must not be `None`")  # noqa: E501
-        allowed_values = ["VisibilityTypeDto.EVERYONE", "VisibilityTypeDto.TRUSTED", "VisibilityTypeDto.SELF"]  # noqa: E501
+        allowed_values = ["everyone", "trusted", "self"]  # noqa: E501
         if visibility not in allowed_values:
             raise ValueError(
                 "Invalid value for `visibility` ({0}), must be one of {1}"  # noqa: E501
@@ -274,6 +353,29 @@ class IdentifierDto(object):
         """
 
         self._doi = doi
+
+    @property
+    def creator(self):
+        """Gets the creator of this IdentifierDto.  # noqa: E501
+
+
+        :return: The creator of this IdentifierDto.  # noqa: E501
+        :rtype: UserDto
+        """
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this IdentifierDto.
+
+
+        :param creator: The creator of this IdentifierDto.  # noqa: E501
+        :type: UserDto
+        """
+        if creator is None:
+            raise ValueError("Invalid value for `creator`, must not be `None`")  # noqa: E501
+
+        self._creator = creator
 
     @property
     def creators(self):
@@ -318,6 +420,119 @@ class IdentifierDto(object):
         """
 
         self._created = created
+
+    @property
+    def query_normalized(self):
+        """Gets the query_normalized of this IdentifierDto.  # noqa: E501
+
+
+        :return: The query_normalized of this IdentifierDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._query_normalized
+
+    @query_normalized.setter
+    def query_normalized(self, query_normalized):
+        """Sets the query_normalized of this IdentifierDto.
+
+
+        :param query_normalized: The query_normalized of this IdentifierDto.  # noqa: E501
+        :type: str
+        """
+        if query_normalized is None:
+            raise ValueError("Invalid value for `query_normalized`, must not be `None`")  # noqa: E501
+
+        self._query_normalized = query_normalized
+
+    @property
+    def related(self):
+        """Gets the related of this IdentifierDto.  # noqa: E501
+
+
+        :return: The related of this IdentifierDto.  # noqa: E501
+        :rtype: list[RelatedIdentifierDto]
+        """
+        return self._related
+
+    @related.setter
+    def related(self, related):
+        """Sets the related of this IdentifierDto.
+
+
+        :param related: The related of this IdentifierDto.  # noqa: E501
+        :type: list[RelatedIdentifierDto]
+        """
+
+        self._related = related
+
+    @property
+    def query_hash(self):
+        """Gets the query_hash of this IdentifierDto.  # noqa: E501
+
+
+        :return: The query_hash of this IdentifierDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._query_hash
+
+    @query_hash.setter
+    def query_hash(self, query_hash):
+        """Sets the query_hash of this IdentifierDto.
+
+
+        :param query_hash: The query_hash of this IdentifierDto.  # noqa: E501
+        :type: str
+        """
+        if query_hash is None:
+            raise ValueError("Invalid value for `query_hash`, must not be `None`")  # noqa: E501
+
+        self._query_hash = query_hash
+
+    @property
+    def result_hash(self):
+        """Gets the result_hash of this IdentifierDto.  # noqa: E501
+
+
+        :return: The result_hash of this IdentifierDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._result_hash
+
+    @result_hash.setter
+    def result_hash(self, result_hash):
+        """Sets the result_hash of this IdentifierDto.
+
+
+        :param result_hash: The result_hash of this IdentifierDto.  # noqa: E501
+        :type: str
+        """
+        if result_hash is None:
+            raise ValueError("Invalid value for `result_hash`, must not be `None`")  # noqa: E501
+
+        self._result_hash = result_hash
+
+    @property
+    def result_number(self):
+        """Gets the result_number of this IdentifierDto.  # noqa: E501
+
+
+        :return: The result_number of this IdentifierDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._result_number
+
+    @result_number.setter
+    def result_number(self, result_number):
+        """Sets the result_number of this IdentifierDto.
+
+
+        :param result_number: The result_number of this IdentifierDto.  # noqa: E501
+        :type: int
+        """
+        if result_number is None:
+            raise ValueError("Invalid value for `result_number`, must not be `None`")  # noqa: E501
+
+        self._result_number = result_number
 
     @property
     def publication_year(self):

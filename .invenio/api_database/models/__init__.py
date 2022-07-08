@@ -26,5 +26,6 @@ from api_database.models.granted_authority_dto import GrantedAuthorityDto
 from api_database.models.image_date_dto import ImageDateDto
 from api_database.models.image_dto import ImageDto
 from api_database.models.image_env_item_dto import ImageEnvItemDto
+from api_database.models.license_dto import LicenseDto
 from api_database.models.table_dto import TableDto
 from api_database.models.user_dto import UserDto

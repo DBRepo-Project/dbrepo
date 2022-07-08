@@ -153,12 +153,12 @@ class TableDataEndpointApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def get_all(self, id, database_id, table_id, **kwargs):  # noqa: E501
+    def get_all2(self, id, database_id, table_id, **kwargs):  # noqa: E501
         """Find data  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_all(id, database_id, table_id, async_req=True)
+        >>> thread = api.get_all2(id, database_id, table_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -174,17 +174,17 @@ class TableDataEndpointApi(object):
         """
         kwargs['_return_http_data_only'] = True
         if kwargs.get('async_req'):
-            return self.get_all_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
+            return self.get_all2_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
         else:
-            (data) = self.get_all_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
+            (data) = self.get_all2_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
             return data
 
-    def get_all_with_http_info(self, id, database_id, table_id, **kwargs):  # noqa: E501
+    def get_all2_with_http_info(self, id, database_id, table_id, **kwargs):  # noqa: E501
         """Find data  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_all_with_http_info(id, database_id, table_id, async_req=True)
+        >>> thread = api.get_all2_with_http_info(id, database_id, table_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -210,22 +210,22 @@ class TableDataEndpointApi(object):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method get_all" % key
+                    " to method get_all2" % key
                 )
             params[key] = val
         del params['kwargs']
         # verify the required parameter 'id' is set
         if ('id' not in params or
                 params['id'] is None):
-            raise ValueError("Missing the required parameter `id` when calling `get_all`")  # noqa: E501
+            raise ValueError("Missing the required parameter `id` when calling `get_all2`")  # noqa: E501
         # verify the required parameter 'database_id' is set
         if ('database_id' not in params or
                 params['database_id'] is None):
-            raise ValueError("Missing the required parameter `database_id` when calling `get_all`")  # noqa: E501
+            raise ValueError("Missing the required parameter `database_id` when calling `get_all2`")  # noqa: E501
         # verify the required parameter 'table_id' is set
         if ('table_id' not in params or
                 params['table_id'] is None):
-            raise ValueError("Missing the required parameter `table_id` when calling `get_all`")  # noqa: E501
+            raise ValueError("Missing the required parameter `table_id` when calling `get_all2`")  # noqa: E501
 
         collection_formats = {}
 
@@ -274,12 +274,12 @@ class TableDataEndpointApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def get_all1(self, id, database_id, table_id, **kwargs):  # noqa: E501
+    def get_all3(self, id, database_id, table_id, **kwargs):  # noqa: E501
         """Find data  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_all1(id, database_id, table_id, async_req=True)
+        >>> thread = api.get_all3(id, database_id, table_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -295,17 +295,17 @@ class TableDataEndpointApi(object):
         """
         kwargs['_return_http_data_only'] = True
         if kwargs.get('async_req'):
-            return self.get_all1_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
+            return self.get_all3_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
         else:
-            (data) = self.get_all1_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
+            (data) = self.get_all3_with_http_info(id, database_id, table_id, **kwargs)  # noqa: E501
             return data
 
-    def get_all1_with_http_info(self, id, database_id, table_id, **kwargs):  # noqa: E501
+    def get_all3_with_http_info(self, id, database_id, table_id, **kwargs):  # noqa: E501
         """Find data  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.get_all1_with_http_info(id, database_id, table_id, async_req=True)
+        >>> thread = api.get_all3_with_http_info(id, database_id, table_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -331,22 +331,22 @@ class TableDataEndpointApi(object):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method get_all1" % key
+                    " to method get_all3" % key
                 )
             params[key] = val
         del params['kwargs']
         # verify the required parameter 'id' is set
         if ('id' not in params or
                 params['id'] is None):
-            raise ValueError("Missing the required parameter `id` when calling `get_all1`")  # noqa: E501
+            raise ValueError("Missing the required parameter `id` when calling `get_all3`")  # noqa: E501
         # verify the required parameter 'database_id' is set
         if ('database_id' not in params or
                 params['database_id'] is None):
-            raise ValueError("Missing the required parameter `database_id` when calling `get_all1`")  # noqa: E501
+            raise ValueError("Missing the required parameter `database_id` when calling `get_all3`")  # noqa: E501
         # verify the required parameter 'table_id' is set
         if ('table_id' not in params or
                 params['table_id'] is None):
-            raise ValueError("Missing the required parameter `table_id` when calling `get_all1`")  # noqa: E501
+            raise ValueError("Missing the required parameter `table_id` when calling `get_all3`")  # noqa: E501
 
         collection_formats = {}
 

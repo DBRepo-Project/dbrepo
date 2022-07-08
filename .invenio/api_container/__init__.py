@@ -36,5 +36,6 @@ from api_container.models.image_create_dto import ImageCreateDto
 from api_container.models.image_date_dto import ImageDateDto
 from api_container.models.image_dto import ImageDto
 from api_container.models.image_env_item_dto import ImageEnvItemDto
+from api_container.models.license_dto import LicenseDto
 from api_container.models.table_dto import TableDto
 from api_container.models.user_dto import UserDto

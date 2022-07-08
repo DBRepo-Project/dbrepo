@@ -40,13 +40,13 @@ eureka:
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
 fda:
   ready.path: /ready
-  website: http://localhost:3000
-  gateway.endpoint: http://fda-gateway-service:9095
+  website: "${WEBSITE}"
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
   mail:
     prefix: /
-    from: Database Repository <noreply@dbrepo.ossdip.at>
-    replyto: Martin Weise <martin.weise@tuwien.ac.at>
+    from: "${MAIL_FROM}"
+    replyto: "${MAIL_REPLY_TO}"
 jwt:
-  issuer: fda-dbrepo
-  secret: fda-secret
-  expiration.ms: 86400000 # 24 hrs
+  issuer: "${JWT_ISSUER}"
+  secret: "${JWT_SECRET"
+  expiration.ms: "${JWT_EXPIRATION}" # 24 hrs

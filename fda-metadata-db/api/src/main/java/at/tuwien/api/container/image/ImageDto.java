@@ -1,5 +1,6 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -55,6 +56,7 @@ public class ImageDto {
     private String hash;
 
     @Parameter(required = true, example = "2021-03-12T15:26:21.678396092Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant compiled;
 
     @Parameter(required = true, example = "314295447")

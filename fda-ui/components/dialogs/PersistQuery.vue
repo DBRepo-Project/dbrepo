@@ -161,11 +161,11 @@ export default {
       error: false, // XXX: `error` is never changed
       visibility: [{
         name: 'Public',
-        value: 'EVERYONE'
+        value: 'everyone'
       },
       {
         name: 'Only me',
-        value: 'SELF'
+        value: 'self'
       }],
       database: {
         id: null,
@@ -234,7 +234,7 @@ export default {
         title: null,
         description: null,
         publication_year: parseInt(new Date().getFullYear()),
-        visibility: 'EVERYONE',
+        visibility: 'everyone',
         doi: null,
         creators: [],
         related_identifiers: []

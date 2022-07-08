@@ -22,5 +22,20 @@ from api_identifier.api_client import ApiClient
 from api_identifier.configuration import Configuration
 # import models into sdk package
 from api_identifier.models.api_error_dto import ApiErrorDto
+from api_identifier.models.column_dto import ColumnDto
+from api_identifier.models.concept_dto import ConceptDto
+from api_identifier.models.container_dto import ContainerDto
+from api_identifier.models.creator_create_dto import CreatorCreateDto
 from api_identifier.models.creator_dto import CreatorDto
+from api_identifier.models.database_dto import DatabaseDto
+from api_identifier.models.granted_authority_dto import GrantedAuthorityDto
+from api_identifier.models.identifier_create_dto import IdentifierCreateDto
 from api_identifier.models.identifier_dto import IdentifierDto
+from api_identifier.models.image_date_dto import ImageDateDto
+from api_identifier.models.image_dto import ImageDto
+from api_identifier.models.image_env_item_dto import ImageEnvItemDto
+from api_identifier.models.license_dto import LicenseDto
+from api_identifier.models.related_identifier_create_dto import RelatedIdentifierCreateDto
+from api_identifier.models.related_identifier_dto import RelatedIdentifierDto
+from api_identifier.models.table_dto import TableDto
+from api_identifier.models.user_dto import UserDto

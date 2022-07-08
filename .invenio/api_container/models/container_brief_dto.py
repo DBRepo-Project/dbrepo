@@ -31,6 +31,8 @@ class ContainerBriefDto(object):
         'id': 'int',
         'hash': 'str',
         'name': 'str',
+        'creator': 'UserDto',
+        'created': 'datetime',
         'internal_name': 'str',
         'is_public': 'bool'
     }
@@ -39,21 +41,29 @@ class ContainerBriefDto(object):
         'id': 'id',
         'hash': 'hash',
         'name': 'name',
+        'creator': 'creator',
+        'created': 'created',
         'internal_name': 'internal_name',
         'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, hash=None, name=None, internal_name=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, hash=None, name=None, creator=None, created=None, internal_name=None, is_public=None):  # noqa: E501
         """ContainerBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._hash = None
         self._name = None
+        self._creator = None
+        self._created = None
         self._internal_name = None
         self._is_public = None
         self.discriminator = None
         self.id = id
         self.hash = hash
         self.name = name
+        if creator is not None:
+            self.creator = creator
+        if created is not None:
+            self.created = created
         self.internal_name = internal_name
         if is_public is not None:
             self.is_public = is_public
@@ -126,6 +136,48 @@ class ContainerBriefDto(object):
             raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
         self._name = name
+
+    @property
+    def creator(self):
+        """Gets the creator of this ContainerBriefDto.  # noqa: E501
+
+
+        :return: The creator of this ContainerBriefDto.  # noqa: E501
+        :rtype: UserDto
+        """
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this ContainerBriefDto.
+
+
+        :param creator: The creator of this ContainerBriefDto.  # noqa: E501
+        :type: UserDto
+        """
+
+        self._creator = creator
+
+    @property
+    def created(self):
+        """Gets the created of this ContainerBriefDto.  # noqa: E501
+
+
+        :return: The created of this ContainerBriefDto.  # noqa: E501
+        :rtype: datetime
+        """
+        return self._created
+
+    @created.setter
+    def created(self, created):
+        """Sets the created of this ContainerBriefDto.
+
+
+        :param created: The created of this ContainerBriefDto.  # noqa: E501
+        :type: datetime
+        """
+
+        self._created = created
 
     @property
     def internal_name(self):

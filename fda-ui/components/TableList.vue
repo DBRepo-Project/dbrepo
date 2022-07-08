@@ -61,7 +61,7 @@
                       Table Creation
                     </v-list-item-title>
                     <v-list-item-content>
-                      {{ creation }}
+                      {{ tableDetails.created }}
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -147,8 +147,6 @@
 </template>
 
 <script>
-import { format } from 'date-fns'
-
 export default {
   data () {
     return {
@@ -205,9 +203,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    creation () {
-      return this.formatDate(this.tableDetails.created)
     }
   },
   mounted () {
@@ -242,9 +237,6 @@ export default {
       if (select.length > 0) {
         this.tableDetails = select[0]
       }
-    },
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm:ss')
     },
     /**
      * if tableId is given, open the table after refresh

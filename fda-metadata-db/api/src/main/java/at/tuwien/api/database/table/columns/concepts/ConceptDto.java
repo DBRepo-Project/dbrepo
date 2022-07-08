@@ -1,5 +1,6 @@
 package at.tuwien.api.database.table.columns.concepts;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
@@ -24,5 +25,6 @@ public class ConceptDto {
 
     @NotNull
     @Parameter(name = "created", required = true)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
 }

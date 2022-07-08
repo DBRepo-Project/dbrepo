@@ -10,6 +10,7 @@ import org.springframework.core.env.Environment;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.TimeZone;
 
 @Configuration
 public class ReadyConfig {
@@ -26,6 +27,7 @@ public class ReadyConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws IOException {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         Files.touch(new File(readyPath));
     }
 

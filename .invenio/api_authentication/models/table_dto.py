@@ -32,15 +32,9 @@ class TableDto(object):
         'name': 'str',
         'topic': 'str',
         'description': 'str',
-        'separator': 'str',
-        'quote': 'str',
         'created': 'datetime',
         'columns': 'list[ColumnDto]',
-        'internal_name': 'str',
-        'null_element': 'str',
-        'skip_lines': 'int',
-        'true_element': 'str',
-        'false_element': 'str'
+        'internal_name': 'str'
     }
 
     attribute_map = {
@@ -48,50 +42,29 @@ class TableDto(object):
         'name': 'name',
         'topic': 'topic',
         'description': 'description',
-        'separator': 'separator',
-        'quote': 'quote',
         'created': 'created',
         'columns': 'columns',
-        'internal_name': 'internal_name',
-        'null_element': 'null_element',
-        'skip_lines': 'skip_lines',
-        'true_element': 'true_element',
-        'false_element': 'false_element'
+        'internal_name': 'internal_name'
     }
 
-    def __init__(self, id=None, name=None, topic=None, description=None, separator=None, quote=None, created=None, columns=None, internal_name=None, null_element=None, skip_lines=None, true_element=None, false_element=None):  # noqa: E501
+    def __init__(self, id=None, name=None, topic=None, description=None, created=None, columns=None, internal_name=None):  # noqa: E501
         """TableDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
         self._topic = None
         self._description = None
-        self._separator = None
-        self._quote = None
         self._created = None
         self._columns = None
         self._internal_name = None
-        self._null_element = None
-        self._skip_lines = None
-        self._true_element = None
-        self._false_element = None
         self.discriminator = None
         self.id = id
         self.name = name
         self.topic = topic
         self.description = description
-        self.separator = separator
-        self.quote = quote
         if created is not None:
             self.created = created
         self.columns = columns
         self.internal_name = internal_name
-        self.null_element = null_element
-        if skip_lines is not None:
-            self.skip_lines = skip_lines
-        if true_element is not None:
-            self.true_element = true_element
-        if false_element is not None:
-            self.false_element = false_element
 
     @property
     def id(self):
@@ -186,52 +159,6 @@ class TableDto(object):
         self._description = description
 
     @property
-    def separator(self):
-        """Gets the separator of this TableDto.  # noqa: E501
-
-
-        :return: The separator of this TableDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._separator
-
-    @separator.setter
-    def separator(self, separator):
-        """Sets the separator of this TableDto.
-
-
-        :param separator: The separator of this TableDto.  # noqa: E501
-        :type: str
-        """
-        if separator is None:
-            raise ValueError("Invalid value for `separator`, must not be `None`")  # noqa: E501
-
-        self._separator = separator
-
-    @property
-    def quote(self):
-        """Gets the quote of this TableDto.  # noqa: E501
-
-
-        :return: The quote of this TableDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._quote
-
-    @quote.setter
-    def quote(self, quote):
-        """Sets the quote of this TableDto.
-
-
-        :param quote: The quote of this TableDto.  # noqa: E501
-        :type: str
-        """
-        if quote is None:
-            raise ValueError("Invalid value for `quote`, must not be `None`")  # noqa: E501
-
-        self._quote = quote
-
-    @property
     def created(self):
         """Gets the created of this TableDto.  # noqa: E501
 
@@ -297,92 +224,6 @@ class TableDto(object):
             raise ValueError("Invalid value for `internal_name`, must not be `None`")  # noqa: E501
 
         self._internal_name = internal_name
-
-    @property
-    def null_element(self):
-        """Gets the null_element of this TableDto.  # noqa: E501
-
-
-        :return: The null_element of this TableDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._null_element
-
-    @null_element.setter
-    def null_element(self, null_element):
-        """Sets the null_element of this TableDto.
-
-
-        :param null_element: The null_element of this TableDto.  # noqa: E501
-        :type: str
-        """
-        if null_element is None:
-            raise ValueError("Invalid value for `null_element`, must not be `None`")  # noqa: E501
-
-        self._null_element = null_element
-
-    @property
-    def skip_lines(self):
-        """Gets the skip_lines of this TableDto.  # noqa: E501
-
-
-        :return: The skip_lines of this TableDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._skip_lines
-
-    @skip_lines.setter
-    def skip_lines(self, skip_lines):
-        """Sets the skip_lines of this TableDto.
-
-
-        :param skip_lines: The skip_lines of this TableDto.  # noqa: E501
-        :type: int
-        """
-
-        self._skip_lines = skip_lines
-
-    @property
-    def true_element(self):
-        """Gets the true_element of this TableDto.  # noqa: E501
-
-
-        :return: The true_element of this TableDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._true_element
-
-    @true_element.setter
-    def true_element(self, true_element):
-        """Sets the true_element of this TableDto.
-
-
-        :param true_element: The true_element of this TableDto.  # noqa: E501
-        :type: str
-        """
-
-        self._true_element = true_element
-
-    @property
-    def false_element(self):
-        """Gets the false_element of this TableDto.  # noqa: E501
-
-
-        :return: The false_element of this TableDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._false_element
-
-    @false_element.setter
-    def false_element(self, false_element):
-        """Sets the false_element of this TableDto.
-
-
-        :param false_element: The false_element of this TableDto.  # noqa: E501
-        :type: str
-        """
-
-        self._false_element = false_element
 
     def to_dict(self):
         """Returns the model properties as a dict"""

@@ -137,12 +137,12 @@ class ContainerDatabaseEndpointApi(object):
             _request_timeout=params.get('_request_timeout'),
             collection_formats=collection_formats)
 
-    def delete(self, id, database_id, **kwargs):  # noqa: E501
+    def delete1(self, id, database_id, **kwargs):  # noqa: E501
         """Delete some database  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.delete(id, database_id, async_req=True)
+        >>> thread = api.delete1(id, database_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -154,17 +154,17 @@ class ContainerDatabaseEndpointApi(object):
         """
         kwargs['_return_http_data_only'] = True
         if kwargs.get('async_req'):
-            return self.delete_with_http_info(id, database_id, **kwargs)  # noqa: E501
+            return self.delete1_with_http_info(id, database_id, **kwargs)  # noqa: E501
         else:
-            (data) = self.delete_with_http_info(id, database_id, **kwargs)  # noqa: E501
+            (data) = self.delete1_with_http_info(id, database_id, **kwargs)  # noqa: E501
             return data
 
-    def delete_with_http_info(self, id, database_id, **kwargs):  # noqa: E501
+    def delete1_with_http_info(self, id, database_id, **kwargs):  # noqa: E501
         """Delete some database  # noqa: E501
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please pass async_req=True
-        >>> thread = api.delete_with_http_info(id, database_id, async_req=True)
+        >>> thread = api.delete1_with_http_info(id, database_id, async_req=True)
         >>> result = thread.get()
 
         :param async_req bool
@@ -186,18 +186,18 @@ class ContainerDatabaseEndpointApi(object):
             if key not in all_params:
                 raise TypeError(
                     "Got an unexpected keyword argument '%s'"
-                    " to method delete" % key
+                    " to method delete1" % key
                 )
             params[key] = val
         del params['kwargs']
         # verify the required parameter 'id' is set
         if ('id' not in params or
                 params['id'] is None):
-            raise ValueError("Missing the required parameter `id` when calling `delete`")  # noqa: E501
+            raise ValueError("Missing the required parameter `id` when calling `delete1`")  # noqa: E501
         # verify the required parameter 'database_id' is set
         if ('database_id' not in params or
                 params['database_id'] is None):
-            raise ValueError("Missing the required parameter `database_id` when calling `delete`")  # noqa: E501
+            raise ValueError("Missing the required parameter `database_id` when calling `delete1`")  # noqa: E501
 
         collection_formats = {}
 
@@ -414,7 +414,7 @@ class ContainerDatabaseEndpointApi(object):
             ['*/*'])  # noqa: E501
 
         # Authentication setting
-        auth_settings = []  # noqa: E501
+        auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
             '/api/container/{id}/database/{databaseId}', 'GET',

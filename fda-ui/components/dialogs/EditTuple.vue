@@ -90,8 +90,6 @@
 </template>
 
 <script>
-import { format } from 'date-fns'
-
 export default {
   props: {
     tuple: {
@@ -178,9 +176,6 @@ export default {
         console.error('Failed to add tuple', err)
         this.$toast.error('Failed to add tuple')
       }
-    },
-    formatDate (date) {
-      return format(new Date(date), 'dd.MM.yyyy HH:mm:ss')
     }
   }
 }

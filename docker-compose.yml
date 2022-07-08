@@ -37,7 +37,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fda
-      TZ: Europe/Vienna
+      TZ: UTC
     logging:
       driver: json-file
 
@@ -51,7 +51,7 @@ services:
       fda-public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     depends_on:
       fda-gateway-service:
         condition: service_healthy
@@ -70,7 +70,7 @@ services:
       fda-public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9095:9095"
     logging:
@@ -89,7 +89,7 @@ services:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9092:9092"
     volumes:
@@ -115,7 +115,7 @@ services:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9091:9091"
     volumes:
@@ -138,7 +138,7 @@ services:
       DOCUMENT_ENDPOINT: https://test.researchdata.tuwien.ac.at
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9099:9099"
     volumes:
@@ -158,10 +158,17 @@ services:
     networks:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      WEBSITE: http://localhost:3000
+      MAIL_FROM: Database Repository <noreply@dbrepo.ossdip.at>
+      MAIL_REPLY_TO: Martin Weise <martin.weise@tuwien.ac.at>
+      JWT_ISSUER: fda-dbrepo
+      JWT_SECRET: fda-secret
+      JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: docker
       SMTP_USERNAME: ${MAIL_USERNAME:-local}
       SMTP_PASSWORD: ${MAIL_PASSWORD:-local}
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9097:9097"
     depends_on:
@@ -185,7 +192,8 @@ services:
       fda-userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      TZ: UTC
     ports:
       - "9093:9093"
     volumes:
@@ -212,7 +220,7 @@ services:
       SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
       multipart.location: /tmp
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9094:9094"
     volumes:
@@ -239,7 +247,7 @@ services:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "9096:9096"
     depends_on:
@@ -262,6 +270,7 @@ services:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
+      TZ: UTC
     ports:
       - "5000:5000"
     volumes:
@@ -283,7 +292,7 @@ services:
       fda-public:
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
-      TZ: Europe/Vienna
+      TZ: UTC
     ports:
       - "5010:5010"
     volumes:
@@ -303,7 +312,8 @@ services:
     image: fda-broker-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      TZ: UTC
     networks:
       fda-public:
     ports:
@@ -362,6 +372,6 @@ services:
     environment:
       HOST: 0.0.0.0
       API: http://fda-gateway-service:9095
-      TZ: Europe/Vienna
+      TZ: UTC
     logging:
       driver: json-file

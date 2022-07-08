@@ -30,71 +30,97 @@ class DatabaseDto(object):
     swagger_types = {
         'id': 'int',
         'name': 'str',
+        'exchange': 'str',
+        'creator': 'UserDto',
+        'subjects': 'list[str]',
+        'language': 'str',
+        'license': 'LicenseDto',
         'description': 'str',
         'publisher': 'str',
-        'license': 'str',
         'contact': 'UserDto',
         'tables': 'list[TableDto]',
-        'exchange': 'str',
         'image': 'ImageDto',
         'container': 'ContainerDto',
         'created': 'datetime',
         'deleted': 'datetime',
-        'internal_name': 'str'
+        'internal_name': 'str',
+        'publication_year': 'int',
+        'is_public': 'bool'
     }
 
     attribute_map = {
         'id': 'id',
         'name': 'name',
+        'exchange': 'exchange',
+        'creator': 'creator',
+        'subjects': 'subjects',
+        'language': 'language',
+        'license': 'license',
         'description': 'description',
         'publisher': 'publisher',
-        'license': 'license',
         'contact': 'contact',
         'tables': 'tables',
-        'exchange': 'exchange',
         'image': 'image',
         'container': 'container',
         'created': 'created',
         'deleted': 'deleted',
-        'internal_name': 'internal_name'
+        'internal_name': 'internal_name',
+        'publication_year': 'publication_year',
+        'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, name=None, description=None, publisher=None, license=None, contact=None, tables=None, exchange=None, image=None, container=None, created=None, deleted=None, internal_name=None):  # noqa: E501
+    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, contact=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication_year=None, is_public=None):  # noqa: E501
         """DatabaseDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
+        self._exchange = None
+        self._creator = None
+        self._subjects = None
+        self._language = None
+        self._license = None
         self._description = None
         self._publisher = None
-        self._license = None
         self._contact = None
         self._tables = None
-        self._exchange = None
         self._image = None
         self._container = None
         self._created = None
         self._deleted = None
         self._internal_name = None
+        self._publication_year = None
+        self._is_public = None
         self.discriminator = None
         self.id = id
         self.name = name
-        self.description = description
-        if publisher is not None:
-            self.publisher = publisher
+        self.exchange = exchange
+        self.creator = creator
+        if subjects is not None:
+            self.subjects = subjects
+        if language is not None:
+            self.language = language
         if license is not None:
             self.license = license
+        if description is not None:
+            self.description = description
+        if publisher is not None:
+            self.publisher = publisher
         if contact is not None:
             self.contact = contact
         if tables is not None:
             self.tables = tables
-        self.exchange = exchange
         if image is not None:
             self.image = image
         if container is not None:
             self.container = container
-        self.created = created
+        if created is not None:
+            self.created = created
         if deleted is not None:
             self.deleted = deleted
         self.internal_name = internal_name
+        if publication_year is not None:
+            self.publication_year = publication_year
+        if is_public is not None:
+            self.is_public = is_public
 
     @property
     def id(self):
@@ -143,6 +169,121 @@ class DatabaseDto(object):
         self._name = name
 
     @property
+    def exchange(self):
+        """Gets the exchange of this DatabaseDto.  # noqa: E501
+
+
+        :return: The exchange of this DatabaseDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._exchange
+
+    @exchange.setter
+    def exchange(self, exchange):
+        """Sets the exchange of this DatabaseDto.
+
+
+        :param exchange: The exchange of this DatabaseDto.  # noqa: E501
+        :type: str
+        """
+        if exchange is None:
+            raise ValueError("Invalid value for `exchange`, must not be `None`")  # noqa: E501
+
+        self._exchange = exchange
+
+    @property
+    def creator(self):
+        """Gets the creator of this DatabaseDto.  # noqa: E501
+
+
+        :return: The creator of this DatabaseDto.  # noqa: E501
+        :rtype: UserDto
+        """
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this DatabaseDto.
+
+
+        :param creator: The creator of this DatabaseDto.  # noqa: E501
+        :type: UserDto
+        """
+        if creator is None:
+            raise ValueError("Invalid value for `creator`, must not be `None`")  # noqa: E501
+
+        self._creator = creator
+
+    @property
+    def subjects(self):
+        """Gets the subjects of this DatabaseDto.  # noqa: E501
+
+
+        :return: The subjects of this DatabaseDto.  # noqa: E501
+        :rtype: list[str]
+        """
+        return self._subjects
+
+    @subjects.setter
+    def subjects(self, subjects):
+        """Sets the subjects of this DatabaseDto.
+
+
+        :param subjects: The subjects of this DatabaseDto.  # noqa: E501
+        :type: list[str]
+        """
+
+        self._subjects = subjects
+
+    @property
+    def language(self):
+        """Gets the language of this DatabaseDto.  # noqa: E501
+
+
+        :return: The language of this DatabaseDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._language
+
+    @language.setter
+    def language(self, language):
+        """Sets the language of this DatabaseDto.
+
+
+        :param language: The language of this DatabaseDto.  # noqa: E501
+        :type: str
+        """
+        allowed_values = ["ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "km", "ch", "ce", "ny", "zh", "cu", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gd", "gl", "lg", "ka", "de", "ki", "el", "kl", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "is", "io", "ig", "id", "ia", "ie", "iu", "ik", "ga", "it", "ja", "jv", "kn", "kr", "ks", "kk", "rw", "kv", "kg", "ko", "kj", "ku", "ky", "lo", "la", "lv", "lb", "li", "ln", "lt", "lu", "mk", "mg", "ms", "ml", "mt", "gv", "mi", "mr", "mh", "ro", "mn", "na", "nv", "nd", "ng", "ne", "se", "no", "nb", "nn", "ii", "oc", "oj", "or", "om", "os", "pi", "pa", "ps", "fa", "pl", "pt", "qu", "rm", "rn", "ru", "sm", "sg", "sa", "sc", "sr", "sn", "sd", "si", "sk", "sl", "so", "st", "nr", "es", "su", "sw", "ss", "sv", "tl", "ty", "tg", "ta", "tt", "te", "th", "bo", "ti", "to", "ts", "tn", "tr", "tk", "tw", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "fy", "wo", "xh", "yi", "yo", "za", "zu"]  # noqa: E501
+        if language not in allowed_values:
+            raise ValueError(
+                "Invalid value for `language` ({0}), must be one of {1}"  # noqa: E501
+                .format(language, allowed_values)
+            )
+
+        self._language = language
+
+    @property
+    def license(self):
+        """Gets the license of this DatabaseDto.  # noqa: E501
+
+
+        :return: The license of this DatabaseDto.  # noqa: E501
+        :rtype: LicenseDto
+        """
+        return self._license
+
+    @license.setter
+    def license(self, license):
+        """Sets the license of this DatabaseDto.
+
+
+        :param license: The license of this DatabaseDto.  # noqa: E501
+        :type: LicenseDto
+        """
+
+        self._license = license
+
+    @property
     def description(self):
         """Gets the description of this DatabaseDto.  # noqa: E501
 
@@ -160,8 +301,6 @@ class DatabaseDto(object):
         :param description: The description of this DatabaseDto.  # noqa: E501
         :type: str
         """
-        if description is None:
-            raise ValueError("Invalid value for `description`, must not be `None`")  # noqa: E501
 
         self._description = description
 
@@ -185,27 +324,6 @@ class DatabaseDto(object):
         """
 
         self._publisher = publisher
-
-    @property
-    def license(self):
-        """Gets the license of this DatabaseDto.  # noqa: E501
-
-
-        :return: The license of this DatabaseDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._license
-
-    @license.setter
-    def license(self, license):
-        """Sets the license of this DatabaseDto.
-
-
-        :param license: The license of this DatabaseDto.  # noqa: E501
-        :type: str
-        """
-
-        self._license = license
 
     @property
     def contact(self):
@@ -248,29 +366,6 @@ class DatabaseDto(object):
         """
 
         self._tables = tables
-
-    @property
-    def exchange(self):
-        """Gets the exchange of this DatabaseDto.  # noqa: E501
-
-
-        :return: The exchange of this DatabaseDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._exchange
-
-    @exchange.setter
-    def exchange(self, exchange):
-        """Sets the exchange of this DatabaseDto.
-
-
-        :param exchange: The exchange of this DatabaseDto.  # noqa: E501
-        :type: str
-        """
-        if exchange is None:
-            raise ValueError("Invalid value for `exchange`, must not be `None`")  # noqa: E501
-
-        self._exchange = exchange
 
     @property
     def image(self):
@@ -332,8 +427,6 @@ class DatabaseDto(object):
         :param created: The created of this DatabaseDto.  # noqa: E501
         :type: datetime
         """
-        if created is None:
-            raise ValueError("Invalid value for `created`, must not be `None`")  # noqa: E501
 
         self._created = created
 
@@ -380,6 +473,48 @@ class DatabaseDto(object):
             raise ValueError("Invalid value for `internal_name`, must not be `None`")  # noqa: E501
 
         self._internal_name = internal_name
+
+    @property
+    def publication_year(self):
+        """Gets the publication_year of this DatabaseDto.  # noqa: E501
+
+
+        :return: The publication_year of this DatabaseDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_year
+
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this DatabaseDto.
+
+
+        :param publication_year: The publication_year of this DatabaseDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_year = publication_year
+
+    @property
+    def is_public(self):
+        """Gets the is_public of this DatabaseDto.  # noqa: E501
+
+
+        :return: The is_public of this DatabaseDto.  # noqa: E501
+        :rtype: bool
+        """
+        return self._is_public
+
+    @is_public.setter
+    def is_public(self, is_public):
+        """Sets the is_public of this DatabaseDto.
+
+
+        :param is_public: The is_public of this DatabaseDto.  # noqa: E501
+        :type: bool
+        """
+
+        self._is_public = is_public
 
     def to_dict(self):
         """Returns the model properties as a dict"""

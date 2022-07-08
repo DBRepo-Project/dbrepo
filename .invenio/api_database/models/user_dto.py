@@ -31,52 +31,51 @@ class UserDto(object):
         'id': 'int',
         'authorities': 'list[GrantedAuthorityDto]',
         'username': 'str',
-        'titles_before': 'str',
-        'titles_after': 'str',
         'firstname': 'str',
         'lastname': 'str',
         'containers': 'list[ContainerDto]',
         'databases': 'list[ContainerDto]',
         'identifiers': 'list[ContainerDto]',
-        'email': 'str'
+        'email': 'str',
+        'titles_before': 'str',
+        'titles_after': 'str',
+        'email_verified': 'bool'
     }
 
     attribute_map = {
         'id': 'id',
         'authorities': 'authorities',
         'username': 'username',
-        'titles_before': 'titlesBefore',
-        'titles_after': 'titlesAfter',
         'firstname': 'firstname',
         'lastname': 'lastname',
         'containers': 'containers',
         'databases': 'databases',
         'identifiers': 'identifiers',
-        'email': 'email'
+        'email': 'email',
+        'titles_before': 'titles_before',
+        'titles_after': 'titles_after',
+        'email_verified': 'email_verified'
     }
 
-    def __init__(self, id=None, authorities=None, username=None, titles_before=None, titles_after=None, firstname=None, lastname=None, containers=None, databases=None, identifiers=None, email=None):  # noqa: E501
+    def __init__(self, id=None, authorities=None, username=None, firstname=None, lastname=None, containers=None, databases=None, identifiers=None, email=None, titles_before=None, titles_after=None, email_verified=None):  # noqa: E501
         """UserDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._authorities = None
         self._username = None
-        self._titles_before = None
-        self._titles_after = None
         self._firstname = None
         self._lastname = None
         self._containers = None
         self._databases = None
         self._identifiers = None
         self._email = None
+        self._titles_before = None
+        self._titles_after = None
+        self._email_verified = None
         self.discriminator = None
         self.id = id
         if authorities is not None:
             self.authorities = authorities
         self.username = username
-        if titles_before is not None:
-            self.titles_before = titles_before
-        if titles_after is not None:
-            self.titles_after = titles_after
         if firstname is not None:
             self.firstname = firstname
         if lastname is not None:
@@ -88,6 +87,12 @@ class UserDto(object):
         if identifiers is not None:
             self.identifiers = identifiers
         self.email = email
+        if titles_before is not None:
+            self.titles_before = titles_before
+        if titles_after is not None:
+            self.titles_after = titles_after
+        if email_verified is not None:
+            self.email_verified = email_verified
 
     @property
     def id(self):
@@ -155,48 +160,6 @@ class UserDto(object):
             raise ValueError("Invalid value for `username`, must not be `None`")  # noqa: E501
 
         self._username = username
-
-    @property
-    def titles_before(self):
-        """Gets the titles_before of this UserDto.  # noqa: E501
-
-
-        :return: The titles_before of this UserDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._titles_before
-
-    @titles_before.setter
-    def titles_before(self, titles_before):
-        """Sets the titles_before of this UserDto.
-
-
-        :param titles_before: The titles_before of this UserDto.  # noqa: E501
-        :type: str
-        """
-
-        self._titles_before = titles_before
-
-    @property
-    def titles_after(self):
-        """Gets the titles_after of this UserDto.  # noqa: E501
-
-
-        :return: The titles_after of this UserDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._titles_after
-
-    @titles_after.setter
-    def titles_after(self, titles_after):
-        """Sets the titles_after of this UserDto.
-
-
-        :param titles_after: The titles_after of this UserDto.  # noqa: E501
-        :type: str
-        """
-
-        self._titles_after = titles_after
 
     @property
     def firstname(self):
@@ -325,6 +288,69 @@ class UserDto(object):
             raise ValueError("Invalid value for `email`, must not be `None`")  # noqa: E501
 
         self._email = email
+
+    @property
+    def titles_before(self):
+        """Gets the titles_before of this UserDto.  # noqa: E501
+
+
+        :return: The titles_before of this UserDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._titles_before
+
+    @titles_before.setter
+    def titles_before(self, titles_before):
+        """Sets the titles_before of this UserDto.
+
+
+        :param titles_before: The titles_before of this UserDto.  # noqa: E501
+        :type: str
+        """
+
+        self._titles_before = titles_before
+
+    @property
+    def titles_after(self):
+        """Gets the titles_after of this UserDto.  # noqa: E501
+
+
+        :return: The titles_after of this UserDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._titles_after
+
+    @titles_after.setter
+    def titles_after(self, titles_after):
+        """Sets the titles_after of this UserDto.
+
+
+        :param titles_after: The titles_after of this UserDto.  # noqa: E501
+        :type: str
+        """
+
+        self._titles_after = titles_after
+
+    @property
+    def email_verified(self):
+        """Gets the email_verified of this UserDto.  # noqa: E501
+
+
+        :return: The email_verified of this UserDto.  # noqa: E501
+        :rtype: bool
+        """
+        return self._email_verified
+
+    @email_verified.setter
+    def email_verified(self, email_verified):
+        """Sets the email_verified of this UserDto.
+
+
+        :param email_verified: The email_verified of this UserDto.  # noqa: E501
+        :type: bool
+        """
+
+        self._email_verified = email_verified
 
     def to_dict(self):
         """Returns the model properties as a dict"""

@@ -172,7 +172,7 @@ export default {
       try {
         this.loading = true
         this.error = false
-        res = await this.$axios.put(`/api/container/${containerId}`, { action: 'START' }, this.config)
+        res = await this.$axios.put(`/api/container/${containerId}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
       } catch (err) {
         this.error = true

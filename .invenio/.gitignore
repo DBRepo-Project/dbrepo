@@ -1,5 +1,4 @@
 __pycache__
-
-features.csv
-
 venv/
+
+./swagger-codegen-cli.jar

@@ -81,7 +81,6 @@
 </template>
 
 <script>
-
 export default {
   props: {
     database: {
