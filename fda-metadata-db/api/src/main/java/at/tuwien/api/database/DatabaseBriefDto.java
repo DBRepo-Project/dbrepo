@@ -40,7 +40,7 @@ public class DatabaseBriefDto {
     private UserDto creator;
 
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Instant created;
 
 }

@@ -80,11 +80,11 @@ public class DatabaseDto {
     private ContainerDto container;
 
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Instant created;
 
     @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Instant deleted;
 
 }

@@ -41,6 +41,11 @@
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
             <version>${spring-cloud.version}</version>
         </dependency>
+        <!-- IDE -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

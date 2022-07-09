@@ -41,7 +41,7 @@ public class TableDto {
     private String description;
 
     @Parameter(name = "table creation time")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Instant created;
 
     @NotNull

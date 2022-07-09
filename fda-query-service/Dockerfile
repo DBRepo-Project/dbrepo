@@ -31,4 +31,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
 
 EXPOSE 9093
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Duser.timezone=UTC", "-jar", "./rest-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]

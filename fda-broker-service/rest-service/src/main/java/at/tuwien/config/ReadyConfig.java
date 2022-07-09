@@ -9,7 +9,6 @@ import org.springframework.context.event.EventListener;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.TimeZone;
 
 @Log4j2
 @Configuration
@@ -20,7 +19,6 @@ public class ReadyConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws IOException {
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
         Files.touch(new File(readyPath));
     }
 

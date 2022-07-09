@@ -1,4 +1,4 @@
-package at.tuwien.gatewayservice.config;
+package at.tuwien.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

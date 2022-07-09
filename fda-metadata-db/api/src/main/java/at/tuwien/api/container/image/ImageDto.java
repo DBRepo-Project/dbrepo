@@ -56,7 +56,7 @@ public class ImageDto {
     private String hash;
 
     @Parameter(required = true, example = "2021-03-12T15:26:21.678396092Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Instant compiled;
 
     @Parameter(required = true, example = "314295447")
