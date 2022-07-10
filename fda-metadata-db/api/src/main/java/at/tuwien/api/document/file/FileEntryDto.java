@@ -25,12 +25,12 @@ public class FileEntryDto {
     private String key;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "Europe/Vienna")
     @Parameter(name = "file updated")
     private Instant updated;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "Europe/Vienna")
     @Parameter(name = "file created")
     private Instant created;
 

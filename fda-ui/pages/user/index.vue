@@ -139,6 +139,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="api.invenio_token"
+                :disabled="user.has_invenio_token"
                 :rules="[v => !!v || $t('Required')]"
                 hint="https://test.researchdata.tuwien.ac.at/"
                 type="password"
@@ -150,6 +151,15 @@
           <v-row dense>
             <v-col cols="5">
               <v-btn
+                v-if="user.has_invenio_token"
+                color="secondary"
+                class="mt-2"
+                type="submit"
+                @click="setToken">
+                Modify Token
+              </v-btn>
+              <v-btn
+                v-if="!user.has_invenio_token"
                 color="primary"
                 :disabled="!valid4"
                 class="mt-2"
@@ -182,13 +192,14 @@ export default {
         firstname: null,
         titles_after: null,
         titles_before: null,
-        email_verified: false
+        email_verified: false,
+        has_invenio_token: false
       },
       reset: {
         password: null
       },
       api: {
-        invenio_token: null
+        invenio_token: '111111111111111111111111111111111'
       },
       password2: null,
       items: [
@@ -305,6 +316,10 @@ export default {
         this.error = true
       }
       this.loading = false
+    },
+    setToken () {
+      this.user.has_invenio_token = false
+      this.api.invenio_token = ''
     }
   }
 }

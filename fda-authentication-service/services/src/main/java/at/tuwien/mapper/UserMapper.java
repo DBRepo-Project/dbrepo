@@ -58,6 +58,7 @@ public interface UserMapper {
                 .titlesBefore(data.getTitlesBefore())
                 .titlesAfter(data.getTitlesAfter())
                 .emailVerified(data.getEmailVerified())
+                .hasInvenioToken(data.getInvenioToken() != null)
                 .authorities(data.getRoles()
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)

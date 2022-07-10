@@ -56,6 +56,9 @@ public class UserDto {
     @JsonIgnore
     private String invenioToken;
 
+    @JsonProperty("has_invenio_token")
+    private Boolean hasInvenioToken;
+
     @ToString.Exclude
     @JsonIgnore
     @Parameter(name = "password hash")

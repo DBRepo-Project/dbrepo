@@ -21,11 +21,11 @@ public class EntryDto {
     @Parameter(name = "key", description = "Filename")
     private String key;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "Europe/Vienna")
     @Parameter(name = "updated")
     private Instant updated;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS", timezone = "Europe/Vienna")
     @Parameter(name = "created")
     private Instant created;
 
