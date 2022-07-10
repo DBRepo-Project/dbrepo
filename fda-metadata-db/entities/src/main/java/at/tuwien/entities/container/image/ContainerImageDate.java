@@ -52,7 +52,7 @@ public class ContainerImageDate {
     private String unixFormat;
 
     @CreatedDate
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

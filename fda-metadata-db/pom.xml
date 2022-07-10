@@ -31,6 +31,7 @@
         <swagger.version>2.1.7</swagger.version>
         <springfox.version>3.0.0</springfox.version>
         <jsql.version>3.1</jsql.version>
+        <jackson-datatype.version>2.13.3</jackson-datatype.version>
     </properties>
 
     <dependencies>
@@ -66,6 +67,12 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
+        </dependency>
+        <!-- Mapping -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-datatype.version}</version>
         </dependency>
         <!-- SQL Parser -->
         <dependency>

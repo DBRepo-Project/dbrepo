@@ -60,7 +60,7 @@ public class ContainerDto {
 
     @NotNull
     @Parameter(name = "start time", example = "2021-03-12T15:26:21.678396092Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
     private Instant created;
 
 }

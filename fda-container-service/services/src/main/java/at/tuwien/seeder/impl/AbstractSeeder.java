@@ -50,12 +50,6 @@ public abstract class AbstractSeeder {
                     .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ContainerImageEnvironmentItemType.PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("TZ")
-                    .value("UTC")
-                    .type(ContainerImageEnvironmentItemType.PASSWORD)
                     .build());
 
     public final static Long IMAGE_DATE_1_ID = 1L;

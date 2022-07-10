@@ -37,7 +37,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fda
-      TZ: Europe/Vienna
     logging:
       driver: json-file
 

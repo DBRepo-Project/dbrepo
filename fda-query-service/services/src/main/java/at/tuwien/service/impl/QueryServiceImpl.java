@@ -48,8 +48,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     private final QueryMapper queryMapper;
     private final TableService tableService;
-    private final DatabaseService databaseService;
     private final StoreService storeService;
+    private final DatabaseService databaseService;
 
     @Autowired
     public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,

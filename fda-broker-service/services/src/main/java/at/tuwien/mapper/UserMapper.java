@@ -18,4 +18,6 @@ public interface UserMapper {
         return new SimpleGrantedAuthority(data.getAuthority());
     }
 
+
+
 }

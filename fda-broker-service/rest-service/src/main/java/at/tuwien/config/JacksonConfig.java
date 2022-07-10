@@ -3,9 +3,9 @@ package at.tuwien.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,9 +19,11 @@ public class JacksonConfig {
     @Bean
     public ObjectMapper objectMapper() throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        objectMapper.setTimeZone(TimeZone.getDefault());
+        objectMapper.setTimeZone(TimeZone.getTimeZone("Europe/Vienna"));
         log.debug("current time is {}", objectMapper.writeValueAsString(new Date()));
         return objectMapper;
     }

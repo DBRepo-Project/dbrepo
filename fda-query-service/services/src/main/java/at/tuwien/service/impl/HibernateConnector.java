@@ -56,6 +56,7 @@ public abstract class HibernateConnector {
                 .setProperty("hibernate.current_session_context_class", SESSION_CONTEXT)
                 .setProperty("hibernate.transaction.coordinator_class", COORDINATOR_CLASS)
                 .setProperty("hibernate.hbm2ddl.auto", "update")
+                .setProperty("hibernate.jdbc.time_zone", "Europe/Vienna")
                 .setProperty("hibernate.c3p0.min_size", String.valueOf(MIN_SIZE))
                 .setProperty("hibernate.c3p0.max_size", String.valueOf(MAX_SIZE))
                 .setProperty("hibernate.c3p0.acquire_increment", String.valueOf(INCREMENT_SIZE))
