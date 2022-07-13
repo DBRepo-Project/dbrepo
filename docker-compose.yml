@@ -269,7 +269,6 @@ services:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
-      TZ: Europe/Vienna
     ports:
       - "5000:5000"
     volumes:
@@ -371,6 +370,5 @@ services:
     environment:
       HOST: 0.0.0.0
       API: http://fda-gateway-service:9095
-      TZ: Europe/Vienna
     logging:
       driver: json-file

@@ -37,7 +37,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fda
-      TZ: Europe/Vienna
     logging:
       driver: json-file
 
@@ -86,6 +85,8 @@ services:
       fda-userdb:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -111,6 +112,7 @@ services:
     networks:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -119,6 +121,29 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-document-service:
+    restart: on-failure
+    container_name: fda-document-service
+    hostname: fda-document-service
+    build: ./fda-document-service
+    image: fda-document-service
+    networks:
+      fda-public:
+    environment:
+      DOCUMENT_ENDPOINT: https://test.researchdata.tuwien.ac.at
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SPRING_PROFILES_ACTIVE: docker
+      TZ: Europe/Vienna
+    ports:
+      - "9099:9099"
+    volumes:
+      - /tmp:/tmp
+    depends_on:
+      fda-discovery-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -132,7 +157,14 @@ services:
     networks:
       fda-public:
     environment:
-      SPRING_PROFILES_ACTIVE: docker, prod
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      WEBSITE: http://localhost:3000
+      MAIL_FROM: Database Repository <noreply@dbrepo.ossdip.at>
+      MAIL_REPLY_TO: Martin Weise <martin.weise@tuwien.ac.at>
+      JWT_ISSUER: fda-dbrepo
+      JWT_SECRET: fda-secret
+      JWT_EXPIRATION: 86400000
+      SPRING_PROFILES_ACTIVE: docker
       SMTP_USERNAME: ${MAIL_USERNAME:-local}
       SMTP_PASSWORD: ${MAIL_PASSWORD:-local}
       TZ: Europe/Vienna
@@ -159,6 +191,7 @@ services:
       fda-userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       TZ: Europe/Vienna
     ports:
       - "9093:9093"
@@ -182,8 +215,9 @@ services:
       fda-public:
       fda-userdb:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
-      SYSTEM_PASSWORD: ${ADMIN_PASSWORD:-admin}
       multipart.location: /tmp
       TZ: Europe/Vienna
     ports:
@@ -210,6 +244,7 @@ services:
     networks:
       fda-public:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
     ports:
@@ -275,6 +310,7 @@ services:
     image: fda-broker-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       TZ: Europe/Vienna
     networks:
       fda-public:
@@ -329,11 +365,12 @@ services:
     depends_on:
       fda-identifier-service:
         condition: service_healthy
+      fda-database-service:
+        condition: service_healthy
     environment:
       HOST: 0.0.0.0
       API: http://fda-gateway-service:9095
       KEY: "${UI_KEY}"
       CERT: "${UI_CERT}"
-      TZ: Europe/Vienna
     logging:
       driver: json-file
