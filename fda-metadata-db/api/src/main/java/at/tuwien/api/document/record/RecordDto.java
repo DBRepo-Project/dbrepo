@@ -24,7 +24,7 @@ public class RecordDto {
     @Parameter(name = "access")
     private AccessOptionsDto access;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "UTC")
     private Instant created;
 
     @NotNull(message = "files options is required")
@@ -49,7 +49,7 @@ public class RecordDto {
     @Parameter(name = "revision id")
     private Long revisionId;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", timezone = "UTC")
     @Parameter(name = "updated date")
     private Instant updated;
 

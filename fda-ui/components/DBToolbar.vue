@@ -11,7 +11,7 @@
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
         <v-btn color="secondary" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
-          <v-icon left>mdi-wrench</v-icon> Query Builder
+          <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
         <v-btn color="primary" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table

@@ -57,7 +57,7 @@ public interface DocumentMapper {
                 .append("<publisher xml:lang=\"en\">")
                 .append(database.getPublisher())
                 .append("</publisher><publicationYear>")
-                .append(database.getPublicationYear())
+                .append(database.getPublication())
                 .append("</publicationYear>");
         if (database.getSubjects().size() > 0) {
             builder.append("<subjects>");

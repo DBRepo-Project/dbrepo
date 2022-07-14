@@ -86,9 +86,9 @@ public class Database {
     @Column
     private String publisher;
 
-    @Field(type = FieldType.Integer)
+    @Field(type = FieldType.Text)
     @Column
-    private Short publicationYear;
+    private String publication;
 
     @Field(index = false)
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)

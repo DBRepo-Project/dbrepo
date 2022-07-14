@@ -34,10 +34,9 @@
           <v-row>
             <v-col>
               <v-text-field
-                id="publication_year"
-                v-model.number="identifier.publication_year"
-                type="number"
-                label="Publication Year *"
+                id="publication"
+                v-model="identifier.publication"
+                label="Publication Time *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -233,7 +232,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        publication_year: parseInt(new Date().getFullYear()),
+        publication: new Date(),
         visibility: 'everyone',
         doi: null,
         creators: [],

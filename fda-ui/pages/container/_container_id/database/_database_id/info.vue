@@ -31,7 +31,7 @@
                     <span v-if="!loading">{{ description }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Creator
+                    Database Creator
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
@@ -57,11 +57,11 @@
                     <span v-if="!loading">{{ language }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Publication Year
+                    Publication Date
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ publication_year }}</span>
+                    <span v-if="!loading">{{ publication }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     License
@@ -157,8 +157,8 @@ export default {
     language () {
       return this.database.language === null ? '(none)' : this.database.language
     },
-    publication_year () {
-      return this.database.publication_year === null ? '(none)' : this.database.publication_year
+    publication () {
+      return this.database.publication === null ? '(none)' : this.database.publication
     },
     creator () {
       if (this.database.creator.firstname && this.database.creator.lastname) {

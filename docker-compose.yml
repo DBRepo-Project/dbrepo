@@ -125,29 +125,6 @@ services:
     logging:
       driver: json-file
 
-  fda-document-service:
-    restart: on-failure
-    container_name: fda-document-service
-    hostname: fda-document-service
-    build: ./fda-document-service
-    image: fda-document-service
-    networks:
-      fda-public:
-    environment:
-      DOCUMENT_ENDPOINT: https://test.researchdata.tuwien.ac.at
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
-      SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
-    ports:
-      - "9099:9099"
-    volumes:
-      - /tmp:/tmp
-    depends_on:
-      fda-discovery-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   fda-authentication-service:
     restart: on-failure
     container_name: fda-authentication-service

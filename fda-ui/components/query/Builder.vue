@@ -17,7 +17,7 @@
       v-model="tabs"
       centered>
       <v-tab>
-        Query Builder
+        Create Subset
       </v-tab>
       <v-tab>
         Raw SQL
@@ -33,6 +33,7 @@
                   v-model="table"
                   :items="tables"
                   item-text="name"
+                  :loading="loadingTables"
                   return-object
                   label="Table"
                   @change="loadColumns" />
@@ -43,6 +44,7 @@
                   item-text="name"
                   :disabled="!table"
                   :items="selectItems"
+                  :loading="loadingColumns"
                   label="Columns"
                   return-object
                   multiple
@@ -55,6 +57,7 @@
               :columns="columnNames" />
             <v-row v-if="query.formatted">
               <v-col>
+                <v-progress-linear v-if="loadingQuery" color="primary" />
                 <QueryRaw
                   v-model="query.formatted"
                   disabled
@@ -100,6 +103,9 @@ export default {
       query: {
         sql: ''
       },
+      loadingTables: false,
+      loadingColumns: false,
+      loadingQuery: false,
       rawSQL: '',
       select: [],
       clauses: [],
@@ -175,6 +181,7 @@ export default {
   methods: {
     async loadTables () {
       try {
+        this.loadingTables = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, {
           headers: this.headers
         })
@@ -183,6 +190,7 @@ export default {
       } catch (err) {
         this.$toast.error('Could not list table.')
       }
+      this.loadingTables = false
     },
     selectTable () {
       if (this.$route.query.tid === undefined) {
@@ -212,6 +220,7 @@ export default {
         clauses: this.clauses
       }
       try {
+        this.loadingQuery = true
         const res = await this.$axios.post(url, data)
         if (res && !res.error) {
           this.query = res.data
@@ -219,10 +228,12 @@ export default {
       } catch (e) {
         console.log(e)
       }
+      this.loadingQuery = false
     },
     async loadColumns () {
       const tableId = this.table.id
       try {
+        this.loadingColumns = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${tableId}`, {
           headers: this.headers
         })
@@ -231,6 +242,7 @@ export default {
       } catch (err) {
         this.$toast.error('Could not get table details.')
       }
+      this.loadingColumns = false
     }
   }
 }

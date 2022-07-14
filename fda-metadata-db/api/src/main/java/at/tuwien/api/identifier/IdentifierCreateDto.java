@@ -39,10 +39,10 @@ public class IdentifierCreateDto {
     @Parameter(name = "doi", example = "Digital Object Identifier")
     private String doi;
 
-    @NotNull
-    @JsonProperty("publication_year")
-    @Parameter(name = "publication year", example = "2022")
-    private Short publicationYear;
+    @NotBlank
+    @JsonProperty("publication")
+    @Parameter(name = "publication")
+    private String publication;
 
     @NotNull
     @Parameter(name = "creators")

@@ -9,19 +9,19 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
-          <v-icon left>mdi-fingerprint</v-icon> Persist
+          <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
         <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
-          <v-icon left>mdi-download</v-icon> Download
+          <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn v-if="identifier.id" color="secondary" class="ml-2" :loading="metadataLoading" @click.stop="metadata">
-          <v-icon left>mdi-code-tags</v-icon> Metadata
+          <v-icon left>mdi-code-tags</v-icon> Metadata .xml
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-card flat>
       <v-card-title>
-        Query Information
+        Subset Information
       </v-card-title>
       <v-card-text>
         <v-list dense>
@@ -70,7 +70,7 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <a :href="`https://dbrepo.ossdip.at/pid/${identifier.id}`">https://dbrepo.ossdip.at/pid/{{ identifier.id }}</a>
+                <a :href="`${baseUrl}/pid/${identifier.id}`">{{ baseUrl }}/pid/{{ identifier.id }}</a>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
@@ -97,7 +97,7 @@
                 Publication Date
               </v-list-item-title>
               <v-list-item-content>
-                {{ identifier.publication_year }}
+                {{ identifier.publication }}
               </v-list-item-content>
               <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
                 Related Identifiers
@@ -141,14 +141,14 @@
                 <pre v-if="!loadingQuery">{{ query.query }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Query Hash
+                Subset Hash
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-medium" />
                 <pre v-if="!loadingQuery">{{ query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Query Creator
+                Subset Creator
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
@@ -160,18 +160,11 @@
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Query Execution
+                Subset Creation
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
                 <span v-if="!loadingQuery">{{ execution }}</span>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Query Creation
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ query.created }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -296,6 +289,9 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    baseUrl () {
+      return 'http://' + location.host
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'

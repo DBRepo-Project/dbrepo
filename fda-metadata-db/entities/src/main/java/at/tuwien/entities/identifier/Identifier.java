@@ -98,7 +98,7 @@ public class Identifier {
     private String doi;
 
     @Column(nullable = false)
-    private Short publicationYear;
+    private String publication;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
     private List<Creator> creators;

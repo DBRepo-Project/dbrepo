@@ -31,10 +31,10 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
-    @NotNull
-    @JsonProperty("publication_year")
-    @Parameter(name = "database year", example = "2022")
-    private Short publicationYear;
+    @NotBlank
+    @JsonProperty("publication")
+    @Parameter(name = "database publication")
+    private String publication;
 
     @Parameter(name = "database license")
     private LicenseDto license;

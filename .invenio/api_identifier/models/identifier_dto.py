@@ -46,7 +46,7 @@ class IdentifierDto(object):
         'query_hash': 'str',
         'result_hash': 'str',
         'result_number': 'int',
-        'publication_year': 'int',
+        'publication': 'str',
         'last_modified': 'datetime'
     }
 
@@ -69,11 +69,11 @@ class IdentifierDto(object):
         'query_hash': 'query_hash',
         'result_hash': 'result_hash',
         'result_number': 'result_number',
-        'publication_year': 'publication_year',
+        'publication': 'publication',
         'last_modified': 'last_modified'
     }
 
-    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication_year=None, last_modified=None):  # noqa: E501
+    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication=None, last_modified=None):  # noqa: E501
         """IdentifierDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._cid = None
@@ -93,7 +93,7 @@ class IdentifierDto(object):
         self._query_hash = None
         self._result_hash = None
         self._result_number = None
-        self._publication_year = None
+        self._publication = None
         self._last_modified = None
         self.discriminator = None
         if id is not None:
@@ -118,7 +118,7 @@ class IdentifierDto(object):
         self.query_hash = query_hash
         self.result_hash = result_hash
         self.result_number = result_number
-        self.publication_year = publication_year
+        self.publication = publication
         if last_modified is not None:
             self.last_modified = last_modified
 
@@ -535,27 +535,27 @@ class IdentifierDto(object):
         self._result_number = result_number
 
     @property
-    def publication_year(self):
-        """Gets the publication_year of this IdentifierDto.  # noqa: E501
+    def publication(self):
+        """Gets the publication of this IdentifierDto.  # noqa: E501
 
 
-        :return: The publication_year of this IdentifierDto.  # noqa: E501
-        :rtype: int
+        :return: The publication of this IdentifierDto.  # noqa: E501
+        :rtype: str
         """
-        return self._publication_year
+        return self._publication
 
-    @publication_year.setter
-    def publication_year(self, publication_year):
-        """Sets the publication_year of this IdentifierDto.
+    @publication.setter
+    def publication(self, publication):
+        """Sets the publication of this IdentifierDto.
 
 
-        :param publication_year: The publication_year of this IdentifierDto.  # noqa: E501
-        :type: int
+        :param publication: The publication of this IdentifierDto.  # noqa: E501
+        :type: str
         """
-        if publication_year is None:
-            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
+        if publication is None:
+            raise ValueError("Invalid value for `publication`, must not be `None`")  # noqa: E501
 
-        self._publication_year = publication_year
+        self._publication = publication
 
     @property
     def last_modified(self):

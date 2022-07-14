@@ -1,43 +1,121 @@
-import os.path
-import uuid
-import time
 import re
-import csv
 import requests as rq
-from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
-from api_authentication.api.user_endpoint_api import UserEndpointApi
-from api_container.api.container_endpoint_api import ContainerEndpointApi
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
-from api_table.api.table_endpoint_api import TableEndpointApi
 
-authentication = AuthenticationEndpointApi()
-user = UserEndpointApi()
-container = ContainerEndpointApi()
-database = ContainerDatabaseEndpointApi()
-table = TableEndpointApi()
+host = "https://test.researchdata.tuwien.ac.at"
+file = "./resources/audio.wav"
+token = "kJTJMtRKzmA0S92A9Jks7Y1OQbtRWElzgUrldXehDbeXESxIGQ0BQ6JFEFyg"
 
-url = "https://test.researchdata.tuwien.ac.at/records/vqpbr-5b889"
+headers = {
+    "Authorization": "Bearer " + token
+}
+filename = re.findall("([a-zA-z0-9_-]+\\.wav)", file)[0]
 
-host = re.findall("^https?:\/\/([a-z0-9\.]+)", url)[0]
-id = re.findall("/([a-z0-9-]+)$", url)[0]
+response = rq.post(host + "/api/records", json={
+    "access": {
+        "record": "public",
+        "files": "public",
+        "embargo": None
+    },
+    "files": {
+        "enabled": True,
+        "default_preview": None
+    },
+    "metadata": {
+        "creators": [{
+            "affiliations": [
+                {
+                    "name": "University of Ljubljana"
+                }
+            ],
+            "person_or_org": {
+                "type": "personal",
+                "name": "M. Marolt",
+                "identifiers": [
+                    {
+                        "scheme": "orcid",
+                        "identifier": "0000-0002-0619-8789"
+                    }
+                ],
+                "given_name": "Matija",
+                "family_name": "Marolt"
+            }
+        }, {
+            "affiliations": [
+                {
+                    "name": "University of Ljubljana"
+                }
+            ],
+            "person_or_org": {
+                "type": "personal",
+                "name": "C. Bohak",
+                "identifiers": [
+                    {
+                        "scheme": "orcid",
+                        "identifier": "0000-0002-9015-2897"
+                    }
+                ],
+                "given_name": "Ciril",
+                "family_name": "Bohak"
+            }
+        }, {
+            "affiliations": [
+                {
+                    "name": "University of Ljubljana"
+                }
+            ],
+            "person_or_org": {
+                "type": "personal",
+                "name": "A. Kavčič",
+                "given_name": "Alenka",
+                "family_name": "Kavčič"
+            }
+        }, {
+            "affiliations": [
+                {
+                    "name": "University of Ljubljana"
+                }
+            ],
+            "person_or_org": {
+                "type": "personal",
+                "name": "M. Pesek",
+                "identifiers": [
+                    {
+                        "scheme": "orcid",
+                        "identifier": "0000-0001-9101-0471"
+                    }
+                ],
+                "given_name": "Matevž",
+                "family_name": "Pesek"
+            }
+        }],
+        "title": "The SeFiRe field recording dataset",
+        "resource_type": {
+            "id": "sound"
+        },
+        "publication_date": "2019-01-28"
+    }
+}, headers=headers).json()
+print(response)
+record_id = response["id"]
 
-response = rq.get("https://" + host + "/api/records/" + id + "/files")
-record = response.json()
+# announce
+response = rq.post(host + "/api/records/" + record_id + "/draft/files", json=[{
+    "key": filename
+}], headers=headers).json()
+print(response)
 
-for file in record["entries"]:
-    print("... save file contents from", file["links"]["content"])
-    wav = rq.get(file["links"]["content"])
-    filename = "/tmp/" + file["key"]
-    open(filename, "wb").write(wav.content)
-    print("... file saved in", filename)
-    audio = "http://localhost:8000/v1/audio"
-    with open(filename, "rb") as f:
-        data = f.read()
-        print("... feature extract to", audio)
-        res = rq.post(audio, data=data, headers={"Content-Type": "audio/wav"})
-        print("... extracted", res.json())
-        payload = []
-        for part in res.json()["track"]["parts"]:
-            payload.append(part)
-        print("... payload", payload)
-print("Finished.")
+# upload
+with open(file, mode='rb') as f:
+    response = rq.put(host + "/api/records/" + record_id + "/draft/files/" + filename + "/content", data=f.read(),
+                      headers=headers).json()
+print(response)
+
+# commit
+response = rq.post(host + "/api/records/" + record_id + "/draft/files/" + filename + "/commit", headers=headers).json()
+print(response)
+print()
+
+# publish
+response = rq.post(host + "/api/records/" + record_id + "/draft/actions/publish", headers=headers).json()
+print(response)
+print()

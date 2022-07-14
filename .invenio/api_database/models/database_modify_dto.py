@@ -34,7 +34,7 @@ class DatabaseModifyDto(object):
         'license': 'LicenseDto',
         'language': 'str',
         'is_public': 'bool',
-        'publication_year': 'int',
+        'publication': 'str',
         'contact_person': 'str'
     }
 
@@ -45,11 +45,11 @@ class DatabaseModifyDto(object):
         'license': 'license',
         'language': 'language',
         'is_public': 'is_public',
-        'publication_year': 'publication_year',
+        'publication': 'publication',
         'contact_person': 'contact_person'
     }
 
-    def __init__(self, subject=None, description=None, publisher=None, license=None, language=None, is_public=None, publication_year=None, contact_person=None):  # noqa: E501
+    def __init__(self, subject=None, description=None, publisher=None, license=None, language=None, is_public=None, publication=None, contact_person=None):  # noqa: E501
         """DatabaseModifyDto - a model defined in Swagger"""  # noqa: E501
         self._subject = None
         self._description = None
@@ -57,7 +57,7 @@ class DatabaseModifyDto(object):
         self._license = None
         self._language = None
         self._is_public = None
-        self._publication_year = None
+        self._publication = None
         self._contact_person = None
         self.discriminator = None
         if subject is not None:
@@ -70,7 +70,7 @@ class DatabaseModifyDto(object):
         if language is not None:
             self.language = language
         self.is_public = is_public
-        self.publication_year = publication_year
+        self.publication = publication
         if contact_person is not None:
             self.contact_person = contact_person
 
@@ -211,27 +211,27 @@ class DatabaseModifyDto(object):
         self._is_public = is_public
 
     @property
-    def publication_year(self):
-        """Gets the publication_year of this DatabaseModifyDto.  # noqa: E501
+    def publication(self):
+        """Gets the publication of this DatabaseModifyDto.  # noqa: E501
 
 
-        :return: The publication_year of this DatabaseModifyDto.  # noqa: E501
-        :rtype: int
+        :return: The publication of this DatabaseModifyDto.  # noqa: E501
+        :rtype: str
         """
-        return self._publication_year
+        return self._publication
 
-    @publication_year.setter
-    def publication_year(self, publication_year):
-        """Sets the publication_year of this DatabaseModifyDto.
+    @publication.setter
+    def publication(self, publication):
+        """Sets the publication of this DatabaseModifyDto.
 
 
-        :param publication_year: The publication_year of this DatabaseModifyDto.  # noqa: E501
-        :type: int
+        :param publication: The publication of this DatabaseModifyDto.  # noqa: E501
+        :type: str
         """
-        if publication_year is None:
-            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
+        if publication is None:
+            raise ValueError("Invalid value for `publication`, must not be `None`")  # noqa: E501
 
-        self._publication_year = publication_year
+        self._publication = publication
 
     @property
     def contact_person(self):

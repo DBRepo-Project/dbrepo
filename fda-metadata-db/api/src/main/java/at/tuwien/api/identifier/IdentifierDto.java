@@ -62,7 +62,7 @@ public class IdentifierDto {
 
     @NotNull
     @Parameter(name = "query execution time")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
     @NotBlank
@@ -86,20 +86,20 @@ public class IdentifierDto {
     @Parameter(name = "database creator")
     private UserDto creator;
 
-    @NotNull
-    @JsonProperty("publication_year")
-    @Parameter(name = "publication year", example = "2022")
-    private Short publicationYear;
+    @NotBlank
+    @JsonProperty("publication")
+    @Parameter(name = "publication")
+    private String publication;
 
     @NotNull
     @Parameter(name = "creators")
     private List<CreatorDto> creators;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @JsonProperty("last_modified")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;
 
 }

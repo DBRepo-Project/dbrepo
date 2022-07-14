@@ -131,47 +131,6 @@
           <pre>{{ $refs.form3 }}</pre>
         </v-form>
       </v-card-text>
-      <v-divider />
-      <v-card-title>Developer Token</v-card-title>
-      <v-card-text>
-        <v-form v-model="valid4" @submit.prevent="submit">
-          <v-row dense>
-            <v-col cols="5">
-              <v-text-field
-                v-model="api.invenio_token"
-                :disabled="user.has_invenio_token"
-                :rules="[v => !!v || $t('Required')]"
-                hint="https://test.researchdata.tuwien.ac.at/"
-                type="password"
-                persistent-hint
-                required
-                label="Invenio Token *" />
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col cols="5">
-              <v-btn
-                v-if="user.has_invenio_token"
-                color="secondary"
-                class="mt-2"
-                type="submit"
-                @click="setToken">
-                Modify Token
-              </v-btn>
-              <v-btn
-                v-if="!user.has_invenio_token"
-                color="primary"
-                :disabled="!valid4"
-                class="mt-2"
-                type="submit"
-                @click="changeToken">
-                Change
-              </v-btn>
-            </v-col>
-          </v-row>
-          <pre>{{ $refs.form3 }}</pre>
-        </v-form>
-      </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -192,14 +151,10 @@ export default {
         firstname: null,
         titles_after: null,
         titles_before: null,
-        email_verified: false,
-        has_invenio_token: false
+        email_verified: false
       },
       reset: {
         password: null
-      },
-      api: {
-        invenio_token: '111111111111111111111111111111111'
       },
       password2: null,
       items: [
@@ -282,19 +237,6 @@ export default {
         this.$toast.success('Successfully changed the password')
       } catch (err) {
         console.error('password', err)
-        this.error = true
-      }
-      this.loading = false
-    },
-    async changeToken () {
-      try {
-        this.loading = true
-        const res = await this.$axios.put('/api/user/token', this.api, this.config)
-        console.debug('token', res.data)
-        this.error = false
-        this.$toast.success('Successfully changed the token.')
-      } catch (err) {
-        console.error('token', err)
         this.error = true
       }
       this.loading = false

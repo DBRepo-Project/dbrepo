@@ -62,9 +62,9 @@ public class DatabaseDto {
     @Parameter(name = "database contact person")
     private UserDto contact;
 
-    @JsonProperty("publication_year")
-    @Parameter(name = "database publication year")
-    private Short publicationYear;
+    @JsonProperty("publication")
+    @Parameter(name = "database publication")
+    private String publication;
 
     @Parameter(name = "tables")
     private List<TableDto> tables;
@@ -80,11 +80,11 @@ public class DatabaseDto {
     private ContainerDto container;
 
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "Europe/Vienna")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant deleted;
 
 }
