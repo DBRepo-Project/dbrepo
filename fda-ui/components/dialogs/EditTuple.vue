@@ -29,7 +29,7 @@
             <v-text-field
               v-if="attr.column_type === 'DATE'"
               v-model="tuple[attr.internal_name]"
-              suffix="CET"
+              suffix="UTC"
               class="mb-2"
               :required="!attr.is_null_allowed"
               :label="attr.name"
@@ -37,7 +37,7 @@
             <v-text-field
               v-if="attr.column_type === 'TIMESTAMP'"
               v-model="tuple[attr.internal_name]"
-              suffix="CET"
+              suffix="UTC"
               class="mb-2"
               :required="!attr.is_null_allowed"
               :label="attr.name"

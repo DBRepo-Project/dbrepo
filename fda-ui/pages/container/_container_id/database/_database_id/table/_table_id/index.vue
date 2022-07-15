@@ -74,6 +74,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
+import { format } from 'date-fns'
 
 export default {
   components: {
@@ -250,6 +251,9 @@ export default {
         this.$toast.error('Could not load table data.')
       }
       this.loadingData = false
+    },
+    formatDate (d) {
+      return format(new Date(d), 'yyyy-MM-dd HH:mm:ss')
     }
   }
 }

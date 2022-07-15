@@ -84,7 +84,7 @@
                 View Data
               </v-btn>
               <v-btn color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
-                Build Query
+                Create Subset
               </v-btn>
             </v-col>
             <v-col class="align-right">
