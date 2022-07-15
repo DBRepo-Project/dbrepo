@@ -74,7 +74,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
-import { format } from 'date-fns'
+import { formatTimestampUTC } from '@/utils'
 
 export default {
   components: {
@@ -240,7 +240,7 @@ export default {
         this.rows = res.data.result.map((row) => {
           for (const col in row) {
             if (this.dateColumns.filter(c => c.internal_name === col).length > 0) {
-              row[col] = this.formatDate(row[col])
+              row[col] = formatTimestampUTC(row[col])
             }
           }
           return row
@@ -251,9 +251,6 @@ export default {
         this.$toast.error('Could not load table data.')
       }
       this.loadingData = false
-    },
-    formatDate (d) {
-      return format(new Date(d), 'yyyy-MM-dd HH:mm:ss')
     }
   }
 }

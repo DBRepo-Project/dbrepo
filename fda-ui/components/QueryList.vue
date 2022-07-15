@@ -4,7 +4,7 @@
     <v-tabs-items>
       <v-card v-if="!loading && queries.length === 0" flat>
         <v-card-title>
-          (no queries)
+          (no subsets)
         </v-card-title>
       </v-card>
       <v-expansion-panels v-if="!loading && queries.length > 0" accordion>
@@ -26,7 +26,7 @@
                         Persistent Identifier
                       </v-list-item-title>
                       <v-list-item-content>
-                        <a :href="`https://dbrepo.ossdip.at/pid/${queryDetails.identifier.id}`">https://dbrepo.ossdip.at/pid/{{ queryDetails.identifier.id }}</a>
+                        <a :href="`${baseUrl}/pid/${queryDetails.identifier.id}`">{{ baseUrl }}/pid/{{ queryDetails.identifier.id }}</a>
                       </v-list-item-content>
                       <v-list-item-title class="mt-2">
                         Title
@@ -51,7 +51,7 @@
                         Execution Timestamp
                       </v-list-item-title>
                       <v-list-item-content>
-                        {{ queryDetails.execution }}
+                        {{ execution }}<br />{{ executionUTC }}
                       </v-list-item-content>
                     </v-list-item-content>
                   </v-list-item>
@@ -73,6 +73,7 @@
 </template>
 
 <script>
+import { formatTimestamp, formatTimestampUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -93,6 +94,9 @@ export default {
     databaseId () {
       return this.$route.params.database_id
     },
+    baseUrl () {
+      return 'http://' + location.host
+    },
     token () {
       return this.$store.state.token
     },
@@ -103,6 +107,12 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    execution () {
+      return formatTimestamp(this.queryDetails.execution)
+    },
+    executionUTC () {
+      return formatTimestampUTC(this.queryDetails.execution)
     }
   },
   mounted () {

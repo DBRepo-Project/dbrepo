@@ -26,11 +26,8 @@
             Tables
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
-            Queries
+            Subsets
           </v-tab>
-          <!--          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/admin`">-->
-          <!--            Admin-->
-          <!--          </v-tab>-->
         </v-tabs>
       </template>
     </v-toolbar>

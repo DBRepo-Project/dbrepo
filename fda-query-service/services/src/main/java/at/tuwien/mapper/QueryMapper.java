@@ -765,21 +765,14 @@ public interface QueryMapper {
         if (str.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z")) {
             /* e.g. 2022-07-04T11:31:46Z */
             log.trace("format ISO 8601 matches, e.g. 2022-07-04T11:31:46Z, want to parse '{}'", str);
-            out = LocalDateTime.parse(str, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH))
-                    .atZone(ZoneId.systemDefault())
-                    .toInstant();
-        } else if (str.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.?\\d{0,6}")) {
+            out = Instant.parse(str);
+        } else {
             /* e.g. 2022-06-20 09:08:13.416567, 2022-06-20 09:08:13.41656 */
             final String timestamp = str.substring(0, 19);
-            log.trace("timestamp plus microseconds matches, e.g. 2022-06-20 09:08:13.416567, want to parse '{}'", timestamp);
+            log.trace("want to parse '{}'", timestamp);
             out = LocalDateTime.parse(timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH))
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(ZoneId.of("UTC"))
                     .toInstant();
-            if (str.length() > 19) {
-                out.plus(Integer.parseInt(str.substring(20)), ChronoUnit.NANOS);
-            }
-        } else {
-            out = Instant.parse(str);
         }
         log.trace("instant is {}", out);
         return out;

@@ -152,6 +152,7 @@
 </template>
 
 <script>
+import { formatDateUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -232,7 +233,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        publication: new Date(),
+        publication: formatDateUTC(Date.now()),
         visibility: 'everyone',
         doi: null,
         creators: [],

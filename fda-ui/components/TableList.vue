@@ -61,7 +61,8 @@
                       Table Creation
                     </v-list-item-title>
                     <v-list-item-content>
-                      {{ tableDetails.created }}
+                      {{ created }}<br />
+                      {{ createdUTC }}
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -147,6 +148,7 @@
 </template>
 
 <script>
+import { formatTimestamp, formatTimestampUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -203,6 +205,12 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    created () {
+      return formatTimestamp(this.tableDetails.created)
+    },
+    createdUTC () {
+      return formatTimestampUTC(this.tableDetails.created)
     }
   },
   mounted () {
@@ -236,6 +244,7 @@ export default {
       const select = this.tables.filter(t => t.id === tableId)
       if (select.length > 0) {
         this.tableDetails = select[0]
+        console.debug('table details', this.tableDetails)
       }
     },
     /**

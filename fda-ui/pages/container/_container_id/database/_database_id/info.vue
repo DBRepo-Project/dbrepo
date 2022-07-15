@@ -47,7 +47,8 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ database.created }}</span>
+                    <span v-if="!loading">{{ created }}</span><br />
+                    <span v-if="!loading">{{ createdUTC }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Language
@@ -92,6 +93,7 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
+import { formatTimestamp, formatTimestampUTC } from '@/utils'
 
 export default {
   components: {
@@ -153,6 +155,12 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    created () {
+      return formatTimestamp(this.database.created)
+    },
+    createdUTC () {
+      return formatTimestampUTC(this.database.created)
     },
     language () {
       return this.database.language === null ? '(none)' : this.database.language

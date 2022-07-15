@@ -180,17 +180,20 @@ export default {
         }
       }
       try {
-        await this.$axios.post('/api/units/savecolumnsconcept', {
+        const res = await this.$axios.post('/api/units/savecolumnsconcept', {
           cdbid: Number(this.$route.params.database_id),
           cid: this.column.id,
           tid: this.tableId,
           uri: this.uri
         })
+        this.column.column_concept = res.data
+        this.column.column_concept.name = this.model.name
         this.dialog = false
         this.saved = true
         this.$nextTick(() => {
           this.$emit('save', this.tableId)
         })
+        console.debug('column', this.column)
       } catch (err) {
         this.$toast.error('Could not save column unit.')
         console.log(err)

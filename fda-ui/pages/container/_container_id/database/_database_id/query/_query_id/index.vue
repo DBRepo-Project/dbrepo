@@ -164,7 +164,8 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ execution }}</span>
+                <span v-if="!loadingQuery">{{ execution }}</span><br />
+                <span v-if="!loadingQuery">{{ executionUTC }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -214,6 +215,7 @@
 <script>
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
+import { formatTimestamp, formatTimestampUTC } from '@/utils'
 
 export default {
   name: 'QueryShow',
@@ -313,17 +315,8 @@ export default {
     username () {
       return this.$store.state.user && this.$store.state.user.username
     },
-    query_visibility () {
-      if (this.database.is_public) {
-        return true
-      }
-      return this.database.creator.username === this.username
-    },
     database_visibility () {
       return this.database.is_public
-    },
-    result_everyone () {
-      return this.database.is_public || this.identifier.visibility === 'everyone'
     },
     result_visibility () {
       if (this.database.is_public) {
@@ -340,9 +333,6 @@ export default {
       }
       return this.identifier.visibility === 'everyone'
     },
-    statement () {
-      return this.identifier.id ? this.identifier.query : this.query.query
-    },
     query_hash () {
       return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
     },
@@ -353,7 +343,10 @@ export default {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     execution () {
-      return this.identifier.id ? this.identifier.execution : this.query.execution
+      return this.identifier.id ? formatTimestamp(this.identifier.execution) : formatTimestamp(this.query.execution)
+    },
+    executionUTC () {
+      return this.identifier.id ? formatTimestampUTC(this.identifier.execution) : formatTimestampUTC(this.query.execution)
     },
     creator () {
       if (this.query.creator.username === null) {
