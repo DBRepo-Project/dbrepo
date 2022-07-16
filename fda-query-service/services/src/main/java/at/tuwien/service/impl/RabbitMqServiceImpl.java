@@ -1,0 +1,151 @@
+package at.tuwien.service.impl;
+
+import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.exception.*;
+import at.tuwien.service.MessageQueueService;
+import at.tuwien.service.QueryService;
+import at.tuwien.service.TableService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.*;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+@Log4j2
+@Service
+public class RabbitMqServiceImpl implements MessageQueueService {
+
+    private final Channel channel;
+    private final ObjectMapper objectMapper;
+    private final QueryService queryService;
+    private final TableService tableService;
+
+    @Autowired
+    public RabbitMqServiceImpl(Channel channel, ObjectMapper objectMapper, QueryService queryService,
+                               TableService tableService) {
+        this.channel = channel;
+        this.objectMapper = objectMapper;
+        this.queryService = queryService;
+        this.tableService = tableService;
+    }
+
+    @Transactional(readOnly = true)
+    private void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
+        try {
+            final String consumerTag = channel.basicConsume(routingKey, true, new Consumer() {
+                @Override
+                public void handleConsumeOk(String consumerTag) {
+                    //
+                }
+
+                @Override
+                public void handleCancelOk(String consumerTag) {
+                    //
+                }
+
+                @Override
+                public void handleCancel(String consumerTag) throws IOException {
+                    //
+                }
+
+                @Override
+                public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+                    //
+                }
+
+                @Override
+                public void handleRecoverOk(String consumerTag) {
+                    //
+                }
+
+                @Override
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
+                    };
+                    try {
+                        final TableCsvDto data = TableCsvDto.builder()
+                                .data(objectMapper.readValue(body, payloadReference))
+                                .build();
+                        log.debug("received tuple data {}", data);
+                        queryService.insert(containerId, databaseId, tableId, data);
+                    } catch (IOException e) {
+                        log.error("Failed to parse for table with id {}", tableId);
+                        log.debug("Failed to parse for table {} because {}", tableId, e.getMessage());
+                        /* ignore */
+                    } catch (HttpClientErrorException.Unauthorized e) {
+                        log.error("Failed to authenticate for table with id {}", tableId);
+                        log.debug("Failed to authenticate for table {} because {}", tableId, e.getMessage());
+                        /* ignore */
+                    } catch (HttpClientErrorException.BadRequest e) {
+                        log.error("Failed to insert for table with id {}", tableId);
+                        log.debug("Failed to insert for table {} because {}", tableId, e.getMessage());
+                        /* ignore */
+                    } catch (TableNotFoundException e) {
+                        log.error("Failed to find table with id {}", tableId);
+                        /* ignore */
+                    } catch (TableMalformedException e) {
+                        log.error("Tuple columns do not math table columns with table id {}", tableId);
+                        /* ignore */
+                    } catch (DatabaseNotFoundException e) {
+                        log.error("Failed to find database with id {}", databaseId);
+                        /* ignore */
+                    } catch (ImageNotSupportedException e) {
+                        /* ignore */
+                    } catch (ContainerNotFoundException e) {
+                        log.error("Failed to find container with id {}", containerId);
+                        /* ignore */
+                    }
+                }
+            });
+            log.info("Declared consumer for table topic {}", routingKey);
+            log.debug("declared consumer for table topic {} with tag {}", routingKey, consumerTag);
+        } catch (IOException e) {
+            log.error("Failed to create consumer for table with id {}", tableId);
+            throw new AmqpException("Failed to create consumer", e);
+        } catch (Exception e) {
+            log.warn("Failed unknown: {}", e.getMessage());
+            /* ignore */
+        }
+    }
+
+    private Boolean hasConsumer(Table table) {
+        try {
+            final AMQP.Queue.DeclareOk response = channel.queueDeclarePassive(table.getTopic());
+            log.debug("queue {} has {} messages waiting", table.getTopic(), response.getMessageCount());
+            log.debug("queue {} has {} consumers", table.getTopic(), response.getConsumerCount());
+            return response.getConsumerCount() > 0;
+        } catch (IOException e) {
+            log.error("Failed to check if queue {} has consumers", table.getTopic());
+            /* ignore */
+        }
+        return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Scheduled(fixedRate = 5000)
+    public void renewConsumers() {
+        tableService.findAll()
+                .forEach(table -> {
+                    if (hasConsumer(table)) {
+                        log.debug("table {} has already one consumer, skipping.", table.getId());
+                        return;
+                    }
+                    try {
+                        createConsumer(table.getTopic(), table.getDatabase().getContainer()
+                                .getId(), table.getDatabase().getId(), table.getId());
+                    } catch (AmqpException e) {
+                        /* ignore */
+                    }
+                });
+    }
+
+}

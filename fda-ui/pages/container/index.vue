@@ -46,7 +46,7 @@
                   <v-icon v-if="item.database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
                 </sup>
               </td>
-              <td>{{ created(item.created) }}<br/>{{ createdUTC(item.created) }}</td>
+              <td>{{ createdUTC(item.created) }}</td>
             </tr>
           </tbody>
         </template>
@@ -64,7 +64,7 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatTimestamp, formatTimestampUTC } from '@/utils'
+import { formatTimestampUTC } from '@/utils'
 
 export default {
   components: {
@@ -152,9 +152,6 @@ export default {
       }
       this.containers = containers
       console.debug('databases loaded', this.containers)
-    },
-    created (str) {
-      return formatTimestamp(str)
     },
     createdUTC (str) {
       return formatTimestampUTC(str)

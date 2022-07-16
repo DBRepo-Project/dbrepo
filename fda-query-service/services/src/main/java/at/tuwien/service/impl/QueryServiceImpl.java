@@ -127,7 +127,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             ContainerNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, true);
@@ -168,7 +168,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             FileStorageException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, true);
@@ -251,7 +251,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             TableMalformedException, ImageNotSupportedException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
         final SessionFactory factory = getSessionFactory(database, false);
@@ -285,7 +285,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             TableNotFoundException, ContainerNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) return null;
         final long startSession = System.currentTimeMillis();
@@ -308,7 +308,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             TableNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0 || data.getKeys().size() == 0) return null;
         final long startSession = System.currentTimeMillis();
@@ -333,7 +333,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             TableNotFoundException, TupleDeleteException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         if (data.getKeys().size() == 0) return;
         final long startSession = System.currentTimeMillis();
@@ -374,7 +374,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             TableNotFoundException, ContainerNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);

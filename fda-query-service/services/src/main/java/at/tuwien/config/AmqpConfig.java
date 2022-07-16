@@ -32,6 +32,9 @@ public class AmqpConfig {
         factory.setHost(ampqHost);
         factory.setUsername(amqpUsername);
         factory.setPassword(amqpPassword);
+        factory.setAutomaticRecoveryEnabled(true);
+        factory.setTopologyRecoveryEnabled(true);
+        factory.setNetworkRecoveryInterval(10000) /* attempt recovery every 10 seconds */;
         final Connection connection = factory.newConnection();
         return connection.createChannel();
     }

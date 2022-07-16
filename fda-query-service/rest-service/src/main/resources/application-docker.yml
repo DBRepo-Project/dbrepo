@@ -18,6 +18,10 @@ spring:
           time_zone: Europe/Vienna
   application:
     name: fda-query-service
+  rabbitmq:
+    host: fda-broker-service
+    username: fda
+    password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
 server.port: 9093

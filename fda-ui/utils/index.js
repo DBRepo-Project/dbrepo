@@ -40,7 +40,7 @@ function formatTimestamp (str) {
   if (str === null) {
     return null
   }
-  return format(new Date(str), 'dd.MM.yyyy HH:mm:ss')
+  return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
 function formatTimestampUTC (str) {
@@ -48,7 +48,7 @@ function formatTimestampUTC (str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
-  return format(new Date(date), 'dd.MM.yyyy HH:mm:ss') + ' (UTC)'
+  return format(new Date(date), 'yyyy-MM-dd HH:mm:ss') + ' (UTC)'
 }
 
 module.exports = {

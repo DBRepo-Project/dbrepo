@@ -8,7 +8,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="!execution || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="!executionUTC || !token" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
         <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
@@ -38,10 +38,10 @@
                 <span v-if="!loadingDatabase && database_visibility">Public</span>
                 <span v-if="!loadingDatabase && !database_visibility">Private</span>
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-title v-if="database.name" class="mt-2">
                 Database Name
               </v-list-item-title>
-              <v-list-item-content>
+              <v-list-item-content v-if="database.name">
                 <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
                 <span v-if="!loadingDatabase">{{ database.name }}</span>
               </v-list-item-content>
@@ -52,10 +52,10 @@
                 <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
                 <span v-if="!loadingDatabase">{{ database.publisher }}</span>
               </v-list-item-content>
-              <v-list-item-title v-if="database.license" class="mt-2">
+              <v-list-item-title v-if="database.license.identifier" class="mt-2">
                 Database License
               </v-list-item-title>
-              <v-list-item-content v-if="database.license">
+              <v-list-item-content v-if="database.license.identifier">
                 <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-xsmall" />
                 <a v-if="!loadingDatabase" :href="database.license.uri">{{ database.license.identifier }}</a>
               </v-list-item-content>
@@ -138,7 +138,7 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-large" />
-                <pre v-if="!loadingQuery">{{ query.query }}</pre>
+                <pre v-if="!loadingQuery">{{ query_statement }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
@@ -164,7 +164,6 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ execution }}</span><br />
                 <span v-if="!loadingQuery">{{ executionUTC }}</span>
               </v-list-item-content>
             </v-list-item-content>
@@ -215,7 +214,7 @@
 <script>
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
-import { formatTimestamp, formatTimestampUTC } from '@/utils'
+import { formatTimestampUTC } from '@/utils'
 
 export default {
   name: 'QueryShow',
@@ -306,6 +305,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    query_statement () {
+      return this.query.query ? this.query.query : this.identifier.query
+    },
     publisher () {
       if (this.database.publisher === null) {
         return 'NA'
@@ -341,9 +343,6 @@ export default {
     },
     result_hash () {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
-    },
-    execution () {
-      return this.identifier.id ? formatTimestamp(this.identifier.execution) : formatTimestamp(this.query.execution)
     },
     executionUTC () {
       return this.identifier.id ? formatTimestampUTC(this.identifier.execution) : formatTimestampUTC(this.query.execution)
@@ -431,10 +430,6 @@ export default {
         console.debug('database', res.data)
         this.database = res.data
       } catch (err) {
-        if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('Could not load database', err)
-          this.$toast.error('Could not load database')
-        }
         this.error = true
       }
       this.loadingDatabase = false

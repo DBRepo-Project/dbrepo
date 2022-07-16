@@ -65,7 +65,6 @@ public class TableEndpoint {
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
         final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
-        amqpService.createConsumer(containerId, databaseId, table);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(tableMapper.tableToTableBriefDto(table));
     }

@@ -50,9 +50,9 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @NotNull @Valid @RequestBody TableCsvDto data,
                                           @NotNull Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, TableMalformedException,
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
-        if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -70,7 +70,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, NotAllowedException {
-        if (!hasDatabasePermission(databaseId, tableId, "DATA_UPDATE", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
         }
@@ -88,7 +88,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException {
-        if (!hasDatabasePermission(databaseId, tableId, "DATA_DELETE", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
         }
@@ -107,7 +107,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                              @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
-        if (!hasDatabasePermission(databaseId, tableId, "DATA_INSERT", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -129,7 +129,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException {
-        if (!hasDatabasePermission(databaseId, tableId, "DATA_VIEW", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }

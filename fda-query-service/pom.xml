@@ -98,6 +98,12 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
         </dependency>
+        <!-- AMPQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbit-amqp-client.version}</version>
+        </dependency>
         <!-- Docker -->
         <dependency>
             <groupId>com.github.docker-java</groupId>

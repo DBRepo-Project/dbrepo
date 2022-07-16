@@ -35,7 +35,7 @@ public class TableHistoryEndpoint {
                                                         @NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException {
-        final List<TableHistoryDto> history = tableService.findHistory(databaseId, tableId);
+        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId);
         return ResponseEntity.ok(history);
     }
 

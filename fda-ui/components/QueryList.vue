@@ -51,7 +51,7 @@
                         Execution Timestamp
                       </v-list-item-title>
                       <v-list-item-content>
-                        {{ execution }}<br />{{ executionUTC }}
+                        {{ executionUTC }}
                       </v-list-item-content>
                     </v-list-item-content>
                   </v-list-item>
@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { formatTimestamp, formatTimestampUTC } from '@/utils'
+import { formatTimestampUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -107,9 +107,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    execution () {
-      return formatTimestamp(this.queryDetails.execution)
     },
     executionUTC () {
       return formatTimestampUTC(this.queryDetails.execution)

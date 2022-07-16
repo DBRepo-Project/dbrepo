@@ -53,7 +53,7 @@
           </v-btn>
           <v-btn
             id="createDB"
-            class="mb-2 mr-2 ml-4"
+            class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
             type="submit"

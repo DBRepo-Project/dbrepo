@@ -27,15 +27,7 @@
               :label="attr.name"
               type="text" />
             <v-text-field
-              v-if="attr.column_type === 'DATE'"
-              v-model="tuple[attr.internal_name]"
-              suffix="UTC"
-              class="mb-2"
-              :required="!attr.is_null_allowed"
-              :label="attr.name"
-              type="date" />
-            <v-text-field
-              v-if="attr.column_type === 'TIMESTAMP'"
+              v-if="attr.column_type === 'TIMESTAMP' || attr.column_type === 'DATE'"
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
               class="mb-2"

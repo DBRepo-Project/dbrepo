@@ -123,6 +123,7 @@ export default {
         { value: 'NUMBER', text: 'Number' },
         { value: 'BLOB', text: 'Binary Large Object' },
         { value: 'DATE', text: 'Date' },
+        { value: 'DECIMAL', text: 'Floating Number' },
         { value: 'TIMESTAMP', text: 'Timestamp' },
         { value: 'DECIMAL', text: 'Decimal' },
         { value: 'STRING', text: 'Character Varying' },

@@ -39,8 +39,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
-        final Optional<Table> table = tableRepository.findOne(databaseId, tableId);
+    public Table find(Long containerId, Long databaseId, Long tableId) throws DatabaseNotFoundException,
+            TableNotFoundException {
+        final Optional<Table> table = tableRepository.find(containerId, databaseId, tableId);
         if (table.isEmpty()) {
             log.error("Failed to find table with id {} of database with id {} in metadata database", tableId,
                     databaseId);
@@ -51,7 +52,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public List<TableHistoryDto> findHistory(Long databaseId, Long tableId)
+    public List<Table> findAll() {
+        return tableRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId)
             throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException {
         /* find */
         final Optional<Database> database = databaseRepository.findById(databaseId);
@@ -59,7 +66,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             log.error("Database with id {} not found in metadata database", databaseId);
             throw new DatabaseNotFoundException("Database not found in metadata database");
         }
-        final Table table = find(databaseId, tableId);
+        final Table table = find(containerId, databaseId, tableId);
         /* run query */
         final SessionFactory factory = getSessionFactory(database.get(), true);
         final Session session = factory.openSession();

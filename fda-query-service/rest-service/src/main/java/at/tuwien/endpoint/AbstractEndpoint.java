@@ -33,11 +33,11 @@ public abstract class AbstractEndpoint {
         this.identifierService = identifierService;
     }
 
-    protected Boolean hasDatabasePermission(Long databaseId, Long tableId, String permissionCode,
+    protected Boolean hasDatabasePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
                                             Principal principal) {
         final Table table;
         try {
-            table = tableService.find(databaseId, tableId);
+            table = tableService.find(containerId, databaseId, tableId);
         } catch (DatabaseNotFoundException e) {
             log.debug("failed to find database with id {}", databaseId);
             return false;

@@ -61,7 +61,6 @@
                       Table Creation
                     </v-list-item-title>
                     <v-list-item-content>
-                      {{ created }}<br />
                       {{ createdUTC }}
                     </v-list-item-content>
                   </v-list-item-content>
@@ -148,7 +147,7 @@
 </template>
 
 <script>
-import { formatTimestamp, formatTimestampUTC } from '@/utils'
+import { formatTimestampUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -205,9 +204,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    created () {
-      return formatTimestamp(this.tableDetails.created)
     },
     createdUTC () {
       return formatTimestampUTC(this.tableDetails.created)

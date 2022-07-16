@@ -13,7 +13,7 @@ const colTypeMap = {
   Boolean: 'BOOLEAN',
   Date: 'DATE',
   Integer: 'NUMBER',
-  Numeric: 'NUMBER',
+  Decimal: 'DECIMAL',
   String: 'STRING',
   Text: 'STRING',
   Timestamp: 'TIMESTAMP'

@@ -90,7 +90,7 @@ public class TableServiceTest extends BaseUnitTest {
     public void findAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */
-        final List<TableColumn> response = tableService.find(DATABASE_1_ID, TABLE_1_ID)
+        final List<TableColumn> response = tableService.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID)
                 .getColumns();
 
         /* test */
