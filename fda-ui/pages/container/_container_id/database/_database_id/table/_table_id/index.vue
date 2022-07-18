@@ -74,7 +74,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTC, formatDateUTC } from '@/utils'
 
 export default {
   components: {
@@ -237,10 +237,16 @@ export default {
         }
         const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])
+        this.rows = res.data.result
         this.rows = res.data.result.map((row) => {
           for (const col in row) {
-            if (this.dateColumns.filter(c => c.internal_name === col).length > 0) {
-              row[col] = formatTimestampUTC(row[col])
+            const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
+            if (columnDefinition.length > 0) {
+              if (columnDefinition[0].column_type === 'DATE') {
+                row[col] = formatDateUTC(row[col])
+              } else if (columnDefinition[0].column_type === 'TIMESTAMP') {
+                row[col] = formatTimestampUTC(row[col])
+              }
             }
           }
           return row

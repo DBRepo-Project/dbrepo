@@ -1,9 +1,9 @@
 # coding: utf-8
 
 """
-    Database Repository Authentication Service API
+    Database Repository Database Service API
 
-    Service that manages the authentication  # noqa: E501
+    Service that manages the databases  # noqa: E501
 
     OpenAPI spec version: 1.1.0-alpha
     Contact: andreas.rauber@tuwien.ac.at
@@ -238,8 +238,6 @@ class ColumnDto(object):
         :param date_format: The date_format of this ColumnDto.  # noqa: E501
         :type: ImageDateDto
         """
-        if date_format is None:
-            raise ValueError("Invalid value for `date_format`, must not be `None`")  # noqa: E501
 
         self._date_format = date_format
 

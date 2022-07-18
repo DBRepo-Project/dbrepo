@@ -31,7 +31,6 @@ public class ColumnDto {
     @Parameter(name = "internal name", example = "mdb_date", required = true)
     private String internalName;
 
-    @NotBlank
     @JsonProperty("date_format")
     @Parameter(name = "date format", example = "1")
     private ImageDateDto dateFormat;
@@ -51,11 +50,9 @@ public class ColumnDto {
     @Parameter(name = "type", example = "STRING", required = true)
     private ColumnTypeDto columnType;
 
-    @NotNull
     @Parameter(name = "unique", example = "true", required = true)
     @JsonProperty("column_concept")
     private ConceptDto concept;
-
 
     @NotNull
     @Parameter(name = "unique", example = "true", required = true)

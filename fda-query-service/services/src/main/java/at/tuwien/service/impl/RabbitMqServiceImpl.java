@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.service.MessageQueueService;
@@ -18,27 +19,30 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.TimeoutException;
 
 @Log4j2
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private final Channel channel;
+    private Channel channel;
+    private final AmqpConfig amqpConfig;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
     private final TableService tableService;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, ObjectMapper objectMapper, QueryService queryService,
-                               TableService tableService) {
+    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, ObjectMapper objectMapper,
+                               QueryService queryService, TableService tableService) {
         this.channel = channel;
+        this.amqpConfig = amqpConfig;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.tableService = tableService;
     }
 
     @Transactional(readOnly = true)
-    private void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
+    protected void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
         try {
             final String consumerTag = channel.basicConsume(routingKey, true, new Consumer() {
                 @Override
@@ -119,14 +123,17 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     private Boolean hasConsumer(Table table) {
         try {
             final AMQP.Queue.DeclareOk response = channel.queueDeclarePassive(table.getTopic());
-            log.debug("queue {} has {} messages waiting", table.getTopic(), response.getMessageCount());
-            log.debug("queue {} has {} consumers", table.getTopic(), response.getConsumerCount());
+            log.trace("queue {} has {} messages waiting", table.getTopic(), response.getMessageCount());
+            log.trace("queue {} has {} consumers", table.getTopic(), response.getConsumerCount());
             return response.getConsumerCount() > 0;
         } catch (IOException e) {
             log.error("Failed to check if queue {} has consumers", table.getTopic());
-            /* ignore */
+            return false;
+        } catch (AlreadyClosedException e) {
+            log.error("Failed to check, channel is already closed: {}", e.getMessage());
+            log.throwing(e);
+            return null;
         }
-        return false;
     }
 
     @Override
@@ -135,8 +142,17 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     public void renewConsumers() {
         tableService.findAll()
                 .forEach(table -> {
-                    if (hasConsumer(table)) {
-                        log.debug("table {} has already one consumer, skipping.", table.getId());
+                    final Boolean hasConsumer = hasConsumer(table);
+                    if (hasConsumer == null) {
+                        try {
+                            this.channel = amqpConfig.getChannel();
+                        } catch (IOException | TimeoutException e) {
+                            log.error("Failed to renew channel");
+                            log.throwing(e);
+                            /* ignore */
+                        }
+                    } else if (hasConsumer) {
+                        log.trace("table {} has already one consumer, skipping.", table.getId());
                         return;
                     }
                     try {

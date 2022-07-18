@@ -4,7 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-.invenio/
+.jupyter/
 
 # Environment
 .env

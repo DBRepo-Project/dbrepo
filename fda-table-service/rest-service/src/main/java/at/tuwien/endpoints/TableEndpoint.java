@@ -42,7 +42,7 @@ public class TableEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_VIEW')")
-    @Operation(summary = "List all tables")
+    @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        Principal principal)
@@ -73,7 +73,7 @@ public class TableEndpoint {
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#databaseId, 'TABLE_VIEW')")
-    @Operation(summary = "Get information about table")
+    @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,

@@ -90,11 +90,13 @@ class ColumnDto(object):
         if references is not None:
             self.references = references
         self.internal_name = internal_name
-        self.date_format = date_format
+        if date_format is not None:
+            self.date_format = date_format
         self.auto_generated = auto_generated
         self.is_primary_key = is_primary_key
         self.column_type = column_type
-        self.column_concept = column_concept
+        if column_concept is not None:
+            self.column_concept = column_concept
         if decimal_digits_before is not None:
             self.decimal_digits_before = decimal_digits_before
         if decimal_digits_after is not None:
@@ -238,8 +240,6 @@ class ColumnDto(object):
         :param date_format: The date_format of this ColumnDto.  # noqa: E501
         :type: ImageDateDto
         """
-        if date_format is None:
-            raise ValueError("Invalid value for `date_format`, must not be `None`")  # noqa: E501
 
         self._date_format = date_format
 
@@ -336,8 +336,6 @@ class ColumnDto(object):
         :param column_concept: The column_concept of this ColumnDto.  # noqa: E501
         :type: ConceptDto
         """
-        if column_concept is None:
-            raise ValueError("Invalid value for `column_concept`, must not be `None`")  # noqa: E501
 
         self._column_concept = column_concept
 

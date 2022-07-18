@@ -27,9 +27,21 @@
               :label="attr.name"
               type="text" />
             <v-text-field
-              v-if="attr.column_type === 'TIMESTAMP' || attr.column_type === 'DATE'"
+              v-if="attr.column_type === 'TIMESTAMP'"
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
+              hint="e.g. 2022-07-12 18:32:59"
+              :rules="[v => /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(v) || $t('Required format yyyy-MM-dd HH:mm:ss')]"
+              class="mb-2"
+              :required="!attr.is_null_allowed"
+              :label="attr.name"
+              type="text" />
+            <v-text-field
+              v-if="attr.column_type === 'DATE'"
+              v-model="tuple[attr.internal_name]"
+              suffix="UTC"
+              hint="e.g. 2022-07-12"
+              :rules="[v => /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(v) || $t('Required format yyyy-MM-dd')]"
               class="mb-2"
               :required="!attr.is_null_allowed"
               :label="attr.name"
