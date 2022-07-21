@@ -15,6 +15,7 @@
           required
           :rules="[v => !!v || $t('Required'), v => v && /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(v) || $t('Please us the pattern yyyy-MM-dd HH:mm:ss')]"
           hint="e.g. 2022-07-04 12:53:00"
+          suffix="UTC"
           class="mb-4"
           type="text" />
         The following chart summarizes changes (insert/update/delete) in the dataset and give an indication where
@@ -56,6 +57,7 @@
 <script>
 import { Bar } from 'vue-chartjs/legacy'
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
+import { formatTimestampUTC, formatTimestampUTCLabel } from '@/utils'
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale)
 
@@ -135,8 +137,13 @@ export default {
           headers: this.requestHeaders
         })
         this.error = false
-        this.chartData.labels = res.data.map(d => d.timestamp)
-        this.chartData.dates = res.data.map(d => d.timestamp)
+        this.chartData.labels = res.data.map(function (d, idx) {
+          if (idx === 0) {
+            return 'Origin'
+          }
+          return formatTimestampUTCLabel(d.timestamp)
+        })
+        this.chartData.dates = res.data.map(d => formatTimestampUTC(d.timestamp))
         this.chartData.datasets = [{
           backgroundColor: this.$vuetify.theme.themes.light.primary,
           data: res.data.map(d => d.total)

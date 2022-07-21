@@ -64,7 +64,7 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {
@@ -154,7 +154,7 @@ export default {
       console.debug('databases loaded', this.containers)
     },
     createdUTC (str) {
-      return formatTimestampUTC(str)
+      return formatTimestampUTCLabel(str)
     },
     loadDatabase (container) {
       this.$router.push(`/container/${container.id}/database/${container.database.id}/info`)

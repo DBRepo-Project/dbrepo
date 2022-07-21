@@ -86,6 +86,9 @@
         </v-btn>
       </div>
       <div>
+        <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
+          Back
+        </v-btn>
         <v-btn color="primary" :loading="finished" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
           Continue
         </v-btn>
@@ -104,6 +107,12 @@ export default {
       }
     },
     form: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
+    back: {
       type: Boolean,
       default () {
         return false
@@ -162,6 +171,9 @@ export default {
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
+    },
+    stepBack () {
+      this.$emit('close', { success: false })
     },
     canRemove (idx) {
       if (idx > 0) {

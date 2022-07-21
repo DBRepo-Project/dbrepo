@@ -2,7 +2,6 @@
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
           Create Database
         </v-card-title>
@@ -57,6 +56,7 @@
             :disabled="!valid || loading"
             color="primary"
             type="submit"
+            :loading="loading"
             @click="createDB">
             Create
           </v-btn>

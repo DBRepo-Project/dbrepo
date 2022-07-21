@@ -92,7 +92,7 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {
@@ -156,7 +156,7 @@ export default {
       }
     },
     createdUTC () {
-      return formatTimestampUTC(this.database.created)
+      return formatTimestampUTCLabel(this.database.created)
     },
     language () {
       return this.database.language === null ? '(none)' : this.database.language

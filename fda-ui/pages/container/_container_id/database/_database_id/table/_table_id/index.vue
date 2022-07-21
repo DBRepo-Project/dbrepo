@@ -74,7 +74,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
-import { formatTimestampUTC, formatDateUTC } from '@/utils'
+import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 
 export default {
   components: {
@@ -142,7 +142,7 @@ export default {
       if (this.version === null) {
         return null
       }
-      return this.formatDate(this.version)
+      return formatTimestampUTCLabel(this.version)
     },
     canEdit () {
       if (this.selection.length !== 1) { return false }
@@ -245,7 +245,7 @@ export default {
               if (columnDefinition[0].column_type === 'DATE') {
                 row[col] = formatDateUTC(row[col])
               } else if (columnDefinition[0].column_type === 'TIMESTAMP') {
-                row[col] = formatTimestampUTC(row[col])
+                row[col] = formatTimestampUTCLabel(row[col])
               }
             }
           }

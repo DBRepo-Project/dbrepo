@@ -214,7 +214,7 @@
 <script>
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   name: 'QueryShow',
@@ -345,7 +345,7 @@ export default {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     executionUTC () {
-      return this.identifier.id ? formatTimestampUTC(this.identifier.execution) : formatTimestampUTC(this.query.execution)
+      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
     },
     creator () {
       if (this.query.creator.username === null) {

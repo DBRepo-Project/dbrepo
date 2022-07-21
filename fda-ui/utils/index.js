@@ -43,7 +43,7 @@ function formatTimestamp (str) {
   return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
-function formatTimestampUTC (str) {
+function formatTimestampUTCLabel (str) {
   if (str === null) {
     return null
   }
@@ -51,10 +51,19 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss') + ' (UTC)'
 }
 
+function formatTimestampUTC (str) {
+  if (str === null) {
+    return null
+  }
+  const date = new Date(str).toISOString().slice(0, -1)
+  return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
   formatTimestampUTC,
+  formatTimestampUTCLabel,
   formatDateUTC,
   isNonNegativeInteger
 }

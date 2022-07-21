@@ -2,7 +2,6 @@
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card v-if="!token">
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
           Login
         </v-card-title>
@@ -42,6 +41,7 @@
             :disabled="!valid"
             color="primary"
             type="submit"
+            :loading="loading"
             @click="login">
             Login
           </v-btn>

@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 export default {
   data () {
     return {
@@ -109,7 +109,7 @@ export default {
       }
     },
     executionUTC () {
-      return formatTimestampUTC(this.queryDetails.execution)
+      return formatTimestampUTCLabel(this.queryDetails.execution)
     }
   },
   mounted () {

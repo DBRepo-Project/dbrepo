@@ -31,7 +31,7 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
-              <v-btn :disabled="!validStep1" color="primary" type="submit" @click="step = 2">
+              <v-btn :disabled="!validStep1" class="mb-1" color="primary" type="submit" @click="step = 2">
                 Continue
               </v-btn>
             </v-col>
@@ -110,7 +110,16 @@
           </v-row>
           <v-row dense>
             <v-col cols="6">
-              <v-btn :disabled="!validStep2" :loading="loading" color="primary" type="submit" @click="step = 3">Next</v-btn>
+              <v-btn class="mr-2 mb-1" @click="step = 1">Back</v-btn>
+              <v-btn
+                class="mb-1"
+                :disabled="!validStep2"
+                :loading="loading"
+                color="primary"
+                type="submit"
+                @click="step = 3">
+                Continue
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -142,7 +151,16 @@
           </v-row>
           <v-row dense>
             <v-col cols="6">
-              <v-btn :disabled="!file" :loading="loading" color="primary" type="submit" @click="upload">Next</v-btn>
+              <v-btn class="mr-2 mb-1" @click="step = 2">Back</v-btn>
+              <v-btn
+                class="mb-1"
+                :disabled="!file"
+                :loading="loading"
+                color="primary"
+                type="submit"
+                @click="upload">
+                Continue
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -153,7 +171,7 @@
       </v-stepper-step>
 
       <v-stepper-content step="4">
-        <TableSchema :form="validStep4" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :form="validStep4" :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
 
       <v-stepper-step
@@ -164,7 +182,7 @@
 
       <v-stepper-content step="5">
         <div class="mt-2">
-          <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`">
+          <v-btn class="mb-1" color="primary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`">
             View Table
           </v-btn>
         </div>
@@ -318,7 +336,11 @@ export default {
       this.loading = false
     },
     schemaClose (event) {
-      console.trace('schema closed', event)
+      console.debug('schema closed', event)
+      if (!event.success) {
+        this.step = 3
+        return
+      }
       this.validStep4 = true
       this.createTable()
     },

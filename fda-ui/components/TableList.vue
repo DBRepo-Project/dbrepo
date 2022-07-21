@@ -147,7 +147,7 @@
 </template>
 
 <script>
-import { formatTimestampUTC } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 export default {
   data () {
     return {
@@ -206,7 +206,7 @@ export default {
       }
     },
     createdUTC () {
-      return formatTimestampUTC(this.tableDetails.created)
+      return formatTimestampUTCLabel(this.tableDetails.created)
     }
   },
   mounted () {
