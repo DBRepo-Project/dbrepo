@@ -51,9 +51,6 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       TZ: Europe/Vienna
-    depends_on:
-      fda-gateway-service:
-        condition: service_healthy
     ports:
       - "9090:9090"
     logging:
@@ -72,6 +69,9 @@ services:
       TZ: Europe/Vienna
     ports:
       - "9095:9095"
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
