@@ -51,9 +51,11 @@ public class User {
     @Column(name = "main_email", unique = true, nullable = false)
     private String email;
 
-    @ToString.Exclude
-    @Column(name = "invenio_token")
-    private String invenioToken;
+    @Column
+    private String affiliation;
+
+    @Column
+    private String orcid;
 
     @Column(name = "main_email_verified", nullable = false)
     private Boolean emailVerified;

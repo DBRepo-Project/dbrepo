@@ -43,6 +43,12 @@ public class UserDto {
     @Parameter(name = "last name")
     private String lastname;
 
+    @Parameter(name = "affiliation")
+    private String affiliation;
+
+    @Parameter(name = "orcid")
+    private String orcid;
+
     @Parameter(name = "list of containers")
     private List<ContainerDto> containers;
 
@@ -51,13 +57,6 @@ public class UserDto {
 
     @Parameter(name = "list of identifiers")
     private List<ContainerDto> identifiers;
-
-    @ToString.Exclude
-    @JsonIgnore
-    private String invenioToken;
-
-    @JsonProperty("has_invenio_token")
-    private Boolean hasInvenioToken;
 
     @ToString.Exclude
     @JsonIgnore

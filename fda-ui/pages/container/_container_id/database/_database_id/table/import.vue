@@ -171,7 +171,7 @@
       </v-stepper-step>
 
       <v-stepper-content step="4">
-        <TableSchema :form="validStep4" :back="true" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
 
       <v-stepper-step

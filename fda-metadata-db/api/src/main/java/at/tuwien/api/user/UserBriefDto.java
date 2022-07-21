@@ -42,9 +42,11 @@ public class UserBriefDto {
     @Parameter(name = "last name")
     private String lastname;
 
-    @ToString.Exclude
-    @JsonIgnore
-    private String invenioToken;
+    @Parameter(name = "affiliation")
+    private String affiliation;
+
+    @Parameter(name = "orcid")
+    private String orcid;
 
     @NotNull
     @Parameter(name = "mail address")

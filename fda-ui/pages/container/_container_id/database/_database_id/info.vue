@@ -92,7 +92,7 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   components: {
@@ -165,18 +165,7 @@ export default {
       return this.database.publication === null ? '(none)' : this.database.publication
     },
     creator () {
-      if (this.database.creator.firstname && this.database.creator.lastname) {
-        let creator = ''
-        if (this.database.creator.titles_before) {
-          creator += (this.database.creator.titles_before + ' ')
-        }
-        creator += (this.database.creator.firstname + ' ' + this.database.creator.lastname)
-        if (this.database.creator.titles_after) {
-          creator += (this.database.creator.titles_after + ' ')
-        }
-        return creator
-      }
-      return this.database.creator.username
+      return formatUser(this.database.creator)
     }
   },
   mounted () {

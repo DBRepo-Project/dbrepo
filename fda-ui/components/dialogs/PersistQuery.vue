@@ -75,6 +75,7 @@
             <v-col cols="3">
               <v-text-field
                 v-model="creator.orcid"
+                :rules="[v => validateOrcid(v) || $t('Invalid ORCID')]"
                 name="orcid"
                 label="ORCID" />
             </v-col>
@@ -152,7 +153,7 @@
 </template>
 
 <script>
-import { formatDateUTC } from '@/utils'
+import { formatDateUTC, isValidOrcid } from '@/utils'
 export default {
   data () {
     return {
@@ -172,6 +173,12 @@ export default {
         name: null,
         is_public: null,
         publisher: null
+      },
+      user: {
+        firstname: null,
+        lastname: null,
+        affiliation: null,
+        orcid: null
       },
       relatedTypes: [
         { value: 'DOI' },
@@ -257,13 +264,26 @@ export default {
   },
   mounted () {
     this.loadUser()
-    this.addCreator()
+      .then(() => this.addCreatorSelf())
     this.loadDatabase()
   },
   methods: {
     cancel () {
       this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
+    },
+    validateOrcid (orcid) {
+      return isValidOrcid(orcid)
+    },
+    addCreatorSelf () {
+      if (!this.user.firstname || !this.user.lastname) {
+        this.addCreator()
+      }
+      this.identifier.creators.push({
+        name: `${this.user.lastname}, ${this.user.firstname}`,
+        orcid: this.user.orcid,
+        affiliation: this.user.affiliation
+      })
     },
     addCreator () {
       this.identifier.creators.push({
@@ -326,6 +346,7 @@ export default {
         res = await this.$axios.put('/api/auth', null, {
           headers: this.headers
         })
+        this.user = res.data
         console.debug('user data', res.data)
       } catch (err) {
         this.$toast.error('Failed load user data')

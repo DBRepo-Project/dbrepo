@@ -64,7 +64,7 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   components: {
@@ -105,18 +105,7 @@ export default {
   },
   methods: {
     formatCreator (creator) {
-      if (creator.firstname && creator.lastname) {
-        let name = ''
-        if (creator.titles_before) {
-          name += creator.titles_before + ' '
-        }
-        name += creator.firstname + ' ' + creator.lastname
-        if (creator.titles_after) {
-          name += ' ' + creator.titles_after
-        }
-        return name
-      }
-      return creator.username
+      return formatUser(creator)
     },
     async loadContainers () {
       this.createDbDialog = false

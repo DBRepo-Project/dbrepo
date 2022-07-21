@@ -127,20 +127,59 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User update(Long id, UserUpdateDto data) throws UserNotFoundException {
+    public User update(Long id, UserUpdateDto data) throws UserNotFoundException, OrcidMalformedException {
         /* check */
         final User user = find(id);
+        /* check */
+        if (data.getOrcid() != null && !validateOrcid(data.getOrcid())) {
+            log.error("Checksum of the provided ORCID does not match");
+            log.debug("checksum of the provided orcid {} does not match", data.getOrcid());
+            throw new OrcidMalformedException(data.getOrcid());
+        }
         /* save */
         user.setTitlesBefore(data.getTitlesBefore());
         user.setTitlesAfter(data.getTitlesAfter());
         user.setFirstname(data.getFirstname());
         user.setLastname(data.getLastname());
         user.setUsername(user.getUsername());
+        user.setAffiliation(data.getAffiliation());
+        user.setOrcid(userMapper.userUpdateDtoToCompressedOrcid(data));
         log.debug("mapped data {} to new user {}", data, user);
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
         log.debug("updated user {}", entity);
         return entity;
+    }
+
+    /**
+     * Validates a given ORCID checksum (ISO 7064 11,2)
+     * Source: https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
+     *
+     * @param orcid The ORCID.
+     * @return True if the ORCID provided is valid, false otherwise.
+     */
+    protected static Boolean validateOrcid(String orcid) {
+        if (orcid == null) {
+            return true;
+        }
+        if (orcid.length() != 19) {
+            log.error("Provided ORCID has an invalid length");
+            log.debug("provided orcid {} has an invalid length {}, is not 19", orcid, orcid.length());
+            return false;
+        }
+        int total = 0;
+        for (int i = 0; i < orcid.length() - 1; i++) {
+            if (orcid.charAt(i) == '-') {
+                continue;
+            }
+            int digit = Character.getNumericValue(orcid.charAt(i));
+            total = (total + digit) * 2;
+        }
+        int remainder = total % 11;
+        int result = (12 - remainder) % 11;
+        final String check = result == 10 ? "X" : String.valueOf(result);
+        log.trace("orcid checksum is '{}'", check);
+        return orcid.substring(18).equals(check);
     }
 
     @Override
@@ -181,19 +220,6 @@ public class UserServiceImpl implements UserService {
         final String passwd = passwordEncoder.encode(data.getPassword());
         user.setPassword(passwd);
         log.debug("mapped password {} to updated user {}", passwd, user);
-        final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
-        return entity;
-    }
-
-    @Override
-    @Transactional
-    public User updateToken(UserTokenModifyDto data, Principal principal) throws UserNotFoundException {
-        /* check */
-        final User user = findByUsername(principal.getName());
-        /* save */
-        user.setInvenioToken(data.getInvenioToken());
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
         log.debug("updated user {}", entity);

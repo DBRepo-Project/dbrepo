@@ -74,7 +74,7 @@ public interface UserService {
      * @return The updated user.
      * @throws UserNotFoundException The user was not found.
      */
-    User update(Long id, UserUpdateDto data) throws UserNotFoundException;
+    User update(Long id, UserUpdateDto data) throws UserNotFoundException, OrcidMalformedException;
 
     /**
      * Updates a user with given id and updated roles.
@@ -97,16 +97,6 @@ public interface UserService {
      * @throws UserNotFoundException The user was not found.
      */
     User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException;
-
-    /**
-     * Updates a user with the given id and updated Invenio tokens.
-     *
-     * @param data      The updated Invenio token.
-     * @param principal The authentication principal.
-     * @return The updated user.
-     * @throws UserNotFoundException The user was not found.
-     */
-    User updateToken(UserTokenModifyDto data, Principal principal) throws UserNotFoundException;
 
     /**
      * Updates a user with the given id and updated email.

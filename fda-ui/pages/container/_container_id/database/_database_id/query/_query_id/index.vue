@@ -8,13 +8,19 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="!executionUTC || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || !executionUTC || !token" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="result_visibility" color="primary" :loading="downloadLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" :disabled="error" color="primary" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
-        <v-btn v-if="identifier.id" color="secondary" class="ml-2" :loading="metadataLoading" @click.stop="metadata">
+        <v-btn
+          v-if="identifier.id"
+          :disabled="error"
+          color="secondary"
+          class="ml-2"
+          :loading="metadataLoading"
+          @click.stop="metadata">
           <v-icon left>mdi-code-tags</v-icon> Metadata .xml
         </v-btn>
       </v-toolbar-title>
@@ -52,10 +58,10 @@
                 <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
                 <span v-if="!loadingDatabase">{{ database.publisher }}</span>
               </v-list-item-content>
-              <v-list-item-title v-if="database.license.identifier" class="mt-2">
+              <v-list-item-title v-if="database.license" class="mt-2">
                 Database License
               </v-list-item-title>
-              <v-list-item-content v-if="database.license.identifier">
+              <v-list-item-content v-if="database.license">
                 <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-xsmall" />
                 <a v-if="!loadingDatabase" :href="database.license.uri">{{ database.license.identifier }}</a>
               </v-list-item-content>

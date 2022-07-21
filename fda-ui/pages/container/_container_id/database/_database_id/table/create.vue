@@ -51,7 +51,7 @@
       </v-stepper-step>
 
       <v-stepper-content step="2">
-        <TableSchema :form="valid" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
     </v-stepper>
   </div>
@@ -153,7 +153,11 @@ export default {
       this.loading = false
     },
     schemaClose (event) {
-      console.trace('schema closed', event)
+      console.debug('schema closed', event)
+      if (!event.success) {
+        this.step = 1
+        return
+      }
       this.createTable()
     }
   }

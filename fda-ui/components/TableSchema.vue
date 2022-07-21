@@ -106,12 +106,6 @@ export default {
         return []
       }
     },
-    form: {
-      type: Boolean,
-      default () {
-        return false
-      }
-    },
     back: {
       type: Boolean,
       default () {
@@ -146,7 +140,6 @@ export default {
     }
   },
   mounted () {
-    this.valid = this.form
     this.loadDateFormats()
   },
   methods: {

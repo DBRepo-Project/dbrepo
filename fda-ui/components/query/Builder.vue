@@ -1,28 +1,27 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Query</v-toolbar-title>
+      <v-toolbar-title>Create Subset</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="false" :disabled="!canExecute || !token" color="blue-grey white--text" @click="save">
-          Save without execution
-        </v-btn>
         <v-btn :disabled="!canExecute || !token" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
           Execute
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-tabs
-      v-model="tabs"
-      centered>
-      <v-tab>
-        Create Subset
-      </v-tab>
-      <v-tab>
-        Raw SQL
-      </v-tab>
-    </v-tabs>
+    <v-toolbar flat>
+      <v-tabs
+        color="primary"
+        v-model="tabs">
+        <v-tab>
+          Simple
+        </v-tab>
+        <v-tab>
+          Expert
+        </v-tab>
+      </v-tabs>
+    </v-toolbar>
     <v-card flat>
       <v-tabs-items v-model="tabs">
         <v-tab-item>

@@ -52,5 +52,5 @@ fda:
     replyto: "${MAIL_REPLY_TO}"
 jwt:
   issuer: "${JWT_ISSUER}"
-  secret: "${JWT_SECRET"
+  secret: "${JWT_SECRET}"
   expiration.ms: "${JWT_EXPIRATION}" # 24 hrs

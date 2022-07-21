@@ -11,7 +11,7 @@
         <v-expansion-panel-header>
           {{ item.name }}
         </v-expansion-panel-header>
-        <v-expansion-panel-content>
+        <v-expansion-panel-content class="mb-2">
           <v-row dense>
             <v-col>
               <v-list dense>

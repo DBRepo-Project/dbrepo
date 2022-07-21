@@ -31,4 +31,10 @@ public class UserUpdateDto {
     @Parameter(name = "last name")
     private String lastname;
 
+    @Parameter(name = "affiliation")
+    private String affiliation;
+
+    @Parameter(name = "orcid")
+    private String orcid;
+
 }

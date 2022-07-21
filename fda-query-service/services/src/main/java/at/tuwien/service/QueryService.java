@@ -127,7 +127,7 @@ public interface QueryService {
      */
     ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
-            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException;
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.

@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.exception.OrcidMalformedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
@@ -50,7 +51,7 @@ public class AuthenticationEndpoint {
     @PutMapping
     @Transactional(readOnly = true)
     @Operation(summary = "Validate token", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException {
+    public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException, OrcidMalformedException {
         final UserDto user = userMapper.userToUserDto(userService.findByUsername(principal.getName()));
         return ResponseEntity.accepted()
                 .body(user);

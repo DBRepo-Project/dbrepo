@@ -28,6 +28,47 @@ function isNonNegativeInteger (str) {
   return str >>> 0 === parseFloat(str)
 }
 
+/**
+ * https://support.orcid.org/hc/en-us/articles/360006897674-Structure-of-the-ORCID-Identifier
+ * @param str The ORCID
+ * @returns {boolean} True if ORCID is valid, false otherwise
+ */
+function isValidOrcid (str) {
+  if (str == null) {
+    return false
+  }
+  if (str.length !== 19) {
+    return false
+  }
+  let total = 0
+  for (let i = 0; i < str.length; i++) {
+    const digit = parseInt(str.charAt(i))
+    if (isNaN(digit)) {
+      continue
+    }
+    total = (total + digit) * 2
+  }
+  const remainder = total % 11
+  const result = (12 - remainder) % 11
+  const check = result === 10 ? 'X' : result.toString()
+  return str.substr(18) === check
+}
+
+function formatUser (user) {
+  if (user.firstname && user.lastname) {
+    let name = ''
+    if (user.titles_before) {
+      name += user.titles_before + ' '
+    }
+    name += user.firstname + ' ' + user.lastname
+    if (user.titles_after) {
+      name += ' ' + user.titles_after
+    }
+    return name
+  }
+  return user.username
+}
+
 function formatDateUTC (str) {
   if (str === null) {
     return null
@@ -65,5 +106,7 @@ module.exports = {
   formatTimestampUTC,
   formatTimestampUTCLabel,
   formatDateUTC,
-  isNonNegativeInteger
+  isNonNegativeInteger,
+  isValidOrcid,
+  formatUser
 }

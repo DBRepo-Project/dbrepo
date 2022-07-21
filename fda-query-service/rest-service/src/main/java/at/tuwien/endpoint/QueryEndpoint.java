@@ -96,7 +96,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                       @NotNull @PathVariable("queryId") Long queryId,
                                                       @NotNull Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException {
+            ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException, QueryMalformedException {
         if (!hasQueryPermission(databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");
             throw new NotAllowedException("Missing export query permission");

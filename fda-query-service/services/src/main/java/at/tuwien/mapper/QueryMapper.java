@@ -14,7 +14,6 @@ import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ImageNotSupportedException;
-import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -29,8 +28,8 @@ import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +38,9 @@ import java.util.stream.Stream;
 public interface QueryMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryMapper.class);
+
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.of("UTC"));
 
     @Deprecated
     @Mappings({
@@ -297,27 +299,39 @@ public interface QueryMapper {
                 });
         query.append("FROM `")
                 .append(table.getInternalName())
-                .append("` INTO OUTFILE '/tmp/")
-                .append(filename)
-                .append("' CHARACTER SET utf8");
+                .append("`");
         if (timestamp != null) {
             query.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                    .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
+                    .append(mariaDbFormatter.format(timestamp))
                     .append("'");
         }
+        query.append(" INTO OUTFILE '/tmp/")
+                .append(filename)
+                .append("' CHARACTER SET utf8");
         query.append(";");
         return query.toString();
     }
 
-    default String queryToRawExportQuery(Query query, String filename) {
+    default String queryToRawExportQuery(Query query, String filename) throws QueryMalformedException {
         if (query.getQuery().contains(";")) {
             log.trace("Remove ending ; from statement [{}]", query.getQuery());
             query.setQuery(query.getQuery().substring(0, query.getQuery().indexOf(";")));
         }
-        final StringBuilder statement = new StringBuilder(query.getQuery())
-                .append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                .append(LocalDateTime.ofInstant(query.getExecution(), ZoneId.of("Europe/Vienna")))
-                .append("' INTO OUTFILE '/tmp/")
+        /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
+        final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(mariaDbFormatter.format(query.getExecution()))
+                .append("' ");
+        final Pattern pattern = Pattern.compile("from `?[a-zA-Z0-9_]+`?", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Matcher matcher = pattern.matcher(query.getQuery());
+        if (!matcher.find()) {
+            log.error("Failed to find 'from' clause in query");
+            throw new QueryMalformedException("Failed to find from clause");
+        }
+        log.debug("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query.getQuery());
+        final StringBuilder statement = new StringBuilder(query.getQuery().substring(0, matcher.end(0)))
+                .append(versionPart)
+                .append(query.getQuery().substring(matcher.end(0)))
+                .append(" INTO OUTFILE '/tmp/")
                 .append(filename)
                 .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
         log.trace("raw export query: [{}]", statement);

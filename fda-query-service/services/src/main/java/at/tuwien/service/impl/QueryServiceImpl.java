@@ -206,7 +206,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
-            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException {
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(containerId, databaseId, queryId);

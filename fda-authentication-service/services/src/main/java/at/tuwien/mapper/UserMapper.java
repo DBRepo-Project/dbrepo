@@ -7,6 +7,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.OrcidMalformedException;
 import org.mapstruct.Mapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,7 +48,7 @@ public interface UserMapper {
     }
 
     @Transactional(readOnly = true)
-    default UserDto userToUserDto(User data) {
+    default UserDto userToUserDto(User data) throws OrcidMalformedException {
         return UserDto.builder()
                 .id(data.getId())
                 .username(data.getUsername())
@@ -58,7 +59,8 @@ public interface UserMapper {
                 .titlesBefore(data.getTitlesBefore())
                 .titlesAfter(data.getTitlesAfter())
                 .emailVerified(data.getEmailVerified())
-                .hasInvenioToken(data.getInvenioToken() != null)
+                .affiliation(data.getAffiliation())
+                .orcid(userToUncompressedOrcid(data))
                 .authorities(data.getRoles()
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)
@@ -80,6 +82,32 @@ public interface UserMapper {
         return GrantedAuthorityDto.builder()
                 .authority(data.getAuthority())
                 .build();
+    }
+
+    default String userUpdateDtoToCompressedOrcid(UserUpdateDto data) {
+        if (data.getOrcid() == null) {
+            return null;
+        }
+        return data.getOrcid().replace("-", "");
+    }
+
+    default String userToUncompressedOrcid(User data) throws OrcidMalformedException {
+        if (data.getOrcid() == null) {
+            return null;
+        }
+        if (data.getOrcid().length() != 16) {
+            log.error("Provided ORCID is not compressed");
+            log.debug("provided orcid {} is not compressed, length is {}", data.getOrcid(), data.getOrcid().length());
+            throw new OrcidMalformedException("Provided ORCID is not compressed");
+        }
+        return new StringBuilder(data.getOrcid().substring(0, 4))
+                .append("-")
+                .append(data.getOrcid(), 4, 8)
+                .append("-")
+                .append(data.getOrcid(), 8, 12)
+                .append("-")
+                .append(data.getOrcid(), 12, 16)
+                .toString();
     }
 
     default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {

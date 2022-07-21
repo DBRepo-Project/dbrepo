@@ -28,7 +28,7 @@ export default {
   },
   data () {
     return {
-      content: this.value || 'SELECT `id` FROM "myTable"',
+      content: this.value || '-- MariaDB 10.5 Query\n',
       theme: 'xcode'
     }
   },
@@ -53,7 +53,7 @@ export default {
   methods: {
     editorInit (editor) {
       editor.setOptions({
-        fontSize: '11pt',
+        fontSize: '12pt',
         readOnly: this.disabled,
         behavioursEnabled: !this.disabled
       })

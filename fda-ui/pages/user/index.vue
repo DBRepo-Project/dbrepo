@@ -92,6 +92,24 @@
           </v-row>
           <v-row dense>
             <v-col cols="5">
+              <v-text-field
+                v-model="user.affiliation"
+                hint="e.g. University of xyz"
+                label="Affiliation" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="5">
+              <v-text-field
+                v-model="user.orcid"
+                :rules="[v => validateOrcid(v) || $t('Invalid ORCID')]"
+                maxlength="19"
+                hint="e.g. 0000-0002-1825-0097"
+                label="ORCID" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="5">
               <v-btn
                 color="primary"
                 :disabled="!valid2"
@@ -136,6 +154,7 @@
   </div>
 </template>
 <script>
+import { isValidOrcid } from '@/utils'
 export default {
   data () {
     return {
@@ -151,7 +170,9 @@ export default {
         firstname: null,
         titles_after: null,
         titles_before: null,
-        email_verified: false
+        email_verified: false,
+        affiliation: null,
+        orcid: null
       },
       reset: {
         password: null
@@ -213,6 +234,12 @@ export default {
       }
       this.loading = false
     },
+    validateOrcid (orcid) {
+      if (!orcid) {
+        return true
+      }
+      return isValidOrcid(orcid)
+    },
     async resend () {
       try {
         this.loading = true
@@ -248,20 +275,19 @@ export default {
           titles_before: this.user.titles_before,
           titles_after: this.user.titles_after,
           firstname: this.user.firstname,
-          lastname: this.user.lastname
+          lastname: this.user.lastname,
+          affiliation: this.user.affiliation,
+          orcid: this.user.orcid
         }, this.config)
         console.debug('update', res.data)
         this.error = false
         this.$toast.success('Successfully updated user info')
       } catch (err) {
         console.error('update', err)
+        this.$toast.error('Failed to update user info')
         this.error = true
       }
       this.loading = false
-    },
-    setToken () {
-      this.user.has_invenio_token = false
-      this.api.invenio_token = ''
     }
   }
 }

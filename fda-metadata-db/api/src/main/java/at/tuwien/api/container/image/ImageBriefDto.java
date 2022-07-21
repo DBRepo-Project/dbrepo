@@ -22,10 +22,6 @@ public class ImageBriefDto {
     @Parameter(required = true, example = "mariadb")
     private String repository;
 
-    @ToString.Exclude
-    @Parameter(required = true, example = "base64:aaaa")
-    private String logo;
-
     @NotBlank
     @Parameter(required = true, example = "10.5")
     private String tag;

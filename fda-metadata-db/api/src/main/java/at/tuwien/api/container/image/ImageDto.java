@@ -36,10 +36,6 @@ public class ImageDto {
     @Parameter(required = true, example = "org.postgresql.Driver")
     private String driverClass;
 
-    @ToString.Exclude
-    @Parameter(required = true)
-    private String logo;
-
     @JsonProperty("date_formats")
     private List<ImageDateDto> dateFormats;
 
