@@ -63,7 +63,7 @@ public interface DatabaseService {
      */
     void delete(Long id, Long databaseId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException;
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
@@ -95,23 +95,4 @@ public interface DatabaseService {
      */
     Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
-
-    /**
-     * Returns a new session for a given {@link Database} entity.
-     *
-     * @param database The database entity.
-     * @return A new session if successful.
-     * @throws ContainerConnectionException The container is not reachable from the database service.
-     * @throws DatabaseMalformedException   The database is malformed e.g. a session can be created.
-     */
-    Session getSession(Database database) throws ContainerConnectionException, DatabaseMalformedException;
-
-    /**
-     * Returns a new transaction for a given session.
-     *
-     * @param session The session.
-     * @return The transaction if successful.
-     * @throws ContainerConnectionException When no connection to the remote database fails (e.g. the container is not running).
-     */
-    Transaction getTransaction(Session session) throws ContainerConnectionException;
 }

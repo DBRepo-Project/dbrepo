@@ -72,8 +72,8 @@ public class ContainerDatabaseEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long id,
-                                              @Valid @RequestBody DatabaseCreateDto createDto,
-                                              Principal principal)
+                                                   @Valid @RequestBody DatabaseCreateDto createDto,
+                                                   Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException {
         final Database database = databaseService.create(id, createDto, principal);
@@ -87,8 +87,8 @@ public class ContainerDatabaseEndpoint {
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long id,
-                                              @NotBlank @PathVariable Long databaseId,
-                                              @Valid @RequestBody DatabaseModifyDto modifyDto)
+                                                   @NotBlank @PathVariable Long databaseId,
+                                                   @Valid @RequestBody DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
         final Database database = databaseService.modify(id, databaseId, modifyDto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -122,7 +122,8 @@ public class ContainerDatabaseEndpoint {
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);
