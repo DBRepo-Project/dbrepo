@@ -31,7 +31,6 @@ class ImageDto(object):
         'id': 'int',
         'repository': 'str',
         'tag': 'str',
-        'logo': 'str',
         'dialect': 'str',
         'hash': 'str',
         'compiled': 'datetime',
@@ -47,7 +46,6 @@ class ImageDto(object):
         'id': 'id',
         'repository': 'repository',
         'tag': 'tag',
-        'logo': 'logo',
         'dialect': 'dialect',
         'hash': 'hash',
         'compiled': 'compiled',
@@ -59,12 +57,11 @@ class ImageDto(object):
         'default_port': 'default_port'
     }
 
-    def __init__(self, id=None, repository=None, tag=None, logo=None, dialect=None, hash=None, compiled=None, size=None, environment=None, driver_class=None, date_formats=None, jdbc_method=None, default_port=None):  # noqa: E501
+    def __init__(self, id=None, repository=None, tag=None, dialect=None, hash=None, compiled=None, size=None, environment=None, driver_class=None, date_formats=None, jdbc_method=None, default_port=None):  # noqa: E501
         """ImageDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._repository = None
         self._tag = None
-        self._logo = None
         self._dialect = None
         self._hash = None
         self._compiled = None
@@ -78,8 +75,6 @@ class ImageDto(object):
         self.id = id
         self.repository = repository
         self.tag = tag
-        if logo is not None:
-            self.logo = logo
         self.dialect = dialect
         if hash is not None:
             self.hash = hash
@@ -162,27 +157,6 @@ class ImageDto(object):
             raise ValueError("Invalid value for `tag`, must not be `None`")  # noqa: E501
 
         self._tag = tag
-
-    @property
-    def logo(self):
-        """Gets the logo of this ImageDto.  # noqa: E501
-
-
-        :return: The logo of this ImageDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._logo
-
-    @logo.setter
-    def logo(self, logo):
-        """Sets the logo of this ImageDto.
-
-
-        :param logo: The logo of this ImageDto.  # noqa: E501
-        :type: str
-        """
-
-        self._logo = logo
 
     @property
     def dialect(self):

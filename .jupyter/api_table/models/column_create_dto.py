@@ -125,7 +125,7 @@ class ColumnCreateDto(object):
         """
         if type is None:
             raise ValueError("Invalid value for `type`, must not be `None`")  # noqa: E501
-        allowed_values = ["ColumnTypeDto.ENUM", "ColumnTypeDto.NUMBER", "ColumnTypeDto.DECIMAL", "ColumnTypeDto.STRING", "ColumnTypeDto.TEXT", "ColumnTypeDto.BOOLEAN", "ColumnTypeDto.DATE", "ColumnTypeDto.TIMESTAMP", "ColumnTypeDto.BLOB"]  # noqa: E501
+        allowed_values = ["enum", "number", "decimal", "string", "text", "boolean", "date", "timestamp", "blob"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
                 "Invalid value for `type` ({0}), must be one of {1}"  # noqa: E501

@@ -58,8 +58,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         }
         log.debug("find all queries in database id {}", databaseId);
         /* run query */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final Transaction transaction = session.beginTransaction();
         /* use jpq to select all */
         final org.hibernate.query.Query<Query> queries = session.createQuery("select q from Query q", Query.class);
@@ -67,8 +66,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         final List<Query> out = queries.list();
         log.info("Found {} queries", out.size());
         log.debug("found queries {}", out);
-        session.close();
-        factory.close();
         return out;
     }
 
@@ -84,8 +81,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         }
         log.debug("find one query in database id {} with id {}", databaseId, queryId);
         /* run query */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final Transaction transaction = session.beginTransaction();
         /* use jpa to select one */
         final org.hibernate.query.Query<Query> query = session.createQuery(
@@ -98,14 +94,10 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         transaction.commit();
         if (result == null) {
             log.error("Query not found with id {}", queryId);
-            session.close();
-            factory.close();
-            throw new QueryNotFoundException("Query was not found");
+            throw new QueryNotFoundException("Query not found");
         }
         log.info("Found query with id {}", queryId);
         log.debug("Found query {}", result);
-        session.close();
-        factory.close();
         return result;
     }
 
@@ -135,8 +127,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* user */
         final User creator = userService.findByUsername(principal.getName());
         /* save */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final Transaction transaction = session.beginTransaction();
         final Query query = Query.builder()
                 .cid(containerId)
@@ -154,8 +145,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* store the result in the query store */
         log.info("Saved query with id {}", query.getId());
         log.debug("saved query {}", query);
-        session.close();
-        factory.close();
         return query;
     }
 
@@ -173,8 +162,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
         log.debug("Update database id {}, metadata {}", databaseId, query);
         /* save */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final Transaction transaction = session.beginTransaction();
         query.setQueryHash(DigestUtils.sha256Hex(query.getQuery()));
         query.setResultNumber(resultNumber);
@@ -184,8 +172,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* store the result in the query store */
         log.info("Update query with id {}", query.getId());
         log.debug("saved query {}", query);
-        session.close();
-        factory.close();
         return query;
     }
 

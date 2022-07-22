@@ -220,7 +220,7 @@ export default {
             sortable: false
           }
         }).forEach(header => this.headers.push(header))
-        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'DATE' || c.column_type === 'TIMESTAMP'))
+        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (err) {
         this.$toast.error('Could not get table details.')
@@ -242,9 +242,9 @@ export default {
           for (const col in row) {
             const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
             if (columnDefinition.length > 0) {
-              if (columnDefinition[0].column_type === 'DATE') {
+              if (columnDefinition[0].column_type === 'date') {
                 row[col] = formatDateUTC(row[col])
-              } else if (columnDefinition[0].column_type === 'TIMESTAMP') {
+              } else if (columnDefinition[0].column_type === 'timestamp') {
                 row[col] = formatTimestampUTCLabel(row[col])
               }
             }

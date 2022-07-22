@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from api_database.models.api_error_dto import ApiErrorDto
 from api_database.models.column_dto import ColumnDto
 from api_database.models.concept_dto import ConceptDto
+from api_database.models.container_brief_dto import ContainerBriefDto
 from api_database.models.container_dto import ContainerDto
 from api_database.models.database_brief_dto import DatabaseBriefDto
 from api_database.models.database_create_dto import DatabaseCreateDto

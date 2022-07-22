@@ -9,7 +9,7 @@
         <v-card-text>
           <div v-for="(attr,idx) in columns" :key="idx">
             <v-text-field
-              v-if="attr.column_type === 'NUMBER'"
+              v-if="attr.column_type === 'number'"
               v-model.number="tuple[attr.internal_name]"
               :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
               class="mb-2"
@@ -19,7 +19,7 @@
               :label="attr.name"
               type="number" />
             <v-text-field
-              v-if="attr.column_type === 'STRING' || attr.column_type === 'TEXT' || attr.column_type === 'DECIMAL'"
+              v-if="attr.column_type === 'string' || attr.column_type === 'text' || attr.column_type === 'decimal'"
               v-model="tuple[attr.internal_name]"
               :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
               class="mb-2"
@@ -27,7 +27,7 @@
               :label="attr.name"
               type="text" />
             <v-text-field
-              v-if="attr.column_type === 'TIMESTAMP'"
+              v-if="attr.column_type === 'timestamp'"
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
               hint="e.g. 2022-07-12 18:32:59"
@@ -37,7 +37,7 @@
               :label="attr.name"
               type="text" />
             <v-text-field
-              v-if="attr.column_type === 'DATE'"
+              v-if="attr.column_type === 'date'"
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
               hint="e.g. 2022-07-12"
@@ -54,7 +54,7 @@
               :items="attr.enum_values"
               :label="attr.name" />
             <v-checkbox
-              v-if="attr.column_type === 'BOOLEAN'"
+              v-if="attr.column_type === 'boolean'"
               v-model="tuple[attr.internal_name]"
               class="mb-2"
               :label="attr.name" />

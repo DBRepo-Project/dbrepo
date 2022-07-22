@@ -16,6 +16,7 @@ import org.thymeleaf.spring5.SpringTemplateEngine;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
@@ -35,9 +36,8 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void send(User user, String subject, String path, Context context) throws UserEmailFailedException {
-        if (mailConfig.getMailUsername().equals("local")) {
+        if (mailConfig.getMailUsername().isBlank()) {
             /* local instance, not the deployment instance */
-            log.debug("local instance, do not send mail.");
             return;
         }
         final SimpleMailMessage message = new SimpleMailMessage();

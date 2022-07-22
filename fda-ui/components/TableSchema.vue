@@ -35,9 +35,9 @@
               label="Enumeration"
               multiple />
           </v-col>
-          <v-col v-if="c.type.match('(TIMESTAMP)|(DATE)')" cols="2" class="pl-10">
+          <v-col v-if="c.type.match('(timestamp)|(date)')" cols="2" class="pl-10">
             <v-select
-              v-if="c.type !== 'TIMESTAMP'"
+              v-if="c.type !== 'timestamp'"
               v-model="c.dfid"
               required
               :rules="[v => !!v || $t('Required')]"
@@ -46,7 +46,7 @@
               item-text="example"
               item-value="id" />
             <v-select
-              v-if="c.type !== 'DATE'"
+              v-if="c.type !== 'date'"
               v-model="c.dfid"
               required
               :rules="[v => !!v || $t('Required')]"
@@ -55,7 +55,7 @@
               item-text="example"
               item-value="id" />
           </v-col>
-          <v-col cols="auto" class="pl-10" :hidden="c.type !== 'STRING' || c.type !== 'VARCHAR'">
+          <v-col cols="auto" class="pl-10" :hidden="c.type !== 'string' || c.type !== 'VARCHAR'">
             <v-text-field v-model="c.check_expression" label="Check Expression" />
           </v-col>
           <v-col cols="auto" class="pl-2">
@@ -122,15 +122,15 @@ export default {
       tableColumns: [],
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'BOOLEAN', text: 'Boolean' },
-        { value: 'NUMBER', text: 'Number' },
-        { value: 'BLOB', text: 'Binary Large Object' },
-        { value: 'DATE', text: 'Date' },
-        { value: 'DECIMAL', text: 'Floating Number' },
-        { value: 'TIMESTAMP', text: 'Timestamp' },
-        { value: 'DECIMAL', text: 'Decimal' },
-        { value: 'STRING', text: 'Character Varying' },
-        { value: 'TEXT', text: 'Text' }
+        { value: 'boolean', text: 'Boolean' },
+        { value: 'number', text: 'Number' },
+        { value: 'blob', text: 'Binary Large Object' },
+        { value: 'date', text: 'Date' },
+        { value: 'decimal', text: 'Floating Number' },
+        { value: 'timestamp', text: 'Timestamp' },
+        { value: 'decimal', text: 'Decimal' },
+        { value: 'string', text: 'Character Varying' },
+        { value: 'text', text: 'Text' }
       ]
     }
   },

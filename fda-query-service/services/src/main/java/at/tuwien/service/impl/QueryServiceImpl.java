@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.security.Principal;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,8 +85,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         /* prepare the statement */
@@ -99,8 +99,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             session.getTransaction()
                     .commit();
         } catch (PersistenceException e) {
-            session.close();
-            factory.close();
+            log.error("Query not valid for this database");
             throw new QueryMalformedException("Query not valid for this database", e);
         }
         /* map the result to the tables (with respective columns) from the statement metadata */
@@ -114,8 +113,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final QueryResultDto result = queryMapper.resultListToQueryResultDto(columns, nativeQuery.getResultList());
         result.setId(query.getId());
         result.setResultNumber(countQueryResults(databaseId, query));
-        session.close();
-        factory.close();
         return result;
     }
 
@@ -130,8 +127,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         final NativeQuery<?> query = session.createSQLQuery(
@@ -142,9 +138,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.info("Found {} tuples in database id {}", affectedTuples, databaseId);
         } catch (PersistenceException e) {
             log.error("Failed to find data");
-            session.close();
-            factory.close();
-            throw new TableMalformedException("Data not found", e);
+            throw new TableMalformedException("\"Failed to find data", e);
         }
         session.getTransaction()
                 .commit();
@@ -155,8 +149,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to parse date from the one stored in the metadata database");
             throw new TableMalformedException("Could not parse date from format", e);
         }
-        session.close();
-        factory.close();
         return result;
     }
 
@@ -171,8 +163,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
@@ -182,13 +173,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             query.executeUpdate();
         } catch (PersistenceException e) {
             log.error("Failed to export table");
-            session.close();
-            factory.close();
             throw new TableMalformedException("Data not found", e);
         }
         session.getTransaction().commit();
-        session.close();
-        factory.close();
         /* read file */
         final InputStream inputStream;
         try {
@@ -212,8 +199,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Query query = storeService.findOne(containerId, databaseId, queryId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
@@ -222,13 +208,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             query2.executeUpdate();
         } catch (PersistenceException e) {
             log.error("Failed to export query");
-            session.close();
-            factory.close();
             throw new TableMalformedException("Data not found", e);
         }
         session.getTransaction().commit();
-        session.close();
-        factory.close();
         /* read file */
         final InputStream inputStream;
         try {
@@ -254,8 +236,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, false);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, false);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         final NativeQuery<BigInteger> query = session.createSQLQuery(
@@ -266,16 +247,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.info("Counted {} tuples in table id {}", affectedTuples, tableId);
         } catch (PersistenceException e) {
             log.error("Failed to count tuples");
-            session.close();
-            factory.close();
             throw new TableMalformedException("Data not found", e);
         }
         session.getTransaction()
                 .commit();
-        final BigInteger count = query.getSingleResult();
-        session.close();
-        factory.close();
-        return count;
+        return query.getSingleResult();
     }
 
     @Override
@@ -289,16 +265,26 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         if (data.getData().size() == 0) return null;
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         /* prepare the statement */
-        final InsertTableRawQuery raw = queryMapper.tableCsvDtoToRawInsertQuery(table, data);
+        final InsertTableRawQuery raw;
+        try {
+            raw = queryMapper.tableCsvDtoToRawInsertQuery(table, data);
+        } catch (DateTimeParseException e) {
+            log.error("Failed to parse date: {}", e.getMessage());
+            return 0;
+        } catch (NumberFormatException e) {
+            log.error("Failed to parse number: {}", e.getMessage());
+            return 0;
+        } catch (Exception e) {
+            log.error("Failed for unknown reason: {}", e.getMessage());
+            return 0;
+        }
         final NativeQuery<?> query = session.createSQLQuery(raw.getQuery());
-
         log.trace("query with parameters {}", query.setParameterList(1, raw.getData()));
-        return execute(query, session, factory);
+        return execute(query, session);
     }
 
     @Override
@@ -312,8 +298,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         if (data.getData().size() == 0 || data.getKeys().size() == 0) return null;
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         /* prepare the statement */
@@ -323,7 +308,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         data.getData()
                 .forEach((key, value) -> query.setParameter(idx[0]++, value));
         log.trace("query with parameters {}", query);
-        return execute(query, session, factory);
+        return execute(query, session);
     }
 
     @Override
@@ -337,8 +322,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         if (data.getKeys().size() == 0) return;
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, true);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         /* prepare the statement */
@@ -350,15 +334,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             affectedTuples = query.executeUpdate();
         } catch (PersistenceException e) {
-            session.close();
-            factory.close();
             log.error("Could not insert data: {}", e.getMessage());
             throw new TableMalformedException("Could not insert data", e);
         }
         session.getTransaction()
                 .commit();
-        session.close();
-        factory.close();
         if (affectedTuples == 0) {
             log.error("No tuples were deleted");
             throw new TupleDeleteException("No tuples deleted");
@@ -402,24 +382,19 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      */
     private Integer execute(String rawQuery, Database database) throws TableMalformedException {
         final int affectedTuples;
-        SessionFactory factory = getSessionFactory(database, true);
-        Session session = factory.openSession();
+        Session session = getSession(database, true);
         session.beginTransaction();
         NativeQuery<?> query = session.createSQLQuery(rawQuery);
         try {
             affectedTuples = query.executeUpdate();
             log.debug("Affected Tuples: {}", affectedTuples);
         } catch (PersistenceException e) {
-            session.close();
-            factory.close();
             log.error("Could not insert data: {}", e.getMessage());
             log.throwing(e);
             throw new TableMalformedException("Could not insert data", e);
         }
         session.getTransaction()
                 .commit();
-        session.close();
-        factory.close();
         return affectedTuples;
     }
 
@@ -428,25 +403,20 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      *
      * @param query   The query.
      * @param session The session.
-     * @param factory The factory.
      * @return The number of affected tuples.
      * @throws TableMalformedException The table where the query was applied to is malformed.
      */
-    private Integer execute(NativeQuery<?> query, Session session, SessionFactory factory)
+    private Integer execute(NativeQuery<?> query, Session session)
             throws TableMalformedException {
         final int affectedTuples;
         try {
             affectedTuples = query.executeUpdate();
         } catch (PersistenceException e) {
-            session.close();
-            factory.close();
             log.error("Could not insert data: {}", e.getMessage());
             throw new TableMalformedException("Could not insert data", e);
         }
         session.getTransaction()
                 .commit();
-        session.close();
-        factory.close();
         return affectedTuples;
     }
 
@@ -552,8 +522,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(databaseId);
         /* run query */
         final long startSession = System.currentTimeMillis();
-        final SessionFactory factory = getSessionFactory(database, false);
-        final Session session = factory.openSession();
+        final Session session = getSession(database, false);
         log.debug("opened hibernate session in {} ms", System.currentTimeMillis() - startSession);
         session.beginTransaction();
         final NativeQuery<BigInteger> nativeQuery = session.createSQLQuery(
@@ -564,16 +533,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.info("Counted {} tuples from query {}", affectedTuples, query.getId());
         } catch (PersistenceException e) {
             log.error("Failed to count tuples");
-            session.close();
-            factory.close();
             throw new TableMalformedException("Data not found", e);
         }
         session.getTransaction()
                 .commit();
-        final Long count = nativeQuery.getSingleResult().longValue();
-        session.close();
-        factory.close();
-        return count;
+        return nativeQuery.getSingleResult().longValue();
     }
 
 

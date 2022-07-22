@@ -40,11 +40,9 @@ public class TableDataEndpoint extends AbstractEndpoint {
         this.storeService = storeService;
     }
 
-    // FIXME non-trivial authentication for 1) direct JWT coming e.g from swagger 2) indirect service auth coming from
-    //  table service 3) direct JWT coming from fda-public network =system
     @PostMapping
     @Transactional
-    @Operation(summary = "Insert data")
+    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
@@ -118,7 +116,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @Operation(summary = "Find data")
+    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,

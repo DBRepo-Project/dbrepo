@@ -86,7 +86,7 @@ public class ContainerServiceImpl implements ContainerService {
                 .exec();
         log.info("Created volume {}", response.getName());
         log.debug("created volume {} with mapping /var/lib/mysql", response.getName());
-        final Volume volume = new Volume(response.getName() + ":/var/lib/mysql");
+        final Volume volume = new Volume("/var/lib/mysql");
         /* create the container */
         final CreateContainerResponse response1;
         try {

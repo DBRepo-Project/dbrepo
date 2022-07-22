@@ -68,8 +68,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         final Table table = find(containerId, databaseId, tableId);
         /* run query */
-        final SessionFactory factory = getSessionFactory(database.get(), true);
-        final Session session = factory.openSession();
+        final Session session = getSession(database.get(), true);
         final Transaction transaction = session.beginTransaction();
         /* use jpa to select one */
         final NativeQuery<?> query = session.createSQLQuery(queryMapper.historyRawQuery(table));
@@ -83,8 +82,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         transaction.commit();
         log.info("Found table history with {} tuples", history.size());
         log.debug("Found table history {}", history);
-        session.close();
-        factory.close();
         return history;
     }
 

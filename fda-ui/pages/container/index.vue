@@ -146,6 +146,10 @@ export default {
       return formatTimestampUTCLabel(str)
     },
     loadDatabase (container) {
+      if (!container.id || !container.database) {
+        console.error('container id', container.id, 'or database id missing')
+        return
+      }
       this.$router.push(`/container/${container.id}/database/${container.database.id}/info`)
     }
   }

@@ -43,7 +43,7 @@ class ContainerDatabaseEndpointApi(object):
         :param async_req bool
         :param DatabaseCreateDto body: (required)
         :param int id: (required)
-        :return: DatabaseDto
+        :return: DatabaseBriefDto
                  If the method is called asynchronously,
                  returns the request thread.
         """
@@ -65,7 +65,7 @@ class ContainerDatabaseEndpointApi(object):
         :param async_req bool
         :param DatabaseCreateDto body: (required)
         :param int id: (required)
-        :return: DatabaseDto
+        :return: DatabaseBriefDto
                  If the method is called asynchronously,
                  returns the request thread.
         """
@@ -129,7 +129,7 @@ class ContainerDatabaseEndpointApi(object):
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='DatabaseDto',  # noqa: E501
+            response_type='DatabaseBriefDto',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),
@@ -444,7 +444,7 @@ class ContainerDatabaseEndpointApi(object):
         :param DatabaseModifyDto body: (required)
         :param int id: (required)
         :param int database_id: (required)
-        :return: DatabaseDto
+        :return: DatabaseBriefDto
                  If the method is called asynchronously,
                  returns the request thread.
         """
@@ -467,7 +467,7 @@ class ContainerDatabaseEndpointApi(object):
         :param DatabaseModifyDto body: (required)
         :param int id: (required)
         :param int database_id: (required)
-        :return: DatabaseDto
+        :return: DatabaseBriefDto
                  If the method is called asynchronously,
                  returns the request thread.
         """
@@ -537,7 +537,7 @@ class ContainerDatabaseEndpointApi(object):
             body=body_params,
             post_params=form_params,
             files=local_var_files,
-            response_type='DatabaseDto',  # noqa: E501
+            response_type='DatabaseBriefDto',  # noqa: E501
             auth_settings=auth_settings,
             async_req=params.get('async_req'),
             _return_http_data_only=params.get('_return_http_data_only'),

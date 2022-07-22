@@ -32,6 +32,7 @@ class DatabaseBriefDto(object):
         'name': 'str',
         'description': 'str',
         'engine': 'str',
+        'container': 'ContainerBriefDto',
         'creator': 'UserDto',
         'created': 'datetime',
         'is_public': 'bool'
@@ -42,17 +43,19 @@ class DatabaseBriefDto(object):
         'name': 'name',
         'description': 'description',
         'engine': 'engine',
+        'container': 'container',
         'creator': 'creator',
         'created': 'created',
         'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, name=None, description=None, engine=None, creator=None, created=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, name=None, description=None, engine=None, container=None, creator=None, created=None, is_public=None):  # noqa: E501
         """DatabaseBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
         self._description = None
         self._engine = None
+        self._container = None
         self._creator = None
         self._created = None
         self._is_public = None
@@ -63,6 +66,8 @@ class DatabaseBriefDto(object):
             self.description = description
         if engine is not None:
             self.engine = engine
+        if container is not None:
+            self.container = container
         if creator is not None:
             self.creator = creator
         if created is not None:
@@ -157,6 +162,27 @@ class DatabaseBriefDto(object):
         """
 
         self._engine = engine
+
+    @property
+    def container(self):
+        """Gets the container of this DatabaseBriefDto.  # noqa: E501
+
+
+        :return: The container of this DatabaseBriefDto.  # noqa: E501
+        :rtype: ContainerBriefDto
+        """
+        return self._container
+
+    @container.setter
+    def container(self, container):
+        """Sets the container of this DatabaseBriefDto.
+
+
+        :param container: The container of this DatabaseBriefDto.  # noqa: E501
+        :type: ContainerBriefDto
+        """
+
+        self._container = container
 
     @property
     def creator(self):

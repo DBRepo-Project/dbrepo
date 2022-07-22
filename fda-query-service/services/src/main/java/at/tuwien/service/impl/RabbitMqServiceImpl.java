@@ -131,8 +131,10 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             return false;
         } catch (AlreadyClosedException e) {
             log.error("Failed to check, channel is already closed: {}", e.getMessage());
-            log.throwing(e);
-            return null;
+            return false;
+        } catch (Exception e) {
+            log.error("Failed to check: {}", e.getMessage());
+            return false;
         }
     }
 
@@ -143,7 +145,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         tableService.findAll()
                 .forEach(table -> {
                     final Boolean hasConsumer = hasConsumer(table);
-                    if (hasConsumer == null) {
+                    if (!hasConsumer) {
                         try {
                             this.channel = amqpConfig.getChannel();
                         } catch (IOException | TimeoutException e) {
@@ -151,7 +153,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                             log.throwing(e);
                             /* ignore */
                         }
-                    } else if (hasConsumer) {
+                    } else {
                         log.trace("table {} has already one consumer, skipping.", table.getId());
                         return;
                     }

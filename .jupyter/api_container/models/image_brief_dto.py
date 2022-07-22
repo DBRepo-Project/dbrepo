@@ -30,28 +30,23 @@ class ImageBriefDto(object):
     swagger_types = {
         'id': 'int',
         'repository': 'str',
-        'logo': 'str',
         'tag': 'str'
     }
 
     attribute_map = {
         'id': 'id',
         'repository': 'repository',
-        'logo': 'logo',
         'tag': 'tag'
     }
 
-    def __init__(self, id=None, repository=None, logo=None, tag=None):  # noqa: E501
+    def __init__(self, id=None, repository=None, tag=None):  # noqa: E501
         """ImageBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._repository = None
-        self._logo = None
         self._tag = None
         self.discriminator = None
         self.id = id
         self.repository = repository
-        if logo is not None:
-            self.logo = logo
         self.tag = tag
 
     @property
@@ -99,27 +94,6 @@ class ImageBriefDto(object):
             raise ValueError("Invalid value for `repository`, must not be `None`")  # noqa: E501
 
         self._repository = repository
-
-    @property
-    def logo(self):
-        """Gets the logo of this ImageBriefDto.  # noqa: E501
-
-
-        :return: The logo of this ImageBriefDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._logo
-
-    @logo.setter
-    def logo(self, logo):
-        """Sets the logo of this ImageBriefDto.
-
-
-        :param logo: The logo of this ImageBriefDto.  # noqa: E501
-        :type: str
-        """
-
-        self._logo = logo
 
     @property
     def tag(self):

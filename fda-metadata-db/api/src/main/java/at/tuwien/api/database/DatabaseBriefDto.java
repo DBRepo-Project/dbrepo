@@ -1,5 +1,7 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,6 +37,9 @@ public class DatabaseBriefDto {
 
     @Parameter(name = "database engine", example = "mariadb:latest")
     private String engine;
+
+    @Parameter(name = "container")
+    private ContainerBriefDto container;
 
     @Parameter(name = "database creator")
     private UserDto creator;

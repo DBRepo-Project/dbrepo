@@ -10,13 +10,14 @@ const { buildQuery } = require('./query')
 
 // TODO extend me
 const colTypeMap = {
-  Boolean: 'BOOLEAN',
-  Date: 'DATE',
-  Integer: 'NUMBER',
-  Decimal: 'DECIMAL',
-  String: 'STRING',
-  Text: 'STRING',
-  Timestamp: 'TIMESTAMP'
+  Boolean: 'boolean',
+  Date: 'date',
+  Blob: 'blob',
+  Integer: 'number',
+  Decimal: 'decimal',
+  String: 'string',
+  Text: 'text',
+  Timestamp: 'timestamp'
 }
 
 app.post('/table_from_csv', upload.single('file'), async (req, res) => {
@@ -46,7 +47,7 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
   }
 
   // map messytables / CoMi's `determine_dt` column types to ours
-  // e.g. "Integer" -> "NUMBER"
+  // e.g. "Integer" -> "number"
   let entries = Object.entries(json.columns)
   entries = entries.map(([k, v]) => {
     if (colTypeMap[v]) {

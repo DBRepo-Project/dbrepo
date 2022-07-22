@@ -20,8 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.persistence.PersistenceUnit;
 import java.security.Principal;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,12 +66,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Database database = databaseService.findPublicOrMineById(databaseId, principal);
         final Table table = findById(containerId, databaseId, tableId, principal);
         /* run query */
-        final Session session = getSessionFactory(database)
-                .openSession();
+        final Session session = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
         final Transaction transaction = session.beginTransaction();
         session.createSQLQuery(tableMapper.tableToDropTableRawQuery(table));
         transaction.commit();
-        session.close();
         log.info("Deleted table with id {}", table.getId());
         log.debug("deleted table {}", table);
     }
@@ -103,14 +104,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             throw new TableNameExistsException("Table name exists");
         }
         /* run query */
-        final Session session = getSessionFactory(database)
-                .openSession();
+        final Session session = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
         final Transaction transaction = session.beginTransaction();
         final CreateTableRawQuery query = tableMapper.tableToCreateTableRawQuery(database, createDto);
         log.trace("create table raw query is [{}]", query);
         if (query.getGenerated()) {
             /* in case the id column needs to be generated, we need to generate the sequence too */
-            try {
+            try (session) {
                 session.createSQLQuery(tableMapper.tableToCreateSequenceRawQuery(database, createDto))
                         .executeUpdate();
             } catch (PersistenceException e) {
@@ -119,9 +119,15 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             }
             log.debug("created id sequence");
         }
-        session.createSQLQuery(query.getQuery())
-                .executeUpdate();
-        transaction.commit();
+        try {
+            session.createSQLQuery(query.getQuery())
+                    .executeUpdate();
+            transaction.commit();
+        } catch (PersistenceException e) {
+            log.error("Failed to create table");
+            log.debug("failed to create table: {}", e.getMessage());
+            throw new TableMalformedException("Failed to create table", e);
+        }
         int[] idx = {0};
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
@@ -144,15 +150,22 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 .forEach(column -> {
                     column.setOrdinalPosition(idx[0]++);
                 });
+        /* create history view */
+        final Session session2 = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
+        try (session2) {
+            final Transaction transaction2 = session2.beginTransaction();
+            session2.createSQLQuery(tableMapper.tableToCreateHistoryViewRawQuery(entity))
+                    .executeUpdate();
+            transaction2.commit();
+        } catch (PersistenceException e) {
+            log.error("Failed to create history view");
+            log.debug("failed to create history view: {}", e.getMessage());
+            throw new TableMalformedException("Failed to create history view");
+        }
+        /* save */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
-        /* create history view */
-        final Transaction transaction2 = session.beginTransaction();
-        session.createSQLQuery(tableMapper.tableToCreateHistoryViewRawQuery(table))
-                .executeUpdate();
-        transaction2.commit();
-        session.close();
         return table;
     }
 

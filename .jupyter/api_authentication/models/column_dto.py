@@ -310,11 +310,11 @@ class ColumnDto(object):
         if column_type is None:
             raise ValueError("Invalid value for `column_type`, must not be `None`")  # noqa: E501
         allowed_values = ["ColumnTypeDto.ENUM", "ColumnTypeDto.NUMBER", "ColumnTypeDto.DECIMAL", "ColumnTypeDto.STRING", "ColumnTypeDto.TEXT", "ColumnTypeDto.BOOLEAN", "ColumnTypeDto.DATE", "ColumnTypeDto.TIMESTAMP", "ColumnTypeDto.BLOB"]  # noqa: E501
-        #if column_type not in allowed_values:
-        #    raise ValueError(
-        #        "Invalid value for `column_type` ({0}), must be one of {1}"  # noqa: E501
-        #        .format(column_type, allowed_values)
-        #    )
+        if column_type not in allowed_values:
+            raise ValueError(
+                "Invalid value for `column_type` ({0}), must be one of {1}"  # noqa: E501
+                .format(column_type, allowed_values)
+            )
 
         self._column_type = column_type
 

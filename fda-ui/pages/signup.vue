@@ -124,14 +124,20 @@ export default {
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 417) {
-            this.$toast.error('User with this e-mail exists!')
+            this.$toast.error('This e-mail address is taken.')
             console.error('email taken', err)
             this.loading = false
             return
           }
           if (err.response.status === 409) {
-            this.$toast.error('User with this username exists!')
+            this.$toast.error('This username is taken.')
             console.error('username taken', err)
+            this.loading = false
+            return
+          }
+          if (err.response.status === 428) {
+            this.$toast.warning('Account was created but the server failed to send a mail.')
+            console.warn('email sending failed', err)
             this.loading = false
             return
           }

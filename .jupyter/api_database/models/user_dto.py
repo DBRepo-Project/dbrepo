@@ -33,13 +33,14 @@ class UserDto(object):
         'username': 'str',
         'firstname': 'str',
         'lastname': 'str',
+        'affiliation': 'str',
+        'orcid': 'str',
         'containers': 'list[ContainerDto]',
         'databases': 'list[ContainerDto]',
         'identifiers': 'list[ContainerDto]',
         'email': 'str',
         'titles_before': 'str',
         'titles_after': 'str',
-        'has_invenio_token': 'bool',
         'email_verified': 'bool'
     }
 
@@ -49,30 +50,32 @@ class UserDto(object):
         'username': 'username',
         'firstname': 'firstname',
         'lastname': 'lastname',
+        'affiliation': 'affiliation',
+        'orcid': 'orcid',
         'containers': 'containers',
         'databases': 'databases',
         'identifiers': 'identifiers',
         'email': 'email',
         'titles_before': 'titles_before',
         'titles_after': 'titles_after',
-        'has_invenio_token': 'has_invenio_token',
         'email_verified': 'email_verified'
     }
 
-    def __init__(self, id=None, authorities=None, username=None, firstname=None, lastname=None, containers=None, databases=None, identifiers=None, email=None, titles_before=None, titles_after=None, has_invenio_token=None, email_verified=None):  # noqa: E501
+    def __init__(self, id=None, authorities=None, username=None, firstname=None, lastname=None, affiliation=None, orcid=None, containers=None, databases=None, identifiers=None, email=None, titles_before=None, titles_after=None, email_verified=None):  # noqa: E501
         """UserDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._authorities = None
         self._username = None
         self._firstname = None
         self._lastname = None
+        self._affiliation = None
+        self._orcid = None
         self._containers = None
         self._databases = None
         self._identifiers = None
         self._email = None
         self._titles_before = None
         self._titles_after = None
-        self._has_invenio_token = None
         self._email_verified = None
         self.discriminator = None
         self.id = id
@@ -83,6 +86,10 @@ class UserDto(object):
             self.firstname = firstname
         if lastname is not None:
             self.lastname = lastname
+        if affiliation is not None:
+            self.affiliation = affiliation
+        if orcid is not None:
+            self.orcid = orcid
         if containers is not None:
             self.containers = containers
         if databases is not None:
@@ -94,8 +101,6 @@ class UserDto(object):
             self.titles_before = titles_before
         if titles_after is not None:
             self.titles_after = titles_after
-        if has_invenio_token is not None:
-            self.has_invenio_token = has_invenio_token
         if email_verified is not None:
             self.email_verified = email_verified
 
@@ -207,6 +212,48 @@ class UserDto(object):
         """
 
         self._lastname = lastname
+
+    @property
+    def affiliation(self):
+        """Gets the affiliation of this UserDto.  # noqa: E501
+
+
+        :return: The affiliation of this UserDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._affiliation
+
+    @affiliation.setter
+    def affiliation(self, affiliation):
+        """Sets the affiliation of this UserDto.
+
+
+        :param affiliation: The affiliation of this UserDto.  # noqa: E501
+        :type: str
+        """
+
+        self._affiliation = affiliation
+
+    @property
+    def orcid(self):
+        """Gets the orcid of this UserDto.  # noqa: E501
+
+
+        :return: The orcid of this UserDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._orcid
+
+    @orcid.setter
+    def orcid(self, orcid):
+        """Sets the orcid of this UserDto.
+
+
+        :param orcid: The orcid of this UserDto.  # noqa: E501
+        :type: str
+        """
+
+        self._orcid = orcid
 
     @property
     def containers(self):
@@ -335,27 +382,6 @@ class UserDto(object):
         """
 
         self._titles_after = titles_after
-
-    @property
-    def has_invenio_token(self):
-        """Gets the has_invenio_token of this UserDto.  # noqa: E501
-
-
-        :return: The has_invenio_token of this UserDto.  # noqa: E501
-        :rtype: bool
-        """
-        return self._has_invenio_token
-
-    @has_invenio_token.setter
-    def has_invenio_token(self, has_invenio_token):
-        """Sets the has_invenio_token of this UserDto.
-
-
-        :param has_invenio_token: The has_invenio_token of this UserDto.  # noqa: E501
-        :type: bool
-        """
-
-        self._has_invenio_token = has_invenio_token
 
     @property
     def email_verified(self):

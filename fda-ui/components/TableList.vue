@@ -179,14 +179,14 @@ export default {
       ],
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'BOOLEAN', text: 'Boolean' },
-        { value: 'NUMBER', text: 'Number' },
-        { value: 'BLOB', text: 'Binary Large Object' },
-        { value: 'DATE', text: 'Date' },
-        { value: 'TIMESTAMP', text: 'Timestamp' },
-        { value: 'DECIMAL', text: 'Decimal' },
-        { value: 'STRING', text: 'Character Varying' },
-        { value: 'TEXT', text: 'Text' }
+        { value: 'boolean', text: 'Boolean' },
+        { value: 'number', text: 'Number' },
+        { value: 'blob', text: 'Binary Large Object' },
+        { value: 'date', text: 'Date' },
+        { value: 'timestamp', text: 'Timestamp' },
+        { value: 'decimal', text: 'Decimal' },
+        { value: 'string', text: 'Character Varying' },
+        { value: 'text', text: 'Text' }
       ]
     }
   },

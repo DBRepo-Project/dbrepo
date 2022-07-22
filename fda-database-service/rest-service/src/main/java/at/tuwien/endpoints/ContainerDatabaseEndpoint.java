@@ -71,7 +71,7 @@ public class ContainerDatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> create(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long id,
                                               @Valid @RequestBody DatabaseCreateDto createDto,
                                               Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
@@ -79,20 +79,20 @@ public class ContainerDatabaseEndpoint {
         final Database database = databaseService.create(id, createDto, principal);
         messageQueueService.createExchange(database, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseToDatabaseDto(database));
+                .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
 
     @PutMapping("/{databaseId}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long id,
                                               @NotBlank @PathVariable Long databaseId,
                                               @Valid @RequestBody DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
         final Database database = databaseService.modify(id, databaseId, modifyDto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(databaseMapper.databaseToDatabaseDto(database));
+                .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
 
     @GetMapping("/{databaseId}")

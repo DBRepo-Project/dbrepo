@@ -7,6 +7,7 @@ import at.tuwien.querystore.Column;
 import at.tuwien.querystore.Query;
 import at.tuwien.querystore.Table;
 import lombok.extern.log4j.Log4j2;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public abstract class HibernateConnector {
     private static final Integer TIMEOUT = 1800;
     private static final String SESSION_CONTEXT = "thread";
     private static final String COORDINATOR_CLASS = "jdbc";
+
+    private Session session;
 
     @Transactional
     protected SessionFactory getSessionFactory(Database database) {
@@ -67,5 +70,20 @@ public abstract class HibernateConnector {
         return configuration.buildSessionFactory();
     }
 
+    @Transactional
+    protected Session getSession(Database database, Boolean privileged) {
+        if (this.session == null) {
+            this.session = this.getSessionFactory(database, privileged)
+                    .openSession();
+        }
+        if (!this.session.isOpen()) {
+            this.session = this.getSessionFactory(database, privileged)
+                    .openSession();
+        } else {
+            this.session = this.getSessionFactory(database, privileged)
+                    .getCurrentSession();
+        }
+        return this.session;
+    }
 
 }
