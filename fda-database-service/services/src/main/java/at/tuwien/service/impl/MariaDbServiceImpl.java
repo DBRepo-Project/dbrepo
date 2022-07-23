@@ -27,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
 import java.security.Principal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -101,29 +104,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Transactional
     public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, ContainerConnectionException, AmqpException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, DatabaseConnectionException {
         final Container container = containerService.find(containerId);
         final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
-        final Session session = getCurrentSession(container.getImage(), container, database);
-        final Transaction transaction = session.beginTransaction();
-        final NativeQuery<?> query = session.createSQLQuery(databaseMapper.databaseToRawDeleteDatabaseQuery(database));
-        try {
-            log.debug("query affected {} rows", query.executeUpdate());
-            activeConnection(session);
-            transaction.commit();
-        } catch (ServiceException e) {
-            log.error("Failed to delete database.");
-            session.close();
-            throw new DatabaseMalformedException("Failed to delete database", e);
-        } finally {
-            if (session.isOpen()) {
-                session.close();
-            }
-        }
+        final Connection connection = getConnection(container.getImage(), container, database);
+        execute(connection, databaseMapper.databaseToRawDeleteDatabaseQuery(database));
+        activeConnection(connection);
         database.setDeleted(Instant.now()) /* method has void, only for debug logs */;
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
@@ -135,7 +125,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Transactional
     public Database create(Long containerId, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException {
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
+            DatabaseNameExistsException, DatabaseConnectionException {
         final Container container = containerService.find(containerId);
         if (container.getDatabases().size() != 0) {
             log.error("Currently we only support one database per container.");
@@ -146,31 +137,13 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
         database.setContainer(container);
-        /* run query */
-        final Session session = getCurrentSession(container.getImage(), container);
-        final Transaction transaction = session.beginTransaction();
-        final NativeQuery<?> query = session.createSQLQuery(databaseMapper.databaseToRawCreateDatabaseQuery(database));
-        try {
-            log.debug("query affected {} rows", query.executeUpdate());
-        } catch (PersistenceException e) {
-            log.error("Failed to create database");
-            log.debug("failed to create database: {}", e.getMessage());
-            session.close();
-            throw new DatabaseNameExistsException("Failed to create database", e);
-        }
-        final NativeQuery<?> grant = session.createSQLQuery(databaseMapper.imageToRawGrantReadonlyAccessQuery());
-        try {
-            log.debug("grant affected {} rows", grant.executeUpdate());
-            activeConnection(session);
-            transaction.commit();
-        } catch (PersistenceException e) {
-            log.error("Failed to grant privileges.");
-            throw new DatabaseMalformedException("Failed to grant privileges", e);
-        } finally {
-            if (session.isOpen()) {
-                session.close();
-            }
-        }
+        /* create database */
+        final Connection connection = getConnection(container.getImage(), container);
+        execute(connection, databaseMapper.databaseToRawCreateDatabaseQuery(database));
+        log.debug("active database connections {}", activeConnection(connection));
+        /* grant read-only access */
+        execute(connection, databaseMapper.imageToRawGrantReadonlyAccessQuery());
+        log.debug("active database connections {}", activeConnection(connection));
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setDescription(createDto.getDescription());

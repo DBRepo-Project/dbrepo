@@ -8,7 +8,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.MessageQueueService;
-import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,15 +33,13 @@ public class ContainerDatabaseEndpoint {
 
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
-    private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
 
     @Autowired
     public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService,
-                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
+                                     MessageQueueService messageQueueService) {
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
-        this.queryStoreService = queryStoreService;
         this.messageQueueService = messageQueueService;
     }
 
@@ -78,11 +75,10 @@ public class ContainerDatabaseEndpoint {
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
                                                    Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException, UserNotFoundException, QueryStoreException,
-            DatabaseNotFoundException, DatabaseNameExistsException {
+            AmqpException, ContainerConnectionException, UserNotFoundException,
+            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException {
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
-        queryStoreService.create(containerId, database.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
@@ -128,7 +124,7 @@ public class ContainerDatabaseEndpoint {
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, DatabaseConnectionException {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);

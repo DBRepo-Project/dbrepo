@@ -7,6 +7,7 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.querystore.Query;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
