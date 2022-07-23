@@ -13,5 +13,8 @@
         <property name="show_sql">true</property>
         <property name="format_sql">true</property>
         <property name="hbm2ddl.auto">update</property>
+        <mapping class="at.tuwien.querystore.Query" />
+        <mapping class="at.tuwien.querystore.Table" />
+        <mapping class="at.tuwien.querystore.Column" />
     </session-factory>
 </hibernate-configuration>

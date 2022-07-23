@@ -68,7 +68,7 @@ public class TableEndpoint extends AbstractEndpoint {
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
             log.error("Missing table create permission");
             throw new NotAllowedException("Missing table create permission");
@@ -122,7 +122,7 @@ public class TableEndpoint extends AbstractEndpoint {
                        @NotNull @PathVariable("tableId") Long tableId,
                        Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException {
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, DatabaseConnectionException {
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {
             log.error("Missing table delete permission");
             throw new NotAllowedException("Missing table delete permission");

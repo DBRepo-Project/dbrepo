@@ -33,7 +33,7 @@ public interface TableService {
      */
     void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException;
+            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException, DatabaseConnectionException;
 
     /**
      * Find a table by database-table id pair
@@ -66,5 +66,5 @@ public interface TableService {
      */
     Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException;
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException;
 }
