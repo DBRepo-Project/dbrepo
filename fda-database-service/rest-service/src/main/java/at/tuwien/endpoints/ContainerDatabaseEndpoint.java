@@ -8,6 +8,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.MessageQueueService;
+import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,13 +34,15 @@ public class ContainerDatabaseEndpoint {
 
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
+    private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
 
     @Autowired
     public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService,
-                                     MessageQueueService messageQueueService) {
+                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
+        this.queryStoreService = queryStoreService;
         this.messageQueueService = messageQueueService;
     }
 
@@ -79,6 +82,7 @@ public class ContainerDatabaseEndpoint {
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException {
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
+        queryStoreService.create(containerId, database.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }

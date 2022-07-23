@@ -1,7 +1,7 @@
 -- SEQUENCES
-CREATE SEQUENCE `qs_tables_seq`;
-CREATE SEQUENCE `qs_columns_seq`;
-CREATE SEQUENCE `qs_columns_seq`;
+CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`;
+CREATE SEQUENCE IF NOT EXISTS `qs_tables_seq`;
+CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`;
 
 -- TABLES
 CREATE TABLE `qs_queries`
