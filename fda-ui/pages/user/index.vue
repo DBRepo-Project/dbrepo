@@ -19,7 +19,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.email"
-                :disabled="user.email_verified"
+                :disabled="user.email_verified || error"
                 :rules="[v => !!v || $t('Required')]"
                 required
                 label="E-Mail Address *" />
@@ -28,7 +28,7 @@
           <v-row dense>
             <v-col cols="5">
               <v-btn
-                :disabled="user.email_verified"
+                :disabled="user.email_verified || error"
                 color="secondary"
                 type="submit"
                 @click="resend">
@@ -60,6 +60,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.titles_before"
+                :disabled="error"
                 hint="e.g. Prof."
                 label="Titles Before" />
             </v-col>
@@ -68,6 +69,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.firstname"
+                :disabled="error"
                 :rules="[v => !!v || $t('Required')]"
                 required
                 label="Firstname *" />
@@ -77,6 +79,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.lastname"
+                :disabled="error"
                 :rules="[v => !!v || $t('Required')]"
                 required
                 label="Lastname *" />
@@ -86,6 +89,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.titles_after"
+                :disabled="error"
                 hint="e.g. BSc"
                 label="Titles After" />
             </v-col>
@@ -94,6 +98,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.affiliation"
+                :disabled="error"
                 hint="e.g. University of xyz"
                 label="Affiliation" />
             </v-col>
@@ -102,6 +107,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="user.orcid"
+                :disabled="error"
                 :rules="[v => validateOrcid(v) || $t('Invalid ORCID')]"
                 maxlength="19"
                 hint="e.g. 0000-0002-1825-0097"
@@ -112,7 +118,7 @@
             <v-col cols="5">
               <v-btn
                 color="primary"
-                :disabled="!valid2"
+                :disabled="!valid2 || error"
                 type="submit"
                 @click="updateInfo">
                 Update
@@ -129,6 +135,7 @@
             <v-col cols="5">
               <v-text-field
                 v-model="reset.password"
+                :disabled="error"
                 type="password"
                 :rules="[v => !!v || $t('Required')]"
                 required
@@ -139,7 +146,7 @@
             <v-col cols="5">
               <v-btn
                 color="primary"
-                :disabled="!valid3"
+                :disabled="!valid3 || error"
                 type="submit"
                 @click="changePassword">
                 Change
@@ -229,6 +236,7 @@ export default {
         console.debug('user', this.user)
         this.error = false
       } catch (err) {
+        this.$toast.error('Failed to load user')
         console.error('user', err)
         this.error = true
       }

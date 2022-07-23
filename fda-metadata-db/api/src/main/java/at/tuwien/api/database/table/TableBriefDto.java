@@ -1,5 +1,6 @@
 package at.tuwien.api.database.table;
 
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
@@ -27,5 +28,9 @@ public class TableBriefDto {
     @JsonProperty("internal_name")
     @Parameter(name = "table internal name", example = "weather_australia")
     private String internalName;
+
+    @NotNull(message = "creator is required")
+    @Parameter(name = "table creator")
+    private UserBriefDto creator;
 
 }

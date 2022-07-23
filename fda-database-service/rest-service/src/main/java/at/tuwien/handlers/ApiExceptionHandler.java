@@ -80,6 +80,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(DatabaseNameExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(DatabaseNameExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.database.name_exists")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(DatabaseNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
@@ -98,6 +109,50 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NOT_ACCEPTABLE)
                 .message(e.getLocalizedMessage())
                 .code("error.image.notsupported")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(LicenseNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(LicenseNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.license.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(QueryStoreException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryStoreException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.querystore.remote")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(SubjectNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(SubjectNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.subject.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.user.notfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

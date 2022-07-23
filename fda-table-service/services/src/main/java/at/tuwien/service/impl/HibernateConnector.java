@@ -13,11 +13,13 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.service.ServiceRegistry;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.PersistenceException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -58,6 +60,21 @@ public abstract class HibernateConnector {
             session = sessionFactory.openSession();
         }
         return session;
+    }
+
+    protected static Long activeConnection(Session session) {
+        final NativeQuery<?> nativeQuery = session.createSQLQuery("SHOW STATUS LIKE 'threads_connected'");
+        final List<?> result;
+        try {
+            result = nativeQuery.getResultList();
+        } catch (PersistenceException e) {
+            log.error("Failed to collect number of used connections");
+            /* ignore */
+            return null;
+        }
+        final Object[] row = (Object[]) result.get(0);
+        log.debug("current number of connections: {}", Long.parseLong(String.valueOf(row[1])));
+        return Long.parseLong(String.valueOf(row[1]));
     }
 
     /**

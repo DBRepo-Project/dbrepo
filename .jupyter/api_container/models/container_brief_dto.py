@@ -31,7 +31,7 @@ class ContainerBriefDto(object):
         'id': 'int',
         'hash': 'str',
         'name': 'str',
-        'creator': 'UserDto',
+        'creator': 'UserBriefDto',
         'created': 'datetime',
         'internal_name': 'str',
         'is_public': 'bool'
@@ -143,7 +143,7 @@ class ContainerBriefDto(object):
 
 
         :return: The creator of this ContainerBriefDto.  # noqa: E501
-        :rtype: UserDto
+        :rtype: UserBriefDto
         """
         return self._creator
 
@@ -153,7 +153,7 @@ class ContainerBriefDto(object):
 
 
         :param creator: The creator of this ContainerBriefDto.  # noqa: E501
-        :type: UserDto
+        :type: UserBriefDto
         """
 
         self._creator = creator

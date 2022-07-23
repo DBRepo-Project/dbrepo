@@ -33,7 +33,7 @@ class DatabaseBriefDto(object):
         'description': 'str',
         'engine': 'str',
         'container': 'ContainerBriefDto',
-        'creator': 'UserDto',
+        'creator': 'UserBriefDto',
         'created': 'datetime',
         'is_public': 'bool'
     }
@@ -190,7 +190,7 @@ class DatabaseBriefDto(object):
 
 
         :return: The creator of this DatabaseBriefDto.  # noqa: E501
-        :rtype: UserDto
+        :rtype: UserBriefDto
         """
         return self._creator
 
@@ -200,7 +200,7 @@ class DatabaseBriefDto(object):
 
 
         :param creator: The creator of this DatabaseBriefDto.  # noqa: E501
-        :type: UserDto
+        :type: UserBriefDto
         """
 
         self._creator = creator

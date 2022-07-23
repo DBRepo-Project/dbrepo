@@ -74,6 +74,7 @@ export default {
     return {
       createDbDialog: false,
       containers: [],
+      searchQuery: null,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
@@ -106,6 +107,9 @@ export default {
   methods: {
     formatCreator (creator) {
       return formatUser(creator)
+    },
+    search () {
+      console.debug('search for', this.searchQuery)
     },
     async loadContainers () {
       this.createDbDialog = false

@@ -89,7 +89,7 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
         </dependency>
-        <!-- Entity and API -->
+        <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-api</artifactId>
@@ -99,6 +99,12 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-entites</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>

@@ -29,15 +29,12 @@ import java.time.Instant;
 public class TableDataEndpoint extends AbstractEndpoint {
 
     private final QueryService queryService;
-    private final StoreService storeService;
 
     @Autowired
-    public TableDataEndpoint(TableService tableService, QueryService queryService, StoreService storeService,
-                             DatabaseService databaseService,
+    public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
                              IdentifierService identifierService) {
-        super(tableService, databaseService, identifierService);
+        super(databaseService, identifierService);
         this.queryService = queryService;
-        this.storeService = storeService;
     }
 
     @PostMapping
@@ -50,7 +47,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -67,8 +64,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                           @NotNull @Valid @RequestBody TableCsvUpdateDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_UPDATE", principal)) {
+            ImageNotSupportedException, NotAllowedException, ContainerNotFoundException {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
         }
@@ -85,8 +82,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvDeleteDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, TupleDeleteException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_DELETE", principal)) {
+            ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
         }
@@ -105,7 +102,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                              @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -127,7 +124,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }
@@ -143,8 +140,6 @@ public class TableDataEndpoint extends AbstractEndpoint {
         if (size != null && size <= 0) {
             throw new PaginationException("Page number cannot be lower or equal to 0");
         }
-        /* fixme query store maybe not created, create it through running findAll() */
-        storeService.findAll(containerId, databaseId);
         final BigInteger count = queryService.count(containerId, databaseId, tableId, timestamp);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());

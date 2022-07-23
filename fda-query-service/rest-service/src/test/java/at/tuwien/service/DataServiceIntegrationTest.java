@@ -5,10 +5,7 @@ import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.ImageNotSupportedException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -118,7 +115,7 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
     }
 
     public void update_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, SQLException {
+            ImageNotSupportedException, SQLException, ContainerNotFoundException {
         /* modify rainfall 0.6 -> 1.3 */
         final TableCsvUpdateDto request = TableCsvUpdateDto.builder()
                 .keys(Map.ofEntries(Map.entry("id", 1)))

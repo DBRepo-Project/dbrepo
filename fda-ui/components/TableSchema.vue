@@ -118,8 +118,14 @@ export default {
       loading: false,
       dateFormats: [],
       valid: true,
+      error: false,
       finished: false,
       tableColumns: [],
+      container: {
+        image: {
+          id: null
+        }
+      },
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
         { value: 'boolean', text: 'Boolean' },
@@ -140,22 +146,35 @@ export default {
     }
   },
   mounted () {
-    this.loadDateFormats()
+    this.loadContainer()
+      .then(() => this.loadImage())
   },
   methods: {
-    async loadDateFormats () {
+    async loadContainer () {
       const getUrl = `/api/container/${this.$route.params.container_id}`
-      let getResult
       try {
         this.loading = true
-        getResult = await this.$axios.get(getUrl)
-        this.dateFormats = getResult.data.image.date_formats
-        console.debug('retrieve image date formats', this.dateFormats)
-        this.loading = false
+        const res = await this.$axios.get(getUrl)
+        this.container = res.data
+        console.debug('retrieve container', this.container)
       } catch (err) {
-        this.loading = false
+        this.error = true
         console.error('retrieve image date formats failed', err)
       }
+      this.loading = false
+    },
+    async loadImage () {
+      const getUrl = `/api/image/${this.container.image.id}`
+      try {
+        this.loading = true
+        const res = await this.$axios.get(getUrl)
+        this.dateFormats = res.data.date_formats
+        console.debug('retrieve image date formats', this.dateFormats)
+      } catch (err) {
+        this.error = true
+        console.error('retrieve image date formats failed', err)
+      }
+      this.loading = false
     },
     submit () {
       this.finished = true

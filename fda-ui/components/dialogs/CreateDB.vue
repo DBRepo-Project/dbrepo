@@ -1,6 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
+      <v-progress-linear v-if="loading" v-model="progress" :color="loadingColor" />
       <v-card>
         <v-card-title>
           Create Database
@@ -77,6 +78,7 @@ export default {
       error: false,
       engine: null,
       engines: [],
+      progress: 0,
       createContainer: {
         name: null,
         repository: null,
@@ -154,7 +156,7 @@ export default {
         res = await this.$axios.post('/api/container', this.createContainer, this.config)
         containerId = res.data.id
         console.debug('created container', res.data)
-        this.loading = false
+        this.progress = 25
       } catch (err) {
         this.error = true
         this.loading = false
@@ -174,6 +176,7 @@ export default {
         this.error = false
         res = await this.$axios.put(`/api/container/${containerId}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
+        this.progress = 50
       } catch (err) {
         this.error = true
         this.$toast.error('Could not start container.')
@@ -195,6 +198,7 @@ export default {
           break
         } catch (err) {
           console.debug('wait', res)
+          this.progress += 10
           await this.sleep(3000)
         }
       }
@@ -204,6 +208,7 @@ export default {
         this.$toast.error('Could not create database.')
         return
       }
+      this.progress = 100
       this.loading = false
       this.$toast.success(`Database "${res.data.name}" created.`)
       this.$emit('close')

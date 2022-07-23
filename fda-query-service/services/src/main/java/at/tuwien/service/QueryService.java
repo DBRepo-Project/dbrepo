@@ -178,7 +178,7 @@ public interface QueryService {
      */
     Integer update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException;
+            TableNotFoundException, ContainerNotFoundException;
 
     /**
      * Deletes a tuple by given constraint set
@@ -195,7 +195,7 @@ public interface QueryService {
      */
     void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, TupleDeleteException;
+            TableNotFoundException, TupleDeleteException, ContainerNotFoundException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the

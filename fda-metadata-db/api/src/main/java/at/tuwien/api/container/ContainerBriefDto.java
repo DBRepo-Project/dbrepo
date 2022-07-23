@@ -1,5 +1,6 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -33,7 +34,7 @@ public class ContainerBriefDto {
     private String name;
 
     @Parameter(name = "container creator")
-    private UserDto creator;
+    private UserBriefDto creator;
 
     @NotBlank
     @JsonProperty("internal_name")

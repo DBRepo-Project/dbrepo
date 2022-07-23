@@ -10,10 +10,13 @@ public interface DatabaseService {
     /**
      * Finds a specific database for a given id in the metadata database.
      *
-     * @param databaseId The database id.
-     * @param principal  The principal.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param principal   The principal.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database findPublicOrMineById(Long databaseId, Principal principal) throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException;
+
+    Database find(Long container, Long databaseId) throws DatabaseNotFoundException;
 }

@@ -30,23 +30,27 @@ class TableBriefDto(object):
     swagger_types = {
         'id': 'int',
         'name': 'str',
+        'creator': 'UserBriefDto',
         'internal_name': 'str'
     }
 
     attribute_map = {
         'id': 'id',
         'name': 'name',
+        'creator': 'creator',
         'internal_name': 'internal_name'
     }
 
-    def __init__(self, id=None, name=None, internal_name=None):  # noqa: E501
+    def __init__(self, id=None, name=None, creator=None, internal_name=None):  # noqa: E501
         """TableBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
+        self._creator = None
         self._internal_name = None
         self.discriminator = None
         self.id = id
         self.name = name
+        self.creator = creator
         self.internal_name = internal_name
 
     @property
@@ -94,6 +98,29 @@ class TableBriefDto(object):
             raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
         self._name = name
+
+    @property
+    def creator(self):
+        """Gets the creator of this TableBriefDto.  # noqa: E501
+
+
+        :return: The creator of this TableBriefDto.  # noqa: E501
+        :rtype: UserBriefDto
+        """
+        return self._creator
+
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this TableBriefDto.
+
+
+        :param creator: The creator of this TableBriefDto.  # noqa: E501
+        :type: UserBriefDto
+        """
+        if creator is None:
+            raise ValueError("Invalid value for `creator`, must not be `None`")  # noqa: E501
+
+        self._creator = creator
 
     @property
     def internal_name(self):

@@ -1,48 +1,39 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.AmqpConfig;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryService;
-import at.tuwien.service.TableService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.TimeoutException;
 
 @Log4j2
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private Channel channel;
-    private final AmqpConfig amqpConfig;
+    private final Channel channel;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
-    private final TableService tableService;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, ObjectMapper objectMapper,
-                               QueryService queryService, TableService tableService) {
+    public RabbitMqServiceImpl(Channel channel, ObjectMapper objectMapper, QueryService queryService) {
         this.channel = channel;
-        this.amqpConfig = amqpConfig;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
-        this.tableService = tableService;
     }
 
+    @Override
     @Transactional(readOnly = true)
-    protected void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
+    public void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
         try {
             final String consumerTag = channel.basicConsume(routingKey, true, new Consumer() {
                 @Override
@@ -115,55 +106,9 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to create consumer for table with id {}", tableId);
             throw new AmqpException("Failed to create consumer", e);
         } catch (Exception e) {
-            log.warn("Failed unknown: {}", e.getMessage());
+            log.error("Failed unknown: {}", e.getMessage());
             /* ignore */
         }
-    }
-
-    private Boolean hasConsumer(Table table) {
-        try {
-            final AMQP.Queue.DeclareOk response = channel.queueDeclarePassive(table.getTopic());
-            log.trace("queue {} has {} messages waiting", table.getTopic(), response.getMessageCount());
-            log.trace("queue {} has {} consumers", table.getTopic(), response.getConsumerCount());
-            return response.getConsumerCount() > 0;
-        } catch (IOException e) {
-            log.error("Failed to check if queue {} has consumers", table.getTopic());
-            return false;
-        } catch (AlreadyClosedException e) {
-            log.error("Failed to check, channel is already closed: {}", e.getMessage());
-            return false;
-        } catch (Exception e) {
-            log.error("Failed to check: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Scheduled(fixedRate = 5000)
-    public void renewConsumers() {
-        tableService.findAll()
-                .forEach(table -> {
-                    final Boolean hasConsumer = hasConsumer(table);
-                    if (!hasConsumer) {
-                        try {
-                            this.channel = amqpConfig.getChannel();
-                        } catch (IOException | TimeoutException e) {
-                            log.error("Failed to renew channel");
-                            log.throwing(e);
-                            /* ignore */
-                        }
-                    } else {
-                        log.trace("table {} has already one consumer, skipping.", table.getId());
-                        return;
-                    }
-                    try {
-                        createConsumer(table.getTopic(), table.getDatabase().getContainer()
-                                .getId(), table.getDatabase().getId(), table.getId());
-                    } catch (AmqpException e) {
-                        /* ignore */
-                    }
-                });
     }
 
 }

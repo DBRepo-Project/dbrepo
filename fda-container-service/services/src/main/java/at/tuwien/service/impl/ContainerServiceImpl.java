@@ -86,7 +86,7 @@ public class ContainerServiceImpl implements ContainerService {
                 .exec();
         log.info("Created volume {}", response.getName());
         log.debug("created volume {} with mapping /var/lib/mysql", response.getName());
-        final Volume volume = new Volume("/var/lib/mysql");
+//        final Volume volume = new Volume("/var/lib/mysql");
         /* create the container */
         final CreateContainerResponse response1;
         try {
@@ -96,7 +96,7 @@ public class ContainerServiceImpl implements ContainerService {
                     .withHostName(container.getInternalName())
                     .withEnv(imageMapper.environmentItemsToStringList(image.get().getEnvironment()))
                     .withHostConfig(hostConfig)
-                    .withVolumes(volume)
+//                    .withVolumes(volume)
                     .exec();
         } catch (ConflictException e) {
             log.error("Conflicting names {}", createDto.getName());

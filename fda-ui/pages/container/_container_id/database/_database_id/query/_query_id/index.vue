@@ -8,7 +8,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || !executionUTC || !token" @click.stop="openDialog()">
+        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || erroneous || !executionUTC || !token" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
         <v-btn v-if="result_visibility" :disabled="error" color="primary" :loading="downloadLoading" @click.stop="download">
@@ -176,9 +176,9 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="result_visibility_icon ? 'success' : 'error'">mdi-table</v-icon>
+              <v-icon :color="result_visibility_icon ? 'success' : 'error'">{{ result_icon }}</v-icon>
             </v-list-item-icon>
-            <v-list-item-content>
+            <v-list-item-content v-if="!erroneous">
               <v-list-item-title>
                 Result Visibility
               </v-list-item-title>
@@ -201,13 +201,30 @@
                 <span v-if="!metadataLoading">{{ result_number }}</span>
               </v-list-item-content>
             </v-list-item-content>
+            <v-list-item-content v-if="erroneous">
+              <v-list-item-title>
+                Result Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-alert
+                  v-if="!loadingQuery && erroneous"
+                  border="left"
+                  color="error">
+                  This query failed to execute and did not produce a subset.
+                </v-alert>
+              </v-list-item-content>
+            </v-list-item-content>
           </v-list-item>
         </v-list>
       </v-card-text>
-      <v-card-text>
-        <QueryResults id="query-results" ref="queryResults" v-model="query.id" :query-id="query.id" class="mt-0 mb-0" />
-      </v-card-text>
     </v-card>
+    <QueryResults
+      v-if="!erroneous"
+      id="query-results"
+      ref="queryResults"
+      v-model="query.id"
+      :query-id="query.id"
+      class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="persistQueryDialog"
@@ -286,7 +303,7 @@ export default {
       persistQueryDialog: false,
       loadingDatabase: false,
       loadingIdentifier: false,
-      loadingQuery: false,
+      loadingQuery: true,
       metadataLoading: false,
       downloadLoading: false,
       error: false,
@@ -296,6 +313,9 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    result_icon () {
+      return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
     },
     baseUrl () {
       return 'http://' + location.host
@@ -327,6 +347,9 @@ export default {
       return this.database.is_public
     },
     result_visibility () {
+      if (this.erroneous) {
+        return false
+      }
       if (this.database.is_public) {
         return true
       }
@@ -336,6 +359,9 @@ export default {
       return this.identifier.visibility === 'everyone'
     },
     result_visibility_icon () {
+      if (this.erroneous) {
+        return false
+      }
       if (this.database.is_public) {
         return true
       }
@@ -364,6 +390,9 @@ export default {
     },
     creators () {
       return this.identifier.id ? this.identifier.creators : null
+    },
+    erroneous () {
+      return !this.query.result_hash
     }
   },
   mounted () {

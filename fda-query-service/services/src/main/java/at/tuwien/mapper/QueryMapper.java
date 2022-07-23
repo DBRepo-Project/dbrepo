@@ -536,8 +536,9 @@ public interface QueryMapper {
         /* query check (this is enforced by the db also) */
         final String query_ = query;
         if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::startsWith)) {
-            log.error("Query attempts to modify the database.");
-            throw new QueryMalformedException("Query attempts to modify the databse");
+            log.error("Query attempts to modify the database");
+            log.debug("query attempts to modify the database [{}]", query_);
+            throw new QueryMalformedException("Query attempts to modify the database");
         }
         final StringBuilder sb = new StringBuilder();
         if (!query.contains("where")) {

@@ -1,89 +1,70 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.Database;
-import at.tuwien.querystore.Column;
-import at.tuwien.querystore.Query;
-import at.tuwien.querystore.Table;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.query.NativeQuery;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.PersistenceException;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
 @Service
 public abstract class HibernateConnector {
 
-    private static final Integer MIN_SIZE = 5;
-    private static final Integer MAX_SIZE = 500;
-    private static final Integer INCREMENT_SIZE = 5;
-    private static final Integer TIMEOUT = 1800;
-    private static final String SESSION_CONTEXT = "thread";
-    private static final String COORDINATOR_CLASS = "jdbc";
-
-    private Session session;
-
-    @Transactional
-    protected SessionFactory getSessionFactory(Database database) {
-        return getSessionFactory(database, false);
-    }
-
-    @Transactional
-    protected SessionFactory getSessionFactory(Database database, Boolean privileged) {
-        final String url = "jdbc:" + database.getContainer().getImage().getJdbcMethod() + "://" + database.getContainer().getInternalName() + "/" + database.getInternalName();
-        log.trace("hibernate jdbc url '{}', privileged: {}", url, privileged ? 'y' : 'n');
-        final String username = database.getContainer().getImage().getEnvironment()
+    protected static Session getCurrentSession(ContainerImage image, Container container, Database database) {
+        final String url = "jdbc:" + image.getJdbcMethod() + "://" + container.getInternalName() + "/" + database.getInternalName();
+        final String username = image.getEnvironment()
                 .stream()
-                .filter(e -> e.getType().equals(privileged ? ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME : ContainerImageEnvironmentItemType.USERNAME))
+                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME))
                 .map(ContainerImageEnvironmentItem::getValue)
                 .collect(Collectors.toList())
                 .get(0);
-        final String password = database.getContainer().getImage().getEnvironment()
+        final String password = image.getEnvironment()
                 .stream()
-                .filter(e -> e.getType().equals(privileged ? ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD : ContainerImageEnvironmentItemType.PASSWORD))
+                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD))
                 .map(ContainerImageEnvironmentItem::getValue)
                 .collect(Collectors.toList())
                 .get(0);
-        log.trace("container image {}", database.getContainer().getImage());
-        final Configuration configuration = new Configuration()
-                .setProperty("hibernate.connection.url", url)
-                .setProperty("hibernate.connection.username", username)
-                .setProperty("hibernate.connection.password", password)
-                .setProperty("hibernate.connection.driver_class", database.getContainer().getImage().getDriverClass())
-                .setProperty("hibernate.dialect", database.getContainer().getImage().getDialect())
-                .setProperty("hibernate.current_session_context_class", SESSION_CONTEXT)
-                .setProperty("hibernate.transaction.coordinator_class", COORDINATOR_CLASS)
-                .setProperty("hibernate.hbm2ddl.auto", "update")
-                .setProperty("hibernate.jdbc.time_zone", "Europe/Vienna")
-                .setProperty("hibernate.c3p0.min_size", String.valueOf(MIN_SIZE))
-                .setProperty("hibernate.c3p0.max_size", String.valueOf(MAX_SIZE))
-                .setProperty("hibernate.c3p0.acquire_increment", String.valueOf(INCREMENT_SIZE))
-                .setProperty("hibernate.c3p0.timeout", String.valueOf(TIMEOUT))
-                .addAnnotatedClass(Query.class)
-                .addAnnotatedClass(Table.class)
-                .addAnnotatedClass(Column.class);
-        return configuration.buildSessionFactory();
+
+        final Configuration config = new Configuration();
+        config.configure("mariadb_hibernate.cfg.xml");
+        config.setProperty("hibernate.connection.url", url);
+        config.setProperty("hibernate.connection.username", username);
+        config.setProperty("hibernate.connection.password", password);
+        config.setProperty("hibernate.connection.driver_class", image.getDriverClass());
+        config.setProperty("hibernate.dialect", image.getDialect());
+        final SessionFactory sessionFactory = config.buildSessionFactory();
+        Session session = sessionFactory.getCurrentSession();
+        if (!session.isOpen()) {
+            log.debug("Session is closed, opening...");
+            session = sessionFactory.openSession();
+        }
+        return session;
     }
 
-    @Transactional
-    protected Session getSession(Database database, Boolean privileged) {
-        if (this.session == null) {
-            this.session = this.getSessionFactory(database, privileged)
-                    .openSession();
+    protected static Long activeConnection(Session session) {
+        final NativeQuery<?> nativeQuery = session.createSQLQuery("SHOW STATUS LIKE 'threads_connected'");
+        final List<?> result;
+        try {
+            result = nativeQuery.getResultList();
+        } catch (PersistenceException e) {
+            log.error("Failed to collect number of used connections");
+            /* ignore */
+            return null;
         }
-        if (!this.session.isOpen()) {
-            this.session = this.getSessionFactory(database, privileged)
-                    .openSession();
-        } else {
-            this.session = this.getSessionFactory(database, privileged)
-                    .getCurrentSession();
-        }
-        return this.session;
+        final Object[] row = (Object[]) result.get(0);
+        log.debug("current number of connections: {}", Long.parseLong(String.valueOf(row[1])));
+        return Long.parseLong(String.valueOf(row[1]));
     }
 
 }

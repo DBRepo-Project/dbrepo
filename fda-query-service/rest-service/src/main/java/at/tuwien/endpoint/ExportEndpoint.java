@@ -5,7 +5,6 @@ import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.QueryService;
-import at.tuwien.service.TableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -29,9 +28,9 @@ public class ExportEndpoint extends AbstractEndpoint {
     private final QueryService queryService;
 
     @Autowired
-    public ExportEndpoint(TableService tableService, QueryService queryService, DatabaseService databaseService,
+    public ExportEndpoint(QueryService queryService, DatabaseService databaseService,
                           IdentifierService identifierService) {
-        super(tableService, databaseService, identifierService);
+        super(databaseService, identifierService);
         this.queryService = queryService;
     }
 
@@ -46,7 +45,7 @@ public class ExportEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
             FileStorageException, NotAllowedException {
-        if (!hasDatabasePermission(id, databaseId, tableId, "DATA_EXPORT", principal)) {
+        if (!hasDatabasePermission(id, databaseId, "DATA_EXPORT", principal)) {
             log.error("Missing data export permission");
             throw new NotAllowedException("Missing data export permission");
         }

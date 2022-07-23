@@ -80,7 +80,7 @@ public interface DatabaseService {
      */
     Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException;
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException;
 
     /**
      * Updates the database metadata.

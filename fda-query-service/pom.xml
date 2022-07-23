@@ -132,7 +132,7 @@
             <artifactId>tomcat-dbcp</artifactId>
             <version>9.0.33</version>
         </dependency>
-        <!-- Entity and API -->
+        <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-api</artifactId>
@@ -142,6 +142,12 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-entites</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -211,15 +217,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/application*.yml</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>

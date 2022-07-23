@@ -273,11 +273,15 @@ export default {
       this.$emit('close', { action: 'closed' })
     },
     validateOrcid (orcid) {
+      if (!orcid || orcid.length === 0) {
+        return true
+      }
       return isValidOrcid(orcid)
     },
     addCreatorSelf () {
       if (!this.user.firstname || !this.user.lastname) {
         this.addCreator()
+        return
       }
       this.identifier.creators.push({
         name: `${this.user.lastname}, ${this.user.firstname}`,

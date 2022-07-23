@@ -1,5 +1,6 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.user.UserDto;
@@ -53,7 +54,7 @@ public class ContainerDto {
     private Boolean isPublic;
 
     @Parameter(name = "container image")
-    private ImageDto image;
+    private ImageBriefDto image;
 
     @Parameter(name = "container port")
     private Integer port;

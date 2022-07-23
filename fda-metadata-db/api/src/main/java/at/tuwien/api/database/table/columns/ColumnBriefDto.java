@@ -28,4 +28,9 @@ public class ColumnBriefDto {
     @Parameter(name = "internal name", example = "mdb_date", required = true)
     private String internalName;
 
+    @NotNull
+    @JsonProperty("column_type")
+    @Parameter(name = "type", required = true)
+    private ColumnTypeDto columnType;
+
 }

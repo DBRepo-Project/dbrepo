@@ -11,9 +11,16 @@
         <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
           <v-expansion-panel-header>
             <pre>{{ item.query }}</pre>
-            <v-icon v-if="item.identifier" color="primary" title="Persisted" class="pid-icon">mdi-lock-clock</v-icon>
+            <v-icon v-if="item.identifier" color="primary" title="Query with metadata" class="pid-icon">mdi-lock-clock</v-icon>
+            <v-icon v-if="erroneous(item)" color="error" title="Query failed to execute" class="pid-icon">mdi-flash</v-icon>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
+            <v-alert
+              v-if="erroneous(item)"
+              border="left"
+              color="error">
+              This query failed to execute and did not produce a subset.
+            </v-alert>
             <v-row dense>
               <v-col>
                 <v-list dense>
@@ -144,6 +151,9 @@ export default {
       } catch (err) {
         this.$toast.error('Could not list queries.')
       }
+    },
+    erroneous (query) {
+      return !query.result_hash
     },
     details (query) {
       this.queryDetails = query

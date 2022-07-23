@@ -74,7 +74,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_notFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -89,7 +89,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_dbNotFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException {
+            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */

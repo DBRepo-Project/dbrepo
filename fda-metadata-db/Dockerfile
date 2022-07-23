@@ -8,6 +8,7 @@ RUN mvn -fn -B dependency:go-offline > /dev/null
 
 COPY ./api ./api
 COPY ./entities ./entities
+COPY ./querystore ./querystore
 
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests > /dev/null

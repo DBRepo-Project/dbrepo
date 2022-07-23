@@ -71,23 +71,17 @@
             class="mt-2 ml-3" />
         </v-tab-item>
       </v-tabs-items>
-    </v-card>
-    <v-card flat>
-      <v-card-text>
+      <v-card-text v-if="queryId">
         <v-row>
           <v-col>
-            <QueryResults ref="queryResults" v-model="queryId" />
-          </v-col>
-        </v-row>
-        <v-row v-if="queryId">
-          <v-col>
             <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
-              More
+              View
             </v-btn>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
+    <QueryResults ref="queryResults" v-model="queryId" />
   </div>
 </template>
 

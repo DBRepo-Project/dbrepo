@@ -36,50 +36,52 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final UserService userService;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
-    private final ContainerService containerService;
 
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
-                            DatabaseService databaseService, ContainerService containerService) {
+                            DatabaseService databaseService) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
-        this.containerService = containerService;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Table> findAll(Long containerId, Long databaseId, Principal principal)
             throws DatabaseNotFoundException {
-        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         return tableRepository.findByDatabase(database);
     }
 
     @Override
     @Transactional
     public void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Table table = findById(containerId, databaseId, tableId, principal);
         /* run query */
         final Session session = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
         final Transaction transaction = session.beginTransaction();
-        session.createSQLQuery(tableMapper.tableToDropTableRawQuery(table));
-        transaction.commit();
-        log.info("Deleted table with id {}", table.getId());
-        log.debug("deleted table {}", table);
+        try {
+            session.createSQLQuery(tableMapper.tableToDropTableRawQuery(table));
+            activeConnection(session);
+            transaction.commit();
+            log.info("Deleted table with id {}", table.getId());
+            log.debug("deleted table {}", table);
+        } catch (PersistenceException e) {
+            log.error("Failed to drop table with id {}", tableId);
+            log.debug("failed to drop table {}", table);
+            throw new TableMalformedException("Failed to drop table");
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public Table findById(Long containerId, Long databaseId, Long tableId, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+            throws TableNotFoundException, DatabaseNotFoundException {
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Optional<Table> optional = tableRepository.findByDatabaseAndId(database, tableId);
         if (optional.isEmpty()) {
             log.error("Failed to find table with id {} in metadata database", tableId);
@@ -92,10 +94,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException {
+            TableNameExistsException, UserNotFoundException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.findPublicOrMineById(databaseId, principal);
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
@@ -107,14 +108,14 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Session session = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
         final Transaction transaction = session.beginTransaction();
         final CreateTableRawQuery query = tableMapper.tableToCreateTableRawQuery(database, createDto);
-        log.trace("create table raw query is [{}]", query);
         if (query.getGenerated()) {
             /* in case the id column needs to be generated, we need to generate the sequence too */
-            try (session) {
+            try {
                 session.createSQLQuery(tableMapper.tableToCreateSequenceRawQuery(database, createDto))
                         .executeUpdate();
             } catch (PersistenceException e) {
                 log.error("Table sequence exists, but table does not. Create an issue for this.");
+                session.close();
                 throw new TableNameExistsException("Sequence exists", e);
             }
             log.debug("created id sequence");
@@ -122,12 +123,15 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         try {
             session.createSQLQuery(query.getQuery())
                     .executeUpdate();
+            activeConnection(session);
             transaction.commit();
         } catch (PersistenceException e) {
             log.error("Failed to create table");
             log.debug("failed to create table: {}", e.getMessage());
+            session.close();
             throw new TableMalformedException("Failed to create table", e);
         }
+        session.close();
         int[] idx = {0};
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
@@ -152,16 +156,19 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 });
         /* create history view */
         final Session session2 = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
-        try (session2) {
+        try {
             final Transaction transaction2 = session2.beginTransaction();
             session2.createSQLQuery(tableMapper.tableToCreateHistoryViewRawQuery(entity))
                     .executeUpdate();
+            activeConnection(session2);
             transaction2.commit();
         } catch (PersistenceException e) {
             log.error("Failed to create history view");
             log.debug("failed to create history view: {}", e.getMessage());
+            session2.close();
             throw new TableMalformedException("Failed to create history view");
         }
+        session2.close();
         /* save */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());

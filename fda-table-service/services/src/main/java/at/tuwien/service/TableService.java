@@ -33,7 +33,7 @@ public interface TableService {
      */
     void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException;
+            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException;
 
     /**
      * Find a table by database-table id pair

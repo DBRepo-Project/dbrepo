@@ -15,19 +15,25 @@
         <v-btn color="primary" :disabled="!token" class="mr-2" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEdit" :disabled="!token" color="warn" class="mr-2" @click="editTupleDialog = true">
+        <v-btn v-if="canEdit" :disabled="!token" color="warn" class="mr-2 mb-1" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="canDelete" :disabled="!token" color="error" class="mr-2" @click="deleteItems">
+        <v-btn v-if="canDelete" :disabled="!token" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2" @click="deleteItems">
+        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn :disabled="!token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
-        <v-btn v-if="false" color="primary" :disabled="!token" :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`" target="_blank">
+        <v-btn
+          v-if="false"
+          color="primary"
+          class="mb-1"
+          :disabled="!token"
+          :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`"
+          target="_blank">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
       </v-toolbar-title>

@@ -9,7 +9,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.ContainerService;
@@ -40,25 +39,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final UserService userService;
     private final LicenseService licenseService;
     private final DatabaseMapper databaseMapper;
-    private final RabbitMqServiceImpl amqpService;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
-    private final ContainerRepository containerRepository;
     private final DatabaseidxRepository databaseidxRepository;
 
     @Autowired
     public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, LicenseService licenseService,
-                              DatabaseMapper databaseMapper, RabbitMqServiceImpl amqpService,
-                              ContainerService containerService, DatabaseRepository databaseRepository,
-                              ContainerRepository containerRepository, DatabaseidxRepository databaseidxRepository) {
+                              DatabaseMapper databaseMapper, ContainerService containerService,
+                              DatabaseRepository databaseRepository, DatabaseidxRepository databaseidxRepository) {
         this.amqpMapper = amqpMapper;
         this.userService = userService;
         this.licenseService = licenseService;
         this.databaseMapper = databaseMapper;
-        this.amqpService = amqpService;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
-        this.containerRepository = containerRepository;
         this.databaseidxRepository = databaseidxRepository;
     }
 
@@ -117,51 +111,65 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Session session = getCurrentSession(container.getImage(), container, database);
         final Transaction transaction = session.beginTransaction();
         final NativeQuery<?> query = session.createSQLQuery(databaseMapper.databaseToRawDeleteDatabaseQuery(database));
-        try (session) {
+        try {
             log.debug("query affected {} rows", query.executeUpdate());
+            activeConnection(session);
             transaction.commit();
         } catch (ServiceException e) {
             log.error("Failed to delete database.");
+            session.close();
             throw new DatabaseMalformedException("Failed to delete database", e);
+        } finally {
+            if (session.isOpen()) {
+                session.close();
+            }
         }
         database.setDeleted(Instant.now()) /* method has void, only for debug logs */;
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {}", databaseId);
         log.debug("deleted database {}", database);
-        amqpService.deleteExchange(database);
-        log.debug("deleted exchange {}", database.getExchange());
     }
 
     @Override
     @Transactional
     public Database create(Long containerId, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException {
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException {
         final Container container = containerService.find(containerId);
+        if (container.getDatabases().size() != 0) {
+            log.error("Currently we only support one database per container.");
+            throw new DatabaseMalformedException("Currently only one database per container is supported");
+        }
         /* start the object */
         final Database database = new Database();
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
         database.setContainer(container);
         /* run query */
-        final Session session = getCurrentSession(container.getImage(), container, database);
+        final Session session = getCurrentSession(container.getImage(), container);
         final Transaction transaction = session.beginTransaction();
         final NativeQuery<?> query = session.createSQLQuery(databaseMapper.databaseToRawCreateDatabaseQuery(database));
         try {
             log.debug("query affected {} rows", query.executeUpdate());
         } catch (PersistenceException e) {
-            log.error("Failed to delete database.");
+            log.error("Failed to create database");
+            log.debug("failed to create database: {}", e.getMessage());
             session.close();
-            throw new DatabaseMalformedException("Failed to delete database", e);
+            throw new DatabaseNameExistsException("Failed to create database", e);
         }
         final NativeQuery<?> grant = session.createSQLQuery(databaseMapper.imageToRawGrantReadonlyAccessQuery());
-        try (session) {
+        try {
             log.debug("grant affected {} rows", grant.executeUpdate());
+            activeConnection(session);
             transaction.commit();
         } catch (PersistenceException e) {
             log.error("Failed to grant privileges.");
             throw new DatabaseMalformedException("Failed to grant privileges", e);
+        } finally {
+            if (session.isOpen()) {
+                session.close();
+            }
         }
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
@@ -173,9 +181,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.info("Created database with id {}", out.getId());
         log.debug("created database {}", out);
         // save in database_index - elastic search
-        databaseidxRepository.save(database);
-        amqpService.createExchange(database, principal);
-        log.debug("created exchange {}", database.getExchange());
+//        databaseidxRepository.save(database);
         return out;
     }
 

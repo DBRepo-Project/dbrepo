@@ -142,8 +142,10 @@ services:
       JWT_SECRET: fda-secret
       JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: docker
-      SMTP_USERNAME: ${MAIL_USERNAME:-local}
-      SMTP_PASSWORD: ${MAIL_PASSWORD:-local}
+      SMTP_HOST: ${MAIL_HOST}
+      SMTP_PORT: ${MAIL_PORT}
+      SMTP_USERNAME: ${MAIL_USERNAME}
+      SMTP_PASSWORD: ${MAIL_PASSWORD}
       TZ: Europe/Vienna
     ports:
       - "9097:9097"

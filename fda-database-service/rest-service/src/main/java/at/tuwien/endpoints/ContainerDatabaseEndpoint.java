@@ -8,6 +8,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.MessageQueueService;
+import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,31 +34,33 @@ public class ContainerDatabaseEndpoint {
 
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
+    private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
 
     @Autowired
     public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService,
-                                     MessageQueueService messageQueueService) {
+                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
+        this.queryStoreService = queryStoreService;
         this.messageQueueService = messageQueueService;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId,
                                                           Principal principal) {
         final List<DatabaseBriefDto> databases;
         if (principal == null) {
             log.trace("principal missing, listing all public databases only");
-            databases = databaseService.findAllPublic(id)
+            databases = databaseService.findAllPublic(containerId)
                     .stream()
                     .map(databaseMapper::databaseToDatabaseBriefDto)
                     .collect(Collectors.toList());
         } else {
             log.trace("principal present, listing all public databases and my private databases");
-            databases = databaseService.findAllPublicOrMine(id, principal)
+            databases = databaseService.findAllPublicOrMine(containerId, principal)
                     .stream()
                     .map(databaseMapper::databaseToDatabaseBriefDto)
                     .collect(Collectors.toList());
@@ -71,13 +74,15 @@ public class ContainerDatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
                                                    Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException, UserNotFoundException {
-        final Database database = databaseService.create(id, createDto, principal);
+            AmqpException, ContainerConnectionException, UserNotFoundException, QueryStoreException,
+            DatabaseNotFoundException, DatabaseNameExistsException {
+        final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
+        queryStoreService.create(containerId, database.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
@@ -86,11 +91,11 @@ public class ContainerDatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long id,
+    public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long containerId,
                                                    @NotBlank @PathVariable Long databaseId,
                                                    @Valid @RequestBody DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
-        final Database database = databaseService.modify(id, databaseId, modifyDto);
+        final Database database = databaseService.modify(containerId, databaseId, modifyDto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }

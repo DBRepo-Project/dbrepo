@@ -7,6 +7,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -64,7 +65,7 @@ public class Query implements Serializable {
     private Long createdBy;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    private List<Table> tables;
+    private List<at.tuwien.querystore.Table> tables;
 
     @javax.persistence.Column(name = "last_modified")
     @LastModifiedDate

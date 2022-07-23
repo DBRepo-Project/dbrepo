@@ -33,7 +33,7 @@ class ContainerDto(object):
         'name': 'str',
         'state': 'str',
         'databases': 'list[DatabaseDto]',
-        'image': 'ImageDto',
+        'image': 'ImageBriefDto',
         'port': 'int',
         'created': 'datetime',
         'internal_name': 'str',
@@ -210,7 +210,7 @@ class ContainerDto(object):
 
 
         :return: The image of this ContainerDto.  # noqa: E501
-        :rtype: ImageDto
+        :rtype: ImageBriefDto
         """
         return self._image
 
@@ -220,7 +220,7 @@ class ContainerDto(object):
 
 
         :param image: The image of this ContainerDto.  # noqa: E501
-        :type: ImageDto
+        :type: ImageBriefDto
         """
 
         self._image = image

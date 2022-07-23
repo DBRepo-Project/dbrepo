@@ -8,9 +8,10 @@ public interface DatabaseService {
     /**
      * Finds a database by given id in the remote database service.
      *
-     * @param id The id.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
      * @return The database.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database find(Long id) throws DatabaseNotFoundException;
+    Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException;
 }

@@ -31,6 +31,7 @@ from api_query.models.container_dto import ContainerDto
 from api_query.models.database_dto import DatabaseDto
 from api_query.models.execute_statement_dto import ExecuteStatementDto
 from api_query.models.granted_authority_dto import GrantedAuthorityDto
+from api_query.models.image_brief_dto import ImageBriefDto
 from api_query.models.image_date_dto import ImageDateDto
 from api_query.models.image_dto import ImageDto
 from api_query.models.image_env_item_dto import ImageEnvItemDto

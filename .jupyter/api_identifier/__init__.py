@@ -31,6 +31,7 @@ from api_identifier.models.database_dto import DatabaseDto
 from api_identifier.models.granted_authority_dto import GrantedAuthorityDto
 from api_identifier.models.identifier_create_dto import IdentifierCreateDto
 from api_identifier.models.identifier_dto import IdentifierDto
+from api_identifier.models.image_brief_dto import ImageBriefDto
 from api_identifier.models.image_date_dto import ImageDateDto
 from api_identifier.models.image_dto import ImageDto
 from api_identifier.models.image_env_item_dto import ImageEnvItemDto
