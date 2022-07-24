@@ -4,7 +4,6 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
 import java.security.Principal;
 import java.time.Instant;
 
@@ -40,37 +38,20 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @PostMapping
     @Transactional
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> insert(@NotNull @PathVariable("id") Long containerId,
+    public ResponseEntity<Void> insert(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @NotNull @Valid @RequestBody TableCsvDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
+        queryService.insert(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
-                .body(queryService.insert(containerId, databaseId, tableId, data));
-    }
-
-    @PutMapping
-    @Transactional
-    @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> update(@NotNull @PathVariable("id") Long containerId,
-                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @PathVariable("tableId") Long tableId,
-                                          @NotNull @Valid @RequestBody TableCsvUpdateDto data,
-                                          @NotNull Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, NotAllowedException, ContainerNotFoundException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
-            log.error("Missing data update permission");
-            throw new NotAllowedException("Missing data update permission");
-        }
-        return ResponseEntity.accepted()
-                .body(queryService.update(containerId, databaseId, tableId, data));
+                .build();
     }
 
     @DeleteMapping
@@ -82,7 +63,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvDeleteDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException {
+            ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException,
+            DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
@@ -95,20 +77,21 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @PostMapping("/import")
     @Transactional
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Integer> importCsv(@NotNull @PathVariable("id") Long containerId,
+    public ResponseEntity<Void> importCsv(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              @NotNull @Valid @RequestBody ImportDto data,
                                              @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
         log.info("Insert data from location {} into database id {}", data, databaseId);
+        queryService.insert(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
-                .body(queryService.insert(containerId, databaseId, tableId, data));
+                .build();
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
@@ -140,7 +123,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
         if (size != null && size <= 0) {
             throw new PaginationException("Page number cannot be lower or equal to 0");
         }
-        final BigInteger count = queryService.count(containerId, databaseId, tableId, timestamp);
+        final Long count = queryService.count(containerId, databaseId, tableId, timestamp);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());
         final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size);

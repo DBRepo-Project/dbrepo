@@ -10,7 +10,6 @@ import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.security.Principal;
@@ -39,7 +38,7 @@ public interface QueryService {
     QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
                            Principal principal, Long page, Long size)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException;
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException;
 
     /**
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the
@@ -62,7 +61,7 @@ public interface QueryService {
      */
     QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
             throws TableNotFoundException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, TableMalformedException, ColumnParseException;
+            ImageNotSupportedException, ContainerNotFoundException, TableMalformedException, ColumnParseException, DatabaseConnectionException;
 
 
     /**
@@ -127,7 +126,7 @@ public interface QueryService {
      */
     ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
-            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException;
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException, DatabaseConnectionException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.
@@ -143,9 +142,9 @@ public interface QueryService {
      * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      */
-    BigInteger count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+    Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException;
+            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
@@ -155,30 +154,14 @@ public interface QueryService {
      * @param databaseId  The database id.
      * @param tableId     The table id.
      * @param data        The data.
-     * @return The number of tuples affected.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
-    Integer insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException;
-
-    /**
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param data        The updated tuple with the list of primary key columns.
-     * @return The number of records updated.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws TableMalformedException    The table does not exist in the metadata database.
-     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
-     * @throws TableNotFoundException     The table is not found in the metadata database.
-     */
-    Integer update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
-            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, ContainerNotFoundException;
+    void insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data) throws ImageNotSupportedException,
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException;
 
     /**
      * Deletes a tuple by given constraint set
@@ -195,7 +178,7 @@ public interface QueryService {
      */
     void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, TupleDeleteException, ContainerNotFoundException;
+            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the
@@ -204,13 +187,12 @@ public interface QueryService {
      * @param databaseId The database id.
      * @param tableId    The table id.
      * @param data       The data path.
-     * @return The number of tuples affected.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
-    Integer insert(Long containerId, Long databaseId, Long tableId, ImportDto data) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException;
+    void insert(Long containerId, Long databaseId, Long tableId, ImportDto data) throws ImageNotSupportedException,
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException;
 }

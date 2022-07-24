@@ -23,6 +23,8 @@ import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.Normalizer;
 import java.time.*;
@@ -70,23 +72,16 @@ public interface QueryMapper {
         return slug.toLowerCase(Locale.ENGLISH);
     }
 
-    default QueryResultDto resultListToQueryResultDto(List<TableColumn> columns, List<?> result) {
-        final Iterator<?> iterator = result.iterator();
+    default QueryResultDto resultListToQueryResultDto(List<TableColumn> columns, ResultSet result) throws SQLException {
         final List<Map<String, Object>> resultList = new LinkedList<>();
-        log.trace("result has {} columns and {} rows", columns.size(), result.size());
-        while (iterator.hasNext()) {
+        log.trace("result has {} columns", columns.size());
+        while (result.next()) {
             /* map the result set to the columns through the stored metadata in the metadata database */
             int[] idx = new int[]{0};
-            final Object[] data;
-            if (columns.size() == 1) {
-                data = new Object[]{iterator.next()};
-            } else {
-                data = (Object[]) iterator.next();
-            }
             final Map<String, Object> map = new HashMap<>();
-            columns
-                    .forEach(column -> map.put(column.getName(),
-                            dataColumnToObject(data[idx[0]++], column)));
+            for (int i = 0; i < columns.size(); i++) {
+                map.put(columns.get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), columns.get(i)));
+            }
             resultList.add(map);
         }
         return QueryResultDto.builder()
@@ -576,6 +571,17 @@ public interface QueryMapper {
         return statement;
     }
 
+    default Long resultSetToLong(ResultSet data) {
+        try {
+            if (data.next()) {
+                return data.getLong(1);
+            }
+        } catch (SQLException e) {
+            return null;
+        }
+        return null;
+    }
+
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
             throws ImageNotSupportedException {
         /* param check */
@@ -614,16 +620,15 @@ public interface QueryMapper {
         return query.toString();
     }
 
-    default QueryResultDto queryTableToQueryResultDto(List<?> result, Table table) throws DateTimeException {
-        final Iterator<?> iterator = result.iterator();
+    default QueryResultDto queryTableToQueryResultDto(ResultSet result, Table table) throws DateTimeException, SQLException {
         final List<Map<String, Object>> queryResult = new LinkedList<>();
-        while (iterator.hasNext()) {
+        while (result.next()) {
             /* map the result set to the columns through the stored metadata in the metadata database */
             int[] idx = new int[]{0};
-            final Object[] data = (Object[]) iterator.next();
             final Map<String, Object> map = new HashMap<>();
-            table.getColumns()
-                    .forEach(column -> map.put(column.getInternalName(), dataColumnToObject(data[idx[0]++], column)));
+            for (int i = 0; i < table.getColumns().size(); i++) {
+                map.put(table.getColumns().get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), table.getColumns().get(i)));
+            }
             queryResult.add(map);
         }
         log.info("Selected {} records from table id {}", queryResult.size(), table.getId());

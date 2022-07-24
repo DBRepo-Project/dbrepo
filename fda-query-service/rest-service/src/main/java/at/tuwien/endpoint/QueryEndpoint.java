@@ -48,7 +48,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                   @NotNull Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
-            NotAllowedException {
+            NotAllowedException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_EXECUTE", principal)) {
             log.error("Missing execute query permission");
             throw new NotAllowedException("Missing execute query permission");
@@ -74,7 +74,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                     @NotNull Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
-            ColumnParseException, NotAllowedException {
+            ColumnParseException, NotAllowedException, DatabaseConnectionException {
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");
             throw new NotAllowedException("Missing re-execute query permission");
@@ -94,7 +94,8 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                       @NotNull @PathVariable("queryId") Long queryId,
                                                       @NotNull Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException, QueryMalformedException {
+            ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
+            QueryMalformedException, DatabaseConnectionException {
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");
             throw new NotAllowedException("Missing export query permission");
