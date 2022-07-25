@@ -60,6 +60,7 @@ public interface UserMapper {
                 .titlesAfter(data.getTitlesAfter())
                 .emailVerified(data.getEmailVerified())
                 .affiliation(data.getAffiliation())
+                .themeDark(data.getThemeDark())
                 .orcid(userToUncompressedOrcid(data))
                 .authorities(data.getRoles()
                         .stream()

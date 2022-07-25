@@ -101,6 +101,7 @@ public class UserServiceImpl implements UserService {
         final User user = userMapper.signupRequestDtoToUser(data);
         user.setEmailVerified(false);
         user.setRoles(List.of(RoleType.ROLE_RESEARCHER));
+        user.setThemeDark(false);
         user.setPassword(passwordEncoder.encode(data.getPassword()));
         final User entity;
         try {

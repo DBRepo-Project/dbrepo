@@ -42,7 +42,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException {
+            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -59,7 +59,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_succeeds() throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException {
+            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException, DatabaseConnectionException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -74,7 +74,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_notFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException {
+            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -89,7 +89,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_dbNotFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException {
+            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */

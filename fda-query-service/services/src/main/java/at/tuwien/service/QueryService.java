@@ -84,7 +84,7 @@ public interface QueryService {
     QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp,
                            Long page, Long size) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            ContainerNotFoundException;
+            ContainerNotFoundException, QueryMalformedException;
 
     /**
      * Select all data known in the database-table id tuple at a given time and return a downloadable input stream
@@ -107,7 +107,7 @@ public interface QueryService {
     ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            FileStorageException;
+            FileStorageException, QueryMalformedException;
 
     /**
      * Finds one query by container-database-query triple.
@@ -144,7 +144,7 @@ public interface QueryService {
      */
     Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException;
+            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
@@ -178,7 +178,7 @@ public interface QueryService {
      */
     void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException;
+            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the
@@ -194,5 +194,5 @@ public interface QueryService {
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
     void insert(Long containerId, Long databaseId, Long tableId, ImportDto data) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException;
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
 }

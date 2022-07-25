@@ -57,6 +57,9 @@ public class User {
     @Column
     private String orcid;
 
+    @Column(nullable = false)
+    private Boolean themeDark;
+
     @Column(name = "main_email_verified", nullable = false)
     private Boolean emailVerified;
 

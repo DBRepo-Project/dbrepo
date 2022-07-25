@@ -97,6 +97,9 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                     } catch (ContainerNotFoundException e) {
                         log.error("Failed to find container with id {}", containerId);
                         /* ignore */
+                    } catch (DatabaseConnectionException e) {
+                        log.error("Failed to connect to container with id {}", containerId);
+                        /* ignore */
                     }
                 }
             });

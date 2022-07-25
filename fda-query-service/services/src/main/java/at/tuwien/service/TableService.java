@@ -2,9 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -42,5 +40,5 @@ public interface TableService {
      * @throws TableNotFoundException    The table is not found.
      */
     List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId)
-            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException;
+            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException, DatabaseConnectionException, QueryStoreException;
 }

@@ -45,9 +45,10 @@ public class StoreEndpoint extends AbstractEndpoint {
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
-                                                  @NotNull Principal principal)
+                                                  Principal principal)
             throws QueryStoreException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException,
+            DatabaseConnectionException, TableMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_VIEW_ALL", principal)) {
             log.error("Missing view all queries permission");
             throw new NotAllowedException("Missing view all queries permission");
@@ -62,10 +63,10 @@ public class StoreEndpoint extends AbstractEndpoint {
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long containerId,
                                          @NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable Long queryId,
-                                         @NotNull Principal principal)
+                                         Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryStoreException, QueryNotFoundException, ContainerNotFoundException, UserNotFoundException,
-            NotAllowedException {
+            QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
+            DatabaseConnectionException {
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_VIEW", principal)) {
             log.error("Missing view query permission");
             throw new NotAllowedException("Missing view query permission");

@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.database.table.Table;
@@ -23,9 +24,7 @@ import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -77,20 +76,20 @@ public interface QueryMapper {
         log.trace("result has {} columns", columns.size());
         while (result.next()) {
             /* map the result set to the columns through the stored metadata in the metadata database */
-            int[] idx = new int[]{0};
+            int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
             for (int i = 0; i < columns.size(); i++) {
                 map.put(columns.get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), columns.get(i)));
             }
-            resultList.add(map);
+             resultList.add(map);
         }
         return QueryResultDto.builder()
                 .result(resultList)
                 .build();
     }
 
-    default String generateTemporaryTableSQL(Table table) {
-        final StringBuilder generateTable = new StringBuilder("CREATE TABLE `")
+    default PreparedStatement generateTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -100,24 +99,36 @@ public interface QueryMapper {
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("`;");
-        log.debug(generateTable.toString());
-        return generateTable.toString();
+        log.trace("mapped raw generate temporary table query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
 
-    default String dropTemporaryTableSQL(Table table) {
-        final StringBuilder t = new StringBuilder("DROP TABLE `")
+    default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("DROP TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("_temporary`;");
-        log.debug(t.toString());
-        return t.toString();
+        log.trace("mapped raw drop temporary table query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
 
-    default InsertTableRawQuery pathToRawInsertQuery(Table table, ImportDto data) {
-        final StringBuilder query = new StringBuilder("LOAD DATA LOCAL INFILE '")
+    default PreparedStatement pathToRawInsertQuery(Connection connection, Table table, ImportDto data) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("LOAD DATA LOCAL INFILE '")
                 .append(data.getLocation())
                 .append("' INTO TABLE `")
                 .append(table.getDatabase().getInternalName())
@@ -128,11 +139,11 @@ public interface QueryMapper {
                 .append(data.getSeparator())
                 .append("'");
         if (data.getQuote() != null) {
-            query.append(" OPTIONALLY ENCLOSED BY '")
+            statement.append(" OPTIONALLY ENCLOSED BY '")
                     .append(data.getQuote())
                     .append("'");
         }
-        query.append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
+        statement.append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
@@ -141,9 +152,9 @@ public interface QueryMapper {
                     if (column.getAutoGenerated()) {
                         return;
                     }
-                    query.append(idx[0] != 0 ? "," : "");
+                    statement.append(idx[0] != 0 ? "," : "");
                     /* format as variable */
-                    query.append("@")
+                    statement.append("@")
                             .append(column.getInternalName());
                     if (column.getDateFormat() != null) {
                         /* reformat dates */
@@ -157,14 +168,18 @@ public interface QueryMapper {
                     }
                     idx[0]++;
                 });
-        query.append(")")
+        statement.append(")")
                 .append(set.length() != 0 ? (" SET " + set) : "")
                 .append(";");
         log.debug("import csv {} for table {}", data.getLocation(), table);
-        log.trace("raw import query: [{}]", query);
-        return InsertTableRawQuery.builder()
-                .query(query.toString())
-                .build();
+        log.trace("raw import query: [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default void columnToBoolSet(ImportDto data, Table table, TableColumn column, StringBuilder set) {
@@ -281,33 +296,39 @@ public interface QueryMapper {
                 .append("')");
     }
 
-    default String tableToRawExportQuery(Table table, Instant timestamp, String filename) {
-        final StringBuilder query = new StringBuilder("SELECT ");
+    default PreparedStatement tableToRawExportQuery(Connection connection, Table table, Instant timestamp, String filename) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("SELECT ");
         int[] idx = new int[]{0};
         table.getColumns()
                 .forEach(column -> {
-                    query.append(idx[0] != 0 ? "," : "")
+                    statement.append(idx[0] != 0 ? "," : "")
                             .append("`")
                             .append(column.getInternalName())
                             .append("`");
                     idx[0]++;
                 });
-        query.append("FROM `")
+        statement.append("FROM `")
                 .append(table.getInternalName())
                 .append("`");
         if (timestamp != null) {
-            query.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                     .append(mariaDbFormatter.format(timestamp))
                     .append("'");
         }
-        query.append(" INTO OUTFILE '/tmp/")
+        statement.append(" INTO OUTFILE '/tmp/")
                 .append(filename)
                 .append("' CHARACTER SET utf8");
-        query.append(";");
-        return query.toString();
+        statement.append(";");
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String queryToRawExportQuery(Query query, String filename) throws QueryMalformedException {
+    default PreparedStatement queryToRawExportQuery(Connection connection, Query query, String filename) throws QueryMalformedException {
         if (query.getQuery().contains(";")) {
             log.trace("Remove ending ; from statement [{}]", query.getQuery());
             query.setQuery(query.getQuery().substring(0, query.getQuery().indexOf(";")));
@@ -330,11 +351,17 @@ public interface QueryMapper {
                 .append(filename)
                 .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
         log.trace("raw export query: [{}]", statement);
-        return statement.toString();
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default InsertTableRawQuery tableCsvDtoToRawInsertQuery(Table table, TableCsvDto data)
-            throws TableMalformedException, ImageNotSupportedException {
+    default PreparedStatement tableCsvDtoToRawInsertQuery(Connection connection, Table table, TableCsvDto data)
+            throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
             throw new TableMalformedException("Columns are not known");
@@ -345,7 +372,7 @@ public interface QueryMapper {
             throw new ImageNotSupportedException("Image not supported.");
         }
         /* parameterized query for prepared statement */
-        final StringBuilder query = new StringBuilder("INSERT INTO `")
+        final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table.getInternalName())
                 .append("` (")
                 .append(table.getColumns()
@@ -355,33 +382,38 @@ public interface QueryMapper {
                         .collect(Collectors.joining(",")))
                 .append(") VALUES (?1);");
         /* map all columns that are non-auto generated */
-        final Collection<Object> values = table.getColumns()
-                .stream()
-                .filter(c -> !c.getAutoGenerated())
-                .map(c -> {
-                    final Optional<Map.Entry<String, Object>> tuple = data.getData()
-                            .entrySet()
-                            .stream()
-                            .filter(d -> d.getKey().equals(c.getInternalName()))
-                            .findFirst();
-                    if (tuple.isEmpty()) {
-                        log.error("Tuple contains columns names that are not present in the database");
-                        log.debug("tuple column names are {}", data.getData().keySet());
-                        return null;
-                    }
-                    return dataColumnToObject(tuple.get()
-                            .getValue(), c);
-                })
-                .collect(Collectors.toList());
-        log.trace("raw insert query: [{}] with data {}", query, values);
-        return InsertTableRawQuery.builder()
-                .query(query.toString())
-                .data(values)
-                .build();
+        final int[] idx = new int[]{0};
+        try {
+            final PreparedStatement ps = connection.prepareStatement(statement.toString());
+            for (int i = 0; i < table.getColumns().size(); i++) {
+                final TableColumn column = table.getColumns()
+                        .get(i);
+                if (column.getAutoGenerated()) {
+                    continue;
+                }
+                final Optional<Map.Entry<String, Object>> tuple = data.getData()
+                        .entrySet()
+                        .stream()
+                        .filter(d -> d.getKey().equals(column.getInternalName()))
+                        .findFirst();
+                if (tuple.isEmpty()) {
+                    log.error("Failed to map column names");
+                    log.debug("failed to map column names, tuple contains columns names that are not present in the database, tuple column names are {}", data.getData().keySet());
+                    throw new TableMalformedException("Failed to map column names");
+                }
+                ps.setObject(idx[0]++, dataColumnToObject(tuple.get()
+                        .getValue(), column));
+            }
+            return ps;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String tableCsvDtoToRawDeleteQuery(Table table, TableCsvDeleteDto data)
-            throws TableMalformedException, ImageNotSupportedException {
+    default PreparedStatement tableCsvDtoToRawDeleteQuery(Connection connection, Table table, TableCsvDeleteDto data)
+            throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
             throw new TableMalformedException("Columns are not known");
@@ -392,19 +424,25 @@ public interface QueryMapper {
             throw new ImageNotSupportedException("Image not supported.");
         }
         /* parameterized query for prepared statement */
-        final StringBuilder query = new StringBuilder("DELETE FROM `")
+        final StringBuilder statement = new StringBuilder("DELETE FROM `")
                 .append(table.getInternalName())
                 .append("` WHERE ");
         final int[] idx = new int[]{0};
         data.getKeys()
-                .forEach((key, value) -> query.append(idx[0] == 0 ? "" : ", ")
+                .forEach((key, value) -> statement.append(idx[0] == 0 ? "" : ", ")
                         .append("`")
                         .append(key)
                         .append("` = ?")
                         .append(idx[0]++));
         /* debug */
-        log.trace("raw delete query: [{}] with data {}", query, data.getKeys().values());
-        return query.toString();
+        log.trace("raw delete query: [{}] with data {}", statement, data.getKeys().values());
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default InsertTableRawQuery tableCsvDtoToRawUpdateQuery(Table table, TableCsvUpdateDto data)
@@ -453,7 +491,7 @@ public interface QueryMapper {
                 .build();
     }
 
-    default String tableToRawCountAllQuery(Table table, Instant timestamp) throws ImageNotSupportedException {
+    default PreparedStatement tableToRawCountAllQuery(Connection connection, Table table, Instant timestamp) throws ImageNotSupportedException, QueryMalformedException {
         /* check image */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
@@ -462,14 +500,22 @@ public interface QueryMapper {
         if (timestamp == null) {
             timestamp = Instant.now();
         }
-        return "SELECT COUNT(*) FROM `" + nameToInternalName(table.getName()) +
-                "` FOR SYSTEM_TIME AS OF TIMESTAMP '" +
-                LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")) +
-                "';";
+        final StringBuilder statement = new StringBuilder("SELECT COUNT(*) FROM `")
+                .append(nameToInternalName(table.getName()))
+                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
+                .append("';");
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String queryToRawTimestampedCountQuery(String query, Database database, Instant timestamp)
-            throws ImageNotSupportedException {
+    default PreparedStatement queryToRawTimestampedCountQuery(Connection connection, String query, Database database, Instant timestamp)
+            throws ImageNotSupportedException, QueryMalformedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -479,28 +525,28 @@ public interface QueryMapper {
         }
         query = query.toLowerCase(Locale.ROOT)
                 .split("from")[1];
-        final StringBuilder sb = new StringBuilder();
-        sb.append("select count(*) from");
+        final StringBuilder original = new StringBuilder();
+        original.append("SELECT COUNT(*) AS `total` FROM");
         if (!query.contains("where")) {
             /* treat join queries as normal queries */
-            sb.append(query);
+            original.append(query);
         } else {
-            sb.append(query.split("where")[0]);
+            original.append(query.split("where")[0]);
         }
         if (query.contains("join")) {
             /* put timestamp after "join" and each "on" (but before alias) */
         } else {
-            sb.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
-            sb.append("' ");
+            original.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
+            original.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")));
+            original.append("' ");
         }
         if (query.contains("where")) {
-            sb.append("where");
-            sb.append(query.split("where")[1]);
+            original.append("where");
+            original.append(query.split("where")[1]);
         }
-        sb.append(";");
+        original.append(";");
         /* replace timestamp for join query */
-        String statement = sb.toString();
+        String statement = original.toString();
         if (query.contains("join")) {
             statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna"))
@@ -510,11 +556,19 @@ public interface QueryMapper {
                     + "' ");
         }
         log.debug("mapped raw view-only query [{}]", statement);
-        return statement;
+        try {
+            return connection.prepareStatement(statement);
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Long page, Long size)
-            throws ImageNotSupportedException, QueryMalformedException {
+    default PreparedStatement queryToRawTimestampedQuery(Connection connection,
+                                                         String query, Database database, Instant timestamp, Long page,
+                                                         Long size) throws ImageNotSupportedException,
+            QueryMalformedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -568,7 +622,13 @@ public interface QueryMapper {
                     + "' ");
         }
         log.debug("mapped raw view-only query [{}]", statement);
-        return statement;
+        try {
+            return connection.prepareStatement(statement);
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default Long resultSetToLong(ResultSet data) {
@@ -582,8 +642,8 @@ public interface QueryMapper {
         return null;
     }
 
-    default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
-            throws ImageNotSupportedException {
+    default PreparedStatement tableToRawFindAllQuery(Connection connection, Table table, Instant timestamp, Long size, Long page)
+            throws ImageNotSupportedException, QueryMalformedException {
         /* param check */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
@@ -595,29 +655,35 @@ public interface QueryMapper {
             log.debug("timestamp provided {}", timestamp);
         }
         final int[] idx = new int[]{0};
-        final StringBuilder query = new StringBuilder("SELECT ");
+        final StringBuilder statement = new StringBuilder("SELECT ");
         table.getColumns()
-                .forEach(column -> query.append(idx[0]++ > 0 ? "," : "")
+                .forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(column.getInternalName())
                         .append("`"));
-        query.append(" FROM `")
+        statement.append(" FROM `")
                 .append(nameToInternalName(table.getName()))
                 .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
                 .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("Europe/Vienna")))
                 .append("'");
         if (size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
-            query.append(" LIMIT ")
+            statement.append(" LIMIT ")
                     .append(size);
             log.trace("pagination page/offset of {}", page);
-            query.append(" OFFSET ")
+            statement.append(" OFFSET ")
                     .append(page * size)
                     .append(";");
 
         }
-        log.trace("raw select table query: [{}]", query);
-        return query.toString();
+        log.trace("raw select table query: [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default QueryResultDto queryTableToQueryResultDto(ResultSet result, Table table) throws DateTimeException, SQLException {
@@ -639,29 +705,31 @@ public interface QueryMapper {
     }
 
     @Transactional(readOnly = true)
-    default String historyRawQuery(Table data) {
-        final StringBuilder builder = new StringBuilder("SELECT")
+    default PreparedStatement historyRawQuery(Connection connection, Table data) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("SELECT")
                 .append(" IF(`deleted_at` IS NULL, `inserted_at`, `deleted_at`) as `timestamp`")
                 .append(", IF(`deleted_at` IS NULL, 'INSERT', 'DELETE') as `event`")
                 .append(", COUNT(`inserted_at`) as `total` FROM `hs_")
                 .append(data.getInternalName())
                 .append("` GROUP BY `inserted_at`, `deleted_at` ORDER BY `timestamp` ASC;");
-        log.trace("mapped find all from history view query [{}]", builder);
-        return builder.toString();
+        log.trace("mapped find all from history view query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    @Transactional(readOnly = true)
-    default List<TableHistoryDto> resultListToTableHistoryDto(Table table, List<?> resultList) {
-        final Iterator<?> iterator = resultList.iterator();
+    default List<TableHistoryDto> resultListToTableHistoryDto(ResultSet data) throws SQLException {
         final List<TableHistoryDto> history = new LinkedList<>();
-        while (iterator.hasNext()) {
-            final int[] idx = new int[]{0};
-            final Map<String, Object> primaryKeys = new HashMap<>();
-            final Object[] row = (Object[]) iterator.next();
+        while (data.next()) {
             history.add(TableHistoryDto.builder()
-                    .timestamp(objectToInstant(row[idx[0]++]))
-                    .event(String.valueOf(row[idx[0]++]))
-                    .total(Long.parseLong(String.valueOf(row[idx[0]++])))
+                    .timestamp(data.getTimestamp(1)
+                            .toInstant())
+                    .event(data.getString(2))
+                    .total(data.getLong(3))
                     .build());
         }
         return history;
@@ -727,6 +795,19 @@ public interface QueryMapper {
         return name;
     }
 
+    default Long resultSetToNumber(ResultSet data) throws TableMalformedException, QueryStoreException {
+        try {
+            if (!data.next()) {
+                log.error("Failed to map number");
+                throw new TableMalformedException("Failed to map number");
+            }
+            return data.getLong(1);
+        } catch (SQLException e) {
+            log.error("Failed to retrieve number");
+            throw new QueryStoreException("Failed to retrieve number");
+        }
+    }
+
     default String selectItemToEscapedString(SelectItem data) {
         final String item = data.toString();
         final int idx = item.indexOf('.');
@@ -742,37 +823,43 @@ public interface QueryMapper {
      * @param table
      * @return
      */
-    default String generateInsertFromTemporaryTableSQL(Table table) {
-        final StringBuilder generateTable = new StringBuilder("INSERT INTO `")
+    default PreparedStatement generateInsertFromTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("` SELECT ");
         for (TableColumn tc : table.getColumns()) {
-            generateTable.append("`");
-            generateTable.append(tc.getInternalName()).append("`,");
+            statement.append("`");
+            statement.append(tc.getInternalName()).append("`,");
         }
 
-        generateTable.deleteCharAt(generateTable.length() - 1);
-        generateTable.append(" FROM `")
+        statement.deleteCharAt(statement.length() - 1);
+        statement.append(" FROM `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("_temporary`");
 
-        generateTable.append(" ON DUPLICATE KEY UPDATE ");
+        statement.append(" ON DUPLICATE KEY UPDATE ");
         for (TableColumn tc : table.getColumns())
-            generateTable.append("`")
+            statement.append("`")
                     .append(tc.getInternalName())
                     .append("`")
                     .append("=")
                     .append("VALUES(`")
                     .append(tc.getInternalName())
                     .append("`),");
-        generateTable.deleteCharAt(generateTable.length() - 1);
-        generateTable.append(";");
-        log.debug("Insert Query: {}", generateTable);
-        return generateTable.toString();
+        statement.deleteCharAt(statement.length() - 1);
+        statement.append(";");
+        log.trace("mapped raw insert query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default Instant objectToInstant(Object data) {

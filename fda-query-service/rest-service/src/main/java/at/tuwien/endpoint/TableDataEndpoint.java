@@ -64,7 +64,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException,
-            DatabaseConnectionException {
+            DatabaseConnectionException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
@@ -83,7 +83,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                              @NotNull @Valid @RequestBody ImportDto data,
                                              @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
@@ -106,7 +106,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                                  @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException {
+            QueryStoreException, NotAllowedException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");

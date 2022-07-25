@@ -114,29 +114,4 @@ public class DataServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_1);
     }
 
-    public void update_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, SQLException, ContainerNotFoundException {
-        /* modify rainfall 0.6 -> 1.3 */
-        final TableCsvUpdateDto request = TableCsvUpdateDto.builder()
-                .keys(Map.ofEntries(Map.entry("id", 1)))
-                .data(Map.ofEntries(
-                        Map.entry("date", "2008-12-01"),
-                        Map.entry("location", "Albury"),
-                        Map.entry("mintemp", 13.4),
-                        Map.entry("rainfall", 1.3)
-                ))
-                .build();
-
-        /* mock */
-
-        /* test */
-        queryService.update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
-        final List<List<String>> result = MariaDbConfig.select(TABLE_1, 10);
-        assertEquals("1", result.get(0).get(0));
-        assertEquals("2008-12-01", result.get(0).get(1));
-        assertEquals("Albury", result.get(0).get(2));
-        assertEquals("13.4", result.get(0).get(3));
-        assertEquals("1.3", result.get(0).get(4));
-    }
-
 }

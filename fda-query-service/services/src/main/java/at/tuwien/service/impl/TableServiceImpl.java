@@ -3,22 +3,21 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 @Log4j2
@@ -58,30 +57,25 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional(readOnly = true)
     public List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId)
-            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException {
+            throws DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException, QueryStoreException,
+            QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = find(containerId, databaseId, tableId);
         /* run query */
-        final Session session = getCurrentSession(database.getContainer().getImage(), database.getContainer(), database);
-        final Transaction transaction = session.beginTransaction();
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* use jpa to select one */
-        final NativeQuery<?> query = session.createSQLQuery(queryMapper.historyRawQuery(table));
-        final List<?> result;
         try {
-            log.debug("affected tuples {}", query.executeUpdate());
-            result = query.getResultList();
-            transaction.commit();
-        } catch (PersistenceException e) {
-            log.error("Failed to obtain query history");
-            session.close();
-            throw new QueryMalformedException("Failed to obtain query history", e);
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.historyRawQuery(connection, table);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultListToTableHistoryDto(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to map table history");
+            throw new QueryStoreException("Failed to map table history", e);
         } finally {
-            if (session.isOpen()) {
-                session.close();
-            }
+            dataSource.close();
         }
-        return queryMapper.resultListToTableHistoryDto(table, result);
     }
 
 }

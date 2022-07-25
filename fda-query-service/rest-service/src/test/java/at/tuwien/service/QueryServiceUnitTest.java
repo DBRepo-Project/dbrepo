@@ -26,7 +26,6 @@ import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -127,7 +126,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
         final Long page = 0L;
         final Long size = 10L;
 
@@ -196,7 +195,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -211,7 +210,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
 
         /* mock */

@@ -83,7 +83,7 @@ public abstract class HibernateConnector {
             return preparedStatement.executeQuery();
         } catch (SQLException e) {
             log.error("Failed to execute statement");
-            log.debug("failed to execute statement {}", statement);
+            log.debug("failed to execute statement [{}] reason: {}", statement, e.getMessage());
             throw new DatabaseConnectionException("Failed to execute statement", e);
         }
     }

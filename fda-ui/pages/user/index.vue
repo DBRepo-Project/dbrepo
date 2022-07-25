@@ -116,6 +116,14 @@
           </v-row>
           <v-row dense>
             <v-col cols="5">
+              <v-switch
+                v-model="user.theme_dark"
+                inset
+                label="Dark Mode" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="5">
               <v-btn
                 color="primary"
                 :disabled="!valid2 || error"
@@ -179,7 +187,8 @@ export default {
         titles_before: null,
         email_verified: false,
         affiliation: null,
-        orcid: null
+        orcid: null,
+        theme_dark: null
       },
       reset: {
         password: null

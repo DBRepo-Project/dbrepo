@@ -41,7 +41,6 @@ from api_query.models.query_dto import QueryDto
 from api_query.models.query_result_dto import QueryResultDto
 from api_query.models.table_csv_delete_dto import TableCsvDeleteDto
 from api_query.models.table_csv_dto import TableCsvDto
-from api_query.models.table_csv_update_dto import TableCsvUpdateDto
 from api_query.models.table_dto import TableDto
 from api_query.models.table_history_dto import TableHistoryDto
 from api_query.models.user_dto import UserDto

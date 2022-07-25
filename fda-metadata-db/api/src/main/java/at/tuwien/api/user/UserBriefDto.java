@@ -49,6 +49,11 @@ public class UserBriefDto {
     private String orcid;
 
     @NotNull
+    @JsonProperty("theme_dark")
+    @Parameter(name = "theme dark")
+    private Boolean themeDark;
+
+    @NotNull
     @Parameter(name = "mail address")
     private String email;
 

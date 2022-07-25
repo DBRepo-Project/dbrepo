@@ -62,10 +62,6 @@
             <v-list-item-title>{{ locale.name }}</v-list-item-title>
           </v-list-item>
           <v-list-item
-            @click="switchTheme()">
-            {{ nextTheme }} Theme
-          </v-list-item>
-          <v-list-item
             v-if="token"
             @click="logout">
             Logout
@@ -186,9 +182,6 @@ export default {
     this.loadDB()
   },
   methods: {
-    switchTheme () {
-      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-    },
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)

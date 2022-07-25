@@ -40,7 +40,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void insert_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
         final ImportDto request = ImportDto.builder()
                 .location("test:csv/csv_01.csv")
                 .build();
@@ -55,8 +55,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void insert_locationNull_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, ContainerNotFoundException,
-            NotAllowedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
+            NotAllowedException, DatabaseConnectionException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "value"))
                 .build();
@@ -82,7 +82,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     public void getAll_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException {
+            QueryStoreException, NotAllowedException, QueryMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
@@ -92,7 +92,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     public void findAll_noPagination_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryStoreException, NotAllowedException {
+            ContainerNotFoundException, QueryStoreException, NotAllowedException, QueryMalformedException {
         final Long page = null;
         final Long size = null;
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
@@ -188,7 +188,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     public void getAllTotal_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException {
+            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException,
+            QueryMalformedException {
         final Instant timestamp = Instant.now();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -202,7 +203,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     public void getAllCount_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException {
+            PaginationException, ContainerNotFoundException, QueryStoreException, NotAllowedException,
+            QueryMalformedException {
         final Instant timestamp = Instant.now();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

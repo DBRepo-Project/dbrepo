@@ -38,7 +38,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_timestampNull_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException {
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
@@ -51,7 +51,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException, NotAllowedException {
+            ContainerNotFoundException, NotAllowedException, QueryMalformedException {
         final Instant request = Instant.now()
                 .minusMillis(1000 * 1000);
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
@@ -67,7 +67,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @Test
     public void export_inFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException {
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException {
         final Instant request = Instant.now()
                 .plusMillis(1000 * 1000);
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);

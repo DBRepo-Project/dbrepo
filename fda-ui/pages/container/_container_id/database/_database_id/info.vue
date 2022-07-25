@@ -10,21 +10,28 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>
-                    Visibility
+                    Database Visibility
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ database.is_public ? 'Public' : 'Private' }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Publisher
+                    Database Publisher
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ publisher }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Description
+                    Database Internal Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ internal_name }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Database Description
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
@@ -160,6 +167,9 @@ export default {
     },
     language () {
       return this.database.language === null ? '(none)' : this.database.language
+    },
+    internal_name () {
+      return this.database.internal_name
     },
     publication () {
       return this.database.publication === null ? '(none)' : this.database.publication

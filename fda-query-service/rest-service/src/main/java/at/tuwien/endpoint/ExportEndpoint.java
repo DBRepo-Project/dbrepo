@@ -44,7 +44,7 @@ public class ExportEndpoint extends AbstractEndpoint {
                                                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, NotAllowedException {
+            FileStorageException, NotAllowedException, QueryMalformedException {
         if (!hasDatabasePermission(id, databaseId, "DATA_EXPORT", principal)) {
             log.error("Missing data export permission");
             throw new NotAllowedException("Missing data export permission");

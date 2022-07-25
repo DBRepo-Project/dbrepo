@@ -1,10 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.NotAllowedException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
@@ -39,7 +36,8 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
                                                         @NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId,
                                                         @NotNull Principal principal)
-            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException {
+            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException,
+            QueryStoreException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_HISTORY", principal)) {
             log.error("Missing data history permission");
             throw new NotAllowedException("Missing data history permission");

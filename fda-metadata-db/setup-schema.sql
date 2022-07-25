@@ -152,6 +152,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Preceding_titles     VARCHAR(255),
     Postpositioned_title VARCHAR(255),
     orcid                VARCHAR(16),
+    theme_dark           BOOLEAN                     NOT NULL DEFAULT false,
     affiliation          VARCHAR(255),
     Main_Email           VARCHAR(255)                not null,
     main_email_verified  bool                        not null default false,

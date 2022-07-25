@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
-import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -14,6 +13,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.*;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -32,12 +32,14 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.security.Principal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 @Log4j2
@@ -65,9 +67,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
             TableMalformedException {
-        Query q = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
-        final QueryResultDto result = this.reExecute(containerId, databaseId, q, page, size);
-        q = storeService.update(containerId, databaseId, result, result.getResultNumber(), q);
+        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
+        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size);
+        storeService.update(containerId, databaseId, result, result.getResultNumber(), query);
         return result;
     }
 
@@ -75,16 +77,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            ColumnParseException, DatabaseConnectionException, TableMalformedException {
+            ColumnParseException, DatabaseConnectionException, TableMalformedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        final ResultSet resultSet = execute(connection, queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getExecution(), page, size));
-        log.debug("number of active connections {}", activeConnection(connection));
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns;
         try {
@@ -95,10 +95,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         final QueryResultDto dto;
         try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection,
+                    query.getQuery(), database, query.getExecution(), page, size);
+            final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
-            log.error("Failed to map object");
-            throw new TableMalformedException("Failed to map object", e);
+            log.error("Failed to execute and map time-versioned query");
+            log.debug("failed to execute and map time-versioned query: {}", e.getMessage());
+            throw new TableMalformedException("Failed to execute and map time-versioned query", e);
+        } finally {
+            dataSource.close();
         }
         dto.setId(query.getId());
         dto.setResultNumber(countQueryResults(containerId, databaseId, query));
@@ -110,15 +117,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
                                   Long size) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        final ResultSet resultSet = execute(connection, queryMapper.tableToRawFindAllQuery(table, timestamp, size, page));
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         final QueryResultDto result;
         try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableToRawFindAllQuery(connection, table, timestamp, size, page);
+            final ResultSet resultSet = preparedStatement.executeQuery();
             result = queryMapper.queryTableToQueryResultDto(resultSet, table);
         } catch (DateTimeException e) {
             log.error("Failed to parse date from the one stored in the metadata database");
@@ -126,6 +135,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } catch (SQLException e) {
             log.error("Failed to map object");
             throw new TableMalformedException("Failed to map object", e);
+        } finally {
+            dataSource.close();
         }
         return result;
     }
@@ -135,20 +146,26 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            FileStorageException {
+            FileStorageException, QueryMalformedException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        execute(connection, queryMapper.tableToRawExportQuery(table, timestamp, filename));
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
         final InputStream inputStream;
         try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableToRawExportQuery(connection, table, timestamp, filename);
+            preparedStatement.executeUpdate();
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
-        } catch (IOException e) {
-            throw new FileStorageException("Export file not present");
+        } catch (IOException | SQLException e) {
+            log.error("Failed to execute query and/or export file");
+            log.debug("failed to execute query and/or export file: {}", e.getMessage());
+            throw new FileStorageException("Failed to execute query and/or export file", e);
+        } finally {
+            dataSource.close();
         }
         return ExportResource.builder()
                 .resource(new InputStreamResource(inputStream))
@@ -167,15 +184,20 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(containerId, databaseId);
         final Query query = storeService.findOne(containerId, databaseId, queryId);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        execute(connection, queryMapper.queryToRawExportQuery(query, filename));
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
         final InputStream inputStream;
         try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.queryToRawExportQuery(connection, query, filename);
+            preparedStatement.executeUpdate();
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
-        } catch (IOException e) {
-            log.error("Export file not present");
-            throw new FileStorageException("Export file not present", e);
+        } catch (IOException | SQLException e) {
+            log.error("Failed to execute query and/or export file");
+            log.debug("failed to execute query and/or export file: {}", e.getMessage());
+            throw new FileStorageException("Failed to execute query and/or export file", e);
+        } finally {
+            dataSource.close();
         }
         final InputStreamResource resource = new InputStreamResource(inputStream);
         return ExportResource.builder()
@@ -188,14 +210,23 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws DatabaseNotFoundException, TableNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException {
+            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        final ResultSet resultSet = execute(connection, queryMapper.tableToRawCountAllQuery(table, timestamp));
-        return queryMapper.resultSetToLong(resultSet);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableToRawCountAllQuery(connection, table, timestamp);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultSetToNumber(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to count tuples");
+            throw new TableMalformedException("Failed to count tuples", e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
@@ -208,56 +239,78 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) return;
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* prepare the statement */
-        final InsertTableRawQuery raw;
         try {
-            raw = queryMapper.tableCsvDtoToRawInsertQuery(table, data);
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawInsertQuery(connection, table, data);
+            preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
-            return;
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
-            return;
         } catch (Exception e) {
             log.error("Failed for unknown reason: {}", e.getMessage());
-            return;
+        } finally {
+            dataSource.close();
         }
-        execute(connection, raw.getQuery(), raw.getData());
     }
 
     @Override
     @Transactional
     public void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, DatabaseConnectionException {
+            TableNotFoundException, DatabaseConnectionException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* run query */
         if (data.getKeys().size() == 0) return;
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* prepare the statement */
-        execute(connection, queryMapper.tableCsvDtoToRawDeleteQuery(table, data), data.getKeys().values());
-        log.info("Deleted tuple(s)");
-        log.debug("Deleted tuple(s) {}", data);
+        final List<Object> values = new LinkedList<>(data.getKeys()
+                .values());
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawDeleteQuery(connection, table, data);
+            for (int i = 0; i < data.getKeys().size(); i++) {
+                preparedStatement.setObject(i, values.get(i));
+            }
+        } catch(SQLException e) {
+            log.error("Failed to delete tuples");
+            throw new TableMalformedException("Failed to delete tuples");
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
     @Transactional
     public void insert(Long containerId, Long databaseId, Long tableId, ImportDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException {
+            TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         /* preparing the statements */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
-        execute(connection, queryMapper.generateTemporaryTableSQL(table));
-        execute(connection, queryMapper.pathToRawInsertQuery(table, data).getQuery());
-        execute(connection, queryMapper.generateInsertFromTemporaryTableSQL(table));
-        execute(connection, queryMapper.dropTemporaryTableSQL(table));
+        try {
+            final Connection connection = dataSource.getConnection();
+            queryMapper.generateTemporaryTableSQL(connection, table)
+                    .executeUpdate();
+            queryMapper.pathToRawInsertQuery(connection, table, data)
+                    .executeUpdate();
+            queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
+                    .executeUpdate();
+            queryMapper.dropTemporaryTableSQL(connection, table)
+                    .executeUpdate();
+        } catch(SQLException e) {
+            log.error("Failed to create/insert/drop temporary table");
+            throw new TableMalformedException("Failed to create/insert/drop temporary table");
+        } finally {
+            dataSource.close();
+        }
     }
 
     /**
@@ -357,13 +410,23 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      */
     @Transactional(readOnly = true)
     protected Long countQueryResults(Long containerId, Long databaseId, Query query)
-            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseConnectionException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseConnectionException,
+            QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        final ResultSet resultSet = execute(connection, queryMapper.queryToRawTimestampedCountQuery(query.getQuery(), database, query.getExecution()));
-        return queryMapper.resultSetToLong(resultSet);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedCountQuery(connection, query.getQuery(), database, query.getExecution());
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultSetToNumber(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to count tuples");
+            throw new TableMalformedException("Failed to count tuples", e);
+        } finally {
+            dataSource.close();
+        }
     }
 
 
