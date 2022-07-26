@@ -27,6 +27,9 @@
         <v-btn :disabled="!token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
+        <v-btn :disabled="error" class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
+          <v-icon left>mdi-download</v-icon> Data .csv
+        </v-btn>
         <v-btn
           v-if="false"
           color="primary"
@@ -96,6 +99,7 @@ export default {
       footerProps: {
         'items-per-page-options': [10, 20, 30, 40, 50]
       },
+      downloadLoading: false,
       dateMenu: false,
       timeMenu: false,
       selection: [],
@@ -172,6 +176,27 @@ export default {
     this.loadData()
   },
   methods: {
+    async download () {
+      this.downloadLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('export table', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'table.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export table', err)
+        this.$toast.error('Could not export table')
+        this.error = true
+      }
+      this.downloadLoading = false
+    },
     addTuple () {
       this.edit = false
       const data = {}

@@ -53,21 +53,14 @@ export default {
         console.debug('send data', data)
         const page = 0
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/
-${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-${this.parent.queryId ? `/${this.parent.queryId}` : ''}
-?${urlParams}`, data, {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query${this.parent.queryId ? `/${this.parent.queryId}` : ''}?${urlParams}`, data, {
           headers: this.headers
         })
         console.debug('query result', res)
         this.$toast.success('Successfully executed query')
+        this.mapResults(res.data)
         this.loading = false
         this.parent.queryId = res.data.id
-        this.result.headers = this.parent.select.map((s) => {
-          return { text: s.name, value: s.name, sortable: false }
-        })
-        this.result.rows = res.data.result
-        this.total = res.data.resultNumber
       } catch (err) {
         console.error('query execute', err)
         this.$toast.error('Could not execute query')
@@ -95,13 +88,8 @@ ${this.$route.params.container_id}/database/${this.$route.params.database_id}/qu
 ?${urlParams}`, {}, {
           headers: this.headers
         })
+        this.mapResults(res.data)
         this.loading = false
-        if (res.data.result.length) {
-          this.result.headers = this.buildHeaders(res.data.result[0])
-        }
-        console.debug('query result', res.data)
-        this.result.rows = res.data.result
-        this.total = res.data.resultNumber
       } catch (err) {
         if (err.response.status !== 401 && err.response.status !== 405) {
           console.error('query execute', err)
@@ -109,6 +97,14 @@ ${this.$route.params.container_id}/database/${this.$route.params.database_id}/qu
         }
         this.loading = false
       }
+    },
+    mapResults (data) {
+      if (data.result.length) {
+        this.result.headers = this.buildHeaders(data.result[0])
+      }
+      console.debug('query result', data)
+      this.result.rows = data.result
+      this.total = data.resultNumber
     }
   }
 }

@@ -41,6 +41,7 @@ class UserDto(object):
         'email': 'str',
         'titles_before': 'str',
         'titles_after': 'str',
+        'theme_dark': 'bool',
         'email_verified': 'bool'
     }
 
@@ -58,10 +59,11 @@ class UserDto(object):
         'email': 'email',
         'titles_before': 'titles_before',
         'titles_after': 'titles_after',
+        'theme_dark': 'theme_dark',
         'email_verified': 'email_verified'
     }
 
-    def __init__(self, id=None, authorities=None, username=None, firstname=None, lastname=None, affiliation=None, orcid=None, containers=None, databases=None, identifiers=None, email=None, titles_before=None, titles_after=None, email_verified=None):  # noqa: E501
+    def __init__(self, id=None, authorities=None, username=None, firstname=None, lastname=None, affiliation=None, orcid=None, containers=None, databases=None, identifiers=None, email=None, titles_before=None, titles_after=None, theme_dark=None, email_verified=None):  # noqa: E501
         """UserDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._authorities = None
@@ -76,6 +78,7 @@ class UserDto(object):
         self._email = None
         self._titles_before = None
         self._titles_after = None
+        self._theme_dark = None
         self._email_verified = None
         self.discriminator = None
         self.id = id
@@ -101,6 +104,7 @@ class UserDto(object):
             self.titles_before = titles_before
         if titles_after is not None:
             self.titles_after = titles_after
+        self.theme_dark = theme_dark
         if email_verified is not None:
             self.email_verified = email_verified
 
@@ -382,6 +386,29 @@ class UserDto(object):
         """
 
         self._titles_after = titles_after
+
+    @property
+    def theme_dark(self):
+        """Gets the theme_dark of this UserDto.  # noqa: E501
+
+
+        :return: The theme_dark of this UserDto.  # noqa: E501
+        :rtype: bool
+        """
+        return self._theme_dark
+
+    @theme_dark.setter
+    def theme_dark(self, theme_dark):
+        """Sets the theme_dark of this UserDto.
+
+
+        :param theme_dark: The theme_dark of this UserDto.  # noqa: E501
+        :type: bool
+        """
+        if theme_dark is None:
+            raise ValueError("Invalid value for `theme_dark`, must not be `None`")  # noqa: E501
+
+        self._theme_dark = theme_dark
 
     @property
     def email_verified(self):

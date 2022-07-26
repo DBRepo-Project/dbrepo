@@ -58,7 +58,7 @@ public interface StoreMapper {
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -69,7 +69,7 @@ public interface StoreMapper {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -84,7 +84,7 @@ public interface StoreMapper {
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -107,7 +107,7 @@ public interface StoreMapper {
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }

@@ -104,7 +104,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -121,7 +121,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -177,7 +177,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -323,7 +323,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -337,7 +337,7 @@ public interface QueryMapper {
         final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(mariaDbFormatter.format(query.getExecution()))
                 .append("' ");
-        final Pattern pattern = Pattern.compile("from `?[a-zA-Z0-9_]+`?", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Pattern pattern = Pattern.compile("from `?[a-zA-Z0-9_-]+`?", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
         final Matcher matcher = pattern.matcher(query.getQuery());
         if (!matcher.find()) {
             log.error("Failed to find 'from' clause in query");
@@ -355,7 +355,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -407,7 +407,7 @@ public interface QueryMapper {
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -440,7 +440,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -509,7 +509,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -560,7 +560,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -626,7 +626,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -681,7 +681,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -690,7 +690,7 @@ public interface QueryMapper {
         final List<Map<String, Object>> queryResult = new LinkedList<>();
         while (result.next()) {
             /* map the result set to the columns through the stored metadata in the metadata database */
-            int[] idx = new int[]{0};
+            int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
             for (int i = 0; i < table.getColumns().size(); i++) {
                 map.put(table.getColumns().get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), table.getColumns().get(i)));
@@ -717,7 +717,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -857,7 +857,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason {}", statement, e.getMessage());
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }

@@ -63,7 +63,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
             log.error("Failed to find queries");
-            log.debug("failed to find queries in container with id {} and database with id {}, reason {}", containerId, databaseId, e.getMessage());
+            log.debug("failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
             throw new QueryStoreException("Query not found");
         } finally {
             dataSource.close();

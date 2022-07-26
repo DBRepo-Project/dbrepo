@@ -134,6 +134,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throw new TableMalformedException("Could not parse date from format", e);
         } catch (SQLException e) {
             log.error("Failed to map object");
+            log.debug("failed to map object, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to map object", e);
         } finally {
             dataSource.close();
