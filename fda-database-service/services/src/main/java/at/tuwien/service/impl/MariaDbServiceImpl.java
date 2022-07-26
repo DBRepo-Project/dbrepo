@@ -15,6 +15,7 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.LicenseService;
 import at.tuwien.service.UserService;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -30,6 +31,7 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -103,17 +105,26 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, ContainerConnectionException, AmqpException,
-            ContainerNotFoundException, DatabaseConnectionException {
+            ImageNotSupportedException, DatabaseMalformedException, ContainerNotFoundException,
+            DatabaseConnectionException, QueryMalformedException {
         final Container container = containerService.find(containerId);
         final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
-        final Connection connection = getConnection(container.getImage(), container, database);
-        execute(connection, databaseMapper.databaseToRawDeleteDatabaseQuery(database));
-        activeConnection(connection);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to delete database with id {}", databaseId);
+            log.debug("failed to delete database {}, reason: {}", database, e.getMessage());
+            throw new DatabaseMalformedException("Failed to execute and map time-versioned query", e);
+        } finally {
+            dataSource.close();
+        }
         database.setDeleted(Instant.now()) /* method has void, only for debug logs */;
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
@@ -126,7 +137,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     public Database create(Long containerId, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNameExistsException, DatabaseConnectionException {
+            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
         final Container container = containerService.find(containerId);
         if (container.getDatabases().size() != 0) {
             log.error("Currently we only support one database per container.");
@@ -137,13 +148,22 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
         database.setContainer(container);
-        /* create database */
-        final Connection connection = getConnection(container.getImage(), container);
-        execute(connection, databaseMapper.databaseToRawCreateDatabaseQuery(database));
-        log.debug("active database connections {}", activeConnection(connection));
-        /* grant read-only access */
-        execute(connection, databaseMapper.imageToRawGrantReadonlyAccessQuery());
-        log.debug("active database connections {}", activeConnection(connection));
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
+        try {
+            /* create database */
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = databaseMapper.databaseToRawCreateDatabaseQuery(connection, database);
+            preparedStatement.executeUpdate();
+            /* grant read-only access */
+            final PreparedStatement preparedStatement1 = databaseMapper.imageToRawGrantReadonlyAccessQuery(connection);
+            preparedStatement1.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to delete database");
+            log.debug("failed to delete database {}, reason: {}", database, e.getMessage());
+            throw new DatabaseMalformedException("Failed to execute and map time-versioned query", e);
+        } finally {
+            dataSource.close();
+        }
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setDescription(createDto.getDescription());

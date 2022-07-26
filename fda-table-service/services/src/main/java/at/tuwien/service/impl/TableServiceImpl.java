@@ -13,6 +13,7 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.UserService;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -25,6 +26,7 @@ import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
 import java.security.Principal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,13 +61,23 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, DatabaseConnectionException {
+            TableMalformedException, QueryMalformedException {
         /* find */
         final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Table table = findById(containerId, databaseId, tableId, principal);
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        execute(connection, tableMapper.tableToDropTableRawQuery(table));
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = tableMapper.tableToDropTableRawQuery(connection, table);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to delete table with id {}", tableId);
+            log.debug("failed to delete table {}, reason: {}", table, e.getMessage());
+            throw new TableMalformedException("Failed to delete table", e);
+        } finally {
+            dataSource.close();
+        }
         log.info("Deleted table with id {}", table.getId());
         log.debug("deleted table {}", table);
     }
@@ -87,7 +99,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, UserNotFoundException, DatabaseConnectionException {
+            TableNameExistsException, UserNotFoundException, QueryMalformedException {
         /* find */
         final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
@@ -98,14 +110,26 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             throw new TableNameExistsException("Table name exists");
         }
         /* run query */
-        final Connection connection = getConnection(database.getContainer().getImage(), database.getContainer(), database);
-        final CreateTableRawQuery query = tableMapper.tableToCreateTableRawQuery(database, createDto);
-        if (query.getGenerated()) {
-            /* in case the id column needs to be generated, we need to generate the sequence too */
-            execute(connection, tableMapper.tableToCreateSequenceRawQuery(database, createDto));
-            log.debug("created id sequence");
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final CreateTableRawQuery query;
+        try {
+            final Connection connection = dataSource.getConnection();
+            query = tableMapper.tableToCreateTableRawQuery(connection, database, createDto);
+            if (query.getGenerated()) {
+                /* in case the id column needs to be generated, we need to generate the sequence too */
+                final PreparedStatement preparedStatement10 = tableMapper.tableToCreateSequenceRawQuery(connection, database, createDto);
+                preparedStatement10.executeUpdate();
+                log.debug("created id sequence");
+            }
+            final PreparedStatement preparedStatement11 = query.getPreparedStatement();
+            preparedStatement11.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to create table");
+            log.debug("failed to create table, reason: {}", e.getMessage());
+            throw new TableMalformedException("Failed to create table", e);
+        } finally {
+            dataSource.close();
         }
-        execute(connection, query.getQuery());
         int[] idx = {0};
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
@@ -129,7 +153,18 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                     column.setOrdinalPosition(idx[0]++);
                 });
         /* create history view */
-        execute(connection, tableMapper.tableToCreateHistoryViewRawQuery(entity));
+        final ComboPooledDataSource dataSource1 = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource1.getConnection();
+            final PreparedStatement preparedStatement = tableMapper.tableToCreateHistoryViewRawQuery(connection, entity);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to create history view");
+            log.debug("failed to create history view, reason: {}", e.getMessage());
+            throw new TableMalformedException("Failed to create history view", e);
+        } finally {
+            dataSource1.close();
+        }
         /* save */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());

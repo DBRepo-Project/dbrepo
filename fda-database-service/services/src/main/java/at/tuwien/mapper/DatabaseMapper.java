@@ -7,6 +7,7 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.querystore.Query;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
@@ -15,6 +16,9 @@ import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import java.security.Principal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -58,22 +62,43 @@ public interface DatabaseMapper {
     })
     DatabaseDto databaseToDatabaseDto(Database data);
 
-    default String databaseToRawCreateDatabaseQuery(Database database) {
-        final String statement = "CREATE DATABASE `" + database.getInternalName() + "`;";
-        log.trace("raw create statement [{}]", statement);
-        return statement;
+    default PreparedStatement databaseToRawCreateDatabaseQuery(Connection connection, Database database) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
+                .append(database.getInternalName())
+                .append("`;");
+        log.trace("raw create statement [{}]", statement);try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String imageToRawGrantReadonlyAccessQuery() {
-        final String statement = "GRANT SELECT ON *.* TO `mariadb`@`%`;";
+    default PreparedStatement imageToRawGrantReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
         log.trace("raw grant readonly statement [{}]", statement);
-        return statement;
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String databaseToRawDeleteDatabaseQuery(Database database) {
-        final String statement = "DROP DATABASE `" + database.getInternalName() + "`;";
+    default PreparedStatement databaseToRawDeleteDatabaseQuery(Connection connection, Database database) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("DROP DATABASE `")
+                .append(database.getInternalName())
+                .append("`;");
         log.trace("raw grant readonly statement [{}]", statement);
-        return statement;
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default Principal userDetailsDtoToPrincipal(UserDetailsDto data) {

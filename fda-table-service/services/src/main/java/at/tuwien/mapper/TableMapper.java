@@ -13,12 +13,16 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.ImageNotSupportedException;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -144,11 +148,21 @@ public interface TableMapper {
      * @param data The table
      * @return The drop table query
      */
-    default String tableToDropTableRawQuery(Table data) throws ImageNotSupportedException {
+    default PreparedStatement tableToDropTableRawQuery(Connection connection, Table data) throws ImageNotSupportedException, QueryMalformedException {
         if (!data.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        return "DROP TABLE `" + data.getInternalName() + "`;";
+        final StringBuilder statement = new StringBuilder("DROP TABLE `")
+                .append(data.getInternalName())
+                .append("`;");
+        log.trace("mapped raw drop table query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     /**
@@ -159,9 +173,9 @@ public interface TableMapper {
      * @param data     The table
      * @return The create table query
      */
-    default CreateTableRawQuery tableToCreateTableRawQuery(Database database, TableCreateDto data)
+    default CreateTableRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException,
-            TableMalformedException {
+            TableMalformedException, QueryMalformedException {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -196,21 +210,23 @@ public interface TableMapper {
             data.setColumns(columns);
         }
         final int[] idx = {0};
-        Arrays.stream(data.getColumns())
-                .forEach(c -> query.append(idx[0]++ > 0 ? ", " : "")
-                        .append("`")
-                        .append(nameToInternalName(c.getName()))
-                        .append("` ")
-                        /* data type */
-                        .append(columnTypeDtoToDataType(c))
-                        /* null expressions */
-                        .append(c.getNullAllowed() ? " NULL" : " NOT NULL")
-                        /* default expressions */
-                        .append(!primaryColumnExists && c.getName().equals(
-                                "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
-                        /* check expressions */
-                        .append(c.getCheckExpression() != null &&
-                                !c.getCheckExpression().isEmpty() ? " CHECK (" + c.getCheckExpression() + ")" : ""));
+        for (int i = 0; i < data.getColumns().length; i++) {
+            final ColumnCreateDto c = data.getColumns()[i];
+            query.append(idx[0]++ > 0 ? ", " : "")
+                    .append("`")
+                    .append(nameToInternalName(c.getName()))
+                    .append("` ")
+                    /* data type */
+                    .append(columnTypeDtoToDataType(c))
+                    /* null expressions */
+                    .append(c.getNullAllowed() ? " NULL" : " NOT NULL")
+                    /* default expressions */
+                    .append(!primaryColumnExists && c.getName().equals(
+                            "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
+                    /* check expressions */
+                    .append(c.getCheckExpression() != null &&
+                            !c.getCheckExpression().isEmpty() ? " CHECK (" + c.getCheckExpression() + ")" : "");
+        }
         /* create primary key index */
         query.append(", PRIMARY KEY (")
                 .append(String.join(",", Arrays.stream(data.getColumns())
@@ -243,41 +259,62 @@ public interface TableMapper {
         query.append(") WITH SYSTEM VERSIONING;");
         log.debug("create table query built with {} columns and system versioning", data.getColumns().length);
         log.debug("raw create table query: [{}]", query);
-        return CreateTableRawQuery.builder()
-                .query(query.toString())
-                .generated(!primaryColumnExists)
-                .build();
+        try {
+            return CreateTableRawQuery.builder()
+                    .preparedStatement(connection.prepareStatement(query.toString()))
+                    .generated(!primaryColumnExists)
+                    .build();
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", query, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
     default String tableCreateDtoToSequenceName(TableCreateDto data) {
         return "seq_" + nameToInternalName(data.getName()) + "_id";
     }
 
-    default String tableToCreateSequenceRawQuery(Database database, TableCreateDto data)
-            throws ImageNotSupportedException {
+    default PreparedStatement tableToCreateSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
+            throws ImageNotSupportedException, QueryMalformedException {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        return "CREATE SEQUENCE `" + tableCreateDtoToSequenceName(data) + "` START WITH 1 INCREMENT BY 1;";
+        final StringBuilder statement = new StringBuilder("CREATE SEQUENCE `")
+                .append(tableCreateDtoToSequenceName(data))
+                .append("` START WITH 1 INCREMENT BY 1;");
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
-    default String tableToCreateHistoryViewRawQuery(Table data) {
-        final StringBuilder builder = new StringBuilder("CREATE VIEW `hs_")
+    default PreparedStatement tableToCreateHistoryViewRawQuery(Connection connection, Table data) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE VIEW `hs_")
                 .append(data.getInternalName())
                 .append("` AS SELECT ");
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()
                 .filter(TableColumn::getIsPrimaryKey)
-                .forEach(c -> builder.append(idx[0]++ > 0 ? "," : "")
+                .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(c.getInternalName())
                         .append("`"));
-        builder.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
+        statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
                 .append(data.getInternalName())
                 .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC");
-        log.trace("created history view query [{}]", builder);
-        return builder.toString();
+        log.trace("created history view query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
 }

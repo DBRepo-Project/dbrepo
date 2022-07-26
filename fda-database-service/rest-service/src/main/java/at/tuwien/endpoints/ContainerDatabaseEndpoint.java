@@ -79,7 +79,7 @@ public class ContainerDatabaseEndpoint {
                                                    Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException {
+            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId());
@@ -128,7 +128,7 @@ public class ContainerDatabaseEndpoint {
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            ContainerNotFoundException, DatabaseConnectionException {
+            ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);
