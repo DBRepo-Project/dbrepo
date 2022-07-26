@@ -116,14 +116,6 @@
           </v-row>
           <v-row dense>
             <v-col cols="5">
-              <v-switch
-                v-model="user.theme_dark"
-                inset
-                label="Dark Mode" />
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col cols="5">
               <v-btn
                 color="primary"
                 :disabled="!valid2 || error"
@@ -164,6 +156,23 @@
           <pre>{{ $refs.form3 }}</pre>
         </v-form>
       </v-card-text>
+      <v-divider />
+      <v-card-title>Theme</v-card-title>
+      <v-card-text>
+        <v-form v-model="valid4" @submit.prevent="submit">
+          <v-row dense>
+            <v-col cols="5">
+              <v-switch
+                v-model="user.theme_dark"
+                inset
+                label="Dark Mode"
+                :disabled="error"
+                :loading="loadingTheme"
+                @click="toggleTheme" />
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -198,6 +207,7 @@ export default {
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
       loading: false,
+      loadingTheme: false,
       error: false
     }
   },
@@ -275,7 +285,7 @@ export default {
     async changePassword () {
       try {
         this.loading = true
-        const res = await this.$axios.put('/api/user/' + this.user.id + '/password', this.reset, this.config)
+        const res = await this.$axios.put(`/api/user/${this.user.id}/password`, this.reset, this.config)
         console.debug('password', res.data)
         this.error = false
         this.$toast.success('Successfully changed the password')
@@ -288,7 +298,7 @@ export default {
     async updateInfo () {
       try {
         this.loading = true
-        const res = await this.$axios.put('/api/user/' + this.user.id, {
+        const res = await this.$axios.put(`/api/user/${this.user.id}`, {
           titles_before: this.user.titles_before,
           titles_after: this.user.titles_after,
           firstname: this.user.firstname,
@@ -305,6 +315,24 @@ export default {
         this.error = true
       }
       this.loading = false
+    },
+    async toggleTheme () {
+      if (this.loading) {
+        return
+      }
+      try {
+        this.loadingTheme = true
+        const res = await this.$axios.put(`/api/user/${this.user.id}/theme`, {
+          theme_dark: this.user.theme_dark
+        }, this.config)
+        console.debug('theme set', res.data)
+        this.$vuetify.theme.dark = this.user.theme_dark
+      } catch (err) {
+        console.error('theme set', err)
+        this.$toast.error('Failed to update theme')
+        this.error = true
+      }
+      this.loadingTheme = false
     }
   }
 }

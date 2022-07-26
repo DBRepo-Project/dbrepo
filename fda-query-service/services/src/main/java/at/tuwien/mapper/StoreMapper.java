@@ -165,6 +165,7 @@ public interface StoreMapper {
                 .lastModified(data.getTimestamp(7) != null ? data.getTimestamp(7)
                         .toInstant() : null)
                 .query(data.getString(8))
+                .queryNormalized(data.getString(8))
                 .queryHash(data.getString(9))
                 .resultHash(data.getString(10) != null ? data.getString(10) : null)
                 .resultNumber(data.getLong(11))

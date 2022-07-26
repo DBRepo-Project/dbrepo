@@ -1,0 +1,273 @@
+#!/bin/env python3
+
+import time
+import os
+import shutil
+import uuid
+import sys
+
+import api_query.rest
+from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
+from api_authentication.api.user_endpoint_api import UserEndpointApi
+from api_container.api.container_endpoint_api import ContainerEndpointApi
+from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_table.api.table_endpoint_api import TableEndpointApi
+from api_query.api.table_data_endpoint_api import TableDataEndpointApi
+from api_query.api.query_endpoint_api import QueryEndpointApi
+from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
+from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
+
+authentication = AuthenticationEndpointApi()
+user = UserEndpointApi()
+container = ContainerEndpointApi()
+database = ContainerDatabaseEndpointApi()
+table = TableEndpointApi()
+query = QueryEndpointApi()
+data = TableDataEndpointApi()
+identifier = IdentifierEndpointApi()
+persistence = PersistenceEndpointApi()
+
+token = ""
+
+
+def create_user(username):
+    response = user.register({
+        "username": username,
+        "password": username,
+        "email": username + "@gmail.com"
+    })
+    print("created user")
+    return response
+
+
+def auth_user(username):
+    response = authentication.authenticate_user1({
+        "username": username,
+        "password": username
+    })
+    print("authenticated user")
+    token = response.token
+    container.api_client.default_headers = {"Authorization": "Bearer " + token}
+    database.api_client.default_headers = {"Authorization": "Bearer " + token}
+    table.api_client.default_headers = {"Authorization": "Bearer " + token}
+    data.api_client.default_headers = {"Authorization": "Bearer " + token}
+    query.api_client.default_headers = {"Authorization": "Bearer " + token}
+    identifier.api_client.default_headers = {"Authorization": "Bearer " + token}
+    user.api_client.default_headers = {"Authorization": "Bearer " + token}
+    persistence.api_client.default_headers = {"Authorization": "Bearer " + token}
+    return response
+
+
+def create_container():
+    response = container.create1({
+        "name": "Airquality " + str(uuid.uuid1()),
+        "repository": "mariadb",
+        "tag": "10.5"
+    })
+    print("created container")
+    return response
+
+
+def start_container(container_id):
+    response = container.modify({
+        "action": "start"
+    }, container_id)
+    time.sleep(5)
+    print("started container")
+    return response
+
+
+def create_database(container_id, is_public=True):
+    response = database.create({
+        "name": "Airquality " + str(uuid.uuid1()),
+        "description": "Hourly measurements in Zürich, Switzerland",
+        "is_public": is_public
+    }, container_id)
+    print("created database")
+    return response
+
+
+def update_database(container_id, database_id, is_public=True):
+    response = database.update({
+        "description": "This dataset includes daily values from 1983 to the current day, divided into annual files. This includes the maximum hourly average and the number of times the hourly average limit value for ozone was exceeded and the daily averages for sulfur dioxide (SO2), carbon monoxide (CO), nitrogen oxide (NOx), nitrogen monoxide (NO), nitrogen dioxide (NO2), particulate matter (PM10 and PM2.5). ) and particle number (PN), provided that they are of sufficient quality. The values of the completed day for the current year are updated every 30 minutes after midnight (UTC+1).",
+        "publisher": "Technical University of Vienna",
+        "license": {
+            "identifier": "CC0-1.0",
+            "uri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
+        },
+        "language": "en",
+        "is_public": is_public,
+        "publication": "2022-07-19"
+    }, container_id, database_id)
+    print("updated database")
+    return response
+
+
+def create_table(container_id, database_id, columns=None):
+    if columns is None:
+        columns = [{
+            "name": "Date",
+            "type": "date",
+            "dfid": 1,
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Location",
+            "type": "string",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Parameter",
+            "type": "string",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Interval",
+            "type": "string",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Unit",
+            "type": "string",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Value",
+            "type": "decimal",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }, {
+            "name": "Status",
+            "type": "string",
+            "unique": False,
+            "primary_key": False,
+            "null_allowed": True,
+        }]
+    response = table.create({
+        "name": "Airquality " + str(uuid.uuid1()),
+        "description": "Airquality in Zürich, Switzerland",
+        "columns": columns
+    }, container_id, database_id)
+    print("created table")
+    return response
+
+
+def find_table(container_id, database_id, table_id):
+    response = table.find_by_id(container_id, database_id, table_id)
+    print("found table")
+    return response
+
+
+def fill_table(container_id, database_id, table_id):
+    shutil.copyfile(os.getcwd() + "/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
+    response = data.import_csv({
+        "location": "/tmp/ugz_ogd_air_h1_2021.csv",
+        "separator": ",",
+        "quote": "\"",
+        "skip_lines": 1
+    }, container_id, database_id, table_id)
+    print("filled table")
+    return response
+
+
+def create_query(container_id, database_id, statement, page=0, size=3):
+    try:
+        response = query.execute({
+            "statement": statement
+        }, container_id, database_id, page=page, size=size)
+        print("executed query")
+        return response
+    except api_query.rest.ApiException as e:
+        print(e)
+
+
+def create_identifier(container_id, database_id, query_id, visibility="everyone"):
+    response = identifier.create({
+        "qid": query_id,
+        "title": "Airquality",
+        "description": "Subset used for a scientific article",
+        "visibility": visibility,
+        "creators": [{
+            "name": "Weise, Martin",
+            "affiliation": "TU Wien",
+            "orcid": "0000-0003-4216-302X"
+        }, {
+            "name": "Rauber, Andreas",
+            "affiliation": "TU Wien",
+            "orcid": "0000-0002-9272-6225"
+        }],
+        "publication": "2022-07-16",
+        "related_identifiers": [{
+            "value": "http://localhost:3000/container/" + str(container_id) + "/database/" + str(database_id),
+            "type": "URL",
+            "relation": "IsCitedBy"
+        }]
+    }, token, container_id, database_id)
+    print("created identifier")
+    return response
+
+
+if __name__ == '__main__':
+    #
+    # create 1 user and 3 containers (public, private, public)
+    #
+    create_user("test1")
+    auth_user("test1")
+    # container 1
+    cid = create_container().id
+    start_container(cid)
+    dbid = create_database(cid).id
+    update_database(cid, dbid)
+    tid = create_table(cid, dbid).id
+    tname = find_table(cid, dbid, tid).internal_name
+    fill_table(cid, dbid, tid)
+    create_query(cid, dbid, "select `id` from `" + tname + "`")
+    create_query(cid, dbid, "select `date` from `" + tname + "`")
+    qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
+    create_query(cid, dbid, "select `foo` from `" + tname + "`")
+    create_identifier(cid, dbid, qid)
+    # container 2 (=private)
+    cid = create_container().id
+    start_container(cid)
+    dbid = create_database(cid, False).id
+    update_database(cid, dbid, is_public=False)
+    tid = create_table(cid, dbid).id
+    tname = find_table(cid, dbid, tid).internal_name
+    fill_table(cid, dbid, tid)
+    qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
+    create_identifier(cid, dbid, qid, visibility="self")
+    qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
+    create_identifier(cid, dbid, qid)
+    # container 3 with 3 tables
+    cid = create_container().id
+    start_container(cid)
+    dbid = create_database(cid).id
+    update_database(cid, dbid)
+    create_table(cid, dbid, columns=[])
+    create_table(cid, dbid, columns=[{
+        "name": "primary",
+        "type": "string",
+        "unique": True,
+        "primary_key": True,
+        "null_allowed": False,
+    }])
+    create_table(cid, dbid, columns=[{
+        "name": "primary",
+        "type": "number",
+        "unique": True,
+        "primary_key": True,
+        "null_allowed": False,
+    }])
+    create_table(cid, dbid, columns=[{
+        "name": "primary",
+        "type": "date",
+        "unique": True,
+        "primary_key": True,
+        "null_allowed": False,
+    }])

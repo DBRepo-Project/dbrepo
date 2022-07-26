@@ -37,9 +37,4 @@ public class UserUpdateDto {
     @Parameter(name = "orcid")
     private String orcid;
 
-    @NotNull
-    @JsonProperty("theme_dark")
-    @Parameter(name = "theme dark")
-    private Boolean themeDark;
-
 }

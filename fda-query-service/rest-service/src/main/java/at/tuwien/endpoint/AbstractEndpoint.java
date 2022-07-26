@@ -41,7 +41,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of("DATA_EXPORT", "DATA_VIEW", "DATA_HISTORY").contains(permissionCode)) {
+        if (database.getIsPublic() && List.of("DATA_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
         }
@@ -76,7 +76,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of("QUERY_VIEW_ALL", "QUERY_VIEW", "QUERY_EXPORT").contains(
+        if (database.getIsPublic() && List.of("QUERY_VIEW_ALL", "QUERY_VIEW", "QUERY_EXPORT", "QUERY_RE_EXECUTE").contains(
                 permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;

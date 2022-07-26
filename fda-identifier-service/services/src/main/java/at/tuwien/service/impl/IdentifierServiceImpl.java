@@ -126,6 +126,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                         relatedIdentifierRepository.save(id);
                     });
         }
+        entity.setQueryNormalized(query.getQueryNormalized());
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.debug("created identifier {}", identifier);

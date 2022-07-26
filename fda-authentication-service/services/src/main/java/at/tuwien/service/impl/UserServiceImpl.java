@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -210,6 +209,18 @@ public class UserServiceImpl implements UserService {
         log.info("Updated user with id {}", entity.getId());
         log.debug("updated user {}", entity);
         return entity;
+    }
+
+    @Override
+    @Transactional
+    public void updateTheme(Long id, UserThemeSetDto data) throws UserNotFoundException {
+        /* check */
+        final User user = find(id);
+        /* save */
+        user.setThemeDark(data.getThemeDark());
+        final User entity = userRepository.save(user);
+        log.info("Updated user with id {}", entity.getId());
+        log.debug("updated user {}", entity);
     }
 
     @Override

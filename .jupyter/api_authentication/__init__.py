@@ -43,4 +43,5 @@ from api_authentication.models.user_forgot_dto import UserForgotDto
 from api_authentication.models.user_password_dto import UserPasswordDto
 from api_authentication.models.user_reset_dto import UserResetDto
 from api_authentication.models.user_roles_dto import UserRolesDto
+from api_authentication.models.user_theme_set_dto import UserThemeSetDto
 from api_authentication.models.user_update_dto import UserUpdateDto

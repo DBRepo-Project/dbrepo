@@ -87,10 +87,9 @@ export default {
       this.$refs.form.validate()
     },
     async login () {
-      const url = '/api/auth'
       try {
         this.loading = true
-        const res = await this.$axios.post(url, this.loginAccount)
+        const res = await this.$axios.post('/api/auth', this.loginAccount)
         console.debug('login user', res.data)
         this.$store.commit('SET_TOKEN', res.data.token)
         const user = { ...res.data }

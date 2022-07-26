@@ -18,6 +18,7 @@
           <thead>
             <tr>
               <th>Name</th>
+              <th>Visibility</th>
               <th>Engine</th>
               <th>Creator</th>
               <th>Created</th>
@@ -25,7 +26,7 @@
           </thead>
           <tbody>
             <tr v-if="containers.length === 0" aria-readonly="true">
-              <td colspan="4">
+              <td colspan="5">
                 <span v-if="!loading">(no databases)</span>
               </td>
             </tr>
@@ -35,6 +36,13 @@
               class="database"
               @click="loadDatabase(item)">
               <td>{{ item.name }}</td>
+              <td>
+                <v-skeleton-loader v-if="!item.database" type="text" width="50" class="mt-1" />
+                <span v-if="item.database">
+                  <span v-if="item.database.is_public">Public</span>
+                  <span v-if="!item.database.is_public">Private <v-icon right>mdi-eye-off</v-icon></span>
+                </span>
+              </td>
               <td>
                 <span v-if="item.database">{{ item.database.engine }}</span>
                 <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />

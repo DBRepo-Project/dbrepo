@@ -1,12 +1,10 @@
 package at.tuwien.api.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Getter
 @Setter
@@ -19,10 +17,6 @@ public class UserBriefDto {
     @NotNull
     @Parameter(name = "id")
     private Long id;
-
-    @ToString.Exclude
-    @Parameter(name = "user authorities")
-    private List<GrantedAuthorityDto> authorities;
 
     @NotNull
     @Parameter(name = "user name")
@@ -52,13 +46,5 @@ public class UserBriefDto {
     @JsonProperty("theme_dark")
     @Parameter(name = "theme dark")
     private Boolean themeDark;
-
-    @NotNull
-    @Parameter(name = "mail address")
-    private String email;
-
-    @JsonProperty("email_verified")
-    @Parameter(name = "mail address verified")
-    private Boolean emailVerified;
 
 }

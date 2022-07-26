@@ -155,6 +155,17 @@ public class UserEndpoint {
                 .body(userMapper.userToUserDto(entity));
     }
 
+    @PutMapping("/{id}/theme")
+    @Transactional
+    @PreAuthorize("hasPermission(#id, 'UPDATE_THEME')")
+    @Operation(summary = "Update user theme", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Void> updateTheme(@NotNull @PathVariable("id") Long id,
+                                               @NotNull @Valid @RequestBody UserThemeSetDto data) throws UserNotFoundException {
+        userService.updateTheme(id, data);
+        return ResponseEntity.accepted()
+                .build();
+    }
+
     @PutMapping("/{id}/password")
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_PASSWORD')")

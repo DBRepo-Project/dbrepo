@@ -177,9 +177,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
-            throws DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException,
-            QueryMalformedException, DatabaseConnectionException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
@@ -210,8 +209,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
-            throws DatabaseNotFoundException, TableNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, TableMalformedException {
+            throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
+            DatabaseConnectionException, QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
@@ -277,7 +276,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             for (int i = 0; i < data.getKeys().size(); i++) {
                 preparedStatement.setObject(i, values.get(i));
             }
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("Failed to delete tuples");
             throw new TableMalformedException("Failed to delete tuples");
         } finally {
@@ -306,7 +305,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
             queryMapper.dropTemporaryTableSQL(connection, table)
                     .executeUpdate();
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             log.error("Failed to create/insert/drop temporary table");
             throw new TableMalformedException("Failed to create/insert/drop temporary table");
         } finally {

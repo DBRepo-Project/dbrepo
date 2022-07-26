@@ -1,5 +1,5 @@
 <template>
-  <v-app dark>
+  <v-app>
     <v-navigation-drawer v-model="drawer" fixed app>
       <v-img
         contain
@@ -104,6 +104,10 @@ export default {
   data () {
     return {
       drawer: false,
+      user: {
+        theme_dark: null
+      },
+      loadingUser: true,
       items: [
         {
           icon: mdiHome,
@@ -157,9 +161,6 @@ export default {
     username () {
       return this.$store.state.user && this.$store.state.user.username
     },
-    nextTheme () {
-      return this.$vuetify.theme.dark ? 'Light' : 'Dark'
-    },
     container () {
       return this.$store.state.container
     },
@@ -171,15 +172,29 @@ export default {
     },
     db () {
       return this.$store.state.db
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   watch: {
     $route () {
       this.loadDB()
+      if (this.token) {
+        this.loadUser()
+          .then(() => this.setTheme())
+      }
     }
   },
   mounted () {
     this.loadDB()
+    this.loadUser()
+      .then(() => this.setTheme())
   },
   methods: {
     logout () {
@@ -197,6 +212,25 @@ export default {
           console.error('Failed to load database', err)
         }
       }
+    },
+    async loadUser () {
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loadingUser = true
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        console.debug('user data', res.data)
+        this.user = res.data
+      } catch (err) {
+        console.error('user data', err)
+        this.$toast.error('Failed to load user')
+        this.error = true
+      }
+      this.loadingUser = false
+    },
+    setTheme () {
+      this.$vuetify.theme.dark = this.user.theme_dark
     }
   }
 }

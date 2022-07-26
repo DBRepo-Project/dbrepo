@@ -21,6 +21,5 @@ public interface QueryServiceGateway {
      * @throws RemoteUnavailableException The remote service is not available.
      */
     QueryDto find(Long containerId, Long databaseId, IdentifierCreateDto identifier, String authorization)
-            throws QueryNotFoundException,
-            RemoteUnavailableException;
+            throws QueryNotFoundException, RemoteUnavailableException;
 }

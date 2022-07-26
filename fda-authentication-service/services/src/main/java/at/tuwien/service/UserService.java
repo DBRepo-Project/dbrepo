@@ -89,6 +89,15 @@ public interface UserService {
             throws UserNotFoundException, RoleNotFoundException, RoleUniqueException;
 
     /**
+     * Sets the theme for the provided user.
+     *
+     * @param id   The user id.
+     * @param data The theme.
+     * @throws UserNotFoundException The user was not found.
+     */
+    void updateTheme(Long id, UserThemeSetDto data) throws UserNotFoundException;
+
+    /**
      * Updates a user with the given id and updated password.
      *
      * @param id   The id.

@@ -18,7 +18,6 @@ from api_table.models.api_error_dto import ApiErrorDto
 from api_table.models.column_create_dto import ColumnCreateDto
 from api_table.models.column_dto import ColumnDto
 from api_table.models.concept_dto import ConceptDto
-from api_table.models.granted_authority_dto import GrantedAuthorityDto
 from api_table.models.image_date_dto import ImageDateDto
 from api_table.models.table_brief_dto import TableBriefDto
 from api_table.models.table_create_dto import TableCreateDto
