@@ -24,8 +24,7 @@
               <th>Created</th>
             </tr>
           </thead>
-          <tbody
-            v-if="!loading">
+          <tbody>
             <tr v-if="databases.length === 0" aria-readonly="true">
               <td colspan="5">
                 <span>(no databases)</span>
