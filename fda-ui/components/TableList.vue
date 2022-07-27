@@ -116,14 +116,26 @@
                 <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
               </template>
               <template v-slot:item.column_concept="{ item }">
-                <DialogsColumnUnit :column="item" :table-id="tableDetails.id" @save="details" />
+                <v-btn v-if="!item.column_concept" small @click="pickUnit(item)">Assign</v-btn>
+                <v-btn
+                  v-if="item.column_concept"
+                  :title="item.column_concept.uri"
+                  color="secondary"
+                  small
+                  @click="pickUnit(item)">
+                  {{ item.column_concept.name }}
+                </v-btn>
               </template>
             </v-data-table>
           </v-row>
         </v-expansion-panel-content>
       </v-expansion-panel>
     </v-expansion-panels>
-
+    <v-dialog
+      v-model="unitDialog"
+      max-width="600px">
+      <DialogsColumnUnit :concept="unit" :table-id="tableDetails.id" @close="closed" />
+    </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="640">
       <v-card>
         <v-card-title class="headline">
@@ -155,6 +167,8 @@ export default {
       error: false,
       tables: [],
       panel: null,
+      unit: null,
+      unitDialog: false,
       database: {
         exchange: null,
         tables: []
@@ -215,6 +229,11 @@ export default {
     this.loadDatabase()
   },
   methods: {
+    pickUnit (item) {
+      this.unit = item.column_concept
+      this.unitDialog = true
+      console.debug('select', this.unit)
+    },
     async loadDatabase () {
       try {
         this.loading = true
@@ -242,6 +261,10 @@ export default {
         this.tableDetails = select[0]
         console.debug('table details', this.tableDetails)
       }
+    },
+    closed (data) {
+      console.debug('closed dialog', data)
+      this.unitDialog = false
     },
     /**
      * if tableId is given, open the table after refresh

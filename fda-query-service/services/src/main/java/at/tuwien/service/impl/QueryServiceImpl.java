@@ -1,11 +1,13 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
+import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -21,6 +23,8 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.hibernate.Session;
+import org.hibernate.query.NativeQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
@@ -39,7 +43,6 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 @Log4j2
@@ -231,6 +234,29 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
+    public void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, DatabaseConnectionException, QueryMalformedException {
+        /* find */
+        final Database database = databaseService.find(containerId, databaseId);
+        final Table table = tableService.find(containerId, databaseId, tableId);
+        /* run query */
+        if (data.getData().size() == 0 || data.getKeys().size() == 0) return;
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to count tuples");
+            throw new TableMalformedException("Failed to count tuples", e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    @Transactional
     public void insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException {
@@ -268,17 +294,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         if (data.getKeys().size() == 0) return;
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* prepare the statement */
-        final List<Object> values = new LinkedList<>(data.getKeys()
-                .values());
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawDeleteQuery(connection, table, data);
-            for (int i = 0; i < data.getKeys().size(); i++) {
-                preparedStatement.setObject(i, values.get(i));
-            }
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to delete tuples");
-            throw new TableMalformedException("Failed to delete tuples");
+            log.debug("failed to delete tuples, reason: {}", e.getMessage());
+            throw new TableMalformedException("Failed to delete tuples", e);
         } finally {
             dataSource.close();
         }

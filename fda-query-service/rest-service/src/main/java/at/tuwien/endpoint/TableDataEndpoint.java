@@ -4,6 +4,7 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,6 +51,25 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing data insert permission");
         }
         queryService.insert(containerId, databaseId, tableId, data);
+        return ResponseEntity.accepted()
+                .build();
+    }
+
+    @PutMapping
+    @Transactional
+    @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Void> update(@NotNull @PathVariable("id") Long containerId,
+                                          @NotNull @PathVariable("databaseId") Long databaseId,
+                                          @NotNull @PathVariable("tableId") Long tableId,
+                                          @NotNull @Valid @RequestBody TableCsvUpdateDto data,
+                                          @NotNull Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
+            log.error("Missing data update permission");
+            throw new NotAllowedException("Missing data update permission");
+        }
+        queryService.update(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();
     }

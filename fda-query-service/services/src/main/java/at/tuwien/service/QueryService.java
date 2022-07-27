@@ -10,6 +10,7 @@ import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
 import java.security.Principal;
@@ -145,6 +146,10 @@ public interface QueryService {
     Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
             TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException;
+
+    void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, DatabaseConnectionException, QueryMalformedException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the

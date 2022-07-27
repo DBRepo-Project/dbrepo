@@ -1,25 +1,8 @@
 <template>
-  <v-dialog
-    v-model="dialog"
-    max-width="600px">
-    <template v-slot:activator="{ on, attrs }">
-      <span v-if="column.column_concept" :title="column.column_concept.uri">
-        {{ column.column_concept.name }}
-      </span>
-      <v-btn
-        class="ml-2"
-        icon
-        small
-        v-bind="attrs"
-        v-on="on">
-        <v-icon color="secondary">
-          mdi-pencil-outline
-        </v-icon>
-      </v-btn>
-    </template>
+  <div>
     <v-card>
       <v-card-title>
-        <span class="text-h5">Column Unit</span>
+        Assign Unit of Measurement
       </v-card-title>
       <v-card-text>
         <v-autocomplete
@@ -65,10 +48,10 @@
               <v-list-item-subtitle>{{ model.comment }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="uri" three-line>
+          <v-list-item v-if="model.uri" three-line>
             <v-list-item-content>
               <v-list-item-title>URI</v-list-item-title>
-              <v-list-item-subtitle>{{ uri }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ model.uri }}</v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -76,27 +59,29 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          color="blue darken-1"
-          text
-          @click="dialog = false">
-          Close
+          class="mb-2 mr-2"
+          @click="cancel">
+          Cancel
         </v-btn>
         <v-btn
-          color="blue darken-1"
-          text
-          :disabled="!model || !uri"
+          color="primary"
+          class="mb-2"
+          :disabled="!model"
           @click="save">
           Save
         </v-btn>
       </v-card-actions>
     </v-card>
-  </v-dialog>
+  </div>
 </template>
 
 <script>
 export default {
   props: {
-    column: { type: Object, default: () => ({}) },
+    concept: {
+      type: Object,
+      default: () => ({})
+    },
     tableId: { type: Number, default: () => -1 }
   },
   data () {
@@ -104,7 +89,11 @@ export default {
       dialog: false,
       isLoading: false,
       saved: false,
-      model: null,
+      model: {
+        name: null,
+        uri: null,
+        symbol: null
+      },
       uri: null,
       search: null,
       entries: []
@@ -125,18 +114,8 @@ export default {
     }
   },
   watch: {
-    async model (val) {
-      this.uri = null
-      this.saved = false
-      if (!val) { return }
-      try {
-        const res = await this.$axios.get(`/api/units/uri/${val.name}`)
-        this.uri = res.data.URI
-        console.log(this.uri)
-      } catch (err) {
-        this.$toast.error(`Could not load URI of unit "${val.name}"`)
-        console.log(err)
-      }
+    concept (newVal, oldVal) {
+      this.loadConcept(newVal)
     },
     async search (val) {
       if (this.isLoading) { return }
@@ -156,22 +135,36 @@ export default {
     }
   },
   mounted () {
-    if (this.column.column_concept) {
-      const { name, uri } = this.column.column_concept
-      console.log(this.column.column_concept)
-      this.model = {
-        name,
-        uri
-      }
-    }
+    this.loadConcept(this.concept)
   },
   methods: {
-    async save () {
+    cancel () {
+      this.$emit('close', {
+        success: false
+      })
+    },
+    async loadConcept (concept) {
+      if (!concept) {
+        return
+      }
+      this.model = concept
+      console.debug('load concept', concept)
       try {
-        await this.$axios.post('/api/units/saveconcept', {
-          name: this.model.name,
-          uri: this.uri
-        })
+        const res = await this.$axios.get(`/api/units/uri/${concept.name}`)
+        this.model.uri = res.data.URI
+      } catch (err) {
+        this.$toast.error(`Could not load URI of unit "${concept.name}"`)
+        console.log(err)
+      }
+    },
+    async save () {
+      const payload = {
+        name: this.model.name,
+        uri: this.model.uri
+      }
+      try {
+        console.debug('save', payload)
+        await this.$axios.post('/api/units/saveconcept', payload)
       } catch (error) {
         const { status } = error.response
         if (status !== 201 && status !== 400) {
@@ -190,8 +183,9 @@ export default {
         this.column.column_concept.name = this.model.name
         this.dialog = false
         this.saved = true
-        this.$nextTick(() => {
-          this.$emit('save', this.tableId)
+        this.$emit('close', {
+          success: true,
+          concept: res.data
         })
         console.debug('column', this.column)
       } catch (err) {

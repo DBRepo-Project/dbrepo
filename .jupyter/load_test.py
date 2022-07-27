@@ -4,7 +4,6 @@ import time
 import os
 import shutil
 import uuid
-import sys
 
 import api_query.rest
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
@@ -214,6 +213,12 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
     return response
 
 
+def delete_tuple(container_id, database_id, table_id, keys):
+    response = data.delete(keys, container_id, database_id, table_id)
+    print("deleted tuples for table with id %d" % table_id)
+    return response
+
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -245,7 +250,19 @@ if __name__ == '__main__':
     create_identifier(cid, dbid, qid, visibility="self")
     qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
     create_identifier(cid, dbid, qid)
-    # container 3 with 3 tables
+    for i in range(5, 10):
+        delete_tuple(cid, dbid, tid, {
+            "keys": {
+                "id": i
+            }
+        })
+        time.sleep(1)
+    delete_tuple(cid, dbid, tid, {
+        "keys": {
+            "location": "Schimmelstrasse"
+        }
+    })
+    # container 3 with 4 tables
     cid = create_container().id
     start_container(cid)
     dbid = create_database(cid).id
@@ -258,13 +275,13 @@ if __name__ == '__main__':
         "primary_key": True,
         "null_allowed": False,
     }])
-    create_table(cid, dbid, columns=[{
+    tid = create_table(cid, dbid, columns=[{
         "name": "primary",
         "type": "number",
         "unique": True,
         "primary_key": True,
         "null_allowed": False,
-    }])
+    }]).id
     create_table(cid, dbid, columns=[{
         "name": "primary",
         "type": "date",
@@ -289,7 +306,7 @@ if __name__ == '__main__':
     create_query(cid, dbid, "select `date` from `" + tname + "`")
     qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
     create_identifier(cid, dbid, qid)
-    # container 1
+    # container 1 (foreign container query)
     tname = find_table(1, 1, 1).internal_name
     qid = create_query(1, 1, "select `id` from `" + tname + "`").id
     create_identifier(1, 1, qid)

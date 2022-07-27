@@ -92,10 +92,20 @@ export default {
   computed: {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
+    },
+    token () {
+      return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
-    console.log('mounted')
     this.loadHistory()
   },
   methods: {
@@ -120,22 +130,14 @@ export default {
       this.cancel()
     },
     pick () {
-      this.$parent.$parent.$parent.$parent.version = this.formatDate()
-      this.cancel()
-    },
-    formatDate () {
-      if (this.datetime === null || this.datetime === undefined || this.datetime === '') {
-        return null
-      }
-      console.debug('selected date', this.datetime)
-      return Date.parse(this.datetime)
+      this.$emit('close', {
+        time: this.datetime
+      })
     },
     async loadHistory () {
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/history`, {
-          headers: this.requestHeaders
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/history`, this.config)
         this.error = false
         this.chartData.labels = res.data.map(function (d, idx) {
           if (idx === 0) {

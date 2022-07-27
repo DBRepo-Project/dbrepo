@@ -15,7 +15,7 @@
         <v-btn color="primary" :disabled="!token" class="mr-2" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEdit" :disabled="!token" color="warn" class="mr-2 mb-1" @click="editTupleDialog = true">
+        <v-btn v-if="canEdit" :disabled="!token" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
         <v-btn v-if="canDelete" :disabled="!token" color="error" class="mr-2 mb-1" @click="deleteItems">
@@ -28,7 +28,7 @@
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
         <v-btn :disabled="error" class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
-          <v-icon left>mdi-download</v-icon> Data .csv
+          <v-icon left>mdi-download</v-icon> Download csv
         </v-btn>
         <v-btn
           v-if="false"
@@ -54,7 +54,7 @@
         <v-dialog
           v-model="pickVersionDialog"
           max-width="640">
-          <TimeTravel ref="timeTravel" @close="pickVersionDialog = false" />
+          <TimeTravel ref="timeTravel" @close="pickVersion" />
         </v-dialog>
       </v-toolbar-title>
     </v-toolbar>
@@ -152,7 +152,13 @@ export default {
       if (this.version === null) {
         return null
       }
-      return formatTimestampUTCLabel(this.version)
+      return this.version + ' (UTC)'
+    },
+    versionISO () {
+      if (this.version === null) {
+        return null
+      }
+      return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
     canEdit () {
       if (this.selection.length !== 1) { return false }
@@ -209,6 +215,13 @@ export default {
     pick () {
       this.pickVersionDialog = true
     },
+    pickVersion (event) {
+      console.debug('closed', event)
+      if (event.time) {
+        this.version = event.time
+      }
+      this.pickVersionDialog = false
+    },
     async deleteItems () {
       if (this.selection.length < 1) {
         return
@@ -264,7 +277,7 @@ export default {
         let url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data?page=${this.options.page - 1}&size=${this.options.itemsPerPage}`
         if (this.version !== null) {
           console.info('versioning active', this.version)
-          url += `&timestamp=${new Date(this.version).toISOString()}`
+          url += `&timestamp=${this.versionISO}`
         }
         const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])

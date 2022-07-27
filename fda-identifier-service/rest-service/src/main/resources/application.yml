@@ -15,7 +15,7 @@ spring:
     properties:
       hibernate:
         jdbc:
-          time_zone: Europe/Vienna
+          time_zone: UTC
   application:
     name: fda-identifier-service
   cloud:

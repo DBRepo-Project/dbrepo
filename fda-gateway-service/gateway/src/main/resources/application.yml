@@ -14,7 +14,7 @@ spring:
     properties:
       hibernate:
         jdbc:
-          time_zone: Europe/Vienna
+          time_zone: EUTC
   application:
     name: fda-gateway-service
 springdoc.swagger-ui.enabled: false
