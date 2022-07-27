@@ -65,13 +65,13 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{queryId}")
     @Transactional(readOnly = true)
-    @Operation(summary = "Re-execute some query")
+    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
                                                     @RequestParam(value = "page", required = false) Long page,
                                                     @RequestParam(value = "size", required = false) Long size,
-                                                    @NotNull Principal principal)
+                                                    Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
             ColumnParseException, NotAllowedException, DatabaseConnectionException {
@@ -92,7 +92,7 @@ public class QueryEndpoint extends AbstractEndpoint {
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("queryId") Long queryId,
-                                                      @NotNull Principal principal)
+                                                      Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
             QueryMalformedException, DatabaseConnectionException {

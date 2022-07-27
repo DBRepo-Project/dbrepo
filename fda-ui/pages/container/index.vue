@@ -18,43 +18,43 @@
           <thead>
             <tr>
               <th>Name</th>
-              <th>Visibility</th>
               <th>Engine</th>
               <th>Creator</th>
+              <th>Visibility</th>
               <th>Created</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-if="containers.length === 0" aria-readonly="true">
+          <tbody
+            v-if="!loading">
+            <tr v-if="databases.length === 0" aria-readonly="true">
               <td colspan="5">
-                <span v-if="!loading">(no databases)</span>
+                <span>(no databases)</span>
               </td>
             </tr>
             <tr
-              v-for="item in containers"
+              v-for="item in databases"
               :key="item.id"
               class="database"
               @click="loadDatabase(item)">
-              <td>{{ item.name }}</td>
               <td>
-                <v-skeleton-loader v-if="!item.database" type="text" width="50" class="mt-1" />
-                <span v-if="item.database">
-                  <span v-if="item.database.is_public">Public</span>
-                  <span v-if="!item.database.is_public">Private <v-icon right>mdi-eye-off</v-icon></span>
-                </span>
+                <span>{{ item.name }}</span>
               </td>
               <td>
-                <span v-if="item.database">{{ item.database.engine }}</span>
-                <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />
+                <span>{{ item.engine }}</span>
               </td>
               <td>
-                <span v-if="item.database">{{ formatCreator(item.database.creator) }}</span>
-                <v-skeleton-loader v-if="!item.database" type="text" width="100" class="mt-1" />
-                <sup v-if="item.database">
-                  <v-icon v-if="item.database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                <span>{{ formatCreator(item.creator) }}</span>
+                <sup>
+                  <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
                 </sup>
               </td>
-              <td>{{ createdUTC(item.created) }}</td>
+              <td>
+                <v-icon v-if="!item.is_public" color="primary" class="private-icon" right>mdi-lock-outline</v-icon>
+                <v-icon v-if="item.is_public" class="private-icon" right>mdi-lock-open-outline</v-icon>
+              </td>
+              <td>
+                {{ createdUTC(item.created) }}
+              </td>
             </tr>
           </tbody>
         </template>
@@ -81,12 +81,12 @@ export default {
   data () {
     return {
       createDbDialog: false,
+      databases: [],
       containers: [],
       searchQuery: null,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
-      loadingContainers: false,
       loading: false,
       error: false,
       iconSelect: mdiDatabaseArrowRightOutline
@@ -122,7 +122,7 @@ export default {
     async loadContainers () {
       this.createDbDialog = false
       try {
-        this.loadingContainers = true
+        this.loading = true
         const res = await this.$axios.get('/api/container/')
         this.containers = res.data
         console.debug('containers', this.containers)
@@ -130,20 +130,20 @@ export default {
       } catch (err) {
         console.error('containers', err)
         this.error = true
+        this.loading = false
       }
-      this.loadingContainers = false
     },
     async loadDatabases () {
       if (this.containers.length === 0) {
         return
       }
-      const containers = []
+      this.loading = true
       for (const container of this.containers) {
         try {
           const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
-          for (const database of res.data) {
-            container.database = database
-            containers.push(container)
+          for (const info of res.data) {
+            info.container_id = container.id
+            this.databases.push(info)
           }
         } catch (err) {
           if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
@@ -151,18 +151,14 @@ export default {
           }
         }
       }
-      this.containers = containers
-      console.debug('databases loaded', this.containers)
+      this.loading = false
+      console.debug('databases', this.databases)
     },
     createdUTC (str) {
       return formatTimestampUTCLabel(str)
     },
-    loadDatabase (container) {
-      if (!container.id || !container.database) {
-        console.error('container id', container.id, 'or database id missing')
-        return
-      }
-      this.$router.push(`/container/${container.id}/database/${container.database.id}/info`)
+    loadDatabase (database) {
+      this.$router.push(`/container/${database.container_id}/database/${database.id}/info`)
     }
   }
 }
@@ -183,5 +179,9 @@ export default {
   }
   .v-progress-circular {
     margin-left: 8px;
+  }
+  .private-icon {
+    flex: 0 !important;
+    margin-right: 16px;
   }
 </style>

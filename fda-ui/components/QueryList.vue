@@ -117,6 +117,9 @@ export default {
     },
     executionUTC () {
       return formatTimestampUTCLabel(this.queryDetails.execution)
+    },
+    creator () {
+      return this.queryDetails.creator
     }
   },
   mounted () {

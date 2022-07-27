@@ -1,9 +1,10 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" />
-    <v-toolbar v-if="db" flat>
+    <v-toolbar v-if="cached_database" flat>
       <v-toolbar-title>
-        {{ db.name }}
+        <span>{{ cached_database.name }}</span>
+        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" right>mdi-lock-outline</v-icon>
+        <v-icon v-if="cached_database.is_public" class="mb-1" right>mdi-lock-open-outline</v-icon>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
@@ -40,11 +41,15 @@ export default {
     return {
       tab: null,
       loading: false,
-      error: false
+      error: false,
+      database: {
+        id: null,
+        is_public: null
+      }
     }
   },
   computed: {
-    db () {
+    cached_database () {
       return this.$store.state.db
     },
     databaseId () {
@@ -65,17 +70,28 @@ export default {
       }
     }
   },
+  watch: {
+    $route () {
+      if (this.database.id !== this.$route.params.database_id) {
+        this.loadDatabase()
+      }
+    }
+  },
   mounted () {
-    this.init()
+    if (this.database.id) {
+      return
+    }
+    if (this.cached_database && this.cached_database.id === this.$route.params.database_id) {
+      return
+    }
+    this.loadDatabase()
   },
   methods: {
-    async init () {
-      if (this.db != null) {
-        return
-      }
+    async loadDatabase () {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.database = res.data
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
         this.loading = false

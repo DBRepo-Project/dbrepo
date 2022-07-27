@@ -36,7 +36,7 @@ def create_user(username):
         "password": username,
         "email": username + "@gmail.com"
     })
-    print("created user")
+    print("created user with id %d" % response.id)
     return response
 
 
@@ -45,7 +45,7 @@ def auth_user(username):
         "username": username,
         "password": username
     })
-    print("authenticated user")
+    print("authenticated user with id %d" % response.id)
     token = response.token
     container.api_client.default_headers = {"Authorization": "Bearer " + token}
     database.api_client.default_headers = {"Authorization": "Bearer " + token}
@@ -64,7 +64,7 @@ def create_container():
         "repository": "mariadb",
         "tag": "10.5"
     })
-    print("created container")
+    print("created container with id %d" % response.id)
     return response
 
 
@@ -72,8 +72,9 @@ def start_container(container_id):
     response = container.modify({
         "action": "start"
     }, container_id)
+    print("... starting")
     time.sleep(5)
-    print("started container")
+    print("started container with id %d" % response.id)
     return response
 
 
@@ -83,7 +84,7 @@ def create_database(container_id, is_public=True):
         "description": "Hourly measurements in Zürich, Switzerland",
         "is_public": is_public
     }, container_id)
-    print("created database")
+    print("created database with id %d" % response.id)
     return response
 
 
@@ -99,7 +100,7 @@ def update_database(container_id, database_id, is_public=True):
         "is_public": is_public,
         "publication": "2022-07-19"
     }, container_id, database_id)
-    print("updated database")
+    print("updated database with id %d" % response.id)
     return response
 
 
@@ -154,13 +155,13 @@ def create_table(container_id, database_id, columns=None):
         "description": "Airquality in Zürich, Switzerland",
         "columns": columns
     }, container_id, database_id)
-    print("created table")
+    print("created table with id %d" % response.id)
     return response
 
 
 def find_table(container_id, database_id, table_id):
     response = table.find_by_id(container_id, database_id, table_id)
-    print("found table")
+    print("found table with id %d" % response.id)
     return response
 
 
@@ -172,7 +173,7 @@ def fill_table(container_id, database_id, table_id):
         "quote": "\"",
         "skip_lines": 1
     }, container_id, database_id, table_id)
-    print("filled table")
+    print("filled table with id %d" % table_id)
     return response
 
 
@@ -181,7 +182,7 @@ def create_query(container_id, database_id, statement, page=0, size=3):
         response = query.execute({
             "statement": statement
         }, container_id, database_id, page=page, size=size)
-        print("executed query")
+        print("executed query with id %d" % response.id)
         return response
     except api_query.rest.ApiException as e:
         print(e)
@@ -209,7 +210,7 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
             "relation": "IsCitedBy"
         }]
     }, token, container_id, database_id)
-    print("created identifier")
+    print("created identifier with id %d" % response.id)
     return response
 
 
@@ -271,3 +272,24 @@ if __name__ == '__main__':
         "primary_key": True,
         "null_allowed": False,
     }])
+    #
+    # create 1 user and 1 container and issue queries to own and foreign database
+    #
+    create_user("test2")
+    auth_user("test2")
+    # container 4
+    cid = create_container().id
+    start_container(cid)
+    dbid = create_database(cid).id
+    update_database(cid, dbid)
+    tid = create_table(cid, dbid).id
+    tname = find_table(cid, dbid, tid).internal_name
+    fill_table(cid, dbid, tid)
+    create_query(cid, dbid, "select `id` from `" + tname + "`")
+    create_query(cid, dbid, "select `date` from `" + tname + "`")
+    qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
+    create_identifier(cid, dbid, qid)
+    # container 1
+    tname = find_table(1, 1, 1).internal_name
+    qid = create_query(1, 1, "select `id` from `" + tname + "`").id
+    create_identifier(1, 1, qid)

@@ -207,7 +207,7 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-alert
-                  v-if="!loadingQuery && erroneous"
+                  v-if="!error && !loadingQuery && erroneous"
                   border="left"
                   color="error">
                   This query failed to execute and did not produce a subset.
@@ -425,10 +425,7 @@ export default {
     async download () {
       this.downloadLoading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          responseType: 'text'
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, this.config)
         console.debug('export query result', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')

@@ -70,6 +70,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/history/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/export/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/container/**/database/**/query/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/query/**/export").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/container/**/database/**/query/**").permitAll()
                 .antMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
