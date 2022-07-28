@@ -1,84 +1,91 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title>
-        Assign Unit of Measurement
-      </v-card-title>
-      <v-card-text>
-        <v-autocomplete
-          v-model="model"
-          solo
-          clearable
-          auto-select-first
-          :cache-items="false"
-          autofocus
-          :search-input.sync="search"
-          :items="items"
-          hide-no-data
-          hide-details
-          dense>
-          <template
-            v-slot:item="{ item, attrs, on }">
-            <v-list-item v-bind="attrs" v-on="on">
+    <v-form v-model="valid">
+      <v-card>
+        <v-card-title>
+          Unit of Measurement
+        </v-card-title>
+        <v-card-subtitle>
+          Assign a unit of measurement to column <strong>{{ column.name }}</strong>
+        </v-card-subtitle>
+        <v-card-text>
+          <v-autocomplete
+            v-model="model"
+            solo
+            clearable
+            auto-select-first
+            :cache-items="false"
+            autofocus
+            :loading="isLoading"
+            placeholder="Search Unit of Measurements"
+            :search-input.sync="search"
+            :items="items"
+            hide-no-data
+            hide-details
+            dense>
+            <template
+              v-slot:item="{ item, attrs, on }">
+              <v-list-item v-bind="attrs" v-on="on">
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.value.name }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ item.value.comment }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+        </v-card-text>
+        <v-expand-transition>
+          <v-list v-if="model" class="lighten-3" subheader three-line>
+            <v-list-item v-if="model.name">
               <v-list-item-content>
-                <v-list-item-title>{{ item.value.name }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.value.comment }}</v-list-item-subtitle>
+                <v-list-item-title>Name</v-list-item-title>
+                <v-list-item-subtitle>{{ model.name }}</v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
-          </template>
-        </v-autocomplete>
-      </v-card-text>
-      <v-expand-transition>
-        <v-list v-if="model" class="lighten-3" subheader three-line>
-          <v-list-item v-if="model.name">
-            <v-list-item-content>
-              <v-list-item-title>Name</v-list-item-title>
-              <v-list-item-subtitle>{{ model.name }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-if="model.symbol">
-            <v-list-item-content>
-              <v-list-item-title>Symbol</v-list-item-title>
-              <v-list-item-subtitle>{{ model.symbol }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-if="model.comment">
-            <v-list-item-content>
-              <v-list-item-title>Comment</v-list-item-title>
-              <v-list-item-subtitle>{{ model.comment }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-if="model.uri" three-line>
-            <v-list-item-content>
-              <v-list-item-title>URI</v-list-item-title>
-              <v-list-item-subtitle>{{ model.uri }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-expand-transition>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          class="mb-2 mr-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
-        <v-btn
-          color="primary"
-          class="mb-2"
-          :disabled="!model"
-          @click="save">
-          Save
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+            <v-list-item v-if="model.symbol">
+              <v-list-item-content>
+                <v-list-item-title>Symbol</v-list-item-title>
+                <v-list-item-subtitle>{{ model.symbol }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item v-if="model.comment">
+              <v-list-item-content>
+                <v-list-item-title>Comment</v-list-item-title>
+                <v-list-item-subtitle>{{ model.comment }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+            <v-list-item v-if="uri" three-line>
+              <v-list-item-content>
+                <v-list-item-title>URI</v-list-item-title>
+                <v-list-item-subtitle>{{ uri }}</v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-expand-transition>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="mb-2"
+            @click="cancel">
+            Cancel
+          </v-btn>
+          <v-btn
+            color="primary"
+            class="mb-2 mr-2"
+            :disabled="!model || !uri"
+            @click="save">
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </div>
 </template>
 
 <script>
 export default {
   props: {
-    concept: {
+    column: {
       type: Object,
       default: () => ({})
     },
@@ -89,13 +96,15 @@ export default {
       dialog: false,
       isLoading: false,
       saved: false,
+      valid: false,
       model: {
         name: null,
-        uri: null,
-        symbol: null
+        symbol: null,
+        comment: null
       },
       uri: null,
       search: null,
+      searchTerm: null,
       entries: []
     }
   },
@@ -117,25 +126,35 @@ export default {
     concept (newVal, oldVal) {
       this.loadConcept(newVal)
     },
+    model (newVal, oldVal) {
+      console.debug('selected concept', newVal)
+      this.loadConcept(newVal)
+    },
     async search (val) {
-      if (this.isLoading) { return }
-      if (!val || !val.length) { return }
+      if (!val) {
+        return
+      }
+      this.searchTerm = val
       this.isLoading = true
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (val !== this.searchTerm) {
+        return
+      }
       try {
         const res = await this.$axios.post('/api/units/suggest', {
           offset: 0,
-          ustring: this.search
+          ustring: val
         })
         this.entries = res.data
+        console.debug('suggest', res.data)
       } catch (err) {
-        this.$toast.error('Could not load unit suggestions.')
-        console.log(err)
+        console.error('suggest', err)
       }
       this.isLoading = false
     }
   },
   mounted () {
-    this.loadConcept(this.concept)
+    this.loadConcept(this.column)
   },
   methods: {
     cancel () {
@@ -148,30 +167,42 @@ export default {
         return
       }
       this.model = concept
-      console.debug('load concept', concept)
+      console.debug('loading concept', concept)
       try {
         const res = await this.$axios.get(`/api/units/uri/${concept.name}`)
-        this.model.uri = res.data.URI
+        if (!res.data) {
+          console.warn('concept', concept.name, 'returned invalid data')
+          console.debug('concept', concept, 'returned', res.data)
+          return
+        }
+        this.uri = res.data.URI
+        console.debug('uri loaded', this.uri)
       } catch (err) {
         this.$toast.error(`Could not load URI of unit "${concept.name}"`)
-        console.log(err)
+        console.error('load concept', err)
       }
     },
     async save () {
       const payload = {
         name: this.model.name,
-        uri: this.model.uri
+        uri: this.uri
       }
+      /* save concept */
       try {
         console.debug('save', payload)
-        await this.$axios.post('/api/units/saveconcept', payload)
+        const res = await this.$axios.post('/api/units/saveconcept', payload)
+        console.info('Concept saved')
+        console.debug('concept saved', res.data)
       } catch (error) {
         const { status } = error.response
-        if (status !== 201 && status !== 400) {
+        if (status === 409) {
+          console.debug('concept already saved, skipping.')
+        } else {
           this.$toast.error('Could not save concept.')
-          console.log(error)
+          console.error('save', error)
         }
       }
+      /* save concept */
       try {
         const res = await this.$axios.post('/api/units/savecolumnsconcept', {
           cdbid: Number(this.$route.params.database_id),
@@ -183,6 +214,7 @@ export default {
         this.column.column_concept.name = this.model.name
         this.dialog = false
         this.saved = true
+        this.$toast.success(`Assigned unit ${this.model.name}`)
         this.$emit('close', {
           success: true,
           concept: res.data
@@ -190,7 +222,7 @@ export default {
         console.debug('column', this.column)
       } catch (err) {
         this.$toast.error('Could not save column unit.')
-        console.log(err)
+        console.error('save', err)
       }
     }
   }

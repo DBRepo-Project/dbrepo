@@ -97,6 +97,7 @@
             <v-data-table
               class="full-width"
               disable-sort
+              :loading="loadingDetails"
               hide-default-footer
               :headers="headers"
               :items="tableDetails.columns">
@@ -134,7 +135,7 @@
     <v-dialog
       v-model="unitDialog"
       max-width="600px">
-      <DialogsColumnUnit :concept="unit" :table-id="tableDetails.id" @close="closed" />
+      <DialogsColumnUnit :column="column" :table-id="tableDetails.id" @close="closed" />
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="640">
       <v-card>
@@ -164,10 +165,11 @@ export default {
   data () {
     return {
       loading: false,
+      loadingDetails: false,
       error: false,
       tables: [],
       panel: null,
-      unit: null,
+      column: null,
       unitDialog: false,
       database: {
         exchange: null,
@@ -230,7 +232,7 @@ export default {
   },
   methods: {
     pickUnit (item) {
-      this.unit = item.column_concept
+      this.column = item
       this.unitDialog = true
       console.debug('select', this.unit)
     },
@@ -255,12 +257,20 @@ export default {
       }
       return column.column_type
     },
-    details (tableId) {
-      const select = this.tables.filter(t => t.id === tableId)
-      if (select.length > 0) {
-        this.tableDetails = select[0]
+    async details (tableId) {
+      try {
+        this.loadingDetails = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
+        this.tableDetails = res.data
         console.debug('table details', this.tableDetails)
+        if (tableId) {
+          this.openPanelByTableId(tableId)
+        }
+      } catch (err) {
+        this.$toast.error('Failed to load table details')
+        console.error('Failed to load table details', err)
       }
+      this.loadingDetails = false
     },
     closed (data) {
       console.debug('closed dialog', data)

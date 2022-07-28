@@ -38,7 +38,7 @@ class DatabaseDto(object):
         'description': 'str',
         'publisher': 'str',
         'contact': 'UserDto',
-        'tables': 'list[TableDto]',
+        'tables': 'list[TableBriefDto]',
         'image': 'ImageDto',
         'container': 'ContainerDto',
         'created': 'datetime',
@@ -352,7 +352,7 @@ class DatabaseDto(object):
 
 
         :return: The tables of this DatabaseDto.  # noqa: E501
-        :rtype: list[TableDto]
+        :rtype: list[TableBriefDto]
         """
         return self._tables
 
@@ -362,7 +362,7 @@ class DatabaseDto(object):
 
 
         :param tables: The tables of this DatabaseDto.  # noqa: E501
-        :type: list[TableDto]
+        :type: list[TableBriefDto]
         """
 
         self._tables = tables

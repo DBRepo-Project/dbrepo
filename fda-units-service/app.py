@@ -104,7 +104,7 @@ def saveconcept():
             logging.info(f"Inserted values {uri}, {c_name} into mdb_concepts.")
             return jsonify({'uri': uri}), 201
         else:
-            return jsonify({'status': 'error'}), 400
+            return jsonify({'status': 'error'}), 409
     except Exception as e:
         logging.error(e)
         res = {"success": False, "message": str(e)}
@@ -123,7 +123,7 @@ def savecolumnconcept():
             logging.info(f"Inserted values {uri},{cid},{tid},{cdbid} into mdb_columns_concepts.")
             return jsonify({'uri': uri}), 201
         else:
-            return jsonify({'status': 'error'}), 400
+            return jsonify({'status': 'error'}), 409
     except Exception as e:
         print(e)
         res = {"success": False, "message": str(e)}

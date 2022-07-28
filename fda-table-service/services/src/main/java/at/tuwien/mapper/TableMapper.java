@@ -51,11 +51,7 @@ public interface TableMapper {
 
     /* keep */
     @Mappings({
-            @Mapping(target = "name", expression = "java(data.getName())"),
-            @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "unique", source = "isUnique"),
-            @Mapping(target = "checkExpression", expression = "java(data.getCheckExpression())"),
-            @Mapping(target = "foreignKey", expression = "java(data.getForeignKey())")
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 

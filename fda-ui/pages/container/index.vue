@@ -48,8 +48,8 @@
                 </sup>
               </td>
               <td>
-                <v-icon v-if="!item.is_public" color="primary" class="private-icon" right>mdi-lock-outline</v-icon>
-                <v-icon v-if="item.is_public" class="private-icon" right>mdi-lock-open-outline</v-icon>
+                <v-icon v-if="!item.is_public" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
+                <v-icon v-if="item.is_public" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
               </td>
               <td>
                 {{ createdUTC(item.created) }}

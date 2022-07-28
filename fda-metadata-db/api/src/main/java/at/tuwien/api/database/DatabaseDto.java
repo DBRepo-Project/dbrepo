@@ -2,8 +2,10 @@ package at.tuwien.api.database;
 
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.identifier.CreatorDto;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,7 +39,7 @@ public class DatabaseDto {
 
     @NotNull
     @Parameter(name = "database creator")
-    private UserDto creator;
+    private UserBriefDto creator;
 
     @NotBlank
     @JsonProperty("internal_name")
@@ -67,7 +69,7 @@ public class DatabaseDto {
     private String publication;
 
     @Parameter(name = "tables")
-    private List<TableDto> tables;
+    private List<TableBriefDto> tables;
 
     @JsonProperty("is_public")
     @Parameter(name = "database public")

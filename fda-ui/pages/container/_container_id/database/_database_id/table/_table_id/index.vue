@@ -12,13 +12,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn color="primary" :disabled="!token" class="mr-2" @click="addTuple">
+        <v-btn v-if="is_owner" color="primary" class="mr-2" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEdit" :disabled="!token" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
+        <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="canDelete" :disabled="!token" color="error" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
@@ -66,7 +66,7 @@
         :options.sync="options"
         :server-items-length="total"
         :footer-props="footerProps">
-        <template v-if="token" v-slot:item.selection="{ item }">
+        <template v-if="is_owner" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
       </v-data-table>
@@ -106,6 +106,9 @@ export default {
       pickVersionDialog: null,
       version: null,
       edit: false,
+      user: {
+        username: null
+      },
       error: false, // XXX: `error` is never changed
       options: {
         page: 1,
@@ -115,7 +118,10 @@ export default {
       table: {
         name: null,
         description: null,
-        columns: []
+        columns: [],
+        creator: {
+          username: null
+        }
       },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -166,6 +172,9 @@ export default {
     },
     canDelete () {
       return this.selection.length !== 0
+    },
+    is_owner () {
+      return this.token && this.table.creator.username === this.user.username
     }
   },
   watch: {
@@ -180,6 +189,7 @@ export default {
   mounted () {
     this.loadProperties()
     this.loadData()
+    this.loadUser()
   },
   methods: {
     async download () {
@@ -255,7 +265,8 @@ export default {
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.table = res.data
-        console.debug('headers', res.data.columns, 'table', this.table)
+        console.debug('headers', res.data.columns)
+        console.debug('table', this.table)
         this.headers = [{ value: 'selection', text: '', sortable: false }]
         res.data.columns.map((c) => {
           return {
@@ -301,6 +312,16 @@ export default {
         this.$toast.error('Could not load table data.')
       }
       this.loadingData = false
+    },
+    async loadUser () {
+      try {
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.user = res.data
+        console.debug('user', this.user)
+      } catch (err) {
+        this.$toast.error('Failed to get user details')
+        console.error('Failed to get user details', err)
+      }
     }
   }
 }

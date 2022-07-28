@@ -403,8 +403,7 @@ public interface QueryMapper {
                     log.debug("failed to map column names, tuple contains columns names that are not present in the database, tuple column names are {}", data.getData().keySet());
                     throw new TableMalformedException("Failed to map column names");
                 }
-                ps.setObject(idx[0]++, dataColumnToObject(tuple.get()
-                        .getValue(), column));
+                prepareStatementWithColumnTypeObject(ps, column.getColumnType(), idx[0]++, tuple.get().getValue());
             }
             return ps;
         } catch (SQLException e) {

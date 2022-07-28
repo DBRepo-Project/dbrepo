@@ -15,8 +15,6 @@ from __future__ import absolute_import
 
 # import models into model package
 from api_identifier.models.api_error_dto import ApiErrorDto
-from api_identifier.models.column_dto import ColumnDto
-from api_identifier.models.concept_dto import ConceptDto
 from api_identifier.models.container_dto import ContainerDto
 from api_identifier.models.creator_create_dto import CreatorCreateDto
 from api_identifier.models.creator_dto import CreatorDto
@@ -31,5 +29,6 @@ from api_identifier.models.image_env_item_dto import ImageEnvItemDto
 from api_identifier.models.license_dto import LicenseDto
 from api_identifier.models.related_identifier_create_dto import RelatedIdentifierCreateDto
 from api_identifier.models.related_identifier_dto import RelatedIdentifierDto
-from api_identifier.models.table_dto import TableDto
+from api_identifier.models.table_brief_dto import TableBriefDto
+from api_identifier.models.user_brief_dto import UserBriefDto
 from api_identifier.models.user_dto import UserDto

@@ -93,9 +93,9 @@ public class TableEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing table view permission");
         }
         final Table table = tableService.findById(containerId, databaseId, tableId, principal);
-        log.debug(table);
-        TableDto tableDto = tableMapper.tableToTableDto(table);
-        log.debug(tableDto);
+        log.info("Found table with id {}", tableId);
+        log.debug("found table {}", table);
+        final TableDto tableDto = tableMapper.tableToTableDto(table);
         return ResponseEntity.ok(tableDto);
     }
 

@@ -23,8 +23,6 @@ from api_authentication.api_client import ApiClient
 from api_authentication.configuration import Configuration
 # import models into sdk package
 from api_authentication.models.api_error_dto import ApiErrorDto
-from api_authentication.models.column_dto import ColumnDto
-from api_authentication.models.concept_dto import ConceptDto
 from api_authentication.models.container_dto import ContainerDto
 from api_authentication.models.database_dto import DatabaseDto
 from api_authentication.models.granted_authority_dto import GrantedAuthorityDto
@@ -36,7 +34,8 @@ from api_authentication.models.jwt_response_dto import JwtResponseDto
 from api_authentication.models.license_dto import LicenseDto
 from api_authentication.models.login_request_dto import LoginRequestDto
 from api_authentication.models.signup_request_dto import SignupRequestDto
-from api_authentication.models.table_dto import TableDto
+from api_authentication.models.table_brief_dto import TableBriefDto
+from api_authentication.models.user_brief_dto import UserBriefDto
 from api_authentication.models.user_dto import UserDto
 from api_authentication.models.user_email_dto import UserEmailDto
 from api_authentication.models.user_forgot_dto import UserForgotDto

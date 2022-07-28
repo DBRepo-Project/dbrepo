@@ -36,19 +36,20 @@ public abstract class AbstractEndpoint {
             log.debug("failed to find database with id {}", databaseId);
             return false;
         }
-        if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because user is creator of database with id {}", permissionCode, databaseId);
-            return true;
-        }
         /* view-only operations are allowed on public databases */
         if (database.getIsPublic() && List.of("DATA_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
         }
-        /* modification operations are limited to the creator */
         if (principal == null) {
             log.debug("failed to grant permission {} because principal is null", permissionCode);
             return false;
+        }
+        /* modification operations are limited to the creator */
+        if (database.getCreator().getUsername().equals(principal.getName())) {
+            log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
+                    database.getCreator().getUsername());
+            return true;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
@@ -56,8 +57,8 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return false;
         }
-        log.debug("grant permission {} because user is creator", permissionCode);
-        return true;
+        log.debug("failed to grant permission {} because database is not owner by the current user", permissionCode);
+        return false;
     }
 
     protected Boolean hasQueryPermission(Long containerId, Long databaseId, Long queryId, String permissionCode, Principal principal) {
@@ -97,8 +98,7 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return true;
         }
-        log.debug("failed to grant permission {} because database is private and creator is not the " +
-                "current user", permissionCode);
+        log.debug("failed to grant permission {} because database is private and creator is not the current user", permissionCode);
         return false;
     }
 
@@ -138,8 +138,7 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return true;
         }
-        log.debug("failed to grant permission {} because database is private and identifier creator is not the " +
-                "current user", permissionCode);
+        log.debug("failed to grant permission {} because database is private and identifier creator is not the current user", permissionCode);
         return false;
     }
 

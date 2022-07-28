@@ -4,6 +4,7 @@ import time
 import os
 import shutil
 import uuid
+from postgres import Postgres
 
 import api_query.rest
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
@@ -219,6 +220,27 @@ def delete_tuple(container_id, database_id, table_id, keys):
     return response
 
 
+def update_user(user_id):
+    response = user.update({
+        "firstname": "Josiah",
+        "lastname": "Carberry",
+        "affiliation": "Wesleyan University",
+        "orcid": "0000-0002-1825-0097",
+        "titles_after": "PhD"
+    }, user_id)
+    print("updated user with id %d" % user_id)
+
+
+def update_theme(user_id):
+    response = user.update_theme({
+        "theme_dark": True
+    }, user_id)
+    print("updated theme user with id %d" % user_id)
+
+def verify_user(user_id):
+    db = Postgres("dbname=fda user=postgres password=postgres")
+    token = db.one("SELECT ")
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -310,3 +332,10 @@ if __name__ == '__main__':
     tname = find_table(1, 1, 1).internal_name
     qid = create_query(1, 1, "select `id` from `" + tname + "`").id
     create_identifier(1, 1, qid)
+    #
+    # create 1 user and modify information
+    #
+    uid = create_user("test3").id
+    auth_user("test3")
+    update_user(uid)
+    update_theme(uid)

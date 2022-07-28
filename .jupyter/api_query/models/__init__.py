@@ -15,8 +15,6 @@ from __future__ import absolute_import
 
 # import models into model package
 from api_query.models.api_error_dto import ApiErrorDto
-from api_query.models.column_dto import ColumnDto
-from api_query.models.concept_dto import ConceptDto
 from api_query.models.container_dto import ContainerDto
 from api_query.models.database_dto import DatabaseDto
 from api_query.models.execute_statement_dto import ExecuteStatementDto
@@ -29,8 +27,10 @@ from api_query.models.import_dto import ImportDto
 from api_query.models.license_dto import LicenseDto
 from api_query.models.query_dto import QueryDto
 from api_query.models.query_result_dto import QueryResultDto
+from api_query.models.table_brief_dto import TableBriefDto
 from api_query.models.table_csv_delete_dto import TableCsvDeleteDto
 from api_query.models.table_csv_dto import TableCsvDto
-from api_query.models.table_dto import TableDto
+from api_query.models.table_csv_update_dto import TableCsvUpdateDto
 from api_query.models.table_history_dto import TableHistoryDto
+from api_query.models.user_brief_dto import UserBriefDto
 from api_query.models.user_dto import UserDto

@@ -22,8 +22,6 @@ from api_database.api_client import ApiClient
 from api_database.configuration import Configuration
 # import models into sdk package
 from api_database.models.api_error_dto import ApiErrorDto
-from api_database.models.column_dto import ColumnDto
-from api_database.models.concept_dto import ConceptDto
 from api_database.models.container_brief_dto import ContainerBriefDto
 from api_database.models.container_dto import ContainerDto
 from api_database.models.database_brief_dto import DatabaseBriefDto
@@ -36,6 +34,6 @@ from api_database.models.image_date_dto import ImageDateDto
 from api_database.models.image_dto import ImageDto
 from api_database.models.image_env_item_dto import ImageEnvItemDto
 from api_database.models.license_dto import LicenseDto
-from api_database.models.table_dto import TableDto
+from api_database.models.table_brief_dto import TableBriefDto
 from api_database.models.user_brief_dto import UserBriefDto
 from api_database.models.user_dto import UserDto

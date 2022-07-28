@@ -19,7 +19,11 @@ parameters:
         type: "string"
         example: "metre"
 responses:
-  200: 
+  200:
     description: "OK"
+  201:
+    description: "Created"
   405:
     description: "Invalid input"
+  409:
+    description: "Concept already present"
