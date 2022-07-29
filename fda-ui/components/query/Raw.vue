@@ -2,9 +2,10 @@
   <div>
     <editor
       v-model="content"
+      :class="{ 'theme-dark': is_dark }"
       :value="value || content"
       lang="sql"
-      :theme="theme"
+      theme="xcode"
       width="600"
       :height="height"
       @init="editorInit" />
@@ -28,8 +29,7 @@ export default {
   },
   data () {
     return {
-      content: this.value || '-- MariaDB 10.5 Query\n',
-      theme: 'xcode'
+      content: this.value || '-- MariaDB 10.5 Query\n'
     }
   },
   computed: {
@@ -38,6 +38,9 @@ export default {
       // if (!this.disabled) { return 150 }
       // const numLines = this.value.split('\n').length
       // return numLines * 25
+    },
+    is_dark () {
+      return this.$vuetify.theme.dark
     }
   },
   watch: {
@@ -74,4 +77,8 @@ export default {
 </script>
 
 <style scoped>
+.theme-dark {
+  background: none;
+  color: white;
+}
 </style>
