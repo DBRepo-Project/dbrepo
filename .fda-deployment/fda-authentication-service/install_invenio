@@ -1,2 +1,0 @@
-#!/bin/bash
-sudo cat /root/invenio.secret >> ./.env

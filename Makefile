@@ -2,20 +2,15 @@ all:
 
 config-backend:
 	./.fda-deployment/fda-authentication-service/install_smtp
-	./.fda-deployment/fda-authentication-service/install_invenio
 
 config-frontend:
 	./.fda-deployment/fda-ui/install_cert
 	docker-compose -f docker-compose.prod.yml config
 
 config-docker:
-	docker image pull -q postgres:13.4-alpine || true > /dev/null
-	docker image pull -q mysql:8.0 || true > /dev/null
 	docker image pull -q mariadb:10.5 || true > /dev/null
-	docker image pull -q rabbitmq:3-alpine || true > /dev/null
-	docker image pull -q nginx:1.20-alpine || true > /dev/null
 
-config: config-backend config-docker config-frontend
+config: config-docker config-frontend config-backend
 
 build-backend-metadata:
 	mvn -f ./fda-metadata-db/pom.xml clean install
