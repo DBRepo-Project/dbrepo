@@ -42,6 +42,7 @@ public class Token {
     @Column(nullable = false)
     private Boolean processed;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({

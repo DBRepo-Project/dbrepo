@@ -27,6 +27,7 @@ public class Concept {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_columns_concepts",

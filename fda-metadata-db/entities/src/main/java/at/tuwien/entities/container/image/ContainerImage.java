@@ -72,6 +72,7 @@ public class ContainerImage {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
     private List<Container> containers;

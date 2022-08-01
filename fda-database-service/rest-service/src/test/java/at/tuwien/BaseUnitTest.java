@@ -1,11 +1,18 @@
 package at.tuwien;
 
+import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyDto;
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -22,7 +29,26 @@ public abstract class BaseUnitTest {
     public final static String BROKER_IMAGE = "rabbitmq";
     public final static String BROKER_TAG = "3-alpine";
 
+    public final static String SEARCH_NAME = "fda-search-mock-service";
+    public final static String SEARCH_IP = "172.29.0.3";
+    public final static String SEARCH_HOSTNAME = "fda-search-mock-service";
+    public final static String SEARCH_IMAGE = "elasticsearch";
+    public final static String SEARCH_TAG = "7.13.4";
+
+    public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_PASSWORD = "junit";
+    public final static String USER_1_EMAIL = "junit@ossdip.at";
+    public final static Boolean USER_1_VERIFIED = true;
+    public final static Boolean USER_1_THEME = false;
+
+    public final static User USER_1 = User.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_VERIFIED)
+            .themeDark(USER_1_THEME)
+            .build();
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -61,14 +87,49 @@ public abstract class BaseUnitTest {
                     .value("mariadb")
                     .build());
 
+    public final static String LICENSE_1_IDENTIFIER = "MIT";
+    public final static String LICENSE_1_URI = "https://opensource.org/licenses/MIT";
+
+    public final static License LICENSE_1 = License.builder()
+            .identifier(LICENSE_1_IDENTIFIER)
+            .uri(LICENSE_1_URI)
+            .build();
+
+    public final static LicenseDto LICENSE_1_DTO = LicenseDto.builder()
+            .identifier(LICENSE_1_IDENTIFIER)
+            .uri(LICENSE_1_URI)
+            .build();
+
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
+    public final static String DATABASE_1_PUBLISHER = "TU Wien";
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_1_NAME)
+            .isPublic(DATABASE_1_PUBLIC)
+            .description(DATABASE_1_DESCRIPTION)
+            .build();
+
+    public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()
+            .isPublic(DATABASE_1_PUBLIC)
+            .description(DATABASE_1_DESCRIPTION)
+            .language(LanguageTypeDto.EN)
+            .build();
+
+    public final static DatabaseModifyDto DATABASE_1_UPDATE2 = DatabaseModifyDto.builder()
+            .isPublic(DATABASE_1_PUBLIC)
+            .description(DATABASE_1_DESCRIPTION)
+            .language(LanguageTypeDto.EN)
+            .license(LICENSE_1_DTO)
+            .publication("2022-08-01")
+            .publisher(DATABASE_1_PUBLISHER)
+            .build();
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Weather AT";

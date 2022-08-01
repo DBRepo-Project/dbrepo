@@ -34,6 +34,7 @@ public class ContainerImageDate {
     @Column(name = "iid")
     private Long iid;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "iid", insertable = false, updatable = false)

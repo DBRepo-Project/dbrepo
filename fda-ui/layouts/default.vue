@@ -223,9 +223,15 @@ export default {
         console.debug('user data', res.data)
         this.user = res.data
       } catch (err) {
-        console.error('user data', err)
-        this.$toast.error('Failed to load user')
-        this.error = true
+        const { status } = err.response
+        if (status === 401) {
+          console.error('Token expired', err)
+          this.logout()
+        } else {
+          console.error('user data', err)
+          this.$toast.error('Failed to load user')
+          this.error = true
+        }
       }
       this.loadingUser = false
     },

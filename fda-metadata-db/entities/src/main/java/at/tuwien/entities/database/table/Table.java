@@ -66,6 +66,7 @@ public class Table {
     @Column(name = "tdescription")
     private String description;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)

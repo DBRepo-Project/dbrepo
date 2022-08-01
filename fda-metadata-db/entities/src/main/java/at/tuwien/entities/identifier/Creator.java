@@ -45,6 +45,7 @@ public class Creator {
     @Column
     private String orcid;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)

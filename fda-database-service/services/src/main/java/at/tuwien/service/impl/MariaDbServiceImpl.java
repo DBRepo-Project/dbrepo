@@ -130,6 +130,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {}", databaseId);
         log.debug("deleted database {}", database);
+        // delete in database_index - elastic search
+        databaseidxRepository.delete(database);
+        log.info("Deleted database in elastic search with id {}", databaseId);
+        log.debug("deleted database in elastic search {}", database);
     }
 
     @Override
@@ -158,9 +162,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             final PreparedStatement preparedStatement1 = databaseMapper.imageToRawGrantReadonlyAccessQuery(connection);
             preparedStatement1.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to delete database");
-            log.debug("failed to delete database {}, reason: {}", database, e.getMessage());
-            throw new DatabaseMalformedException("Failed to execute and map time-versioned query", e);
+            log.error("Failed to create database");
+            log.debug("failed to create database {}, reason: {}", database, e.getMessage());
+            throw new DatabaseMalformedException("Failed to execute query", e);
         } finally {
             dataSource.close();
         }
@@ -170,12 +174,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setIsPublic(createDto.getIsPublic());
         final User creator = userService.findByUsername(principal.getName());
         database.setCreator(creator);
-        final Database out = databaseRepository.save(database);
-        log.info("Created database with id {}", out.getId());
-        log.debug("created database {}", out);
+        final Database dbdb = databaseRepository.save(database);
+        log.info("Created database with id {}", dbdb.getId());
+        log.debug("created database {}", dbdb);
         // save in database_index - elastic search
-//        databaseidxRepository.save(database);
-        return out;
+        final Database edb = databaseidxRepository.save(database);
+        log.info("Saved database in elastic search with id {}", edb.getId());
+        log.debug("saved database in elastic search {}", edb);
+        return dbdb;
     }
 
     @Override
@@ -186,20 +192,27 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         if (modifyDto.getContactPerson() != null) {
             database.setContact(userService.findByUsername(modifyDto.getContactPerson()));
         }
-        final License license = licenseService.find(modifyDto.getLicense().getIdentifier());
+        if (modifyDto.getLicense() != null) {
+            final License license = licenseService.find(modifyDto.getLicense().getIdentifier());
+            log.info("Found license with identifier {}", modifyDto.getLicense().getIdentifier());
+            log.debug("found license {}", license);
+            database.setLicense(license);
+        }
         database.setIsPublic(modifyDto.getIsPublic());
         database.setDescription(modifyDto.getDescription());
         database.setPublisher(modifyDto.getPublisher());
         database.setPublication(modifyDto.getPublication());
         database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
-        database.setLicense(license);
-        final Database out = databaseRepository.save(database);
+
+        final Database dbdb = databaseRepository.save(database);
         /* update entity in metadata database */
-        log.info("Updated database with id {}", out.getId());
-        log.debug("updated database {}", out);
+        log.info("Updated database with id {}", dbdb.getId());
+        log.debug("updated database {}", dbdb);
         // save in database_index - elastic search
-//        databaseidxRepository.save(database);
-        return out;
+        final Database edb = databaseidxRepository.save(database);
+        log.info("Updated database in elastic search with id {}", edb.getId());
+        log.debug("updated database in elastic search {}", edb);
+        return dbdb;
     }
 
 }

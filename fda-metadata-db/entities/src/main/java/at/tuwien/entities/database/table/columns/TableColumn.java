@@ -60,6 +60,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
