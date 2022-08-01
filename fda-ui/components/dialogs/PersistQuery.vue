@@ -32,11 +32,26 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col>
+            <v-col cols="2">
               <v-text-field
-                id="publication"
-                v-model="identifier.publication"
-                label="Publication Time *"
+                id="publication-day"
+                v-model.number="identifier.publication_day"
+                type="number"
+                label="Publication Day" />
+            </v-col>
+            <v-col cols="2">
+              <v-text-field
+                id="publication-month"
+                v-model.number="identifier.publication_month"
+                type="number"
+                label="Publication Month" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                id="publication-year"
+                v-model.number="identifier.publication_year"
+                type="number"
+                label="Publication Year *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -75,7 +90,6 @@
             <v-col cols="3">
               <v-text-field
                 v-model="creator.orcid"
-                :rules="[v => validateOrcid(v) || $t('Invalid ORCID')]"
                 name="orcid"
                 label="ORCID" />
             </v-col>
@@ -153,7 +167,7 @@
 </template>
 
 <script>
-import { formatDateUTC, isValidOrcid } from '@/utils'
+import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
 export default {
   data () {
     return {
@@ -240,7 +254,9 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        publication: formatDateUTC(Date.now()),
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
         visibility: 'everyone',
         doi: null,
         creators: [],
@@ -271,12 +287,6 @@ export default {
     cancel () {
       this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
-    },
-    validateOrcid (orcid) {
-      if (!orcid || orcid.length === 0) {
-        return true
-      }
-      return isValidOrcid(orcid)
     },
     addCreatorSelf () {
       if (!this.user.firstname || !this.user.lastname) {
@@ -344,6 +354,9 @@ export default {
       this.loading = false
     },
     async loadUser () {
+      if (!this.token) {
+        return
+      }
       this.loading = true
       let res
       try {

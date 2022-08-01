@@ -201,7 +201,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setIsPublic(modifyDto.getIsPublic());
         database.setDescription(modifyDto.getDescription());
         database.setPublisher(modifyDto.getPublisher());
-        database.setPublication(modifyDto.getPublication());
+        database.setPublicationYear(modifyDto.getPublicationYear());
         database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
 
         final Database dbdb = databaseRepository.save(database);

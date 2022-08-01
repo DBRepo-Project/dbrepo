@@ -104,6 +104,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static String DATABASE_1_PUBLISHER = "TU Wien";
+    public final static Short DATABASE_1_PUBLICATION_YEAR = 2022;
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
@@ -127,7 +128,7 @@ public abstract class BaseUnitTest {
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .license(LICENSE_1_DTO)
-            .publication("2022-08-01")
+            .publicationYear(DATABASE_1_PUBLICATION_YEAR)
             .publisher(DATABASE_1_PUBLISHER)
             .build();
 

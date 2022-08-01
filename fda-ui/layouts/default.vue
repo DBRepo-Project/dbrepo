@@ -201,6 +201,7 @@ export default {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
       this.$toast.success('Logged out')
+      this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
     async loadDB () {

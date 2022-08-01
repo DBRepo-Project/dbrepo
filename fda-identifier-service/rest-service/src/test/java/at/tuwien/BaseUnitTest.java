@@ -246,7 +246,7 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352);
-    public final static String IDENTIFIER_1_PUBLICATION_YEAR = "2022-07-14";
+    public final static Short IDENTIFIER_1_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_1_QUERY_HASH = "abc";
     public final static String IDENTIFIER_1_RESULT_HASH = "def";
     public final static String IDENTIFIER_1_QUERY = "SELECT `id` FROM `foobar`";
@@ -264,7 +264,9 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
-    public final static String IDENTIFIER_2_PUBLICATION_YEAR = "2022-07-14";
+    public final static Short IDENTIFIER_2_PUBLICATION_DAY = 14;
+    public final static Short IDENTIFIER_2_PUBLICATION_MONTH = 7;
+    public final static Short IDENTIFIER_2_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_2_QUERY_HASH = "abc";
     public final static String IDENTIFIER_2_RESULT_HASH = "def";
     public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";
@@ -284,7 +286,7 @@ public abstract class BaseUnitTest {
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
-            .publication(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .queryHash(IDENTIFIER_1_QUERY_HASH)
             .resultHash(IDENTIFIER_1_RESULT_HASH)
             .query(IDENTIFIER_1_QUERY)
@@ -305,7 +307,9 @@ public abstract class BaseUnitTest {
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
-            .publication(IDENTIFIER_2_PUBLICATION_YEAR)
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
             .queryHash(IDENTIFIER_2_QUERY_HASH)
             .resultHash(IDENTIFIER_2_RESULT_HASH)
             .query(IDENTIFIER_2_QUERY)
@@ -404,7 +408,7 @@ public abstract class BaseUnitTest {
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
-            .publication(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
             .build();
 
@@ -425,7 +429,9 @@ public abstract class BaseUnitTest {
             .doi(IDENTIFIER_2_DOI)
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .relatedIdentifiers(List.of(RELATED_IDENTIFIER_1_CREATE_DTO))
-            .publication(IDENTIFIER_2_PUBLICATION_YEAR)
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
             .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
             .build();
 

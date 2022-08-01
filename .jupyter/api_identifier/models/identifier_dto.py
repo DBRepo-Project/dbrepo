@@ -46,7 +46,9 @@ class IdentifierDto(object):
         'query_hash': 'str',
         'result_hash': 'str',
         'result_number': 'int',
-        'publication': 'str',
+        'publication_day': 'int',
+        'publication_month': 'int',
+        'publication_year': 'int',
         'last_modified': 'datetime'
     }
 
@@ -69,11 +71,13 @@ class IdentifierDto(object):
         'query_hash': 'query_hash',
         'result_hash': 'result_hash',
         'result_number': 'result_number',
-        'publication': 'publication',
+        'publication_day': 'publication_day',
+        'publication_month': 'publication_month',
+        'publication_year': 'publication_year',
         'last_modified': 'last_modified'
     }
 
-    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication=None, last_modified=None):  # noqa: E501
+    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication_day=None, publication_month=None, publication_year=None, last_modified=None):  # noqa: E501
         """IdentifierDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._cid = None
@@ -93,7 +97,9 @@ class IdentifierDto(object):
         self._query_hash = None
         self._result_hash = None
         self._result_number = None
-        self._publication = None
+        self._publication_day = None
+        self._publication_month = None
+        self._publication_year = None
         self._last_modified = None
         self.discriminator = None
         if id is not None:
@@ -118,7 +124,11 @@ class IdentifierDto(object):
         self.query_hash = query_hash
         self.result_hash = result_hash
         self.result_number = result_number
-        self.publication = publication
+        if publication_day is not None:
+            self.publication_day = publication_day
+        if publication_month is not None:
+            self.publication_month = publication_month
+        self.publication_year = publication_year
         if last_modified is not None:
             self.last_modified = last_modified
 
@@ -535,27 +545,69 @@ class IdentifierDto(object):
         self._result_number = result_number
 
     @property
-    def publication(self):
-        """Gets the publication of this IdentifierDto.  # noqa: E501
+    def publication_day(self):
+        """Gets the publication_day of this IdentifierDto.  # noqa: E501
 
 
-        :return: The publication of this IdentifierDto.  # noqa: E501
-        :rtype: str
+        :return: The publication_day of this IdentifierDto.  # noqa: E501
+        :rtype: int
         """
-        return self._publication
+        return self._publication_day
 
-    @publication.setter
-    def publication(self, publication):
-        """Sets the publication of this IdentifierDto.
+    @publication_day.setter
+    def publication_day(self, publication_day):
+        """Sets the publication_day of this IdentifierDto.
 
 
-        :param publication: The publication of this IdentifierDto.  # noqa: E501
-        :type: str
+        :param publication_day: The publication_day of this IdentifierDto.  # noqa: E501
+        :type: int
         """
-        if publication is None:
-            raise ValueError("Invalid value for `publication`, must not be `None`")  # noqa: E501
 
-        self._publication = publication
+        self._publication_day = publication_day
+
+    @property
+    def publication_month(self):
+        """Gets the publication_month of this IdentifierDto.  # noqa: E501
+
+
+        :return: The publication_month of this IdentifierDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_month
+
+    @publication_month.setter
+    def publication_month(self, publication_month):
+        """Sets the publication_month of this IdentifierDto.
+
+
+        :param publication_month: The publication_month of this IdentifierDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_month = publication_month
+
+    @property
+    def publication_year(self):
+        """Gets the publication_year of this IdentifierDto.  # noqa: E501
+
+
+        :return: The publication_year of this IdentifierDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_year
+
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this IdentifierDto.
+
+
+        :param publication_year: The publication_year of this IdentifierDto.  # noqa: E501
+        :type: int
+        """
+        if publication_year is None:
+            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
+
+        self._publication_year = publication_year
 
     @property
     def last_modified(self):

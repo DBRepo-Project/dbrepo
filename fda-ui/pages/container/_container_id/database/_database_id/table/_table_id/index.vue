@@ -21,13 +21,13 @@
         <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn :disabled="!token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
-        <v-btn :disabled="error" class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
+        <v-btn class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download csv
         </v-btn>
         <v-btn
@@ -314,6 +314,9 @@ export default {
       this.loadingData = false
     },
     async loadUser () {
+      if (!this.token) {
+        return
+      }
       try {
         const res = await this.$axios.put('/api/auth', {}, this.config)
         this.user = res.data

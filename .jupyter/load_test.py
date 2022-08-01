@@ -5,6 +5,7 @@ import os
 import shutil
 import uuid
 from postgres import Postgres
+from datetime import date
 
 import api_query.rest
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
@@ -98,7 +99,7 @@ def update_database(container_id, database_id, is_public=True):
         },
         "language": "en",
         "is_public": is_public,
-        "publication": "2022-07-19"
+        "publication_year": date.year
     }, container_id, database_id)
     print("updated database with id %d" % response.id)
     return response
@@ -203,7 +204,9 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
             "affiliation": "TU Wien",
             "orcid": "0000-0002-9272-6225"
         }],
-        "publication": "2022-07-16",
+        "publication_day": date.day,
+        "publication_month": date.month,
+        "publication_year": date.year,
         "related_identifiers": [{
             "value": "http://localhost:3000/container/" + str(container_id) + "/database/" + str(database_id),
             "type": "URL",

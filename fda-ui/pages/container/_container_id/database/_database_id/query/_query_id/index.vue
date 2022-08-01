@@ -8,7 +8,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || erroneous || !executionUTC || !token" @click.stop="openDialog()">
+        <v-btn v-if="token && !identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
         <v-btn v-if="result_visibility" :disabled="error" color="primary" :loading="downloadLoading" @click.stop="download">

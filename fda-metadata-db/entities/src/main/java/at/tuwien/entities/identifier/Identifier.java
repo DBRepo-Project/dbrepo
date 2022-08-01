@@ -78,6 +78,15 @@ public class Identifier {
     @Column(nullable = false)
     private Long resultNumber;
 
+    @Column(nullable = false)
+    private Short publicationYear;
+
+    @Column
+    private Short publicationMonth;
+
+    @Column
+    private Short publicationDay;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -96,9 +105,6 @@ public class Identifier {
 
     @Column
     private String doi;
-
-    @Column(nullable = false)
-    private String publication;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
     private List<Creator> creators;

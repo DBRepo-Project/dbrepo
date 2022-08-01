@@ -31,7 +31,7 @@ class DatabaseDto(object):
         'id': 'int',
         'name': 'str',
         'exchange': 'str',
-        'creator': 'UserDto',
+        'creator': 'UserBriefDto',
         'subjects': 'list[str]',
         'language': 'str',
         'license': 'LicenseDto',
@@ -44,7 +44,7 @@ class DatabaseDto(object):
         'created': 'datetime',
         'deleted': 'datetime',
         'internal_name': 'str',
-        'publication': 'str',
+        'publication_year': 'int',
         'is_public': 'bool'
     }
 
@@ -65,11 +65,11 @@ class DatabaseDto(object):
         'created': 'created',
         'deleted': 'deleted',
         'internal_name': 'internal_name',
-        'publication': 'publication',
+        'publication_year': 'publication_year',
         'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, contact=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, contact=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication_year=None, is_public=None):  # noqa: E501
         """DatabaseDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
@@ -87,7 +87,7 @@ class DatabaseDto(object):
         self._created = None
         self._deleted = None
         self._internal_name = None
-        self._publication = None
+        self._publication_year = None
         self._is_public = None
         self.discriminator = None
         self.id = id
@@ -117,8 +117,8 @@ class DatabaseDto(object):
         if deleted is not None:
             self.deleted = deleted
         self.internal_name = internal_name
-        if publication is not None:
-            self.publication = publication
+        if publication_year is not None:
+            self.publication_year = publication_year
         if is_public is not None:
             self.is_public = is_public
 
@@ -197,7 +197,7 @@ class DatabaseDto(object):
 
 
         :return: The creator of this DatabaseDto.  # noqa: E501
-        :rtype: UserDto
+        :rtype: UserBriefDto
         """
         return self._creator
 
@@ -207,7 +207,7 @@ class DatabaseDto(object):
 
 
         :param creator: The creator of this DatabaseDto.  # noqa: E501
-        :type: UserDto
+        :type: UserBriefDto
         """
         if creator is None:
             raise ValueError("Invalid value for `creator`, must not be `None`")  # noqa: E501
@@ -475,25 +475,25 @@ class DatabaseDto(object):
         self._internal_name = internal_name
 
     @property
-    def publication(self):
-        """Gets the publication of this DatabaseDto.  # noqa: E501
+    def publication_year(self):
+        """Gets the publication_year of this DatabaseDto.  # noqa: E501
 
 
-        :return: The publication of this DatabaseDto.  # noqa: E501
-        :rtype: str
+        :return: The publication_year of this DatabaseDto.  # noqa: E501
+        :rtype: int
         """
-        return self._publication
+        return self._publication_year
 
-    @publication.setter
-    def publication(self, publication):
-        """Sets the publication of this DatabaseDto.
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this DatabaseDto.
 
 
-        :param publication: The publication of this DatabaseDto.  # noqa: E501
-        :type: str
+        :param publication_year: The publication_year of this DatabaseDto.  # noqa: E501
+        :type: int
         """
 
-        self._publication = publication
+        self._publication_year = publication_year
 
     @property
     def is_public(self):

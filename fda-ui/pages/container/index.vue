@@ -157,7 +157,7 @@ export default {
       return formatTimestampUTCLabel(str)
     },
     loadDatabase (database) {
-      this.$router.push(`/container/${database.container_id}/database/${database.id}/info`)
+      this.$router.push(`/container/${database.container_id}/database/${database.id}`)
     }
   }
 }

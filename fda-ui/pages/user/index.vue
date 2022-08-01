@@ -248,6 +248,9 @@ export default {
     submit () {
     },
     async loadUser () {
+      if (!this.token) {
+        return
+      }
       try {
         this.loading = true
         const res = await this.$axios.put('/api/auth/', {}, this.config)

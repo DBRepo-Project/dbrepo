@@ -34,7 +34,7 @@ public interface DocumentMapper {
         builder.append("<identifier identifierType=\"DOI\">")
                 .append(data.getDoi())
                 .append("</identifier>");
-        if (data.getCreators().size() == 0) {
+        if (data.getCreators().size() > 0) {
             builder.append("<creators>");
             data.getCreators()
                     .forEach(creator -> {
@@ -57,7 +57,7 @@ public interface DocumentMapper {
                 .append("<publisher xml:lang=\"en\">")
                 .append(database.getPublisher())
                 .append("</publisher><publicationYear>")
-                .append(database.getPublication())
+                .append(data.getPublicationYear())
                 .append("</publicationYear>");
         if (database.getSubjects().size() > 0) {
             builder.append("<subjects>");
@@ -106,6 +106,11 @@ public interface DocumentMapper {
                     .append("\" rightsURI=\"")
                     .append(database.getLicense().getUri())
                     .append("\"/></rightsList>");
+        }
+        if (data.getDescription() != null) {
+            builder.append("<descriptions><description descriptionType=\"Abstract\">")
+                    .append(data.getDescription())
+                    .append("</description></descriptions>");
         }
         builder.append("<version>1.0</version><descriptions>")
                 .append("<description xml:lang=\"en\" descriptionType=\"Abstract\">")

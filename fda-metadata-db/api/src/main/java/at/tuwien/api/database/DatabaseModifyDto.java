@@ -32,9 +32,9 @@ public class DatabaseModifyDto {
     private String publisher;
 
     @NotBlank
-    @JsonProperty("publication")
-    @Parameter(name = "database publication")
-    private String publication;
+    @JsonProperty("publication_year")
+    @Parameter(name = "database publication year")
+    private Short publicationYear;
 
     @Parameter(name = "database license")
     private LicenseDto license;

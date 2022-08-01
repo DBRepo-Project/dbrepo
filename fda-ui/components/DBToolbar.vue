@@ -3,24 +3,24 @@
     <v-toolbar v-if="cached_database" flat>
       <v-toolbar-title>
         <span>{{ cached_database.name }}</span>
-        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" right>mdi-lock-outline</v-icon>
-        <v-icon v-if="cached_database.is_public" class="mb-1" right>mdi-lock-open-outline</v-icon>
+        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
+        <v-icon v-if="cached_database.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2 mb-1" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="token" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn color="secondary" class="mr-2 mb-1 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn v-if="token" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn color="primary" class="mb-1" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="token" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/info`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}`">
             Info
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/table`">

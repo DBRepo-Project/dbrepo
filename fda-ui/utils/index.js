@@ -77,6 +77,30 @@ function formatDateUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd')
 }
 
+function formatYearUTC (str) {
+  if (str === null) {
+    return null
+  }
+  const date = new Date(str).toISOString().slice(0, -1)
+  return format(new Date(date), 'yyyy')
+}
+
+function formatMonthUTC (str) {
+  if (str === null) {
+    return null
+  }
+  const date = new Date(str).toISOString().slice(0, -1)
+  return format(new Date(date), 'MM')
+}
+
+function formatDayUTC (str) {
+  if (str === null) {
+    return null
+  }
+  const date = new Date(str).toISOString().slice(0, -1)
+  return format(new Date(date), 'dd')
+}
+
 function formatTimestamp (str) {
   if (str === null) {
     return null
@@ -108,5 +132,8 @@ module.exports = {
   formatDateUTC,
   isNonNegativeInteger,
   isValidOrcid,
-  formatUser
+  formatUser,
+  formatYearUTC,
+  formatMonthUTC,
+  formatDayUTC
 }

@@ -41,11 +41,11 @@ public class ExportEndpoint extends AbstractEndpoint {
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       @NotNull @PathVariable("tableId") Long tableId,
                                                       @RequestParam(required = false) Instant timestamp,
-                                                      @NotNull Principal principal)
+                                                      Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
             FileStorageException, NotAllowedException, QueryMalformedException {
-        if (!hasDatabasePermission(id, databaseId, "DATA_EXPORT", principal)) {
+        if (!hasDatabasePermission(id, databaseId, "TABLE_EXPORT", principal)) {
             log.error("Missing data export permission");
             throw new NotAllowedException("Missing data export permission");
         }
