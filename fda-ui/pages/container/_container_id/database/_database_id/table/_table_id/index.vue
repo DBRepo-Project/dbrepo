@@ -12,7 +12,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="is_owner" color="primary" class="mr-2" @click="addTuple">
+        <v-btn v-if="is_owner && canAdd" color="primary" class="mr-2" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
         <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
@@ -74,7 +74,7 @@
         v-model="editTupleDialog"
         persistent
         max-width="640">
-        <EditTuple :tuple="selection[0]" :edit="edit" @close="editTupleDialog = false" />
+        <EditTuple :tuple="selection[0]" :edit="edit" @close="close" />
       </v-dialog>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -170,8 +170,11 @@ export default {
       if (this.selection.length !== 1) { return false }
       return this.edit === true
     },
+    canAdd () {
+      return !this.canDelete
+    },
     canDelete () {
-      return this.selection.length !== 0
+      return this.edit && this.selection.length !== 0
     },
     is_owner () {
       return this.token && this.table.creator.username === this.user.username
@@ -233,6 +236,13 @@ export default {
         this.version = formatTimestamp(date)
       }
       this.pickVersionDialog = false
+    },
+    close (event) {
+      console.debug('closed edit/create tuple dialog', event)
+      this.editTupleDialog = false
+      if (event.success) {
+        this.loadData()
+      }
     },
     async deleteItems () {
       if (this.selection.length < 1) {

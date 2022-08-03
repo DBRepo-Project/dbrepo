@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
-import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -261,8 +260,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
+        log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
         /* run query */
-        if (data.getData().size() == 0) return;
+        if (data.getData().size() == 0) {
+            log.error("Failed to parse data");
+            log.debug("failed to parse data, the provided map {} is empty", data.getData());
+            throw new TableMalformedException("Failed to parse data");
+        }
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* prepare the statement */
         try {
@@ -271,10 +275,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
+            throw new TableMalformedException("Failed to parse date", e);
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
+            throw new TableMalformedException("Failed to parse number", e);
         } catch (Exception e) {
             log.error("Failed for unknown reason: {}", e.getMessage());
+            throw new TableMalformedException("Failed for unknown reason", e);
         } finally {
             dataSource.close();
         }
