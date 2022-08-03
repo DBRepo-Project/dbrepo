@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" />
+    <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
     <v-card v-if="!loading && tables.length === 0" flat>
       <v-card-title>
         (no tables)
@@ -80,11 +80,14 @@
           </v-row>
           <v-row dense>
             <v-col>
-              <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+              <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
               </v-btn>
               <v-btn color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
                 Create Subset
+              </v-btn>
+              <v-btn class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
+                Import csv
               </v-btn>
             </v-col>
             <v-col class="align-right">

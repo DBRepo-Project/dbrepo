@@ -246,7 +246,7 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352);
-    public final static Short IDENTIFIER_1_PUBLICATION_YEAR = 2022;
+    public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_1_QUERY_HASH = "abc";
     public final static String IDENTIFIER_1_RESULT_HASH = "def";
     public final static String IDENTIFIER_1_QUERY = "SELECT `id` FROM `foobar`";
@@ -264,9 +264,9 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
-    public final static Short IDENTIFIER_2_PUBLICATION_DAY = 14;
-    public final static Short IDENTIFIER_2_PUBLICATION_MONTH = 7;
-    public final static Short IDENTIFIER_2_PUBLICATION_YEAR = 2022;
+    public final static Integer IDENTIFIER_2_PUBLICATION_DAY = 14;
+    public final static Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
+    public final static Integer IDENTIFIER_2_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_2_QUERY_HASH = "abc";
     public final static String IDENTIFIER_2_RESULT_HASH = "def";
     public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";

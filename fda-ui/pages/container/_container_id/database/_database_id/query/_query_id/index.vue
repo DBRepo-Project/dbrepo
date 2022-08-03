@@ -311,9 +311,6 @@ export default {
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     result_icon () {
       return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
     },
@@ -322,6 +319,9 @@ export default {
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'
+    },
+    token () {
+      return this.$store.state.token
     },
     config () {
       if (this.token === null) {
@@ -404,10 +404,7 @@ export default {
     async metadata () {
       this.metadataLoading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          responseType: 'text'
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, this.config)
         console.debug('identifier result', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')

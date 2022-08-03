@@ -117,8 +117,7 @@ class DatabaseDto(object):
         if deleted is not None:
             self.deleted = deleted
         self.internal_name = internal_name
-        if publication_year is not None:
-            self.publication_year = publication_year
+        self.publication_year = publication_year
         if is_public is not None:
             self.is_public = is_public
 
@@ -492,6 +491,8 @@ class DatabaseDto(object):
         :param publication_year: The publication_year of this DatabaseDto.  # noqa: E501
         :type: int
         """
+        if publication_year is None:
+            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
 
         self._publication_year = publication_year
 

@@ -652,17 +652,6 @@ public interface QueryMapper {
         }
     }
 
-    default Long resultSetToLong(ResultSet data) {
-        try {
-            if (data.next()) {
-                return data.getLong(1);
-            }
-        } catch (SQLException e) {
-            return null;
-        }
-        return null;
-    }
-
     default PreparedStatement tableToRawFindAllQuery(Connection connection, Table table, Instant timestamp, Long size, Long page)
             throws ImageNotSupportedException, QueryMalformedException {
         /* param check */

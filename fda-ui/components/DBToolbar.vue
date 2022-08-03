@@ -20,7 +20,7 @@
       </v-toolbar-title>
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/info`">
             Info
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/table`">

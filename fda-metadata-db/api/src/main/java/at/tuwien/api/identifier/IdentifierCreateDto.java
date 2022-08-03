@@ -41,16 +41,16 @@ public class IdentifierCreateDto {
 
     @JsonProperty("publication_day")
     @Parameter(name = "publication day")
-    private Short publicationDay;
+    private Integer publicationDay;
 
     @JsonProperty("publication_month")
     @Parameter(name = "publication month")
-    private Short publicationMonth;
+    private Integer publicationMonth;
 
     @NotNull
     @JsonProperty("publication_year")
     @Parameter(name = "publication year")
-    private Short publicationYear;
+    private Integer publicationYear;
 
     @NotNull
     @Parameter(name = "creators")

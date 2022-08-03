@@ -64,9 +64,10 @@ public class DatabaseDto {
     @Parameter(name = "database contact person")
     private UserDto contact;
 
+    @NotNull
     @JsonProperty("publication_year")
     @Parameter(name = "database publication year")
-    private Short publicationYear;
+    private Integer publicationYear;
 
     @Parameter(name = "tables")
     private List<TableBriefDto> tables;

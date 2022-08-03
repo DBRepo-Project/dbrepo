@@ -1,97 +1,101 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Import Data</v-toolbar-title>
-      <v-spacer />
       <v-toolbar-title>
-        <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}`">
-          <v-icon left>mdi-table</v-icon>
-          View Table
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
-    </v-toolbar>
-    <v-card>
-      <v-card-title v-if="!loading">
+      <v-toolbar-title>
         {{ table.name }}
-      </v-card-title>
-      <v-card-subtitle>{{ table.internal_name }}</v-card-subtitle>
-      <v-card-text>
-        <v-row dense>
-          <v-col cols="8">
-            <v-select
-              v-model="tableImport.separator"
-              :items="separators"
-              item-text="key"
-              item-value="value"
-              required
-              hint="Character separating the values"
-              label="Separator *" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model.number="tableImport.skip_lines"
-              :rules="[v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
-              type="number"
-              required
-              hint="Skip n lines from the top. These may include comments or the header of column names."
-              label="Number of lines to skip *"
-              placeholder="e.g. 0" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-select
-              v-model="tableImport.quote"
-              :items="quotes"
-              item-text="key"
-              item-value="value"
-              hint="Character quoting the values"
-              label="Value quotes" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="tableImport.null_element"
-              hint="Representation of 'no value present'"
-              placeholder="e.g. NA"
-              label="NULL Element" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="tableImport.true_element"
-              label="True Element"
-              hint="Representation of boolean 'true'"
-              placeholder="e.g. 1, true, YES" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="tableImport.false_element"
-              label="False Element"
-              hint="Representation of boolean 'false'"
-              placeholder="e.g. 0, false, NO" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-file-input
-              v-model="file"
-              accept=".csv,.tsv"
-              show-size
-              label="CSV/TSV File" />
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
-      </v-card-actions>
-    </v-card>
+      </v-toolbar-title>
+    </v-toolbar>
+    <v-stepper v-model="step" vertical flat>
+      <v-stepper-step :complete="step > 1" step="1">
+        Import Data
+      </v-stepper-step>
+
+      <v-stepper-content step="1">
+        <v-form ref="form" v-model="validStep1" @submit.prevent="submit">
+          <v-row dense>
+            <v-col cols="8">
+              <v-select
+                v-model="tableImport.separator"
+                :items="separators"
+                item-text="key"
+                item-value="value"
+                required
+                hint="Character separating the values"
+                label="Separator *" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model.number="tableImport.skip_lines"
+                :rules="[v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
+                type="number"
+                required
+                hint="Skip n lines from the top. These may include comments or the header of column names."
+                label="Number of lines to skip *"
+                placeholder="e.g. 0" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-select
+                v-model="tableImport.quote"
+                :items="quotes"
+                item-text="key"
+                item-value="value"
+                hint="Character quoting the values"
+                label="Value quotes" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.null_element"
+                hint="Representation of 'no value present'"
+                placeholder="e.g. NA"
+                label="NULL Element" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.true_element"
+                label="True Element"
+                hint="Representation of boolean 'true'"
+                placeholder="e.g. 1, true, YES" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.false_element"
+                label="False Element"
+                hint="Representation of boolean 'false'"
+                placeholder="e.g. 0, false, NO" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-file-input
+                v-model="file"
+                accept=".csv,.tsv"
+                show-size
+                label="CSV/TSV File" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="8">
+              <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-stepper-content>
+    </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -104,6 +108,8 @@ export default {
   data () {
     return {
       loading: false,
+      step: 1,
+      validStep1: false,
       separators: [
         { key: ',', value: ',' },
         { key: ';', value: ';' },
@@ -155,6 +161,9 @@ export default {
   },
   methods: {
     isNonNegativeInteger,
+    submit () {
+      this.$refs.form.validate()
+    },
     async info () {
       this.loading = true
       const infoUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`
@@ -210,6 +219,14 @@ export default {
   }
 }
 </script>
-
 <style>
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

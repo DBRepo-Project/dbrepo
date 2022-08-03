@@ -79,13 +79,13 @@ public class Identifier {
     private Long resultNumber;
 
     @Column(nullable = false)
-    private Short publicationYear;
+    private Integer publicationYear;
 
     @Column
-    private Short publicationMonth;
+    private Integer publicationMonth;
 
     @Column
-    private Short publicationDay;
+    private Integer publicationDay;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({

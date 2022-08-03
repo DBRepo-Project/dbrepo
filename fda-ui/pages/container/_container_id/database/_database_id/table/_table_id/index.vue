@@ -83,7 +83,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
-import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
+import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
 
 export default {
   components: {
@@ -226,9 +226,11 @@ export default {
       this.pickVersionDialog = true
     },
     pickVersion (event) {
+      const date = new Date(event.time)
+      date.setSeconds(date.getSeconds() + 1)
       console.debug('closed', event)
       if (event.time) {
-        this.version = event.time
+        this.version = formatTimestamp(date)
       }
       this.pickVersionDialog = false
     },

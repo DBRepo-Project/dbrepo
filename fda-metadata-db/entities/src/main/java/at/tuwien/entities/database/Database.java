@@ -76,7 +76,7 @@ public class Database {
     private String publisher;
 
     @Column
-    private Short publicationYear;
+    private Integer publicationYear;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({

@@ -4,8 +4,8 @@ import time
 import os
 import shutil
 import uuid
+import requests as rq
 from postgres import Postgres
-from datetime import date
 
 import api_query.rest
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
@@ -17,6 +17,7 @@ from api_query.api.table_data_endpoint_api import TableDataEndpointApi
 from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
 from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
+from api_units.api.default_api import DefaultApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
@@ -27,6 +28,7 @@ query = QueryEndpointApi()
 data = TableDataEndpointApi()
 identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
+unit = DefaultApi()
 
 token = ""
 
@@ -99,7 +101,7 @@ def update_database(container_id, database_id, is_public=True):
         },
         "language": "en",
         "is_public": is_public,
-        "publication_year": date.year
+        "publication_year": 2022
     }, container_id, database_id)
     print("updated database with id %d" % response.id)
     return response
@@ -204,9 +206,9 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
             "affiliation": "TU Wien",
             "orcid": "0000-0002-9272-6225"
         }],
-        "publication_day": date.day,
-        "publication_month": date.month,
-        "publication_year": date.year,
+        "publication_day": 2,
+        "publication_month": 8,
+        "publication_year": 2022,
         "related_identifiers": [{
             "value": "http://localhost:3000/container/" + str(container_id) + "/database/" + str(database_id),
             "type": "URL",
@@ -240,9 +242,37 @@ def update_theme(user_id):
     }, user_id)
     print("updated theme user with id %d" % user_id)
 
+
 def verify_user(user_id):
     db = Postgres("dbname=fda user=postgres password=postgres")
     token = db.one("SELECT ")
+
+
+def find_concept(concept):
+    response = rq.get("http://localhost:9095/api/units/uri/" + concept)
+    print("found concept for name %s" % concept)
+    return response.json()
+
+
+def create_concept(name, uri):
+    response = rq.post("http://localhost:9095/api/units/saveconcept", {
+        "name": name,
+        "uri": uri
+    })
+    print("created concept for name %s" % name)
+    return response.json()
+
+
+def assign_concept(database_id, table_id, column_id, uri):
+    response = rq.post("http://localhost:9095/api/units/savecolumnsconcept", {
+        "cdbid": database_id,
+        "cid": column_id,
+        "tid": table_id,
+        "uri": uri
+    })
+    print("assigned concept to column with id %d" % column_id)
+    return response.json()
+
 
 if __name__ == '__main__':
     #
@@ -256,6 +286,9 @@ if __name__ == '__main__':
     dbid = create_database(cid).id
     update_database(cid, dbid)
     tid = create_table(cid, dbid).id
+    curi = find_concept("time")["URI"]
+    create_concept("time", curi)
+    assign_concept(dbid, tid, 2, curi)
     tname = find_table(cid, dbid, tid).internal_name
     fill_table(cid, dbid, tid)
     create_query(cid, dbid, "select `id` from `" + tname + "`")

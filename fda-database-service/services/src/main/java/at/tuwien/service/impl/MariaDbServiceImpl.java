@@ -28,11 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
 import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
+import java.time.temporal.ChronoField;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -152,6 +151,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
         database.setContainer(container);
+        database.setPublicationYear(Calendar.getInstance().get(Calendar.YEAR));
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
         try {
             /* create database */

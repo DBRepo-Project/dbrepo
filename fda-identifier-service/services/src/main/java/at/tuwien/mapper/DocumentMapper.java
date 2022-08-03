@@ -90,7 +90,7 @@ public interface DocumentMapper {
                         }
                         if (related.getRelation() != null) {
                             builder.append(" relationType=\"")
-                                    .append(related.getRelation())
+                                    .append(related.getRelation().name())
                                     .append("\"");
                         }
                         builder.append(">")
@@ -112,10 +112,7 @@ public interface DocumentMapper {
                     .append(data.getDescription())
                     .append("</description></descriptions>");
         }
-        builder.append("<version>1.0</version><descriptions>")
-                .append("<description xml:lang=\"en\" descriptionType=\"Abstract\">")
-                .append(data.getDescription())
-                .append("</description></descriptions>")
+        builder.append("<version>1.0</version>")
                 .append("</resource>");
         log.trace("mapped identifier to xml {}", builder);
         return new InputStreamResource(IOUtils.toInputStream(builder.toString(), Charset.defaultCharset()));

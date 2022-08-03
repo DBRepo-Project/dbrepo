@@ -104,7 +104,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static String DATABASE_1_PUBLISHER = "TU Wien";
-    public final static Short DATABASE_1_PUBLICATION_YEAR = 2022;
+    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
