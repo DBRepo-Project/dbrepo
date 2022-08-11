@@ -20,8 +20,8 @@
                 name="name"
                 label="Table Name *"
                 autocomplete="off"
-                :rules="[v => !!v || $t('Required')]"
-                :error-messages="!validTableName ? ['Table with this name exists!'] : []"
+                :rules="[v => notEmpty(v) || $t('Required')]"
+                :error-messages="!validTableName ? ['Table with this name exists'] : []"
                 required />
             </v-col>
           </v-row>
@@ -32,7 +32,7 @@
                 name="description"
                 label="Description *"
                 autocomplete="off"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => notEmpty(v) || $t('Required')]"
                 required />
             </v-col>
           </v-row>
@@ -59,6 +59,7 @@
 
 <script>
 import TableSchema from '@/components/TableSchema'
+const { notEmpty } = require('@/utils')
 export default {
   components: {
     TableSchema
@@ -113,6 +114,7 @@ export default {
     this.listTables()
   },
   methods: {
+    notEmpty,
     submit () {
       this.$refs.form.validate()
     },
