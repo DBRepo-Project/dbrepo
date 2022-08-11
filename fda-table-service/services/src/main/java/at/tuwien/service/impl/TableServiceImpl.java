@@ -2,28 +2,22 @@ package at.tuwien.service.impl;
 
 import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.repository.elastic.TableidxRepository;
 import at.tuwien.repository.jpa.TableRepository;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.PersistenceUnit;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,14 +33,16 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final UserService userService;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
+    private final TableidxRepository tableidxRepository;
 
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
-                            DatabaseService databaseService) {
+                            DatabaseService databaseService, TableidxRepository tableidxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
+        this.tableidxRepository = tableidxRepository;
     }
 
     @Override
@@ -165,10 +161,14 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         } finally {
             dataSource1.close();
         }
-        /* save */
+        /* save in metadata database */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
+        /* save in elastic search */
+        tableidxRepository.save(entity);
+        log.info("Added table with id {} to search index", table.getId());
+        log.debug("added table {} to search index", table);
         return table;
     }
 
