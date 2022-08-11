@@ -53,69 +53,93 @@ build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
 	yarn --cwd ./fda-ui run build
 
-tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-document tag-units tag-broker
+tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-ui tag-units tag-broker tag-analyse tag-authentication tag-metadata tag-units
 
 tag-identifier:
-	docker tag fda-identifier-service:latest fairdataaustria/fda-identifier-service:latest
+	docker tag fda-identifier-service:latest dbrepo/identifier-service:latest
+
+tag-metadata:
+	docker tag fda-metadata-db:latest dbrepo/metadata-db:latest
 
 tag-container:
-	docker tag fda-container-service:latest fairdataaustria/fda-container-service:latest
+	docker tag fda-container-service:latest dbrepo/container-service:latest
 
 tag-database:
-	docker tag fda-database-service:latest fairdataaustria/fda-database-service:latest
+	docker tag fda-database-service:latest dbrepo/database-service:latest
 
 tag-discovery:
-	docker tag fda-discovery-service:latest fairdataaustria/fda-discovery-service:latest
+	docker tag fda-discovery-service:latest dbrepo/discovery-service:latest
 
 tag-gateway:
-	docker tag fda-gateway-service:latest fairdataaustria/fda-gateway-service:latest
+	docker tag fda-gateway-service:latest dbrepo/gateway-service:latest
 
 tag-query:
-	docker tag fda-query-service:latest fairdataaustria/fda-query-service:latest
+	docker tag fda-query-service:latest dbrepo/query-service:latest
 
 tag-table:
-	docker tag fda-table-service:latest fairdataaustria/fda-table-service:latest
+	docker tag fda-table-service:latest dbrepo/table-service:latest
 
-tag-document:
-	docker tag fda-document-service:latest fairdataaustria/fda-document-service:latest
+tag-ui:
+	docker tag fda-ui:latest dbrepo/ui:latest
 
 tag-units:
-	docker tag fda-units-service:latest fairdataaustria/fda-units-service:latest
+	docker tag fda-units-service:latest dbrepo/units-service:latest
 
 tag-broker:
-	docker tag fda-units-service:latest fairdataaustria/fda-broker-service:latest
+	docker tag fda-units-service:latest dbrepo/broker-service:latest
 
-release: tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-document release-units release-broker
+tag-analyse:
+	docker tag fda-analyse-service:latest dbrepo/analyse-service:latest
+
+tag-authentication:
+	docker tag fda-authentication-service:latest dbrepo/authentication-service:latest
+
+tag-units:
+	docker tag fda-units-service:latest dbrepo/units-service:latest
+
+release: tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-ui release-units release-broker release-analyse release-authentication release-metadata release-units
 
 release-identifier:
-	docker push fairdataaustria/fda-identifier-service:latest
+	docker push dbrepo/identifier-service:latest
 
 release-container:
-	docker push fairdataaustria/fda-container-service:latest
+	docker push dbrepo/container-service:latest
 
 release-database:
-	docker push fairdataaustria/fda-database-service:latest
+	docker push dbrepo/database-service:latest
 
 release-discovery:
-	docker push fairdataaustria/fda-discovery-service:latest
+	docker push dbrepo/discovery-service:latest
 
 release-gateway:
-	docker push fairdataaustria/fda-gateway-service:latest
+	docker push dbrepo/gateway-service:latest
 
 release-query:
-	docker push fairdataaustria/fda-query-service:latest
+	docker push dbrepo/query-service:latest
 
 release-table:
-	docker push fairdataaustria/fda-table-service:latest
+	docker push dbrepo/table-service:latest
 
-release-document:
-	docker push fairdataaustria/fda-document-service:latest
+release-ui:
+	docker push dbrepo/ui:latest
 
 release-units:
-	docker push fairdataaustria/fda-units-service:latest
+	docker push dbrepo/units-service:latest
 
 release-broker:
-	docker push fairdataaustria/fda-broker-service:latest
+	docker push dbrepo/broker-service:latest
+
+release-analyse:
+	docker push dbrepo/analyse-service:latest
+
+release-authentication:
+	docker push dbrepo/authentication-service:latest
+
+release-metadata:
+	docker push dbrepo/metadata-db:latest
+
+release-units:
+	docker push dbrepo/units-service:latest
 
 test-backend: test-backend-auth test-backend-container test-backend-database test-backend-discovery test-backend-gateway test-backend-query test-backend-table
 
