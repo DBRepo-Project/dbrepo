@@ -1,6 +1,6 @@
 package at.tuwien.api.auth;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -15,27 +15,23 @@ import java.util.List;
 public class JwtResponseDto {
 
     @NotNull
-    @ApiModelProperty(name = "jwt")
+    @ToString.Exclude
+    @Parameter(name = "jwt")
     private String token;
 
-    @NotNull
-    @ApiModelProperty(name = "user type")
+    @Parameter(name = "user type")
     private String type;
 
-    @NotNull
-    @ApiModelProperty(name = "id")
+    @Parameter(name = "id")
     private Long id;
 
-    @NotNull
-    @ApiModelProperty(name = "user name")
+    @Parameter(name = "user name")
     private String username;
 
-    @NotNull
-    @ApiModelProperty(name = "user email")
+    @Parameter(name = "user email")
     private String email;
 
-    @NotNull
-    @ApiModelProperty(name = "user roles")
+    @Parameter(name = "user roles")
     private List<String> roles;
 
 }

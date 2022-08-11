@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -11,10 +12,24 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   application:
     name: fda-authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  mail:
+    default-encoding: UTF-8
+    host: mail.student.tuwien.ac.at
+    port: 993
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    properties.mail.smtp:
+      timeout: 5000
+      auth: true
+      starttls.enable: true
 server:
   port: 9097
 logging:
@@ -22,12 +37,20 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    org.springframework.mail.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: localhost
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
+  website: http://localhost:3000
+  gateway.endpoint: http://localhost:9095
+  mail:
+    prefix: /
+    from: Database Repository <noreply@dbrepo.ossdip.at>
+    replyto: Martin Weise <martin.weise@tuwien.ac.at>
 jwt:
   issuer: fda-dbrepo
   secret: fda-secret
-  expiration.ms: 86400000
+  expiration.ms: 86400000 # 24 hrs

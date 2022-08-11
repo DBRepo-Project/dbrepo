@@ -32,7 +32,6 @@ public class AmqpConfig {
         factory.setHost(ampqHost);
         factory.setUsername(amqpUsername);
         factory.setPassword(amqpPassword);
-        log.debug("AMQP host {}, username {}, password {}", ampqHost, amqpUsername, amqpPassword);
         final Connection connection = factory.newConnection();
         return connection.createChannel();
     }

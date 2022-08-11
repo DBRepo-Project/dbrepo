@@ -2,15 +2,14 @@
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card v-if="!token">
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
           Login
         </v-card-title>
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
-            If you need an account, create one <a @click="signup">here</a>.
+            color="info">
+            If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
           <v-row>
             <v-col cols="6">
@@ -42,6 +41,7 @@
             :disabled="!valid"
             color="primary"
             type="submit"
+            :loading="loading"
             @click="login">
             Login
           </v-btn>
@@ -73,17 +73,23 @@ export default {
       return this.$store.state.token
     }
   },
-  beforeMount () {
+  mounted () {
+    if (this.$route.query.email_verified !== undefined) {
+      console.info('Successfully verified your E-Mail Address')
+      this.$toast.success('Successfully verified your E-Mail Address!')
+    } else if (this.$route.query.password_reset !== undefined) {
+      console.info('Successfully reset password')
+      this.$toast.success('Successfully reset password!')
+    }
   },
   methods: {
     submit () {
       this.$refs.form.validate()
     },
     async login () {
-      const url = '/api/auth'
       try {
         this.loading = true
-        const res = await this.$axios.post(url, this.loginAccount)
+        const res = await this.$axios.post('/api/auth', this.loginAccount)
         console.debug('login user', res.data)
         this.$store.commit('SET_TOKEN', res.data.token)
         const user = { ...res.data }
@@ -92,13 +98,29 @@ export default {
         this.$toast.success('Welcome back!')
         this.$router.push('/container')
       } catch (err) {
-        console.error('login user failed', err)
-        this.$toast.error('Failed to login user')
+        if (err.response !== undefined && err.response.status !== undefined) {
+          if (err.response.status === 418) {
+            this.$toast.error('Check your inbox and confirm your e-mail address.')
+            console.error('user has not confirmed e-mail', err)
+            this.loading = false
+            return
+          } else if (err.response.status === 404) {
+            this.$toast.error('Username not found.')
+            console.error('user has not confirmed e-mail', err)
+            this.loading = false
+            return
+          }
+          console.error('login user failed', err)
+          this.$toast.error('Login not successful.')
+        }
       }
       this.loading = false
     },
     signup () {
       this.$router.push('/signup')
+    },
+    forgot () {
+      this.$router.push('/forgot')
     }
   }
 }

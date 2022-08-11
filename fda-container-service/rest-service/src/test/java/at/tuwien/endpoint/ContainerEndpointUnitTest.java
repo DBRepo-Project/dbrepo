@@ -7,6 +7,7 @@ import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,8 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.persistence.Basic;
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,7 +51,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
         when(containerService.getAll())
                 .thenReturn(List.of(CONTAINER_1));
 
-        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll();
+        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll(null);
 
         /* test */
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -54,16 +59,19 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
+    public void create_succeeds() throws ImageNotFoundException, DockerClientException, UserNotFoundException, ContainerAlreadyExistsException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
                 .repository(IMAGE_1.getRepository())
                 .tag(IMAGE_1.getTag())
                 .build();
-        when(containerService.create(request))
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(containerService.create(request, principal))
                 .thenReturn(CONTAINER_1);
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -72,33 +80,40 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
 
     @Disabled
     @Test
-    public void create_noImage_fails() throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException {
+    public void create_noImage_fails() throws DockerClientException, ImageNotFoundException, UserNotFoundException, ContainerAlreadyExistsException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
                 .repository("image")
                 .tag("notexisting")
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
                 .thenReturn(Optional.empty());
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Disabled
+    @WithMockUser(username = "not3x1st1ng", roles = {"ROLE_RESEARCHER"})
     @Test
-    public void create_docker_fails() throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException {
+    public void create_docker_fails() throws DockerClientException, ImageNotFoundException, UserNotFoundException, ContainerAlreadyExistsException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
                 .repository(IMAGE_1.getRepository())
                 .tag(IMAGE_1.getTag())
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
                 .thenReturn(Optional.of(IMAGE_1));
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request);
+        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
 
         /* test */
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());

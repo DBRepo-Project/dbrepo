@@ -10,7 +10,7 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>fda-query-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-query-service</name>
     <description>
         The query service provides an interface to insert data into the tables created by the table service. It
@@ -80,6 +80,10 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
@@ -97,6 +101,12 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
+        </dependency>
+        <!-- AMPQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbit-amqp-client.version}</version>
         </dependency>
         <!-- Docker -->
         <dependency>
@@ -126,7 +136,7 @@
             <artifactId>tomcat-dbcp</artifactId>
             <version>9.0.33</version>
         </dependency>
-        <!-- Entity and API -->
+        <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-api</artifactId>
@@ -136,6 +146,12 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-entites</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -190,27 +206,6 @@
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
             <version>3.1</version>
-        </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-spring-web</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
         <!-- Gateway -->
         <dependency>

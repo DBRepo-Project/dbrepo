@@ -2,6 +2,7 @@ version: "3.6"
 
 volumes:
   fda-metadata-db-data:
+  fda-search-service-data:
   fda-broker-service-data:
 
 networks:
@@ -28,7 +29,6 @@ services:
     image: fda-metadata-db
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.5
     volumes:
       - fda-metadata-db-data:/var/lib/postgresql/data
     ports:
@@ -37,7 +37,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: fda
-      TZ: Europe/Vienna
     logging:
       driver: json-file
 
@@ -49,13 +48,8 @@ services:
     image: fda-discovery-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.4
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
-    depends_on:
-      fda-gateway-service:
-        condition: service_healthy
     ports:
       - "9090:9090"
     logging:
@@ -69,12 +63,13 @@ services:
     image: fda-gateway-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.2
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
     ports:
       - "9095:9095"
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -87,16 +82,20 @@ services:
     networks:
       fda-userdb:
       fda-public:
-    #    ipv4_address: 172.29.0.9
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
     ports:
       - "9092:9092"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       fda-container-service:
+        condition: service_healthy
+      fda-broker-service:
+        condition: service_healthy
+      fda-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -109,10 +108,9 @@ services:
     image: fda-container-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.8
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
     ports:
       - "9091:9091"
     volumes:
@@ -131,14 +129,27 @@ services:
     build: fda-authentication-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.14
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      WEBSITE: http://localhost:3000
+      MAIL_FROM: Database Repository <noreply@dbrepo.ossdip.at>
+      MAIL_REPLY_TO: Martin Weise <martin.weise@tuwien.ac.at>
+      JWT_ISSUER: fda-dbrepo
+      JWT_SECRET: fda-secret
+      JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      SMTP_HOST: ${MAIL_HOST}
+      SMTP_PORT: ${MAIL_PORT}
+      SMTP_USERNAME: ${MAIL_USERNAME}
+      SMTP_PASSWORD: ${MAIL_PASSWORD}
     ports:
       - "9097:9097"
     depends_on:
       fda-discovery-service:
+        condition: service_healthy
+      fda-broker-service:
+        condition: service_healthy
+      fda-metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -151,17 +162,18 @@ services:
     image: fda-query-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.12
       fda-userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     ports:
       - "9093:9093"
     volumes:
       - /tmp:/tmp
     depends_on:
       fda-table-service:
+        condition: service_healthy
+      fda-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -174,19 +186,23 @@ services:
     image: fda-table-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.11
       fda-userdb:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
       multipart.location: /tmp
-      TZ: Europe/Vienna
     ports:
       - "9094:9094"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
     depends_on:
-      fda-database-service:
+      fda-authentication-service:
+        condition: service_healthy
+      fda-search-service:
+        condition: service_started
+      fda-broker-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -199,15 +215,18 @@ services:
     image: fda-identifier-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.13
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
-      TZ: Europe/Vienna
     ports:
       - "9096:9096"
     depends_on:
       fda-query-service:
         condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
 
   fda-analyse-service:
     restart: on-failure
@@ -217,7 +236,6 @@ services:
     image: fda-analyse-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.10
       fda-userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
@@ -241,10 +259,8 @@ services:
     image: fda-units-service
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.7
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
-      TZ: Europe/Vienna
     ports:
       - "5010:5010"
     volumes:
@@ -263,12 +279,13 @@ services:
     build: ./fda-broker-service
     image: fda-broker-service
     environment:
-      TZ: Europe/Vienna
+      SPRING_PROFILES_ACTIVE: docker
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.3
     ports:
       - "5672:5672"
+      - "9098:9098"
       - "15672:15672"
     depends_on:
       fda-discovery-service:
@@ -286,7 +303,6 @@ services:
     command: [ "elasticsearch" ]
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.6
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -297,6 +313,8 @@ services:
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - fda-search-service-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
@@ -308,7 +326,6 @@ services:
     image: fda-ui
     networks:
       fda-public:
-    #    ipv4_address: 172.29.0.15
     ports:
       - "443:3000"
     volumes:
@@ -317,11 +334,12 @@ services:
     depends_on:
       fda-identifier-service:
         condition: service_healthy
+      fda-database-service:
+        condition: service_healthy
     environment:
       HOST: 0.0.0.0
       API: http://fda-gateway-service:9095
       KEY: "${UI_KEY}"
       CERT: "${UI_CERT}"
-      TZ: Europe/Vienna
     logging:
       driver: json-file

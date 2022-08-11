@@ -2,6 +2,8 @@ package at.tuwien.entities.container;
 
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -37,10 +39,15 @@ public class Container {
     )
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @Column(nullable = false)
     private String name;
 
-    @ToString.Exclude
     @Column(nullable = false)
     private String internalName;
 
@@ -50,6 +57,7 @@ public class Container {
     @Column
     private Integer port;
 
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
@@ -63,7 +71,7 @@ public class Container {
     private String ipAddress;
 
     @CreatedDate
-    @Column(name = "created", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private Instant created;
 
     @Column

@@ -1,18 +1,15 @@
 package at.tuwien.entities.user;
 
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Entity
@@ -55,15 +52,33 @@ public class User {
     @Column(name = "main_email", unique = true, nullable = false)
     private String email;
 
+    @Column
+    private String affiliation;
+
+    @Column
+    private String orcid;
+
+    @Column(nullable = false)
+    private Boolean themeDark;
+
+    @Column(name = "main_email_verified", nullable = false)
+    private Boolean emailVerified;
+
     @ToString.Exclude
     @Column(nullable = false)
     private String password;
 
     @ElementCollection(targetClass = RoleType.class)
-    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"))
+    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"uid", "role"})
+    })
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)
     private List<RoleType> roles;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Token> tokens;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

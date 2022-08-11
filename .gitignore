@@ -4,6 +4,18 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Notebooks
+.jupyter/.idea/
+.jupyter/.ipynb_checkpoints
+.jupyter/api_authentication
+.jupyter/api_broker
+.jupyter/api_container
+.jupyter/api_database
+.jupyter/api_identifier
+.jupyter/api_query
+.jupyter/api_table
+.jupyter/venv
+
 # Environment
 .env
 

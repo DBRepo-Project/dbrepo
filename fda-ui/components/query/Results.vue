@@ -9,11 +9,9 @@
 </template>
 
 <script>
-import _ from 'lodash'
-
 export default {
   props: {
-    value: { type: Number, default: () => 0 }
+    queryId: { type: Number, default: () => 0 }
   },
   data () {
     return {
@@ -41,26 +39,8 @@ export default {
       return { Authorization: `Bearer ${this.token}` }
     }
   },
-  watch: {
-    value () {
-      if (this.value) {
-        this.execute()
-      }
-    },
-    options (newVal, oldVal) {
-      if (typeof oldVal.groupBy === 'undefined') {
-        // initially, options do not have the groupBy field.
-        // don't run the execute method twice, when a new query is created
-        return
-      }
-      if (!this.value) {
-        this.$toast.error('Cannot paginate invalidated Query: press Execute')
-        return
-      }
-      this.execute()
-    }
-  },
   mounted () {
+    this.execute()
   },
   methods: {
     async executeFirstTime (parent) {
@@ -68,30 +48,19 @@ export default {
       this.loading = true
       try {
         const data = {
-          statement: this.parent.query.sql,
-          tables: [_.pick(this.parent.table, ['id', 'name', 'internal_name'])],
-          columns: [this.parent.select.map(function (column) {
-            return _.pick(column, ['id', 'name', 'internal_name'])
-          })]
+          statement: this.parent.sql
         }
         console.debug('send data', data)
         const page = 0
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/
-${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-${this.parent.queryId ? `/${this.parent.queryId}` : ''}
-?${urlParams}`, data, {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query${this.parent.queryId ? `/${this.parent.queryId}` : ''}?${urlParams}`, data, {
           headers: this.headers
         })
         console.debug('query result', res)
         this.$toast.success('Successfully executed query')
+        this.mapResults(res.data)
         this.loading = false
         this.parent.queryId = res.data.id
-        this.result.headers = this.parent.select.map((s) => {
-          return { text: s.name, value: s.name, sortable: false }
-        })
-        this.result.rows = res.data.result
-        this.total = res.data.resultNumber
       } catch (err) {
         console.error('query execute', err)
         this.$toast.error('Could not execute query')
@@ -106,27 +75,36 @@ ${this.parent.queryId ? `/${this.parent.queryId}` : ''}
       }))
     },
     async execute () {
+      if (this.queryId === 0) {
+        return
+      }
       this.loading = true
       try {
         const page = this.options.page - 1
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
         const res = await this.$axios.put(`/api/container/
 ${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-/${this.value}
+/${this.queryId}
 ?${urlParams}`, {}, {
           headers: this.headers
         })
+        this.mapResults(res.data)
         this.loading = false
-        if (res.data.result.length) {
-          this.result.headers = this.buildHeaders(res.data.result[0])
-        }
-        this.result.rows = res.data.result
-        this.total = res.data.resultNumber
       } catch (err) {
-        console.error('query execute', err)
-        this.$toast.error('Could not execute query')
+        if (err.response.status !== 401 && err.response.status !== 405) {
+          console.error('query execute', err)
+          this.$toast.error('Could not execute query')
+        }
         this.loading = false
       }
+    },
+    mapResults (data) {
+      if (data.result.length) {
+        this.result.headers = this.buildHeaders(data.result[0])
+      }
+      console.debug('query result', data)
+      this.result.rows = data.result
+      this.total = data.resultNumber
     }
   }
 }

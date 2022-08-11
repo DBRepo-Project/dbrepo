@@ -8,7 +8,8 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Deprecated
+@EqualsAndHashCode
+@ToString
 public class ExecuteInternalQueryDto {
 
     @JsonProperty("ContainerID")

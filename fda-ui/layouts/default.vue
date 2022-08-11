@@ -1,5 +1,5 @@
 <template>
-  <v-app dark>
+  <v-app>
     <v-navigation-drawer v-model="drawer" fixed app>
       <v-img
         contain
@@ -30,19 +30,21 @@
       <v-spacer />
       <v-btn
         v-if="!token"
-        class="mr-2 white--text"
-        color="blue-grey"
+        class="mr-2"
+        color="secondary"
         to="/login">
         <v-icon left>mdi-login</v-icon> Login
       </v-btn>
       <v-btn
         v-if="!token"
-        class="mr-2 white--text"
+        class="mr-2"
         color="primary"
         to="/signup">
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
-      {{ username }}
+      <v-btn v-if="username" to="/user" plain>
+        {{ username }}
+      </v-btn>
       <v-menu bottom offset-y left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
@@ -58,10 +60,6 @@
             :key="locale.code"
             :to="switchLocalePath(locale.code)">
             <v-list-item-title>{{ locale.name }}</v-list-item-title>
-          </v-list-item>
-          <v-list-item
-            @click="switchTheme()">
-            {{ nextTheme }} Theme
           </v-list-item>
           <v-list-item
             v-if="token"
@@ -81,7 +79,7 @@
         flat
         tile
         width="100%"
-        class="red lighten-1 text-center">
+        class="error text-center">
         <v-card-text class="black--text">
           This is a <strong>TEST</strong> environment, do not use production/confidential data! — <a href="//github.com/fair-data-austria/dbrepo/issues/new" class="black--text">Report a bug</a>
         </v-card-text>
@@ -106,6 +104,10 @@ export default {
   data () {
     return {
       drawer: false,
+      user: {
+        theme_dark: null
+      },
+      loadingUser: true,
       items: [
         {
           icon: mdiHome,
@@ -159,9 +161,6 @@ export default {
     username () {
       return this.$store.state.user && this.$store.state.user.username
     },
-    nextTheme () {
-      return this.$vuetify.theme.dark ? 'Light' : 'Dark'
-    },
     container () {
       return this.$store.state.container
     },
@@ -173,24 +172,36 @@ export default {
     },
     db () {
       return this.$store.state.db
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   watch: {
     $route () {
       this.loadDB()
+      if (this.token) {
+        this.loadUser()
+          .then(() => this.setTheme())
+      }
     }
   },
   mounted () {
     this.loadDB()
+    this.loadUser()
+      .then(() => this.setTheme())
   },
   methods: {
-    switchTheme () {
-      this.$vuetify.theme.dark = !this.$vuetify.theme.dark
-    },
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
       this.$toast.success('Logged out')
+      this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
     async loadDB () {
@@ -202,6 +213,31 @@ export default {
           console.error('Failed to load database', err)
         }
       }
+    },
+    async loadUser () {
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loadingUser = true
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        console.debug('user data', res.data)
+        this.user = res.data
+      } catch (err) {
+        const { status } = err.response
+        if (status === 401) {
+          console.error('Token expired', err)
+          this.logout()
+        } else {
+          console.error('user data', err)
+          this.$toast.error('Failed to load user')
+          this.error = true
+        }
+      }
+      this.loadingUser = false
+    },
+    setTheme () {
+      this.$vuetify.theme.dark = this.user.theme_dark
     }
   }
 }

@@ -16,6 +16,8 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static String USER_1_USERNAME = "junit";
+
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";

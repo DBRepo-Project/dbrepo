@@ -5,11 +5,13 @@ import at.tuwien.api.user.UserDto;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -24,8 +26,8 @@ public class JwtUtils {
     @Value("${jwt.expiration.ms}")
     private Integer expire;
 
-    public String generateJwtToken(Authentication authentication) {
-        final UserDetailsDto userPrincipal = (UserDetailsDto) authentication.getPrincipal();
+    public String generateJwtToken(Object principal) {
+        final UserDetailsDto userPrincipal = (UserDetailsDto) principal;
         final Algorithm algorithm = Algorithm.HMAC512(secret);
         return JWT.create()
                 .withSubject(userPrincipal.getUsername())
@@ -41,8 +43,8 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            JWT.decode(authToken);
-            return true;
+            final DecodedJWT jwt = JWT.decode(authToken);
+            return jwt.getExpiresAt().after(new Date());
         } catch (JWTDecodeException e) {
             log.error("Invalid JWT signature: {}", e.getMessage());
         }

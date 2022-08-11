@@ -1,27 +1,39 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.api.identifier.*;
+import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Mappings;
-
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
-    @Mapping(target = "creators", ignore = true)
+    @Transactional
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
-    @Mappings({
-            @Mapping(target = "visibility", ignore = true),
-            @Mapping(target = "creators", ignore = true)
-    })
+    @Transactional
+    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
+
+    /* keep */
+    @Transactional
+    RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
+
+    @Transactional
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
+    @Transactional
+    Creator creatorDtoToCreator(CreatorDto data);
+
+    @Transactional
+    Creator creatorCreateDtoToCreator(CreatorCreateDto data);
+
+    @Transactional
+    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierCreateDto data);
+
+    @Transactional
     VisibilityType visibilityTypeDtoToVisibilityType(VisibilityTypeDto data);
 
 }

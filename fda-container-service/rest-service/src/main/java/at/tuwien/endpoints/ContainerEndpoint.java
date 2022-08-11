@@ -5,9 +5,8 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ContainerMapper;
 import at.tuwien.service.impl.ContainerServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,12 +40,8 @@ public class ContainerEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "List all containers", notes = "Lists the containers in the metadata database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All containers are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all containers."),
-    })
-    public ResponseEntity<List<ContainerBriefDto>> findAll() {
+    @Operation(summary = "Find all containers")
+    public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal) {
         final List<Container> containers = containerService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -56,16 +52,12 @@ public class ContainerEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Creates a new container", notes = "Creates a new container whose image is registered in the metadata database too.")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created a new container."),
-            @ApiResponse(code = 400, message = "Malformed payload."),
-            @ApiResponse(code = 401, message = "Not authorized to create a container."),
-            @ApiResponse(code = 404, message = "The container was not found after creation."),
-    })
-    public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data)
-            throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException {
-        final Container container = containerService.create(data);
+    @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data,
+                                                    Principal principal)
+            throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException,
+            UserNotFoundException {
+        final Container container = containerService.create(data, principal);
         final ContainerBriefDto response = containerMapper.containerToDatabaseContainerBriefDto(container);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
@@ -73,12 +65,7 @@ public class ContainerEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get all information about a container", notes = "Since we follow the REST-principle, this method provides more information than the findAll method.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get information about container."),
-            @ApiResponse(code = 401, message = "Not authorized to get information about a container."),
-            @ApiResponse(code = 404, message = "No container found with this id in metadata database."),
-    })
+    @Operation(summary = "Find some container")
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable Long id) throws DockerClientException,
             ContainerNotFoundException, ContainerNotRunningException {
         final Container container = containerService.inspect(id);
@@ -89,13 +76,7 @@ public class ContainerEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Change the state of a container", notes = "The new state can only be one of START/STOP.")
-    @ApiResponses({
-            @ApiResponse(code = 202, message = "Changed the state of a container."),
-            @ApiResponse(code = 400, message = "Malformed payload."),
-            @ApiResponse(code = 401, message = "Not authorized to modify a container."),
-            @ApiResponse(code = 404, message = "No container found with this id in metadata database."),
-    })
+    @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable Long id,
                                                     @Valid @RequestBody ContainerChangeDto changeDto)
             throws ContainerNotFoundException, DockerClientException {
@@ -111,14 +92,8 @@ public class ContainerEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @ApiOperation(value = "Delete a container")
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Deleted the container."),
-            @ApiResponse(code = 401, message = "Not authorized to delete a container."),
-            @ApiResponse(code = 404, message = "No container found with this id in metadata database."),
-            @ApiResponse(code = 409, message = "Container is still running."),
-    })
+    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
+    @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ContainerNotFoundException,
             DockerClientException, ContainerStillRunningException {
         containerService.remove(id);

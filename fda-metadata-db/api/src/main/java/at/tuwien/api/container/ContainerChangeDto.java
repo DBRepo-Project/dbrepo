@@ -1,6 +1,6 @@
 package at.tuwien.api.container;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 public class ContainerChangeDto {
 
     @NotNull
-    @ApiModelProperty(required = true, example = "START")
+    @Parameter(required = true, example = "start")
     private ContainerActionTypeDto action;
 
 }

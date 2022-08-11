@@ -10,13 +10,14 @@ const { buildQuery } = require('./query')
 
 // TODO extend me
 const colTypeMap = {
-  Boolean: 'BOOLEAN',
-  Date: 'DATE',
-  Integer: 'NUMBER',
-  Numeric: 'NUMBER',
-  String: 'STRING',
-  Text: 'STRING',
-  Timestamp: 'DATE'
+  Boolean: 'boolean',
+  Date: 'date',
+  Blob: 'blob',
+  Integer: 'number',
+  Decimal: 'decimal',
+  String: 'string',
+  Text: 'text',
+  Timestamp: 'timestamp'
 }
 
 app.post('/table_from_csv', upload.single('file'), async (req, res) => {
@@ -25,6 +26,7 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
 
   // send path to analyse service
   let analysis
+  let json
   try {
     const analyseUrl = `${process.env.API}/api/analyse/determinedt`
     analysis = await fetch(analyseUrl, {
@@ -35,9 +37,8 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
       console.error('data type determination failed', error)
       throw error
     })
-    const json = await analysis.json()
-    analysis = JSON.parse(json)
-    if (!analysis.columns) {
+    json = await analysis.json()
+    if (!json.columns) {
       return res.json({ success: false, message: 'Columns array missing' })
     }
   } catch (error) {
@@ -46,8 +47,8 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
   }
 
   // map messytables / CoMi's `determine_dt` column types to ours
-  // e.g. "Integer" -> "NUMBER"
-  let entries = Object.entries(analysis.columns)
+  // e.g. "Integer" -> "number"
+  let entries = Object.entries(json.columns)
   entries = entries.map(([k, v]) => {
     if (colTypeMap[v]) {
       v = colTypeMap[v]
@@ -55,7 +56,6 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
     return {
       name: k,
       type: v,
-      date_format: null,
       check_expression: null,
       foreign_key: null,
       references: null,

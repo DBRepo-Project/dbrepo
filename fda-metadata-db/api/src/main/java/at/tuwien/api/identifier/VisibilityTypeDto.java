@@ -1,12 +1,29 @@
 package at.tuwien.api.identifier;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString
 public enum VisibilityTypeDto {
-    EVERYONE,
-    TRUSTED,
-    SELF;
+
+    @JsonProperty("everyone")
+    EVERYONE("everyone"),
+
+    @JsonProperty("trusted")
+    TRUSTED("trusted"),
+
+    @JsonProperty("self")
+    SELF("self");
+
+    private String name;
+
+    VisibilityTypeDto(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

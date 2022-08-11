@@ -3,17 +3,40 @@
     <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         {{ table.name }}
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
-          <v-icon left>mdi-arrow-left</v-icon> Back
+        <v-btn v-if="is_owner && canAdd" color="primary" class="mr-2" @click="addTuple">
+          <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn class="mr-2" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
+          <v-icon left>mdi-pencil</v-icon> Edit
+        </v-btn>
+        <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
+          <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
+        </v-btn>
+        <v-btn v-if="token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
+          <v-icon left>mdi-wrench</v-icon> Create Subset
+        </v-btn>
+        <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
-        <v-btn v-if="false" color="primary" :disabled="!token" :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`" target="_blank">
+        <v-btn class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
+          <v-icon left>mdi-download</v-icon> Download csv
+        </v-btn>
+        <v-btn
+          v-if="false"
+          color="primary"
+          class="mb-1"
+          :disabled="!token"
+          :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`"
+          target="_blank">
           <v-icon left>mdi-download</v-icon> Download
         </v-btn>
       </v-toolbar-title>
@@ -25,13 +48,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn @click="pickVersionDialog = true">
+        <v-btn @click="pick()">
           <v-icon left>mdi-update</v-icon> Pick
         </v-btn>
         <v-dialog
           v-model="pickVersionDialog"
           max-width="640">
-          <TimeTravel @close="pickVersionDialog = false" />
+          <TimeTravel ref="timeTravel" @close="pickVersion" />
         </v-dialog>
       </v-toolbar-title>
     </v-toolbar>
@@ -42,52 +65,63 @@
         :loading="loadingData"
         :options.sync="options"
         :server-items-length="total"
-        :footer-props="footerProps"
-        class="elevation-1" />
+        :footer-props="footerProps">
+        <template v-if="is_owner" v-slot:item.selection="{ item }">
+          <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
+        </template>
+      </v-data-table>
+      <v-dialog
+        v-model="editTupleDialog"
+        persistent
+        max-width="640">
+        <EditTuple :tuple="selection[0]" :edit="edit" @close="close" />
+      </v-dialog>
     </v-card>
-    <div class="mt-3">
-      <v-chip
-        class="mr-2"
-        label>
-        ‡ Primary Key
-      </v-chip>
-      <v-chip
-        class="mr-2"
-        label>
-        † Unique Column
-      </v-chip>
-    </div>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
+import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
-import { format } from 'date-fns'
+import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
 
 export default {
   components: {
-    TimeTravel
+    TimeTravel,
+    EditTuple
   },
   data () {
     return {
       loading: true,
       loadingData: true,
+      editTupleDialog: false,
       total: 0,
       footerProps: {
         'items-per-page-options': [10, 20, 30, 40, 50]
       },
+      downloadLoading: false,
       dateMenu: false,
       timeMenu: false,
+      selection: [],
       pickVersionDialog: null,
       version: null,
+      edit: false,
+      user: {
+        username: null
+      },
       error: false, // XXX: `error` is never changed
       options: {
         page: 1,
         itemsPerPage: 10
       },
+      dateColumns: [],
       table: {
         name: null,
-        description: null
+        description: null,
+        columns: [],
+        creator: {
+          username: null
+        }
       },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -106,10 +140,17 @@ export default {
     token () {
       return this.$store.state.token
     },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
     versionColor () {
-      console.debug('version', this.version)
       if (this.version === null) {
-        return 'grey lighten-1'
+        return 'secondary white--text'
       }
       return 'primary white--text'
     },
@@ -117,7 +158,26 @@ export default {
       if (this.version === null) {
         return null
       }
-      return this.formatDate(this.version)
+      return this.version + ' (UTC)'
+    },
+    versionISO () {
+      if (this.version === null) {
+        return null
+      }
+      return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
+    },
+    canEdit () {
+      if (this.selection.length !== 1) { return false }
+      return this.edit === true
+    },
+    canAdd () {
+      return !this.canDelete
+    },
+    canDelete () {
+      return this.edit && this.selection.length !== 0
+    },
+    is_owner () {
+      return this.token && this.table.creator.username === this.user.username
     }
   },
   watch: {
@@ -132,25 +192,103 @@ export default {
   mounted () {
     this.loadProperties()
     this.loadData()
+    this.loadUser()
   },
   methods: {
+    async download () {
+      this.downloadLoading = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          responseType: 'text'
+        })
+        console.debug('export table', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'table.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export table', err)
+        this.$toast.error('Could not export table')
+        this.error = true
+      }
+      this.downloadLoading = false
+    },
+    addTuple () {
+      this.edit = false
+      const data = {}
+      this.table.columns.forEach((c) => {
+        data[c.internal_name] = null
+      })
+      this.selection = [data]
+      this.editTupleDialog = true
+    },
+    pick () {
+      this.pickVersionDialog = true
+    },
+    pickVersion (event) {
+      const date = new Date(event.time)
+      date.setSeconds(date.getSeconds() + 1)
+      console.debug('closed', event)
+      if (event.time) {
+        this.version = formatTimestamp(date)
+      }
+      this.pickVersionDialog = false
+    },
+    close (event) {
+      console.debug('closed edit/create tuple dialog', event)
+      this.editTupleDialog = false
+      if (event.success) {
+        this.loadData()
+      }
+    },
+    async deleteItems () {
+      if (this.selection.length < 1) {
+        return
+      }
+      try {
+        for (const select of this.selection) {
+          /* remove in container */
+          const constraints = {}
+          this.table.columns
+            .filter(c => c.is_primary_key)
+            .forEach((c) => {
+              constraints[c.internal_name] = select[c.internal_name]
+            })
+          const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
+            headers: { Authorization: `Bearer ${this.token}` },
+            data: { keys: constraints }
+          })
+          console.debug('tuple delete result', res)
+        }
+      } catch (err) {
+        console.error('Failed to delete rows', err)
+        this.$toast.error('Failed to delete rows.')
+        return
+      }
+      this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
+      this.selection = []
+      /* reload */
+      await this.loadData()
+    },
     async loadProperties () {
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.table = res.data
         console.debug('headers', res.data.columns)
-        this.headers = res.data.columns.map((c) => {
+        console.debug('table', this.table)
+        this.headers = [{ value: 'selection', text: '', sortable: false }]
+        res.data.columns.map((c) => {
           return {
-            value: c.name,
-            text: this.columnAddition(c) + c.name,
-
-            // sorting is disabled for now
-            // backed has sorting functionality in 8cf84d4d3502202c5947eefb49bc6f48cebff234,
-            // branch 53-task-provide-property-information-for-metadata-db-frontend
-            // currenlty unmergable to dev
+            value: c.internal_name,
+            text: c.name,
             sortable: false
           }
-        })
+        }).forEach(header => this.headers.push(header))
+        this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
+        console.debug('date columns are', this.dateColumns)
       } catch (err) {
         this.$toast.error('Could not get table details.')
       }
@@ -162,33 +300,60 @@ export default {
         let url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data?page=${this.options.page - 1}&size=${this.options.itemsPerPage}`
         if (this.version !== null) {
           console.info('versioning active', this.version)
-          url += `&timestamp=${new Date(this.version).toISOString()}`
+          url += `&timestamp=${this.versionISO}`
         }
-        const res = await this.$axios.get(url)
-        console.debug('version', this.datetime, 'table data', res.data)
+        const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])
         this.rows = res.data.result
+        this.rows = res.data.result.map((row) => {
+          for (const col in row) {
+            const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
+            if (columnDefinition.length > 0) {
+              if (columnDefinition[0].column_type === 'date') {
+                row[col] = formatDateUTC(row[col])
+              } else if (columnDefinition[0].column_type === 'timestamp') {
+                row[col] = formatTimestampUTCLabel(row[col])
+              }
+            }
+          }
+          return row
+        })
+        console.debug('rows', this.rows)
       } catch (err) {
         console.error('failed to load data', err)
         this.$toast.error('Could not load table data.')
       }
       this.loadingData = false
     },
-    columnAddition (column) {
-      if (column.is_primary_key) {
-        return '‡ '
+    async loadUser () {
+      if (!this.token) {
+        return
       }
-      if (column.unique) {
-        return '† '
+      try {
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.user = res.data
+        console.debug('user', this.user)
+      } catch (err) {
+        this.$toast.error('Failed to get user details')
+        console.error('Failed to get user details', err)
       }
-      return ''
-    },
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm')
     }
   }
 }
 </script>
 
 <style>
+thead td:first-child,
+tbody td:first-child {
+  width: 1%;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

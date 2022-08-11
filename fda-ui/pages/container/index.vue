@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
+    <v-progress-linear v-if="loadingContainers" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
         <span>Databases</span>
@@ -19,14 +19,15 @@
             <tr>
               <th>Name</th>
               <th>Engine</th>
-              <th>Tables</th>
+              <th>Creator</th>
+              <th>Visibility</th>
               <th>Created</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="databases.length === 0" aria-readonly="true">
-              <td colspan="4">
-                <span v-if="!loading">(no databases)</span>
+              <td colspan="5">
+                <span>(no databases)</span>
               </td>
             </tr>
             <tr
@@ -34,10 +35,25 @@
               :key="item.id"
               class="database"
               @click="loadDatabase(item)">
-              <td>{{ item.name }}</td>
-              <td>{{ item.engine }}</td>
-              <td />
-              <td>{{ formatDate(item.created) }}</td>
+              <td>
+                <span>{{ item.name }}</span>
+              </td>
+              <td>
+                <span>{{ item.engine }}</span>
+              </td>
+              <td>
+                <span>{{ formatCreator(item.creator) }}</span>
+                <sup>
+                  <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                </sup>
+              </td>
+              <td>
+                <v-icon v-if="!item.is_public" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
+                <v-icon v-if="item.is_public" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
+              </td>
+              <td>
+                {{ createdUTC(item.created) }}
+              </td>
             </tr>
           </tbody>
         </template>
@@ -55,8 +71,7 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatDistance, format } from 'date-fns'
-import deLocale from 'date-fns/locale/de'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   components: {
@@ -66,10 +81,12 @@ export default {
     return {
       createDbDialog: false,
       databases: [],
+      containers: [],
+      searchQuery: null,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
-      loading: true,
+      loading: false,
       error: false,
       iconSelect: mdiDatabaseArrowRightOutline
     }
@@ -80,49 +97,67 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
-    this.refresh()
+    this.loadContainers()
+      .then(() => this.loadDatabases())
   },
   methods: {
-    async refresh () {
+    formatCreator (creator) {
+      return formatUser(creator)
+    },
+    search () {
+      console.debug('search for', this.searchQuery)
+    },
+    async loadContainers () {
       this.createDbDialog = false
       try {
         this.loading = true
-        let res = await this.$axios.get('/api/container/')
+        const res = await this.$axios.get('/api/container/')
         this.containers = res.data
         console.debug('containers', this.containers)
-        for (const container of this.containers) {
-          res = await this.$axios.get(`/api/container/${container.id}/database`)
-          for (const database of res.data) {
-            database.container_id = container.id
-            this.databases.push(database)
-          }
-        }
-        console.debug('databases', this.databases)
-        this.loading = false
         this.error = false
       } catch (err) {
         console.error('containers', err)
         this.error = true
+        this.loading = false
       }
+    },
+    async loadDatabases () {
+      if (this.containers.length === 0) {
+        return
+      }
+      this.loading = true
+      for (const container of this.containers) {
+        try {
+          const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
+          for (const info of res.data) {
+            info.container_id = container.id
+            this.databases.push(info)
+          }
+        } catch (err) {
+          if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
+            console.error('Failed to load databases for container', err)
+          }
+        }
+      }
+      this.loading = false
+      console.debug('databases', this.databases)
+    },
+    createdUTC (str) {
+      return formatTimestampUTCLabel(str)
     },
     loadDatabase (database) {
-      this.$router.push(`/container/${database.container_id}/database/${database.id}/info`)
-    },
-    trim (s) {
-      return s.slice(0, 12)
-    },
-    formatDate (d) {
-      return format(new Date(d), 'dd.MM.yyyy HH:mm')
-    },
-    relativeDate (d) {
-      let options = { addSuffix: true }
-      if (this.$i18n.locale === 'de') {
-        options = { ...options, locale: deLocale }
-      }
-      return formatDistance(new Date(d), new Date(), options)
+      this.$router.push(`/container/${database.container_id}/database/${database.id}`)
     }
   }
 }
@@ -143,5 +178,9 @@ export default {
   }
   .v-progress-circular {
     margin-left: 8px;
+  }
+  .private-icon {
+    flex: 0 !important;
+    margin-right: 16px;
   }
 </style>

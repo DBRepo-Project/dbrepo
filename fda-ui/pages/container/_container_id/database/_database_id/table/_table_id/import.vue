@@ -1,89 +1,106 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Import Data</v-toolbar-title>
-    </v-toolbar>
-    <v-card>
-      <v-card-title v-if="!loading">
-        {{ table.name }}
-      </v-card-title>
-      <v-card-subtitle>{{ table.internal_name }}</v-card-subtitle>
-      <v-card-text>
-        <v-row dense>
-          <v-col cols="8">
-            <v-select
-              v-model="table.separator"
-              :items="separators"
-              disabled
-              required
-              hint="Character separating the values"
-              label="Separator" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="table.skip_lines"
-              type="number"
-              disabled
-              required
-              hint="Skip n lines from the top"
-              label="Skip Lines"
-              placeholder="e.g. 0" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="table.null_element"
-              hint="Representation of 'no value present'"
-              placeholder="e.g. NA"
-              disabled
-              label="NULL Element" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="table.true_element"
-              label="True Element"
-              hint="Representation of boolean 'true'"
-              disabled
-              placeholder="e.g. 1, true, YES" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-text-field
-              v-model="table.false_element"
-              label="False Element"
-              hint="Representation of boolean 'false'"
-              disabled
-              placeholder="e.g. 0, false, NO" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col cols="8">
-            <v-file-input
-              v-model="file"
-              accept="text/csv"
-              show-size
-              label="CSV File" />
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
-        <v-btn :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}`" outlined>
-          <v-icon>mdi-table</v-icon>
-          View
+      <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
-      </v-card-actions>
-    </v-card>
+      </v-toolbar-title>
+      <v-toolbar-title>
+        {{ table.name }}
+      </v-toolbar-title>
+    </v-toolbar>
+    <v-stepper v-model="step" vertical flat>
+      <v-stepper-step :complete="step > 1" step="1">
+        Import Data
+      </v-stepper-step>
+
+      <v-stepper-content step="1">
+        <v-form ref="form" v-model="validStep1" @submit.prevent="submit">
+          <v-row dense>
+            <v-col cols="8">
+              <v-select
+                v-model="tableImport.separator"
+                :items="separators"
+                item-text="key"
+                item-value="value"
+                required
+                hint="Character separating the values"
+                label="Separator *" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model.number="tableImport.skip_lines"
+                :rules="[v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
+                type="number"
+                required
+                hint="Skip n lines from the top. These may include comments or the header of column names."
+                label="Number of lines to skip *"
+                placeholder="e.g. 0" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-select
+                v-model="tableImport.quote"
+                :items="quotes"
+                item-text="key"
+                item-value="value"
+                hint="Character quoting the values"
+                label="Value quotes" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.null_element"
+                hint="Representation of 'no value present'"
+                placeholder="e.g. NA"
+                label="NULL Element" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.true_element"
+                label="True Element"
+                hint="Representation of boolean 'true'"
+                placeholder="e.g. 1, true, YES" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
+                v-model="tableImport.false_element"
+                label="False Element"
+                hint="Representation of boolean 'false'"
+                placeholder="e.g. 0, false, NO" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-file-input
+                v-model="file"
+                accept=".csv,.tsv"
+                show-size
+                label="CSV/TSV File" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="8">
+              <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-stepper-content>
+    </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
+const { isNonNegativeInteger } = require('@/utils')
 export default {
   name: 'TableImportCSV',
   components: {
@@ -91,23 +108,30 @@ export default {
   data () {
     return {
       loading: false,
+      step: 1,
+      validStep1: false,
       separators: [
-        ',',
-        ';',
-        '-',
-        '|',
-        '$',
-        '%',
-        '#'
+        { key: ',', value: ',' },
+        { key: ';', value: ';' },
+        { key: '[Tab]', value: '\t' }
+      ],
+      quotes: [
+        { key: 'Double "', value: '"' },
+        { key: 'Single \'', value: '\'' }
       ],
       table: {
+        id: null,
         name: null,
-        internal_name: null,
-        separator: null,
-        skip_lines: null,
-        null_element: null,
+        internal_name: null
+      },
+      tableImport: {
+        location: null,
+        quote: null,
+        false_element: null,
         true_element: null,
-        false_element: null
+        null_element: null,
+        separator: ',',
+        skip_lines: 1
       },
       file: null,
       fileLocation: null,
@@ -136,6 +160,10 @@ export default {
     this.info()
   },
   methods: {
+    isNonNegativeInteger,
+    submit () {
+      this.$refs.form.validate()
+    },
     async info () {
       this.loading = true
       const infoUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`
@@ -162,6 +190,7 @@ export default {
         })
         if (res.data.success) {
           this.fileLocation = res.data.file.filename
+          this.tableImport.location = `/tmp/${this.fileLocation}`
           console.debug('upload csv', res.data)
         } else {
           console.error('Could not upload CSV data', res.data)
@@ -174,7 +203,7 @@ export default {
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, { location: '/tmp/' + this.fileLocation }, {
+        insertResult = await this.$axios.post(insertUrl, this.tableImport, {
           headers: { Authorization: `Bearer ${this.token}` }
         })
         console.debug('inserted table', insertResult.data)
@@ -185,10 +214,19 @@ export default {
       }
       this.$toast.success('Uploaded csv into table.')
       this.loading = false
+      this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
     }
   }
 }
 </script>
-
 <style>
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

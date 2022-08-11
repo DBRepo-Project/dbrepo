@@ -3,13 +3,15 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.service.MessageQueueService;
+import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,76 +34,104 @@ public class ContainerDatabaseEndpoint {
 
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
+    private final QueryStoreService queryStoreService;
+    private final MessageQueueService messageQueueService;
 
     @Autowired
-    public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService) {
+    public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService,
+                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
+        this.queryStoreService = queryStoreService;
+        this.messageQueueService = messageQueueService;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "List all databases", notes = "Currently a container supports only databases of the same image, e.g. there is one PostgreSQL engine running with multiple databases inside a container.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All databases running in all containers are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all databases."),
-    })
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long id) {
-        final List<DatabaseBriefDto> databases = databaseService.findAll(id)
-                .stream()
-                .map(databaseMapper::databaseToDatabaseBriefDto)
-                .collect(Collectors.toList());
+    @Operation(summary = "List databases")
+    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId,
+                                                          Principal principal) {
+        final List<DatabaseBriefDto> databases;
+        if (principal == null) {
+            log.trace("principal missing, listing all public databases only");
+            databases = databaseService.findAllPublic(containerId)
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseBriefDto)
+                    .collect(Collectors.toList());
+        } else {
+            log.trace("principal present, listing all public databases and my private databases");
+            databases = databaseService.findAllPublicOrMine(containerId, principal)
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseBriefDto)
+                    .collect(Collectors.toList());
+        }
+        log.info("Found {} databases", databases.size());
+        log.debug("found databases {}", databases);
         return ResponseEntity.ok(databases);
     }
 
     @PostMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Creates a new database in a container", notes = "Creates a new database in a container. Note that the backend distincts between numerical (req: categories), nominal (req: max_length) and categorical (req: max_length, siUnit, min, max, mean, median, standard_deviation, histogram) column types.")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "The database was successfully created."),
-            @ApiResponse(code = 400, message = "Parameters were set wrongfully"),
-            @ApiResponse(code = 401, message = "Not authorized to create a database."),
-            @ApiResponse(code = 404, message = "Container does not exist with this id."),
-            @ApiResponse(code = 405, message = "Unable to connect to database within container."),
-    })
-    public ResponseEntity<DatabaseDto> create(@NotBlank @PathVariable("id") Long id,
-                                              @Valid @RequestBody DatabaseCreateDto createDto)
+    @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
+                                                   @Valid @RequestBody DatabaseCreateDto createDto,
+                                                   Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException {
-        final Database database = databaseService.create(id, createDto);
+            AmqpException, ContainerConnectionException, UserNotFoundException,
+            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
+        final Database database = databaseService.create(containerId, createDto, principal);
+        messageQueueService.createExchange(database, principal);
+        queryStoreService.create(containerId, database.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseToDatabaseDto(database));
+                .body(databaseMapper.databaseToDatabaseBriefDto(database));
+    }
+
+    @PutMapping("/{databaseId}")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long containerId,
+                                                   @NotBlank @PathVariable Long databaseId,
+                                                   @Valid @RequestBody DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
+        final Database database = databaseService.modify(containerId, databaseId, modifyDto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get all information about a database")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "The database information is displayed."),
-            @ApiResponse(code = 400, message = "The payload contains invalid data."),
-            @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
-    })
-    public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long id,
-                                                @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException {
-        return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(databaseService.findById(id, databaseId)));
+    @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
+                                                @NotBlank @PathVariable Long databaseId,
+                                                Principal principal)
+            throws DatabaseNotFoundException {
+        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
+        if (!database.getIsPublic() && !principal.getName().equals(database.getCreator().getUsername())) {
+            log.error("Found database but is private and creator does not match");
+            log.debug("found database {}", database);
+            log.debug("creator {} does not equal principal {}", database.getCreator().getUsername(), principal.getName());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
+        log.info("Found database with id {}", database.getId());
+        log.debug("found database {}", database);
+        return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(database));
     }
 
     @DeleteMapping("/{databaseId}")
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
-    @ApiOperation(value = "Delete a database")
-    @ApiResponses({
-            @ApiResponse(code = 202, message = "The database was successfully deleted."),
-            @ApiResponse(code = 400, message = "The SQL statement contains invalid syntax"),
-            @ApiResponse(code = 401, message = "Not authorized to delete a database."),
-            @ApiResponse(code = 404, message = "No database with this id was found in metadata database."),
-            @ApiResponse(code = 405, message = "Unable to connect to database within container."),
-    })
-    public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long id,
-                                    @NotBlank @PathVariable Long databaseId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException {
-        databaseService.delete(id, databaseId);
+    @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
+                                    @NotBlank @PathVariable Long databaseId,
+                                    Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException {
+        final Database database = databaseService.findById(containerId, databaseId);
+        messageQueueService.deleteExchange(database);
+        databaseService.delete(containerId, databaseId, principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

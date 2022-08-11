@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -11,6 +12,10 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   application:
     name: fda-database-service
   cloud:
@@ -25,10 +30,12 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
+    at.tuwien.mapper.: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-database-service
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
 fda:
-  elastic.endpoint: fda-search-service:9200
+  elastic.endpoint: "${SEARCH_ENDPOINT}"
   ready.path: /ready
-  gateway.endpoint: http://fda-gateway-service:9095
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"

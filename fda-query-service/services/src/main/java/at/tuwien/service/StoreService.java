@@ -6,8 +6,8 @@ import at.tuwien.api.database.query.SaveStatementDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public interface StoreService {
      * @throws QueryStoreException        The query store produced an invalid result
      */
     List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryStoreException, ContainerNotFoundException;
+            QueryStoreException, ContainerNotFoundException, DatabaseConnectionException, TableMalformedException;
 
     /**
      * Finds a query in the query store of the given database id and query id.
@@ -37,8 +37,8 @@ public interface StoreService {
      * @throws QueryStoreException        The query store produced an invalid result
      * @throws QueryNotFoundException     The query store did not return a query
      */
-    Query findOne(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryStoreException, QueryNotFoundException, ContainerNotFoundException;
+    Query findOne(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id
@@ -51,8 +51,10 @@ public interface StoreService {
      * @throws DatabaseNotFoundException  The database id was not found in the metadata database
      * @throws ImageNotSupportedException The image is not supported
      */
-    Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException;
+    Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
+                 Principal principal)
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id
@@ -67,11 +69,24 @@ public interface StoreService {
      * @throws ImageNotSupportedException The image is not supported
      */
     Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                 Instant execution) throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException;
+                 Principal principal, Instant execution)
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException;
 
-    @Transactional(readOnly = true)
+    /**
+     *
+     * @param containerId
+     * @param databaseId
+     * @param result
+     * @param resultNumber
+     * @param metadata
+     * @return
+     * @throws QueryStoreException
+     * @throws DatabaseNotFoundException
+     * @throws ImageNotSupportedException
+     * @throws ContainerNotFoundException
+     */
     Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException;
+            ContainerNotFoundException, DatabaseConnectionException;
 }

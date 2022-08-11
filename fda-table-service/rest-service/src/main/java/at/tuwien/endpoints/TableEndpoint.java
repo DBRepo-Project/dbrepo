@@ -4,13 +4,11 @@ import at.tuwien.api.database.table.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
-import at.tuwien.service.impl.RabbitMqService;
-import at.tuwien.service.impl.TableServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.NotAllowedException;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,14 +28,16 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/table")
-public class TableEndpoint {
+public class TableEndpoint extends AbstractEndpoint {
 
     private final TableService tableService;
     private final MessageQueueService amqpService;
     private final TableMapper tableMapper;
 
     @Autowired
-    public TableEndpoint(TableService tableService, MessageQueueService amqpService, TableMapper tableMapper) {
+    public TableEndpoint(TableService tableService, DatabaseService databaseService, MessageQueueService amqpService,
+                         TableMapper tableMapper) {
+        super(tableService, databaseService);
         this.tableService = tableService;
         this.amqpService = amqpService;
         this.tableMapper = tableMapper;
@@ -43,15 +45,16 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "List all tables", notes = "Lists the tables in the metadata database for this database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All tables are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all tables."),
-    })
-    public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long id,
-                                                       @NotNull @PathVariable("databaseId") Long databaseId)
+    @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
+                                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                                       Principal principal)
             throws DatabaseNotFoundException {
-        return ResponseEntity.ok(tableService.findAll(id, databaseId)
+        if (!hasDatabasePermission(containerId, databaseId, "TABLES_VIEW", principal)) {
+            log.error("Missing table view permission");
+            throw new NotAllowedException("Missing table view permission");
+        }
+        return ResponseEntity.ok(tableService.findAll(containerId, databaseId, principal)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
                 .collect(Collectors.toList()));
@@ -59,23 +62,18 @@ public class TableEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @ApiOperation(value = "Create a table", notes = "Creates a new table for a database, requires a running container.")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "The table was created."),
-            @ApiResponse(code = 400, message = "The creation form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to create a tables."),
-            @ApiResponse(code = 404, message = "The database does not exist."),
-            @ApiResponse(code = 405, message = "The container is not running."),
-            @ApiResponse(code = 409, message = "The table name already exists."),
-    })
-    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long id,
+    @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody TableCreateDto createDto)
-            throws ImageNotSupportedException, DatabaseNotFoundException, DataProcessingException,
-            ArbitraryPrimaryKeysException, TableMalformedException, AmqpException, TableNameExistsException,
-            ContainerNotFoundException {
-        final Table table = tableService.createTable(id, databaseId, createDto);
+                                                @NotNull @Valid @RequestBody TableCreateDto createDto,
+                                                Principal principal)
+            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException {
+        if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
+            log.error("Missing table create permission");
+            throw new NotAllowedException("Missing table create permission");
+        }
+        final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(tableMapper.tableToTableBriefDto(table));
@@ -84,52 +82,52 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get information about table", notes = "Lists the information of a table from the metadata database for this database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All tables are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all tables."),
-            @ApiResponse(code = 404, message = "Table not found in metadata database."),
-    })
-    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long id,
+    @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
-                                             @NotNull @PathVariable("tableId") Long tableId)
+                                             @NotNull @PathVariable("tableId") Long tableId,
+                                             Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
-        final Table table = tableService.findById(id, databaseId, tableId);
-        return ResponseEntity.ok(tableMapper.tableToTableDto(table));
+        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_INFO", principal)) {
+            log.error("Missing table view permission");
+            throw new NotAllowedException("Missing table view permission");
+        }
+        final Table table = tableService.findById(containerId, databaseId, tableId, principal);
+        log.info("Found table with id {}", tableId);
+        log.debug("found table {}", table);
+        final TableDto tableDto = tableMapper.tableToTableDto(table);
+        return ResponseEntity.ok(tableDto);
     }
 
     @PutMapping("/{tableId}")
     @Transactional
-    @ApiOperation(value = "Update a table", notes = "Update a table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Updated the table."),
-            @ApiResponse(code = 400, message = "The update form contains invalid data."),
-            @ApiResponse(code = 401, message = "Not authorized to update tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-    })
-    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long id,
+    @Operation(summary = "Update a table", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId) {
-        // TODO
+                                                @NotNull @PathVariable("tableId") Long tableId,
+                                                Principal principal) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
+            log.error("Missing table update permission");
+            throw new NotAllowedException("Missing table update permission");
+        }
         return ResponseEntity.unprocessableEntity().body(new TableBriefDto());
     }
 
     @DeleteMapping("/{tableId}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
-    @ApiOperation(value = "Delete a table", notes = "Delete a table in the database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Deleted the table."),
-            @ApiResponse(code = 401, message = "Not authorized to delete tables."),
-            @ApiResponse(code = 404, message = "The table is not found in database."),
-    })
+    @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@NotNull @PathVariable("id") Long id,
+    public void delete(@NotNull @PathVariable("id") Long containerId,
                        @NotNull @PathVariable("databaseId") Long databaseId,
-                       @NotNull @PathVariable("tableId") Long tableId)
+                       @NotNull @PathVariable("tableId") Long tableId,
+                       Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException {
-        tableService.deleteTable(id, databaseId, tableId);
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
+        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {
+            log.error("Missing table delete permission");
+            throw new NotAllowedException("Missing table delete permission");
+        }
+        tableService.deleteTable(containerId, databaseId, tableId, principal);
     }
 
 }

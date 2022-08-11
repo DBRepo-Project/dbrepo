@@ -3,14 +3,18 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.exception.OrcidMalformedException;
+import at.tuwien.exception.UserEmailNotVerifiedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.AuthenticationService;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import at.tuwien.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -24,33 +28,41 @@ import java.security.Principal;
 public class AuthenticationEndpoint {
 
     private final UserMapper userMapper;
+    private final UserService userService;
     private final AuthenticationService authenticationService;
 
     @Autowired
-    public AuthenticationEndpoint(UserMapper userMapper, AuthenticationService authenticationService) {
+    public AuthenticationEndpoint(UserMapper userMapper, UserService userService,
+                                  AuthenticationService authenticationService) {
         this.userMapper = userMapper;
+        this.userService = userService;
         this.authenticationService = authenticationService;
     }
 
     @PostMapping
-    @ApiOperation(value = "Authenticates a user")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully authenticated a user.")
-    })
-    public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data) {
+    @Operation(summary = "Create token")
+    public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data)
+            throws UserNotFoundException, UserEmailNotVerifiedException {
         final JwtResponseDto response = authenticationService.authenticate(data);
         return ResponseEntity.accepted()
                 .body(response);
     }
 
     @PutMapping
-    @ApiOperation(value = "Authenticates a token")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully authenticated a user.")
-    })
-    public ResponseEntity<UserDto> authenticateUser(Principal principal) {
+    @Transactional(readOnly = true)
+    @Operation(summary = "Validate token", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException, OrcidMalformedException {
+        final UserDto user = userMapper.userToUserDto(userService.findByUsername(principal.getName()));
         return ResponseEntity.accepted()
-                .body(userMapper.principalToUserDto(principal));
+                .body(user);
+    }
+
+    @PostMapping("/renew")
+    @Operation(summary = "Renew token", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
+        final JwtResponseDto response = authenticationService.renew(principal);
+        return ResponseEntity.ok()
+                .body(response);
     }
 
 }

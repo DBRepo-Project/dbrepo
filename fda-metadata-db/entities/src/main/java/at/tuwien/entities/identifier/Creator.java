@@ -1,5 +1,6 @@
 package at.tuwien.entities.identifier;
 
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -23,23 +24,28 @@ public class Creator {
     @Id
     @EqualsAndHashCode.Include
     @ToString.Include
-    @GeneratedValue(generator = "database-sequence")
+    @GeneratedValue(generator = "creator-sequence")
     @GenericGenerator(
-            name = "database-sequence",
+            name = "creator-sequence",
             strategy = "enhanced-sequence",
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_creators_seq")
     )
     private Long id;
 
-    @Column(nullable = false)
+    @Id
+    @EqualsAndHashCode.Include
     private Long pid;
 
     @Column(nullable = false)
-    private String firstname;
+    private String name;
 
-    @Column(nullable = false)
-    private String lastname;
+    @Column
+    private String affiliation;
 
+    @Column
+    private String orcid;
+
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -48,6 +54,12 @@ public class Creator {
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
 
     @Column
     @LastModifiedDate

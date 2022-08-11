@@ -1,13 +1,17 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,52 +22,36 @@ import java.time.Instant;
 public class TableDto {
 
     @NotNull
-    @ApiModelProperty(name = "table id", example = "1")
+    @Parameter(name = "table id", example = "1")
     private Long id;
 
     @NotBlank
-    @ApiModelProperty(name = "table name", example = "Weather Australia")
+    @Parameter(name = "table name", example = "Weather Australia")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @ApiModelProperty(name = "table internal name", example = "weather_australia")
+    @Parameter(name = "table internal name", example = "weather_australia")
     private String internalName;
 
+    @NotNull
+    @Parameter(name = "database creator")
+    private UserBriefDto creator;
+
     @NotBlank
-    @ApiModelProperty(name = "topic name", example = "fda.c1.d1.t1")
+    @Parameter(name = "topic name", example = "fda.c1.d1.t1")
     private String topic;
 
     @NotBlank
-    @ApiModelProperty(name = "table description", example = "Predict next-day rain in Australia", notes = "https://www.kaggle.com/jsphyg/weather-dataset-rattle-package")
+    @Parameter(name = "table description", example = "Predict next-day rain in Australia")
     private String description;
 
-    @NotBlank
-    @ApiModelProperty(name = "table csv separator", example = ",")
-    private Character separator = ',';
-
-    @NotBlank
-    @JsonProperty("null_element")
-    @ApiModelProperty(name = "table csv null element", example = "NA")
-    private String nullElement = null;
-
-    @JsonProperty("skip_lines")
-    @ApiModelProperty(name = "table csv contains a header row", example = "0")
-    private Long skipLines = 0L;
-
-    @JsonProperty("true_element")
-    @ApiModelProperty(name = "table csv element for boolean true", example = "1")
-    private String trueElement = "1";
-
-    @JsonProperty("false_element")
-    @ApiModelProperty(name = "table csv element for boolean false", example = "0")
-    private String falseElement = "0";
-
-    @ApiModelProperty(name = "table creation time")
+    @Parameter(name = "table creation time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @NotNull
-    @ApiModelProperty(name = "table columns")
-    private ColumnDto[] columns;
+    @Parameter(name = "table columns")
+    private List<ColumnDto> columns;
 
 }

@@ -13,5 +13,6 @@ public enum TableColumnType {
     TEXT,
     BOOLEAN,
     DATE,
+    TIMESTAMP,
     BLOB;
 }

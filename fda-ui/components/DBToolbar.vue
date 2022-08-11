@@ -1,20 +1,20 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" />
-    <v-toolbar v-if="db" flat>
-      <img id="engine-logo" :alt="`${db.image.repository}`" :src="`data:image/png;base64,${db.image.logo}`">
+    <v-toolbar v-if="cached_database" flat>
       <v-toolbar-title>
-        {{ db.name }}
+        <span>{{ cached_database.name }}</span>
+        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
+        <v-icon v-if="cached_database.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="token" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn color="blue-grey" class="mr-2 white--text" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
-          <v-icon left>mdi-wrench</v-icon> Query Builder
+        <v-btn v-if="token" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+          <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn color="primary" :disabled="!token" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="token" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
@@ -27,11 +27,8 @@
             Tables
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
-            Queries
+            Subsets
           </v-tab>
-          <!--          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/admin`">-->
-          <!--            Admin-->
-          <!--          </v-tab>-->
         </v-tabs>
       </template>
     </v-toolbar>
@@ -44,11 +41,15 @@ export default {
     return {
       tab: null,
       loading: false,
-      error: false
+      error: false,
+      database: {
+        id: null,
+        is_public: null
+      }
     }
   },
   computed: {
-    db () {
+    cached_database () {
       return this.$store.state.db
     },
     databaseId () {
@@ -59,19 +60,38 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    }
+  },
+  watch: {
+    $route () {
+      if (this.database.id !== this.$route.params.database_id) {
+        this.loadDatabase()
+      }
     }
   },
   mounted () {
-    this.init()
+    if (this.database.id) {
+      return
+    }
+    if (this.cached_database && this.cached_database.id === this.$route.params.database_id) {
+      return
+    }
+    this.loadDatabase()
   },
   methods: {
-    async init () {
-      if (this.db != null) {
-        return
-      }
+    async loadDatabase () {
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.database = res.data
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
         this.loading = false

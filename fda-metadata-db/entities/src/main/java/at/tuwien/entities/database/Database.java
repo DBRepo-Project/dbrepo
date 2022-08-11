@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -25,7 +26,9 @@ import java.util.List;
 @Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "update mdb_databases set deleted = NOW() where id = ?")
-@javax.persistence.Table(name = "mdb_databases")
+@javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"id", "internalName"})
+})
 public class Database {
 
     @Id
@@ -38,6 +41,12 @@ public class Database {
     )
     private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "Creator", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -48,16 +57,33 @@ public class Database {
     @Column(nullable = false)
     private String name;
 
+    @ElementCollection
+    @CollectionTable(name = "mdb_databases_subjects", joinColumns = {
+            @JoinColumn(name = "dbid", referencedColumnName = "id")
+    })
+    private List<String> subjects;
+
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private String exchange;
 
     @Column
     private String description;
 
-    @ToString.Exclude
+    @Column
+    private String publisher;
+
+    @Column
+    private Integer publicationYear;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
+    })
+    private User contact;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -66,6 +92,16 @@ public class Database {
 
     @Column(nullable = false)
     private Boolean isPublic;
+
+    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
+    @Enumerated(EnumType.STRING)
+    private LanguageType language;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "License", referencedColumnName = "identifier")
+    })
+    private License license;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

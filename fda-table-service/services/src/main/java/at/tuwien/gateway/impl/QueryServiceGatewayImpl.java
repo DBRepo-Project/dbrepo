@@ -24,9 +24,8 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     @Override
     public Integer publish(Long containerId, Long databaseId, Long tableId, TableCsvDto data) {
         final String url = "/api/container/" + containerId + "/database/" + databaseId + "/table/" + tableId + "/data";
-        log.trace("POST {} with data {}", url, data);
-        final ResponseEntity<Integer> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data),
-                Integer.class);
+        final ResponseEntity<Integer> response = restTemplate.exchange(url, HttpMethod.POST,
+                new HttpEntity<>(data), Integer.class);
         return response.getBody();
     }
 

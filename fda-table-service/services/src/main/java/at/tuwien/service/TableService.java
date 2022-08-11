@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface TableService {
@@ -11,47 +12,60 @@ public interface TableService {
     /**
      * Select all tables from the metadata database.
      *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param principal   The principal.
      * @return The list of tables.
      */
-    List<Table> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException;
+    List<Table> findAll(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException;
 
     /**
      * Deletes a table for a fiven database-table id pair.
      *
-     * @param databaseId The database-table id pair.
-     * @param tableId    The database-table id pair.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param principal   The principal.
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws DataProcessingException    The deletion did not work.
      */
-    void deleteTable(Long containerId, Long databaseId, Long tableId) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException;
+    void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException,
+            QueryMalformedException;
 
     /**
      * Find a table by database-table id pair
      *
-     * @param databaseId The database-table id pair.
-     * @param tableId    The database-table id pair.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param principal   The principal.
      * @return The table.
      * @throws TableNotFoundException    The table was not found in the metadata database.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
-    Table findById(Long containerId, Long databaseId, Long tableId) throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException;
+    Table findById(Long containerId, Long databaseId, Long tableId, Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException;
+
 
     /**
      * Creates a table for a database id with given schema as data
      *
-     * @param databaseId The database id.
-     * @param createDto  The schema (as data)
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param createDto   The schema (as data).
+     * @param principal   The principal.
      * @return The created table.
-     * @throws ImageNotSupportedException    The image is not supported.
-     * @throws DatabaseNotFoundException     The database was not found in the metadata database.
-     * @throws DataProcessingException       The remote database engine resulted in some error.
-     * @throws ArbitraryPrimaryKeysException The primary keys are configured wrong.
-     * @throws TableMalformedException       The table seems malformed by the mapper.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws TableNameExistsException   The table name exists already in this database.
+     * @throws ContainerNotFoundException The container was not found.
+     * @throws TableMalformedException    The table seems malformed by the mapper.
      */
-    Table createTable(Long containerId, Long databaseId, TableCreateDto createDto) throws ImageNotSupportedException,
-            DatabaseNotFoundException, DataProcessingException, ArbitraryPrimaryKeysException, TableMalformedException, TableNameExistsException, ContainerNotFoundException;
-
+    Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
+            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException;
 }

@@ -1,20 +1,20 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
+      <v-progress-linear v-if="loading" v-model="progress" :color="loadingColor" />
       <v-card>
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
           Create Database
         </v-card-title>
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Choose an expressive database name and select a database engine.
           </v-alert>
           <v-text-field
             id="database"
-            v-model="database"
+            v-model="createContainer.name"
             name="database"
             label="Name *"
             autofocus
@@ -22,7 +22,7 @@
             required />
           <v-textarea
             id="description"
-            v-model="description"
+            v-model="createDatabase.description"
             name="description"
             rows="2"
             label="Description *"
@@ -40,9 +40,8 @@
             required />
           <v-checkbox
             id="public"
-            v-model="isPublic"
+            v-model="createDatabase.is_public"
             name="public"
-            disabled
             label="Public" />
         </v-card-text>
         <v-card-actions>
@@ -54,10 +53,11 @@
           </v-btn>
           <v-btn
             id="createDB"
-            class="mb-2"
+            class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
             type="submit"
+            :loading="loading"
             @click="createDB">
             Create
           </v-btn>
@@ -76,12 +76,19 @@ export default {
       valid: false,
       loading: false,
       error: false,
-      database: null,
-      description: null,
-      isPublic: true,
       engine: null,
       engines: [],
-      container: null
+      progress: 0,
+      createContainer: {
+        name: null,
+        repository: null,
+        tag: null
+      },
+      createDatabase: {
+        name: null,
+        description: null,
+        is_public: true
+      }
     }
   },
   computed: {
@@ -90,6 +97,16 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {
+          headers: {}
+        }
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -110,6 +127,9 @@ export default {
         res = await this.$axios.get('/api/image')
         this.engines = res.data
         console.debug('engines', this.engines)
+        if (this.engines.length > 0) {
+          this.engine = this.engines[0]
+        }
         this.loading = false
       } catch (err) {
         this.error = true
@@ -131,17 +151,12 @@ export default {
       try {
         this.loading = true
         this.error = false
-        res = await this.$axios.post('/api/container', {
-          name: this.database.trim(),
-          description: this.description.trim(),
-          repository: this.engine.repository,
-          tag: this.engine.tag
-        }, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        this.createContainer.repository = this.engine.repository
+        this.createContainer.tag = this.engine.tag
+        res = await this.$axios.post('/api/container', this.createContainer, this.config)
         containerId = res.data.id
         console.debug('created container', res.data)
-        this.loading = false
+        this.progress = 25
       } catch (err) {
         this.error = true
         this.loading = false
@@ -159,11 +174,9 @@ export default {
       try {
         this.loading = true
         this.error = false
-        res = await this.$axios.put(`/api/container/${containerId}`,
-          { action: 'START' }, {
-            headers: { Authorization: `Bearer ${this.token}` }
-          })
+        res = await this.$axios.put(`/api/container/${containerId}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
+        this.progress = 50
       } catch (err) {
         this.error = true
         this.$toast.error('Could not start container.')
@@ -177,19 +190,15 @@ export default {
       // wait for it to finish
       this.loading = true
       this.error = false
+      this.createDatabase.name = this.createContainer.name
       for (let i = 0; i < 5; i++) {
         try {
-          res = await this.$axios.post(`/api/container/${containerId}/database`, {
-            name: this.database.trim(),
-            description: this.description.trim(),
-            is_public: this.isPublic
-          }, {
-            headers: { Authorization: `Bearer ${this.token}` }
-          })
+          res = await this.$axios.post(`/api/container/${containerId}/database`, this.createDatabase, this.config)
           console.debug('created database', res)
           break
         } catch (err) {
           console.debug('wait', res)
+          this.progress += 10
           await this.sleep(3000)
         }
       }
@@ -199,6 +208,7 @@ export default {
         this.$toast.error('Could not create database.')
         return
       }
+      this.progress = 100
       this.loading = false
       this.$toast.success(`Database "${res.data.name}" created.`)
       this.$emit('close')

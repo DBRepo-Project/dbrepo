@@ -1,7 +1,9 @@
 package at.tuwien.api.user;
 
+import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -15,24 +17,63 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDto {
 
-    @ApiModelProperty(name = "id")
+    @NotNull
+    @Parameter(name = "id")
     private Long id;
 
-    @ApiModelProperty(name = "user authorities")
+    @ToString.Exclude
+    @Parameter(name = "user authorities")
     private List<GrantedAuthorityDto> authorities;
 
     @NotNull
-    @ApiModelProperty(name = "user name")
+    @Parameter(name = "user name")
     private String username;
 
+    @JsonProperty("titles_before")
+    @Parameter(name = "titles before the first name")
+    private String titlesBefore;
+
+    @JsonProperty("titles_after")
+    @Parameter(name = "titles after the last name")
+    private String titlesAfter;
+
+    @Parameter(name = "first name")
+    private String firstname;
+
+    @Parameter(name = "last name")
+    private String lastname;
+
+    @Parameter(name = "affiliation")
+    private String affiliation;
+
+    @Parameter(name = "orcid")
+    private String orcid;
+
     @NotNull
+    @JsonProperty("theme_dark")
+    @Parameter(name = "theme dark")
+    private Boolean themeDark;
+
+    @Parameter(name = "list of containers")
+    private List<ContainerDto> containers;
+
+    @Parameter(name = "list of databases")
+    private List<ContainerDto> databases;
+
+    @Parameter(name = "list of identifiers")
+    private List<ContainerDto> identifiers;
+
     @ToString.Exclude
     @JsonIgnore
-    @ApiModelProperty(name = "password hash")
+    @Parameter(name = "password hash")
     private String password;
 
     @NotNull
-    @ApiModelProperty(name = "mail address")
+    @Parameter(name = "mail address")
     private String email;
+
+    @JsonProperty("email_verified")
+    @Parameter(name = "mail address verified")
+    private Boolean emailVerified;
 
 }

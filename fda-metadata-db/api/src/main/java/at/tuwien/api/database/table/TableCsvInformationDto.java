@@ -2,7 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -17,11 +17,11 @@ import java.util.List;
 public class TableCsvInformationDto {
 
     @NotBlank
-    @ApiModelProperty(name = "name", example = "Fundamentals")
+    @Parameter(name = "name", example = "Fundamentals")
     private String name;
 
     @NotBlank
-    @ApiModelProperty(name = "table description", required = true, example = "SEC 10K annual fillings (2016-2012) ")
+    @Parameter(name = "table description", required = true, example = "SEC 10K annual fillings (2016-2012) ")
     private String description;
 
     @NotNull

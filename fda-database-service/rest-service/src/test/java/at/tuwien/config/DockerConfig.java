@@ -35,7 +35,7 @@ public class DockerConfig {
             .withDockerHttpClient(dockerHttpClient)
             .build();
 
-    public static void startContainer(Container container) throws InterruptedException {
+    public static void startContainer(Container container, Integer seconds) throws InterruptedException {
         final InspectContainerResponse inspect = dockerClient.inspectContainerCmd(container.getHash())
                 .exec();
         log.trace("container {} state {}", container.getHash(), inspect.getState().getStatus());
@@ -45,8 +45,12 @@ public class DockerConfig {
         log.trace("container {} needs to be started", container.getHash());
         dockerClient.startContainerCmd(container.getHash())
                 .exec();
-        Thread.sleep(12 * 1000L);
+        Thread.sleep(seconds * 1000L);
         log.debug("container {} was started", container.getHash());
+    }
+
+    public static void startContainer(Container container) throws InterruptedException {
+        startContainer(container, 15);
     }
 
     public static void createContainer(Container container) {
@@ -71,6 +75,16 @@ public class DockerConfig {
         dockerClient.stopContainerCmd(container.getHash())
                 .exec();
         log.debug("container {} was stopped", container.getHash());
+    }
+
+    public static void removeContainer(Container container) {
+        final InspectContainerResponse inspect = dockerClient.inspectContainerCmd(container.getHash())
+                .exec();
+        log.trace("container {} state {}", container.getHash(), inspect.getState().getStatus());
+        log.trace("container {} needs to be removed", container.getHash());
+        dockerClient.removeContainerCmd(container.getHash())
+                .exec();
+        log.debug("container {} was removed", container.getHash());
     }
 
 }

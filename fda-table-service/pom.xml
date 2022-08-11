@@ -10,7 +10,7 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>fda-table-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-table-service</name>
     <description>Demo project for Spring Boot</description>
 
@@ -28,14 +28,13 @@
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <docker.version>3.2.7</docker.version>
         <testcontainers.version>1.15.2</testcontainers.version>
-        <swagger.version>2.1.7</swagger.version>
-        <springfox.version>3.0.0</springfox.version>
         <jacoco.version>0.8.7</jacoco.version>
         <opencsv.version>5.4</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
         <btrace-client.version>2.2.0</btrace-client.version>
         <random-utils.version>2.0.0</random-utils.version>
         <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <jsql.version>3.1</jsql.version>
     </properties>
 
     <dependencies>
@@ -77,6 +76,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-c3p0</artifactId>
             <version>${hibernate-c3po.version}</version>
@@ -99,6 +104,13 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
+        </dependency>
+        <!-- SQL Parser -->
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsql.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- CSV -->
         <dependency>
@@ -192,17 +204,6 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
-        </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-codegen-maven-plugin</artifactId>
-            <version>2.4.21</version>
         </dependency>
     </dependencies>
 

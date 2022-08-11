@@ -1,5 +1,7 @@
 package at.tuwien.entities.identifier;
 
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -46,15 +48,60 @@ public class Identifier {
     @Column(nullable = false)
     private Long qid;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @Column(nullable = false)
     private String title;
 
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private String query;
+
+    @Column(nullable = false)
+    private String queryNormalized;
+
+    @Column(nullable = false)
+    private String queryHash;
+
+    @Column(nullable = false)
+    private String resultHash;
+
+    @Column(nullable = false)
+    private Instant execution;
+
+    @Column(nullable = false)
+    private Long resultNumber;
+
+    @Column(nullable = false)
+    private Integer publicationYear;
+
+    @Column
+    private Integer publicationMonth;
+
+    @Column
+    private Integer publicationDay;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private Database database;
+
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private List<RelatedIdentifier> related;
 
     @Column
     private String doi;

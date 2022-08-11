@@ -1,7 +1,8 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -17,24 +18,30 @@ import java.time.Instant;
 public class ImageDateDto {
 
     @NotNull
-    @ApiModelProperty(required = true, example = "1")
+    @Parameter(required = true, example = "1")
     private Long id;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "30.01.2022")
+    @Parameter(required = true, example = "30.01.2022")
     private String example;
 
     @NotBlank
     @JsonProperty("database_format")
-    @ApiModelProperty(required = true, example = "%d.%c.%Y")
+    @Parameter(required = true, example = "%d.%c.%Y")
     private String databaseFormat;
 
     @NotBlank
     @JsonProperty("unix_format")
-    @ApiModelProperty(required = true, example = "dd.mm.YYYY")
+    @Parameter(required = true, example = "dd.MM.YYYY")
     private String unixFormat;
 
+    @NotNull
+    @JsonProperty("has_time")
+    @Parameter(required = true)
+    private Boolean hasTime;
+
     @JsonProperty("created_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant createdAt;
 
 }

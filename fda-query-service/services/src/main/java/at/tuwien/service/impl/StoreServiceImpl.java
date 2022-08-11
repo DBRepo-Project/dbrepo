@@ -3,22 +3,24 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.SaveStatementDto;
-import at.tuwien.entities.container.Container;
-import at.tuwien.querystore.Query;
+import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.StoreMapper;
-import at.tuwien.service.ContainerService;
+import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
+import at.tuwien.service.UserService;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.hibernate.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
+import java.sql.*;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,105 +30,101 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     private final QueryMapper queryMapper;
     private final StoreMapper storeMapper;
+    private final UserService userService;
     private final DatabaseService databaseService;
-    private final ContainerService containerService;
 
     @Autowired
-    public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, DatabaseService databaseService,
-                            ContainerService containerService) {
+    public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, UserService userService,
+                            DatabaseService databaseService) {
         this.queryMapper = queryMapper;
         this.storeMapper = storeMapper;
+        this.userService = userService;
         this.databaseService = databaseService;
-        this.containerService = containerService;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryStoreException, ContainerNotFoundException {
+            ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
+            TableMalformedException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.find(databaseId);
+        final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.debug("find all queries in database id {}", databaseId);
+        log.trace("find all queries in database id {}", databaseId);
         /* run query */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
-        final Transaction transaction = session.beginTransaction();
-        /* use jpq to select all */
-        final org.hibernate.query.Query<Query> queries = session.createQuery("select q from Query q", Query.class);
-        transaction.commit();
-        final List<Query> out = queries.list();
-        log.info("Found {} queries", out.size());
-        log.debug("found queries {}", out);
-        session.close();
-        factory.close();
-        return out;
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        /* select all */
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return storeMapper.resultSetToQueryList(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to find queries");
+            log.debug("failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
+            throw new QueryStoreException("Query not found");
+        } finally {
+            dataSource.close();
+        }
+
     }
 
     @Override
     @Transactional(readOnly = true)
     public Query findOne(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryNotFoundException, ContainerNotFoundException {
+            ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.find(databaseId);
+        final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.debug("find one query in database id {} with id {}", databaseId, queryId);
         /* run query */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
-        final Transaction transaction = session.beginTransaction();
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* use jpa to select one */
-        final org.hibernate.query.Query<Query> query = session.createQuery("from Query where cid = :cid and dbid = :dbid and id = :id",
-                Query.class);
-        query.setParameter("cid", containerId);
-        query.setParameter("dbid", databaseId);
-        query.setParameter("id", queryId);
-        final Query result = query.uniqueResult();
-        transaction.commit();
-        if (result == null) {
+        final Query query;
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, queryId);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            query = storeMapper.resultSetToQuery(resultSet, true);
+            return query;
+        } catch (SQLException e) {
             log.error("Query not found with id {}", queryId);
-            session.close();
-            factory.close();
-            throw new QueryNotFoundException("Query was not found");
+            throw new QueryNotFoundException("Query not found");
+        } finally {
+            dataSource.close();
         }
-        log.info("Found query with id {}", queryId);
-        log.debug("Found query {}", result);
-        session.close();
-        factory.close();
-        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata)
+    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
+                        Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
-        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata), null);
+            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata),
+                principal, null);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata, Instant execution)
+    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
+                        Principal principal, Instant execution)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.find(databaseId);
+        final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.debug("Insert into database id {}, metadata {}", databaseId, metadata);
+        log.trace("insert into database id {}, metadata {}", databaseId, metadata);
+        /* user */
+        final User creator = userService.findByUsername(principal.getName());
         /* save */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
-        final Transaction transaction = session.beginTransaction();
-        final Query query = Query.builder()
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final at.tuwien.querystore.Query query = at.tuwien.querystore.Query.builder()
                 .cid(containerId)
                 .dbid(databaseId)
                 .query(metadata.getStatement())
@@ -135,47 +133,56 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 .resultNumber(storeMapper.queryResultDtoToLong(result))
                 .resultHash(storeMapper.queryResultDtoToString(result))
                 .execution(execution)
+                .createdBy(creator.getId())
                 .build();
-        session.save(query);
-        transaction.commit();
-        /* store the result in the query store */
-        log.info("Saved query with id {}", query.getId());
-        log.debug("saved query {}", query);
-        session.close();
-        factory.close();
-        return query;
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawInsertQuery(connection, query);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            query.setId(storeMapper.resultSetToId(resultSet));
+            log.info("Inserted query with id {} into the query store of database with id {}", query.getId(), databaseId);
+            log.debug("inserted query {} into the query store of database {}", query, database);
+            return query;
+        } catch (SQLException e) {
+            log.error("Failed to execute query");
+            log.debug("failed to execute query: {}", e.getMessage());
+            throw new QueryStoreException("Failed to execute query", e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query query)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, DatabaseConnectionException {
         /* find */
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.find(databaseId);
+        final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-
-        log.debug("Update database id {}, metadata {}", databaseId, query);
         /* save */
-        final SessionFactory factory = getSessionFactory(database, true);
-        final Session session = factory.openSession();
-        final Transaction transaction = session.beginTransaction();
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         query.setQueryHash(DigestUtils.sha256Hex(query.getQuery()));
         query.setResultNumber(resultNumber);
         query.setResultHash(storeMapper.queryResultDtoToString(result));
-        session.update(query);
-        transaction.commit();
-        /* store the result in the query store */
-        log.info("Update query with id {}", query.getId());
-        log.debug("saved query {}", query);
-        session.close();
-        factory.close();
-        return query;
+        final Query out;
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawUpdateQuery(connection, query);
+            preparedStatement.executeUpdate();
+            final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, query.getId());
+            final ResultSet resultSet = preparedStatement1.executeQuery();
+            out = storeMapper.resultSetToQuery(resultSet, true);
+        } catch (SQLException e) {
+            log.error("Failed to update query");
+            log.debug("failed to update query, reason: {}", e.getMessage());
+            throw new QueryStoreException("Failed to update query", e);
+        } finally {
+            dataSource.close();
+        }
+        return out;
     }
-
 
 
 }

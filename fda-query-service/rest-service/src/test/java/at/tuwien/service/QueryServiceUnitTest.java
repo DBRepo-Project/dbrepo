@@ -26,7 +26,6 @@ import java.io.File;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -127,14 +126,14 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
         final Long page = 0L;
         final Long size = 10L;
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -149,7 +148,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
@@ -166,7 +165,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.empty());
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -184,7 +183,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -196,12 +195,12 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
@@ -211,13 +210,13 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, QueryMalformedException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.findByDatabaseAndId(DATABASE_1, TABLE_1_ID))
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */

@@ -1,6 +1,6 @@
 package at.tuwien.api.amqp;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,11 +14,11 @@ import javax.validation.constraints.NotNull;
 public class TupleDto {
 
     @NotNull
-    @ApiModelProperty(name = "key", example = "name")
+    @Parameter(name = "key", example = "name")
     private String k;
 
     @NotNull
-    @ApiModelProperty(name = "value", example = "Max Mustermann")
+    @Parameter(name = "value", example = "Max Mustermann")
     private String v;
 
 }

@@ -12,6 +12,7 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.hibernate.Session;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.nio.channels.Channel;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -109,82 +111,87 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
                 });
     }
 
-    @Test
-    public void findAll_succeeds() {
-
-        /* mock */
-        when(databaseRepository.findAllByContainerId(CONTAINER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-
-        /* test */
-        final List<Database> response = databaseService.findAll(CONTAINER_1_ID);
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_1, response.get(0));
-    }
-
-    @Test
-    public void findById_succeeds() throws DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-
-        final Database response = databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID);
-
-        /* test */
-        assertEquals(DATABASE_1, response);
-    }
-
-    @Test
-    public void findById_notFound_fails() {
-
-        /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
-
-    @Test
-    public void delete_notFound_fails() {
-
-        /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID);
-        });
-    }
-
-    @Test
-    public void create_notFound_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .build();
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1_ID, request);
-        });
-    }
-
-    @Test
-    public void getSession_fails() {
-        /* no mock needed since unit test */
-
-        /* test */
-        assertThrows(ContainerConnectionException.class, () -> {
-            databaseService.getSession(DATABASE_1);
-        });
-    }
+//    @Test
+//    public void findAll_succeeds() {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseRepository.findAllByPublicAndContainerIdOrMine(CONTAINER_1_ID, USER_1_USERNAME))
+//                .thenReturn(List.of(DATABASE_1));
+//
+//        /* test */
+//        final List<Database> response = databaseService.findAll(CONTAINER_1_ID, principal);
+//        assertEquals(1, response.size());
+//        assertEquals(DATABASE_1, response.get(0));
+//    }
+//
+//    @Test
+//    public void findById_succeeds() throws DatabaseNotFoundException {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseRepository.findById(DATABASE_1_ID))
+//                .thenReturn(Optional.of(DATABASE_1));
+//
+//        final Database response = databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//
+//        /* test */
+//        assertEquals(DATABASE_1, response);
+//    }
+//
+//    @Test
+//    public void findById_notFound_fails() {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseRepository.findById(DATABASE_1_ID))
+//                .thenReturn(Optional.empty());
+//
+//        /* test */
+//        assertThrows(DatabaseNotFoundException.class, () -> {
+//            databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void delete_notFound_fails() {
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(databaseRepository.findById(DATABASE_1_ID))
+//                .thenReturn(Optional.empty());
+//
+//        /* test */
+//        assertThrows(DatabaseNotFoundException.class, () -> {
+//            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void create_notFound_fails() {
+//        final DatabaseCreateDto request = DatabaseCreateDto.builder()
+//                .name(DATABASE_1_NAME)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.empty());
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            databaseService.create(CONTAINER_1_ID, request, principal);
+//        });
+//    }
+//
+//    @Test
+//    public void getSession_fails() {
+//        /* no mock needed since unit test */
+//
+//        /* test */
+//        assertThrows(ContainerConnectionException.class, () -> {
+//            databaseService.getSession(DATABASE_1);
+//        });
+//    }
 
 }

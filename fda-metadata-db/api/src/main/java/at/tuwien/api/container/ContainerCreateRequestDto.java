@@ -1,6 +1,6 @@
 package at.tuwien.api.container;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -14,15 +14,15 @@ import javax.validation.constraints.NotBlank;
 public class ContainerCreateRequestDto {
 
     @NotBlank
-    @ApiModelProperty(name = "name", example = "Weather World")
+    @Parameter(name = "name", example = "Weather World")
     private String name;
 
     @NotBlank
-    @ApiModelProperty(name = "repository", example = "postgres")
+    @Parameter(name = "repository", example = "postgres")
     private String repository;
 
     @NotBlank
-    @ApiModelProperty(name = "tag", example = "latest")
+    @Parameter(name = "tag", example = "latest")
     private String tag = "latest";
 
 }

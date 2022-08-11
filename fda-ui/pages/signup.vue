@@ -2,14 +2,13 @@
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
           Create Account
         </v-card-title>
         <v-card-text>
           <v-alert
             border="left"
-            color="amber lighten-4 black--text">
+            color="info">
             Before you can use the repository sandbox, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
           <v-row>
@@ -77,6 +76,7 @@
             :disabled="!valid"
             color="primary"
             type="submit"
+            :loading="loading"
             @click="register">
             Submit
           </v-btn>
@@ -122,6 +122,26 @@ export default {
         this.$toast.success('Success. Check your inbox!')
         this.$router.push('/login')
       } catch (err) {
+        if (err.response !== undefined && err.response.status !== undefined) {
+          if (err.response.status === 417) {
+            this.$toast.error('This e-mail address is taken.')
+            console.error('email taken', err)
+            this.loading = false
+            return
+          }
+          if (err.response.status === 409) {
+            this.$toast.error('This username is taken.')
+            console.error('username taken', err)
+            this.loading = false
+            return
+          }
+          if (err.response.status === 428) {
+            this.$toast.warning('Account was created but the server failed to send a mail.')
+            console.warn('email sending failed', err)
+            this.loading = false
+            return
+          }
+        }
         console.error('create user failed', err)
         this.$toast.error('Failed to create user')
       }

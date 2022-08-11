@@ -1,6 +1,8 @@
 package at.tuwien.entities.container.image;
 
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -70,6 +72,7 @@ public class ContainerImage {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;
 
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
     private List<Container> containers;

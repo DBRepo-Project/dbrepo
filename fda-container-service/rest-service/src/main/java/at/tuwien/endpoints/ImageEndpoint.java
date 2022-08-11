@@ -5,15 +5,11 @@ import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.DockerClientException;
-import at.tuwien.exception.ImageAlreadyExistsException;
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.PersistenceException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,11 +42,7 @@ public class ImageEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @ApiOperation(value = "List all images", notes = "Lists the images in the metadata database.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "All images are listed."),
-            @ApiResponse(code = 401, message = "Not authorized to list all images."),
-    })
+    @Operation(summary = "Find all images")
     public ResponseEntity<List<ImageBriefDto>> findAll() {
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
@@ -61,28 +54,18 @@ public class ImageEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
-    @ApiOperation(value = "Creates a new image", notes = "Creates a new image in the metadata database.")
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "Successfully created a new image."),
-            @ApiResponse(code = 400, message = "Malformed payload."),
-            @ApiResponse(code = 401, message = "Not authorized to create a image."),
-            @ApiResponse(code = 406, message = "Image already exists in metadata database."),
-            @ApiResponse(code = 404, message = "The image does not exist in the repository."),
-    })
-    public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data) throws ImageNotFoundException, ImageAlreadyExistsException, DockerClientException {
-        final ContainerImage image = imageService.create(data);
+    @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
+                                           Principal principal) throws ImageNotFoundException,
+            ImageAlreadyExistsException, DockerClientException, UserNotFoundException {
+        final ContainerImage image = imageService.create(data, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(imageMapper.containerImageToImageDto(image));
     }
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @ApiOperation(value = "Get all informations about a image", notes = "Since we follow the REST-principle, this method provides more information than the findAll method.")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Get information about container."),
-            @ApiResponse(code = 401, message = "Not authorized to get information about a container."),
-            @ApiResponse(code = 404, message = "No container found with this id in metadata database."),
-    })
+    @Operation(summary = "Find some image")
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id) throws ImageNotFoundException {
         final ContainerImage image = imageService.find(id);
         return ResponseEntity.ok()
@@ -92,12 +75,7 @@ public class ImageEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('DEVELOPER')")
-    @ApiOperation(value = "Update image information", notes = "Polls new information about an image")
-    @ApiResponses({
-            @ApiResponse(code = 202, message = "Updated the information of a image."),
-            @ApiResponse(code = 401, message = "Not authorized to update a container."),
-            @ApiResponse(code = 404, message = "No container found with this id in metadata database."),
-    })
+    @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id, @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -107,13 +85,7 @@ public class ImageEndpoint {
     @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('DEVELOPER')")
-    @ApiOperation(value = "Delete a image")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "Deleted the image."),
-            @ApiResponse(code = 401, message = "Not authorized to delete a image."),
-            @ApiResponse(code = 401, message = "Not authorized to delete a image."),
-            @ApiResponse(code = 404, message = "No image found with this id in metadata database."),
-    })
+    @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ImageNotFoundException,
             PersistenceException {
         imageService.delete(id);

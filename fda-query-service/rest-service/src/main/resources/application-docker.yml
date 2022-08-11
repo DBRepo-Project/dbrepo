@@ -1,3 +1,4 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
@@ -11,8 +12,16 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   application:
     name: fda-query-service
+  rabbitmq:
+    host: fda-broker-service
+    username: fda
+    password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
 server.port: 9093
@@ -21,11 +30,14 @@ logging:
   level:
     root: warn
     at.tuwien.: debug
-    at.tuwien.service.QueryService: trace
+    at.tuwien.mapper.: debug
+    at.tuwien.service.: debug
     at.tuwien.config.: debug
+    at.tuwien.auth.UserPermissionEvaluator: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: fda-query-service
   client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
 fda:
-  gateway.endpoint: http://fda-gateway-service:9095
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
   ready.path: /ready
