@@ -77,7 +77,9 @@ public class UserEndpoint {
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserEmailExistsException,
-            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException, OrcidMalformedException {
+            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException,
+            OrcidMalformedException, AuthenticationInvalidException, UserNotFoundException,
+            UserEmailNotVerifiedException {
         final User user = userService.create(data);
         queueService.createUser(data);
         final Token token = tokenService.create(user);
@@ -109,7 +111,8 @@ public class UserEndpoint {
     @Operation(summary = "Reset user information")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
                       @NotNull HttpServletResponse httpServletResponse)
-            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException {
+            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException,
+            UserEmailNotVerifiedException {
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);
@@ -125,7 +128,8 @@ public class UserEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'READ_USER')")
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException, OrcidMalformedException {
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
+            OrcidMalformedException {
         final User entity = userService.find(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userMapper.userToUserDto(entity));
@@ -172,7 +176,8 @@ public class UserEndpoint {
     @Operation(summary = "Update user password", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @Valid @RequestBody UserPasswordDto data)
-            throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException {
+            throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException,
+            UserEmailNotVerifiedException {
         final User entity = userService.updatePassword(id, data);
         queueService.modifyUserPassword(entity, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)

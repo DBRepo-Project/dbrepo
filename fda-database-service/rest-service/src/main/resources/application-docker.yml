@@ -17,13 +17,13 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-database-service
+    name: database-service
   cloud:
     loadbalancer.ribbon.enabled: false
   rabbitmq:
-    host: fda-broker-service
-    username: "${BROKER_USERNAME}"
-    password: "${BROKER_PASSWORD}"
+    host: broker-service
+    username: fda
+    password: fda
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
@@ -33,8 +33,8 @@ logging:
     at.tuwien.mapper.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-database-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: database-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   elastic.endpoint: "${SEARCH_ENDPOINT}"
   ready.path: /ready

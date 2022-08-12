@@ -2,10 +2,10 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
+    url: jdbc:postgresql://localhost:5432/fda
     driver-class-name: org.postgresql.Driver
-    username: "${METADATA_USERNAME}"
-    password: "${METADATA_PASSWORD}"
+    username: postgres
+    password: postgres
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -22,10 +22,10 @@ spring:
     loadbalancer.ribbon.enabled: false
   mail:
     default-encoding: UTF-8
-    host: "${SMTP_HOST}"
-    port: "${SMTP_PORT}"
-    username: "${SMTP_USERNAME}"
-    password: "${SMTP_PASSWORD}"
+    host: ""
+    port: 0
+    username: ""
+    password: ""
     properties.mail.smtp:
       timeout: 5000
       auth: true
@@ -41,17 +41,17 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: authentication-service
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
-  ready.path: /ready
-  website: "${WEBSITE}"
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  ready.path: ./ready
+  website: localhost:3000
+  gateway.endpoint: http://localhost:9095
   mail:
     prefix: /
-    from: "${MAIL_FROM}"
-    replyto: "${MAIL_REPLY_TO}"
-    verify: "${MAIL_VERIFY}"
+    from: Nobody
+    replyto: Nobody
+    verify: false
 jwt:
-  issuer: "${JWT_ISSUER}"
-  secret: "${JWT_SECRET}"
-  expiration.ms: "${JWT_EXPIRATION}" # 24 hrs
+  issuer: dbrepo
+  secret: dbrepo
+  expiration.ms: 100000000

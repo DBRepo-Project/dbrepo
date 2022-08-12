@@ -57,7 +57,7 @@ public class AmqpServiceImpl implements QueueService {
     }
 
     @Override
-    public void grantVirtualHost(String username, GrantVirtualHostPermissionsDto data, Principal principal)
+    public void grantVirtualHost(String username, GrantVirtualHostPermissionsDto data)
             throws ProcessCompletionException {
         final StringBuilder setPermissionsCmd = new StringBuilder("rabbitmqctl set_permissions -p ")
                 .append(data.getVirtualHost())

@@ -28,6 +28,7 @@ ENV WEBSITE=http://example.com
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV MAIL_FROM="Database Repository <noreply@example.com>"
 ENV MAIL_REPLY_TO="Somebody <somebody@example.com>"
+ENV MAIL_VERIFY=false
 ENV JWT_ISSUER=dbrepo
 ENV JWT_SECRET=secret
 ENV JWT_EXPIRATION=86400000

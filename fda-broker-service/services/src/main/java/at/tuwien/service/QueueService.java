@@ -44,9 +44,8 @@ public interface QueueService {
      *
      * @param username  The username of the user.
      * @param data      The password.
-     * @param principal The current user.
      * @throws ProcessCompletionException The process did not complete within the 3s timeout.
      */
-    void grantVirtualHost(String username, GrantVirtualHostPermissionsDto data, Principal principal)
+    void grantVirtualHost(String username, GrantVirtualHostPermissionsDto data)
             throws ProcessCompletionException;
 }

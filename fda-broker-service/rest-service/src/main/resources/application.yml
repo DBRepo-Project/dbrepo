@@ -29,7 +29,7 @@ logging:
     at.tuwien.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: broker-service
+  instance.hostname: ${BROKER_HOSTNAME}"
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready

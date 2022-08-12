@@ -17,7 +17,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-container-service
+    name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
 springdoc.swagger-ui.enabled: true
@@ -29,8 +29,8 @@ logging:
     at.tuwien.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-container-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: container-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   mount.path: /tmp
   ready.path: /ready

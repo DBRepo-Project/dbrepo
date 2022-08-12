@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    url: jdbc:postgresql://metadata-db:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -17,7 +17,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-authentication-service
+    name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
   mail:
@@ -40,8 +40,8 @@ logging:
     org.springframework.mail.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-authentication-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: authentication-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: /ready
   website: "${WEBSITE}"
@@ -50,6 +50,7 @@ fda:
     prefix: /
     from: "${MAIL_FROM}"
     replyto: "${MAIL_REPLY_TO}"
+    verify: false
 jwt:
   issuer: "${JWT_ISSUER}"
   secret: "${JWT_SECRET}"

@@ -4,8 +4,8 @@ spring:
   datasource:
     url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect

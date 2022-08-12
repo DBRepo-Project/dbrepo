@@ -17,9 +17,9 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-query-service
+    name: query-service
   rabbitmq:
-    host: fda-broker-service
+    host: broker-service
     username: fda
     password: fda
   cloud:
@@ -36,8 +36,8 @@ logging:
     at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-query-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: query-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   ready.path: /ready

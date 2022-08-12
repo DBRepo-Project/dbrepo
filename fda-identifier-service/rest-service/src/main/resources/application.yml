@@ -2,10 +2,10 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://metadata-db:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -29,7 +29,7 @@ logging:
     at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-identifier-service
+  instance.hostname: identifier-service
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: /ready

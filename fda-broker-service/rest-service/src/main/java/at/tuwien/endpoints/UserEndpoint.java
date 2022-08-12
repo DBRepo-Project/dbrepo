@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -32,7 +33,7 @@ public class UserEndpoint {
     }
 
     @PostMapping
-    @Operation(summary = "Create user", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create user")
     public ResponseEntity<?> create(@NotNull @Valid @RequestBody CreateUserDto data) throws ProcessCompletionException {
         queueService.createUser(data);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -40,6 +41,7 @@ public class UserEndpoint {
     }
 
     @PutMapping("/{username}/password")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Modifies user password", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> modify(@NotNull @PathVariable("username") String username,
                                     @NotNull @Valid @RequestBody UserModifyPasswordDto data,
@@ -51,12 +53,11 @@ public class UserEndpoint {
     }
 
     @PutMapping("/{username}/permission")
-    @Operation(summary = "Grants user permission", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Grants user permission")
     public ResponseEntity<?> grant(@NotNull @PathVariable("username") String username,
-                                   @NotNull @Valid @RequestBody GrantVirtualHostPermissionsDto data,
-                                   @NotNull Principal principal)
+                                   @NotNull @Valid @RequestBody GrantVirtualHostPermissionsDto data)
             throws ProcessCompletionException {
-        queueService.grantVirtualHost(username, data, principal);
+        queueService.grantVirtualHost(username, data);
         return ResponseEntity.accepted()
                 .build();
     }

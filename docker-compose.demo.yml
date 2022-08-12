@@ -148,6 +148,7 @@ services:
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USERNAME: ${SMTP_USERNAME}
       SMTP_PASSWORD: ${SMTP_PASSWORD}
+      MAIL_VERIFY: ${MAIL_VERIFY}
     depends_on:
       discovery-service:
         condition: service_healthy

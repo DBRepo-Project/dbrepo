@@ -5,7 +5,10 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.AuthenticationInvalidException;
 import at.tuwien.exception.BrokerUserCreationException;
+import at.tuwien.exception.UserEmailNotVerifiedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.QueueService;
@@ -33,12 +36,13 @@ public class QueueServiceImpl implements QueueService {
     }
 
     @Override
-    public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException {
+    public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException,
+            UserNotFoundException, UserEmailNotVerifiedException {
         final UserModifyPasswordDto passwordDto = UserModifyPasswordDto.builder()
                 .username(user.getUsername())
                 .password(data.getPassword())
                 .build();
-        brokerServiceGateway.modifyUserPassword(user.getUsername(), passwordDto);
+        brokerServiceGateway.modifyUserPassword(passwordDto);
     }
 
 }
