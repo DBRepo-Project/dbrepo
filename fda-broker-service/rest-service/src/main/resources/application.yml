@@ -13,11 +13,11 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-broker-service
+    name: broker-service
   rabbitmq:
-    host: localhost
-    username: fda
-    password: fda
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
 server:
@@ -29,8 +29,8 @@ logging:
     at.tuwien.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: localhost
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: broker-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: http://gateway-service:9095

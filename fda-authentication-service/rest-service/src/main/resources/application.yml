@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -17,13 +17,13 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-authentication-service
+    name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
   mail:
     default-encoding: UTF-8
-    host: mail.student.tuwien.ac.at
-    port: 993
+    host: "${SMTP_HOST}"
+    port: "${SMTP_PORT}"
     username: "${SMTP_USERNAME}"
     password: "${SMTP_PASSWORD}"
     properties.mail.smtp:
@@ -40,17 +40,17 @@ logging:
     org.springframework.mail.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: localhost
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: authentication-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  ready.path: ./ready
-  website: http://localhost:3000
-  gateway.endpoint: http://localhost:9095
+  ready.path: /ready
+  website: "${WEBSITE}"
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
   mail:
     prefix: /
-    from: Database Repository <noreply@dbrepo.ossdip.at>
-    replyto: Martin Weise <martin.weise@tuwien.ac.at>
+    from: "${MAIL_FROM}"
+    replyto: "${MAIL_REPLY_TO}"
 jwt:
-  issuer: fda-dbrepo
-  secret: fda-secret
-  expiration.ms: 86400000 # 24 hrs
+  issuer: "${JWT_ISSUER}"
+  secret: "${JWT_SECRET}"
+  expiration.ms: "${JWT_EXPIRATION}" # 24 hrs

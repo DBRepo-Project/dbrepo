@@ -331,7 +331,7 @@ services:
     networks:
       public:
     ports:
-      - "3000:3000"
+      - "443:3000"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
@@ -339,5 +339,8 @@ services:
         condition: service_healthy
       database-service:
         condition: service_healthy
+    environment:
+      KEY: "${UI_KEY}"
+      CERT: "${UI_CERT}"
     logging:
       driver: json-file

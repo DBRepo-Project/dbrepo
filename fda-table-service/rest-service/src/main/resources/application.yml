@@ -2,12 +2,12 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: jdbc:postgresql://metadata-db:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
   jpa:
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
@@ -17,11 +17,11 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-table-service
+    name: table-service
   rabbitmq:
-    host: localhost
-    username: fda
-    password: fda
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
 server.port: 9094
@@ -35,9 +35,9 @@ logging:
     at.tuwien.config.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-table-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: table-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  elastic.endpoint: "${SEARCH_ENDPOINT}"
+  gateway.endpoint: http://gateway-service:9095
+  elastic.endpoint: search-service:9200

@@ -3,6 +3,8 @@ FROM node:14-alpine as build
 MAINTAINER Kirill Stytsenko <kirill.stytsenko@univie.ac.at>
 
 ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV API=http://gateway-service:9095
 
 WORKDIR /app
 

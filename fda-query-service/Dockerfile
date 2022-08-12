@@ -22,6 +22,13 @@ RUN mvn -q clean package -DskipTests > /dev/null
 ###### THIRD STAGE ######
 FROM openjdk:11-jre-slim as runtime
 
+ENV METADATA_DB=fda
+ENV METADATA_USERNAME=postgres
+ENV METADATA_PASSWORD=postgres
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
+ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 

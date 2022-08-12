@@ -20,6 +20,14 @@ RUN mvn -q clean package -DskipTests > /dev/null
 ###### THIRD STAGE ######
 FROM rabbitmq:3-management-alpine
 
+ENV METADATA_DB=fda
+ENV METADATA_USERNAME=postgres
+ENV METADATA_PASSWORD=postgres
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
+ENV RABBITMQ_DEFAULT_USER=fda
+ENV RABBITMQ_DEFAULT_PASS=fda
+
 RUN apk --no-cache add openjdk11
 
 COPY ./service_ready /usr/bin
