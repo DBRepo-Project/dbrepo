@@ -343,6 +343,7 @@ export default {
       }
       this.validStep4 = true
       this.createTable()
+        .then(() => this.createConsumer())
     },
     setOthers (column) {
       column.null_allowed = false
@@ -412,6 +413,18 @@ export default {
       }
       this.loading = false
       this.step = 5
+    },
+    async createConsumer () {
+      try {
+        this.loading = true
+        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/consumer`, {}, this.config)
+        console.debug('consumer', res.data)
+      } catch (err) {
+        this.error = true
+        console.error('could not create consumer', err)
+        this.$toast.error('Could not create consumer')
+      }
+      this.loading = false
     }
   }
 }

@@ -3,45 +3,19 @@ FROM fda-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
-FROM maven:slim as build
+FROM rabbitmq:3-management-alpine as runtime
 
-COPY ./pom.xml ./
-
-RUN mvn -fn -B dependency:go-offline > /dev/null
-
-COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
-
-COPY ./rest-service ./rest-service
-COPY ./services ./services
-
-# Make sure it compiles
-RUN mvn -q clean package -DskipTests > /dev/null
-
-###### THIRD STAGE ######
-FROM rabbitmq:3-management-alpine
-
-ENV METADATA_DB=fda
-ENV METADATA_USERNAME=postgres
-ENV METADATA_PASSWORD=postgres
-ENV BROKER_USERNAME=fda
-ENV BROKER_PASSWORD=fda
-ENV RABBITMQ_DEFAULT_USER=fda
-ENV RABBITMQ_DEFAULT_PASS=fda
-
-RUN apk --no-cache add openjdk11
-
-COPY ./service_ready /usr/bin
-COPY ./docker-entrypoint.sh /usr/bin
-
-RUN chmod +x /usr/bin/service_ready
-RUN chmod +x /usr/bin/docker-entrypoint.sh
+ENV PYTHONUNBUFFERED=1
 
 COPY ./rabbitmq.conf /etc/rabbitmq/
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
+RUN apk --no-cache add python3 py3-pip
+COPY ./requirements.txt ./requirements.txt
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
+RUN pip3 install -r ./requirements.txt
 
-EXPOSE 9098
+COPY init.py ./init.py
 
-ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
+ENTRYPOINT [ "./docker-entrypoint.sh" ]

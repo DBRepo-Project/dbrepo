@@ -18,14 +18,14 @@ public interface QueueService {
      *
      * @param data The user data@throws BrokerUserCreationException The broker did not create the user.
      */
-    void createUser(SignupRequestDto data) throws BrokerUserCreationException, AuthenticationInvalidException, UserNotFoundException, UserEmailNotVerifiedException;
+    void createUser(String username, SignupRequestDto data) throws BrokerUserCreationException;
 
     /**
      * Modify a user password at the Broker Service
      *
-     * @param user          The user data.
-     * @param data          The user password..
+     * @param user The user data.
+     * @param data The user password..
      * @throws BrokerUserCreationException The broker did not modify the user.
      */
-    void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException, UserNotFoundException, UserEmailNotVerifiedException;
+    void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException;
 }

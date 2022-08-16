@@ -40,8 +40,8 @@ public class ConsumerEndpoint extends AbstractEndpoint {
                                         @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, AmqpException, NotAllowedException {
         if (!hasDatabasePermission(containerId, databaseId, "QUEUE_CREATE_CONSUMER", principal)) {
-            log.error("Missing data export permission");
-            throw new NotAllowedException("Missing data export permission");
+            log.error("Missing queue create consumer permission");
+            throw new NotAllowedException("Missing queue create consumer permission");
         }
         final Table table = tableService.find(containerId, databaseId, tableId);
         messageQueueService.createConsumer(table.getTopic(), containerId, databaseId, tableId);

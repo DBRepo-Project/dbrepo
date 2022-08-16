@@ -20,7 +20,7 @@ public class GatewayConfig {
                 .route("broker-service", r -> r.path("/api/broker/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
-                        .and()
+                        .filters(f -> f.rewritePath("/api/broker/(?<segment>.*)", "/api/${segment}"))
                         .uri("lb://broker-service"))
                 .route("analyse-service", r -> r.path("/api/analyse/**")
                         .and()

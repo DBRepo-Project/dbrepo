@@ -9,16 +9,12 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @Getter
 @Configuration
-public class GatewayConfig {
+public class AmqpConfig {
 
-    @Value("${fda.gateway.endpoint}")
-    private String gatewayEndpoint;
+    @Value("${spring.rabbitmq.username}")
+    private String amqpUsername;
 
-    @Bean
-    public RestTemplate restTemplate() {
-        final RestTemplate restTemplate =  new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
-        return restTemplate;
-    }
+    @Value("${spring.rabbitmq.password}")
+    private String amqpPassword;
 
 }

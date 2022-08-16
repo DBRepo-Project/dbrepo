@@ -20,6 +20,9 @@ spring:
     name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   mail:
     default-encoding: UTF-8
     host: "${SMTP_HOST}"

@@ -24,6 +24,8 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
 ENV WEBSITE=http://example.com
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV MAIL_FROM="Database Repository <noreply@example.com>"

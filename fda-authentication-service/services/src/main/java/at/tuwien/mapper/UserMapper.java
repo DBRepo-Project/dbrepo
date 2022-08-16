@@ -116,7 +116,6 @@ public interface UserMapper {
 
     default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
         return GrantVirtualHostPermissionsDto.builder()
-                .virtualHost("/")
                 .configure(".*")
                 .write(".*")
                 .read(".*")

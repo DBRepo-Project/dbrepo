@@ -15,12 +15,11 @@ import javax.validation.constraints.NotNull;
 public class CreateUserDto {
 
     @NotNull
-    @Parameter(name = "user name")
-    private String username;
-
-    @NotNull
     @ToString.Exclude
-    @Parameter(name = "password hash")
+    @Parameter(name = "user password")
     private String password;
+
+    @Parameter(name = "user tags")
+    private String tags;
 
 }

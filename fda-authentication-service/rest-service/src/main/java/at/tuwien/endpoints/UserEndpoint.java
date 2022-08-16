@@ -78,10 +78,9 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserEmailExistsException,
             UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException,
-            OrcidMalformedException, AuthenticationInvalidException, UserNotFoundException,
-            UserEmailNotVerifiedException {
+            OrcidMalformedException {
         final User user = userService.create(data);
-        queueService.createUser(data);
+        queueService.createUser(user.getUsername(), data);
         final Token token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
@@ -111,8 +110,7 @@ public class UserEndpoint {
     @Operation(summary = "Reset user information")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
                       @NotNull HttpServletResponse httpServletResponse)
-            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException,
-            UserEmailNotVerifiedException {
+            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException {
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);
