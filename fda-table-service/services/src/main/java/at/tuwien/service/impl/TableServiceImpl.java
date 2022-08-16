@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+
 @Log4j2
 @Service
 public class TableServiceImpl extends HibernateConnector implements TableService {
@@ -162,7 +164,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             dataSource1.close();
         }
         /* save in metadata database */
-        final Table table = tableRepository.save(entity);
+        final Table table = tableRepository.saveAndFlush(entity);
         log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
         /* save in elastic search */

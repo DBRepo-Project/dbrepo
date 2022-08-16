@@ -40,10 +40,10 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @Transactional
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> insert(@NotNull @PathVariable("id") Long containerId,
-                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @PathVariable("tableId") Long tableId,
-                                          @NotNull @Valid @RequestBody TableCsvDto data,
-                                          @NotNull Principal principal)
+                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @NotNull @Valid @RequestBody TableCsvDto data,
+                                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
@@ -59,10 +59,10 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @Transactional
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> update(@NotNull @PathVariable("id") Long containerId,
-                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @PathVariable("tableId") Long tableId,
-                                          @NotNull @Valid @RequestBody TableCsvUpdateDto data,
-                                          @NotNull Principal principal)
+                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @NotNull @Valid @RequestBody TableCsvUpdateDto data,
+                                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
@@ -98,12 +98,13 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @Transactional
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> importCsv(@NotNull @PathVariable("id") Long containerId,
-                                             @NotNull @PathVariable("databaseId") Long databaseId,
-                                             @NotNull @PathVariable("tableId") Long tableId,
-                                             @NotNull @Valid @RequestBody ImportDto data,
-                                             @NotNull Principal principal)
+                                          @NotNull @PathVariable("databaseId") Long databaseId,
+                                          @NotNull @PathVariable("tableId") Long tableId,
+                                          @NotNull @Valid @RequestBody ImportDto data,
+                                          @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
+            QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");

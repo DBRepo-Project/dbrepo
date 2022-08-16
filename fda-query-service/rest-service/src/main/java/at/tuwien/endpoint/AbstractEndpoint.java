@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.IdentifierNotFoundException;
@@ -40,6 +41,35 @@ public abstract class AbstractEndpoint {
         if (database.getIsPublic() && List.of("TABLE_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_EXECUTE").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
+        }
+        if (principal == null) {
+            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            return false;
+        }
+        /* modification operations are limited to the creator */
+        if (database.getCreator().getUsername().equals(principal.getName())) {
+            log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
+                    database.getCreator().getUsername());
+            return true;
+        }
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+                    permissionCode);
+            return false;
+        }
+        log.debug("failed to grant permission {} because database is not owner by the current user", permissionCode);
+        return false;
+    }
+
+    protected Boolean hasQueuePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
+                                            Principal principal) {
+        final Database database;
+        try {
+            database = databaseService.find(containerId, databaseId);
+        } catch (DatabaseNotFoundException e) {
+            log.debug("failed to find database with id {}", databaseId);
+            return false;
         }
         if (principal == null) {
             log.debug("failed to grant permission {} because principal is null", permissionCode);

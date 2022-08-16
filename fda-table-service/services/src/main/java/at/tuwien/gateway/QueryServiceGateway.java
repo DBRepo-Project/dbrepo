@@ -1,18 +1,17 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.exception.AmqpException;
 
 public interface QueryServiceGateway {
 
     /**
      * Publish new data into a table with given container id, database id, table id.
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param data        The data.
-     * @return The number of inserted tuples.
+     * @param containerId   The container id.
+     * @param databaseId    The database id.
+     * @param tableId       The table id.
+     * @param authorization The authentication token.
      */
-    Integer publish(Long containerId, Long databaseId, Long tableId, TableCsvDto data);
+    void declareConsumer(Long containerId, Long databaseId, Long tableId, String authorization) throws AmqpException;
 
 }

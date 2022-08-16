@@ -38,6 +38,7 @@ public class GatewayConfig {
                                 "/api/container/**/database/**/table/**/data/**",
                                 "/api/container/**/database/**/table/**/query/**",
                                 "/api/container/**/database/**/table/**/export/**",
+                                "/api/container/**/database/**/table/**/consumer",
                                 "/api/container/**/database/**/version/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")

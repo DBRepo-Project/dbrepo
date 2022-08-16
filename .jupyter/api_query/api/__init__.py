@@ -3,6 +3,7 @@ from __future__ import absolute_import
 # flake8: noqa
 
 # import apis into api package
+from api_query.api.consumer_endpoint_api import ConsumerEndpointApi
 from api_query.api.export_endpoint_api import ExportEndpointApi
 from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_query.api.store_endpoint_api import StoreEndpointApi

@@ -13,7 +13,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,17 +29,17 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/container/{id}/database/{databaseId}/table")
 public class TableEndpoint extends AbstractEndpoint {
 
+    private final TableMapper tableMapper;
     private final TableService tableService;
     private final MessageQueueService amqpService;
-    private final TableMapper tableMapper;
 
     @Autowired
-    public TableEndpoint(TableService tableService, DatabaseService databaseService, MessageQueueService amqpService,
-                         TableMapper tableMapper) {
-        super(tableService, databaseService);
-        this.tableService = tableService;
-        this.amqpService = amqpService;
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService,
+                         DatabaseService databaseService) {
+        super(databaseService);
         this.tableMapper = tableMapper;
+        this.amqpService = amqpService;
+        this.tableService = tableService;
     }
 
     @GetMapping
@@ -66,7 +65,7 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
-                                                Principal principal)
+                                                @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
