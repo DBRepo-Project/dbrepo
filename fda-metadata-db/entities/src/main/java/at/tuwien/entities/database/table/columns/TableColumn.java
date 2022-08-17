@@ -94,7 +94,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Boolean isNullAllowed = true;
 
-    @Column
+    @Column(nullable = false)
     private Boolean isUnique;
 
     @Column

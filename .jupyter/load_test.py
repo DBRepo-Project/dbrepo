@@ -30,7 +30,7 @@ identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
 unit = DefaultApi()
 
-token = "" # keep
+token = ""  # keep
 
 
 def create_user(username):
@@ -283,6 +283,18 @@ def assign_concept(database_id, table_id, column_id, uri):
     return response.json()
 
 
+def download_query_data(container_id, database_id, query_id):
+    response = query.export1(container_id, database_id, query_id)
+    print("downloaded query data for query with id %d" % query_id)
+    return response
+
+
+def download_identifier_metadata(container_id, database_id, identifier_id):
+    response = identifier.export(container_id, database_id, identifier_id)
+    print("downloaded identifier metadata for identifier with id %d" % identifier_id)
+    return response
+
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -306,7 +318,9 @@ if __name__ == '__main__':
     create_query(cid, dbid, "select `date` from `" + tname + "`")
     qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
     create_query(cid, dbid, "select `foo` from `" + tname + "`")
-    create_identifier(cid, dbid, qid)
+    iid = create_identifier(cid, dbid, qid).id
+    download_query_data(cid, dbid, qid)
+    download_identifier_metadata(cid, dbid, iid)
     # container 2 (=private)
     cid = create_container().id
     start_container(cid)

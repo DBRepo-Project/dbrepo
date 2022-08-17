@@ -343,5 +343,6 @@ services:
     environment:
       KEY: "${UI_KEY}"
       CERT: "${UI_CERT}"
+      SANDBOX: true
     logging:
       driver: json-file

@@ -15,7 +15,6 @@ COPY ./yarn.lock ./
 RUN yarn install --frozen-lockfile > /dev/null 2>&1
 
 COPY ./nuxt.config.js ./
-COPY ./.env-docker ./.env
 COPY ./ava.config.cjs ./
 COPY ./babel.config.js ./
 COPY ./assets ./assets
@@ -30,5 +29,10 @@ COPY ./store ./store
 COPY ./utils ./utils
 
 RUN yarn build > /dev/null
+
+ENV API=http://fda-gateway-service:9095
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
+ENV SANDBOX=false
 
 ENTRYPOINT ["yarn", "start"]

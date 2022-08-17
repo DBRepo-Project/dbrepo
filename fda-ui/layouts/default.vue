@@ -76,7 +76,9 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-footer padless>
+    <v-footer
+      v-if="sandbox"
+      padless>
       <v-card
         flat
         tile
@@ -97,7 +99,6 @@ import {
   mdiFileDelimited,
   mdiDatabaseSearch,
   mdiHome,
-  mdiNewspaperVariantOutline,
   mdiCog
 } from '@mdi/js'
 
@@ -120,11 +121,6 @@ export default {
           icon: mdiDatabase,
           title: 'Databases',
           to: '/container'
-        },
-        {
-          icon: mdiNewspaperVariantOutline,
-          title: 'Publications',
-          to: '/publications'
         },
         {
           icon: mdiCog,
@@ -182,6 +178,14 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    sandbox () {
+      if (this.$config.sandbox === undefined) {
+        console.debug('env sandbox not found, default to', false)
+        return false
+      }
+      console.debug('env sandbox found', this.$config.sandbox)
+      return this.$config.sandbox
     }
   },
   watch: {

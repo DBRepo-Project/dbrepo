@@ -86,6 +86,12 @@ export default {
     proxy: true
   },
 
+  publicRuntimeConfig: {
+    brokerUsername: process.env.BROKER_USERNAME,
+    brokerPassword: process.env.BROKER_PASSWORD,
+    sandbox: process.env.SANDBOX
+  },
+
   proxy: {
     '/api': process.env.API
   },

@@ -245,12 +245,16 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    brokerConfig () {
+      return {
+        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) }
+      }
+    },
     createdUTC () {
       return formatTimestampUTCLabel(this.tableDetails.created)
     }
   },
   mounted () {
-    console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
   },
@@ -331,9 +335,7 @@ export default {
     async consumerDetails (topic) {
       try {
         this.loading = true
-        const res = await this.$axios.get('/api/broker/consumers/%2F', {
-          headers: { Authorization: 'Basic ZmRhOmZkYQ==' }
-        })
+        const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
         const consumers = res.data.filter(c => c.queue.name === topic)
         console.debug('consumers', consumers)
         const state = res.data.filter(c => c.queue.name === topic && c.active)

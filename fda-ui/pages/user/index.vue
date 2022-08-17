@@ -108,7 +108,6 @@
               <v-text-field
                 v-model="user.orcid"
                 :disabled="error"
-                :rules="[v => !!v || $t('Required')]"
                 maxlength="19"
                 hint="e.g. 0000-0002-1825-0097"
                 label="ORCID" />

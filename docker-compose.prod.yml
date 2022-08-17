@@ -340,5 +340,8 @@ services:
         condition: service_healthy
       database-service:
         condition: service_healthy
+    environment:
+      BROKER_USERNAME: ${BROKER_USERNAME}
+      BROKER_PASSWORD: ${BROKER_PASSWORD}
     logging:
       driver: json-file
