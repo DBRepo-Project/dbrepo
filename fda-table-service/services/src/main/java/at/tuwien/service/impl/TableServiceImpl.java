@@ -164,7 +164,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             dataSource1.close();
         }
         /* save in metadata database */
-        final Table table = tableRepository.saveAndFlush(entity);
+        final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
         /* save in elastic search */

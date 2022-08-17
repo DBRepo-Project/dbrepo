@@ -30,7 +30,7 @@ identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
 unit = DefaultApi()
 
-token = ""
+token = "" # keep
 
 
 def create_user(username):
@@ -40,6 +40,14 @@ def create_user(username):
         "email": username + "@gmail.com"
     })
     print("created user with id %d" % response.id)
+    return response
+
+
+def update_password(user_id, password):
+    response = user.update_password({
+        "password": password
+    }, user_id)
+    print("updated password for user with id %d" % user_id)
     return response
 
 
@@ -234,6 +242,7 @@ def update_user(user_id):
         "titles_after": "PhD"
     }, user_id)
     print("updated user with id %d" % user_id)
+    return response
 
 
 def update_theme(user_id):
@@ -278,8 +287,10 @@ if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
     #
-    create_user("test1")
+    uid = create_user("test1").id
     auth_user("test1")
+    update_password(uid, "test1")
+    update_user(uid)
     # container 1
     cid = create_container().id
     start_container(cid)
@@ -350,7 +361,7 @@ if __name__ == '__main__':
     #
     # create 1 user and 1 container and issue queries to own and foreign database
     #
-    create_user("test2")
+    uid = create_user("test2").id
     auth_user("test2")
     # container 4
     cid = create_container().id

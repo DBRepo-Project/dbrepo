@@ -174,8 +174,7 @@ public class UserEndpoint {
     @Operation(summary = "Update user password", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @Valid @RequestBody UserPasswordDto data)
-            throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException,
-            UserEmailNotVerifiedException {
+            throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException {
         final User entity = userService.updatePassword(id, data);
         queueService.modifyUserPassword(entity, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)

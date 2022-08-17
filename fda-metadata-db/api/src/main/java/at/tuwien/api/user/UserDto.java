@@ -72,6 +72,7 @@ public class UserDto {
     @Parameter(name = "mail address")
     private String email;
 
+    @NotNull
     @JsonProperty("email_verified")
     @Parameter(name = "mail address verified")
     private Boolean emailVerified;

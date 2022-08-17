@@ -51,11 +51,11 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantUserHost(String username) throws BrokerUserCreationException {
         /* grant */
-        final URI grantUrl = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/permissions/%2F/ " + username);
+        final URI grantUrl = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
         final GrantVirtualHostPermissionsDto grantDto = userMapper.signupRequestDtoToGrantComponentDto();
         final ResponseEntity<Void> grantResponse = restTemplate.exchange(grantUrl, HttpMethod.PUT,
                 new HttpEntity<>(grantDto, getHeaders()), Void.class);
-        if (!grantResponse.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+        if (!grantResponse.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to grant permissions at queue service: {}", grantResponse.getStatusCode());
             throw new BrokerUserCreationException("Failed to grant permissions at queue service");
         }
@@ -70,7 +70,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         final String modifyUrl = "/api/broker/users/" + username;
         final ResponseEntity<Void> response = restTemplate.exchange(modifyUrl, HttpMethod.PUT,
                 new HttpEntity<>(data, getHeaders()), Void.class);
-        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to update user password at queue service: {}", response.getStatusCode());
             throw new BrokerUserCreationException("Failed to update user password at queue service");
         }

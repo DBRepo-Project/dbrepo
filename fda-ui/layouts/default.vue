@@ -43,7 +43,9 @@
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
       <v-btn v-if="username" to="/user" plain>
-        {{ username }}
+        {{ username }} <sup v-if="user.email_verified">
+          <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+        </sup>
       </v-btn>
       <v-menu bottom offset-y left>
         <template v-slot:activator="{ on, attrs }">
