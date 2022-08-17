@@ -11,64 +11,60 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("fda-authentication-service", r -> r.path("/api/auth/**",
+                .route("authentication-service", r -> r.path("/api/auth/**",
                                 "/api/user/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-authentication-service"))
-                .route("fda-broker-service", r -> r.path("/api/broker/**")
+                        .uri("lb://authentication-service"))
+                .route("broker-service", r -> r.path("/api/broker/**")
+                        .and()
+                        .method("POST", "GET", "PUT", "DELETE")
+                        .filters(f -> f.rewritePath("/api/broker/(?<segment>.*)", "/api/${segment}"))
+                        .uri("lb://broker-service"))
+                .route("analyse-service", r -> r.path("/api/analyse/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-broker-service"))
-                .route("fda-analyse-service", r -> r.path("/api/analyse/**")
-                        .and()
-                        .method("POST", "GET", "PUT", "DELETE")
-                        .and()
-                        .uri("lb://fda-analyse-service"))
-                .route("fda-identifier-service", r -> r.path("/api/pid/**",
+                        .uri("lb://analyse-service"))
+                .route("identifier-service", r -> r.path("/api/pid/**",
                                 "/api/container/**/database/**/identifier/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-identifier-service"))
-                .route("fda-query-service", r -> r.path("/api/container/**/database/**/query/**",
+                        .uri("lb://identifier-service"))
+                .route("query-service", r -> r.path("/api/container/**/database/**/query/**",
                                 "/api/container/**/database/**/table/**/history/**",
                                 "/api/container/**/database/**/table/**/data/**",
                                 "/api/container/**/database/**/table/**/query/**",
                                 "/api/container/**/database/**/table/**/export/**",
+                                "/api/container/**/database/**/table/**/consumer",
                                 "/api/container/**/database/**/version/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-query-service"))
-                .route("fda-table-service", r -> r.path("/api/container/**/database/**/table/**")
+                        .uri("lb://query-service"))
+                .route("table-service", r -> r.path("/api/container/**/database/**/table/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-table-service"))
-                .route("fda-database-service", r -> r.path("/api/container/**/database/**")
+                        .uri("lb://table-service"))
+                .route("database-service", r -> r.path("/api/container/**/database/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-database-service"))
-                .route("fda-container-service", r -> r.path("/api/container/**",
+                        .uri("lb://database-service"))
+                .route("container-service", r -> r.path("/api/container/**",
                                 "/api/image/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-container-service"))
-                .route("fda-units-service", r -> r.path("/api/units/**")
+                        .uri("lb://container-service"))
+                .route("units-service", r -> r.path("/api/units/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://fda-units-service"))
-                .route("fda-document-service", r -> r.path("/api/document/**")
-                        .and()
-                        .method("POST", "GET", "PUT", "DELETE")
-                        .and()
-                        .uri("lb://fda-document-service"))
+                        .uri("lb://units-service"))
                 .build();
 
     }

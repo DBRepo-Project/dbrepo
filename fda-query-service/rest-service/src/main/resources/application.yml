@@ -2,10 +2,10 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -17,11 +17,11 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-query-service
+    name: query-service
   rabbitmq:
-    host: localhost
-    username: fda
-    password: fda
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
 server.port: 9093
@@ -29,15 +29,15 @@ logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: trace
-    at.tuwien.mapper.: trace
-    at.tuwien.service.: trace
-    at.tuwien.config.: trace
+    at.tuwien.: debug
+    at.tuwien.mapper.: debug
+    at.tuwien.service.: debug
+    at.tuwien.config.: debug
     at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-query-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: query-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  gateway.endpoint: http://localhost:9095
-  ready.path: ./ready
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  ready.path: /ready

@@ -2,10 +2,10 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -17,7 +17,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-container-service
+    name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
 springdoc.swagger-ui.enabled: true
@@ -29,9 +29,9 @@ logging:
     at.tuwien.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-container-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: container-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   mount.path: /tmp
-  ready.path: ./ready
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  ready.path: /ready
+  gateway.endpoint: http://gateway-service:9095

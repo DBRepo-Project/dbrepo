@@ -91,6 +91,14 @@ export default {
     token () {
       return this.$store.state.token
     },
+    config () {
+      if (this.token === null) {
+        return { headers: {} }
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
     },
@@ -121,9 +129,7 @@ export default {
     async createTable () {
       try {
         this.loading = true
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, this.config)
         if (res.status === 201) {
           this.error = false
           this.$toast.success('Table created.')
@@ -142,9 +148,7 @@ export default {
     async listTables () {
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
         console.debug('tables', res.data)
         this.tableNames = res.data.map(t => t.internal_name)
       } catch (err) {

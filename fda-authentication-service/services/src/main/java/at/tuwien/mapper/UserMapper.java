@@ -3,6 +3,7 @@ package at.tuwien.mapper;
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.JwtResponseDto;
+import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
@@ -29,6 +30,8 @@ public interface UserMapper {
     UserDetailsDto userToUserDetailsDto(User data);
 
     CreateUserDto signupRequestDtoToCreateUserDto(SignupRequestDto data);
+
+    LoginRequestDto createUserDtoToLoginRequestDto(CreateUserDto data);
 
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
@@ -113,7 +116,6 @@ public interface UserMapper {
 
     default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
         return GrantVirtualHostPermissionsDto.builder()
-                .virtualHost("/")
                 .configure(".*")
                 .write(".*")
                 .read(".*")

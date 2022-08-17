@@ -159,8 +159,7 @@
               <v-list-item-content>
                 <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
                 <span v-if="!loadingQuery">
-                  {{ creator }}
-                  <sup>
+                  {{ creator }} <sup>
                     <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
                   </sup>
                 </span>

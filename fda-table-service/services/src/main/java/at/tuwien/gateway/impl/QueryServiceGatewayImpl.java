@@ -1,12 +1,10 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.QueryServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,11 +20,18 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public Integer publish(Long containerId, Long databaseId, Long tableId, TableCsvDto data) {
-        final String url = "/api/container/" + containerId + "/database/" + databaseId + "/table/" + tableId + "/data";
-        final ResponseEntity<Integer> response = restTemplate.exchange(url, HttpMethod.POST,
-                new HttpEntity<>(data), Integer.class);
-        return response.getBody();
+    public void declareConsumer(Long containerId, Long databaseId, Long tableId, String authorization) throws AmqpException {
+        final String url = "/api/container/" + containerId + "/database/" + databaseId + "/table/" + tableId + "/consumer";
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", authorization);
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.POST,
+                new HttpEntity<>(null, headers), Void.class);
+        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+            log.error("Failed to declare consumer for table with id {}", tableId);
+            log.debug("failed to declare consumer for container with id {} database with id {} table with id {}",
+                    containerId, databaseId, tableId);
+            throw new AmqpException("Failed to declare consumer");
+        }
     }
 
 }

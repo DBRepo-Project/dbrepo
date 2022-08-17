@@ -85,7 +85,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public User create(SignupRequestDto data) throws UserEmailExistsException, UserNameExistsException {
-        /* check */
+        /* duplicate */
         final Optional<User> email = userRepository.findByEmail(data.getEmail());
         if (email.isPresent()) {
             log.error("Email address is already present in the database");

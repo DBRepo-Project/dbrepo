@@ -77,9 +77,10 @@ public class UserEndpoint {
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserEmailExistsException,
-            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException, OrcidMalformedException {
+            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException,
+            OrcidMalformedException {
         final User user = userService.create(data);
-        queueService.createUser(data);
+        queueService.createUser(user.getUsername(), data);
         final Token token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
@@ -125,7 +126,8 @@ public class UserEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'READ_USER')")
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException, OrcidMalformedException {
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
+            OrcidMalformedException {
         final User entity = userService.find(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userMapper.userToUserDto(entity));

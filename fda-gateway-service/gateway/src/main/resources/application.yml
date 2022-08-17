@@ -1,22 +1,22 @@
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
         jdbc:
-          time_zone: EUTC
+          time_zone: UTC
   application:
-    name: fda-gateway-service
+    name: gateway-service
 springdoc.swagger-ui.enabled: false
 server.port: 9095
 logging:
@@ -26,7 +26,7 @@ logging:
     at.tuwien.: debug
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-discovery-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: discovery-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  ready.path: ./ready
+  ready.path: /ready

@@ -43,7 +43,9 @@
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
       <v-btn v-if="username" to="/user" plain>
-        {{ username }}
+        {{ username }} <sup v-if="user.email_verified">
+          <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+        </sup>
       </v-btn>
       <v-menu bottom offset-y left>
         <template v-slot:activator="{ on, attrs }">
@@ -74,7 +76,9 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-footer padless>
+    <v-footer
+      v-if="sandbox"
+      padless>
       <v-card
         flat
         tile
@@ -95,7 +99,6 @@ import {
   mdiFileDelimited,
   mdiDatabaseSearch,
   mdiHome,
-  mdiNewspaperVariantOutline,
   mdiCog
 } from '@mdi/js'
 
@@ -118,11 +121,6 @@ export default {
           icon: mdiDatabase,
           title: 'Databases',
           to: '/container'
-        },
-        {
-          icon: mdiNewspaperVariantOutline,
-          title: 'Publications',
-          to: '/publications'
         },
         {
           icon: mdiCog,
@@ -180,6 +178,14 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    sandbox () {
+      if (this.$config.sandbox === undefined) {
+        console.debug('env sandbox not found, default to', false)
+        return false
+      }
+      console.debug('env sandbox found', this.$config.sandbox)
+      return this.$config.sandbox
     }
   },
   watch: {

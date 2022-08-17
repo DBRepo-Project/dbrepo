@@ -15,12 +15,10 @@ import java.util.List;
 @Slf4j
 public abstract class AbstractEndpoint {
 
-    private final TableService tableService;
     private final DatabaseService databaseService;
 
     @Autowired
-    protected AbstractEndpoint(TableService tableService, DatabaseService databaseService) {
-        this.tableService = tableService;
+    protected AbstractEndpoint(DatabaseService databaseService) {
         this.databaseService = databaseService;
     }
 

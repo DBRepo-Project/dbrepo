@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+
 @Log4j2
 @Service
 public class TableServiceImpl extends HibernateConnector implements TableService {

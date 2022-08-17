@@ -131,9 +131,9 @@ def savecolumnconcept():
 
 rest_server_port = 5010
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
-                   app_name="fda-units-service",
-                   instance_ip="fda-units-service",
-                   instance_host="fda-units-service",
+                   app_name=os.getenv('HOSTNAME', 'fda-units-service'),
+                   instance_ip=os.getenv('HOSTNAME', 'fda-units-service'),
+                   instance_host=os.getenv('HOSTNAME', 'fda-units-service'),
                    instance_port=rest_server_port)
 
 if __name__ == '__main__':

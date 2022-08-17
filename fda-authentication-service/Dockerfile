@@ -21,6 +21,24 @@ RUN mvn -q clean package -DskipTests
 ###### THIRD STAGE ######
 FROM openjdk:11-jre-slim as runtime
 
+ENV METADATA_DB=fda
+ENV METADATA_USERNAME=postgres
+ENV METADATA_PASSWORD=postgres
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
+ENV WEBSITE=http://example.com
+ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV MAIL_FROM="Database Repository <noreply@example.com>"
+ENV MAIL_REPLY_TO="Somebody <somebody@example.com>"
+ENV MAIL_VERIFY=false
+ENV JWT_ISSUER=dbrepo
+ENV JWT_SECRET=secret
+ENV JWT_EXPIRATION=86400000
+ENV SMTP_HOST=""
+ENV SMTP_PORT=""
+ENV SMTP_USERNAME=""
+ENV SMTP_PASSWORD=""
+
 VOLUME /tmp
 
 COPY ./service_ready /usr/bin

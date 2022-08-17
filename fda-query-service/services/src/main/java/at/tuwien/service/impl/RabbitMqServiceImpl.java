@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -62,7 +63,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 }
 
                 @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
                     final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
                     };
                     try {

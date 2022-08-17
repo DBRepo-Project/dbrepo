@@ -30,7 +30,8 @@
                 v-model="createAccount.username"
                 autocomplete="off"
                 required
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('Required'),
+                         v => /^[a-z0-9]{3,}$/.test(v) || $t('Only lowercase letters, min. 3 length')]"
                 hint="e.g. mmustermann"
                 label="Username *" />
             </v-col>

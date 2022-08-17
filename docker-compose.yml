@@ -6,14 +6,14 @@ volumes:
   fda-broker-service-data:
 
 networks:
-  fda-public:
-    name: fda-public
+  public:
+    name: public
     driver: bridge
     ipam:
       config:
         - subnet: 172.29.0.0/16
-  fda-userdb:
-    name: fda-userdb
+  userdb:
+    name: userdb
     driver: bridge
     ipam:
       config:
@@ -24,11 +24,11 @@ services:
   fda-metadata-db:
     restart: on-failure
     container_name: fda-metadata-db
-    hostname: fda-metadata-db
+    hostname: metadata-db
     build: ./fda-metadata-db
     image: fda-metadata-db
     networks:
-      fda-public:
+      public:
     volumes:
       - fda-metadata-db-data:/var/lib/postgresql/data
     ports:
@@ -43,11 +43,11 @@ services:
   fda-discovery-service:
     restart: on-failure
     container_name: fda-discovery-service
-    hostname: fda-discovery-service
+    hostname: discovery-service
     build: ./fda-discovery-service
     image: fda-discovery-service
     networks:
-      fda-public:
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
@@ -58,11 +58,11 @@ services:
   fda-gateway-service:
     restart: on-failure
     container_name: fda-gateway-service
-    hostname: fda-gateway-service
+    hostname: gateway-service
     build: ./fda-gateway-service
     image: fda-gateway-service
     networks:
-      fda-public:
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
@@ -76,12 +76,12 @@ services:
   fda-database-service:
     restart: on-failure
     container_name: fda-database-service
-    hostname: fda-database-service
+    hostname: database-service
     build: ./fda-database-service
     image: fda-database-service
     networks:
-      fda-userdb:
-      fda-public:
+      userdb:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SEARCH_ENDPOINT: fda-search-service:9200
@@ -94,7 +94,7 @@ services:
       fda-container-service:
         condition: service_healthy
       fda-broker-service:
-        condition: service_healthy
+        condition: service_started
       fda-authentication-service:
         condition: service_healthy
     logging:
@@ -103,11 +103,11 @@ services:
   fda-container-service:
     restart: on-failure
     container_name: fda-container-service
-    hostname: fda-container-service
+    hostname: container-service
     build: ./fda-container-service
     image: fda-container-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
@@ -124,11 +124,11 @@ services:
   fda-authentication-service:
     restart: on-failure
     container_name: fda-authentication-service
-    hostname: fda-authentication-service
+    hostname: authentication-service
     image: fda-authentication-service
     build: fda-authentication-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       WEBSITE: http://localhost:3000
@@ -138,17 +138,13 @@ services:
       JWT_SECRET: fda-secret
       JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: docker
-      SMTP_HOST: ""
-      SMTP_PORT: ""
-      SMTP_USERNAME: ""
-      SMTP_PASSWORD: ""
     ports:
       - "9097:9097"
     depends_on:
       fda-discovery-service:
         condition: service_healthy
       fda-broker-service:
-        condition: service_healthy
+        condition: service_started
       fda-metadata-db:
         condition: service_healthy
     logging:
@@ -157,12 +153,12 @@ services:
   fda-query-service:
     restart: on-failure
     container_name: fda-query-service
-    hostname: fda-query-service
+    hostname: query-service
     build: ./fda-query-service
     image: fda-query-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
@@ -181,12 +177,12 @@ services:
   fda-table-service:
     restart: on-failure
     container_name: fda-table-service
-    hostname: fda-table-service
+    hostname: table-service
     build: ./fda-table-service
     image: fda-table-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SEARCH_ENDPOINT: fda-search-service:9200
@@ -203,18 +199,18 @@ services:
       fda-search-service:
         condition: service_started
       fda-broker-service:
-        condition: service_healthy
+        condition: service_started
     logging:
       driver: json-file
 
   fda-identifier-service:
     restart: on-failure
     container_name: fda-identifier-service
-    hostname: fda-identifier-service
+    hostname: identifier-service
     build: ./fda-identifier-service
     image: fda-identifier-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
@@ -231,15 +227,16 @@ services:
   fda-analyse-service:
     restart: on-failure
     container_name: fda-analyse-service
-    hostname: fda-analyse-service
+    hostname: analyse-service
     build: ./fda-analyse-service
     image: fda-analyse-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
+      hostname: analyse-service
     ports:
       - "5000:5000"
     volumes:
@@ -254,11 +251,11 @@ services:
   fda-units-service:
     restart: on-failure
     container_name: fda-units-service
-    hostname: fda-units-service
+    hostname: units-service
     build: ./fda-units-service
     image: fda-units-service
     networks:
-      fda-public:
+      public:
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
     ports:
@@ -275,17 +272,16 @@ services:
   fda-broker-service:
     restart: on-failure
     container_name: fda-broker-service
-    hostname: fda-broker-service
+    hostname: broker-service
     build: ./fda-broker-service
     image: fda-broker-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     networks:
-      fda-public:
+      public:
     ports:
       - "5672:5672"
-      - "9098:9098"
       - "15672:15672"
     depends_on:
       fda-discovery-service:
@@ -298,11 +294,11 @@ services:
   fda-search-service:
     restart: always
     container_name: fda-search-service
-    hostname: fda-search-service
+    hostname: search-service
     image: elasticsearch:7.13.4
     command: [ "elasticsearch" ]
     networks:
-      fda-public:
+      public:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -321,11 +317,11 @@ services:
   fda-ui:
     restart: on-failure
     container_name: fda-ui
-    hostname: fda-ui
+    hostname: ui
     build: ./fda-ui
     image: fda-ui
     networks:
-      fda-public:
+      public:
     ports:
       - "3000:3000"
     volumes:
@@ -336,8 +332,5 @@ services:
         condition: service_healthy
       fda-database-service:
         condition: service_healthy
-    environment:
-      HOST: 0.0.0.0
-      API: http://fda-gateway-service:9095
     logging:
       driver: json-file

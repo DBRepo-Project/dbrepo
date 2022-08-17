@@ -1,10 +1,10 @@
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -16,17 +16,19 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: fda-discovery-service
+    name: discovery-service
 server.port: 9090
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
     at.tuwien.: debug
+    com.netflix.eureka.: off
+    com.netflix.discovery.: off
 eureka:
   eureka.client.register-with-eureka: false
   eureka.client.fetch-registry: false
-  instance.hostname: fda-discovery-service
-  client.serviceUrl.defaultZone: http://fda-discovery-service:9090/eureka/
+  instance.hostname: discovery-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  ready.path: ./ready
+  ready.path: /ready

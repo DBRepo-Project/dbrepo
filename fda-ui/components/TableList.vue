@@ -58,6 +58,25 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
+                      AMQP Consumer(s)
+                    </v-list-item-title>
+                    <v-list-item-content class="amqp-consumer">
+                      {{ tableDetails.consumers.length }} <v-badge
+                        v-if="!tableDetails.consumersUp"
+                        class="ml-1"
+                        color="error"
+                        content="down" />
+                      <v-badge
+                        v-if="tableDetails.consumersUp"
+                        class="ml-1"
+                        color="success"
+                        content="up" />
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
                       Table Creation
                     </v-list-item-title>
                     <v-list-item-content>
@@ -184,7 +203,9 @@ export default {
         description: null,
         topic: null,
         columns: [],
-        created: null
+        created: null,
+        consumers: [],
+        consumersUp: false
       },
       dialogDelete: false,
       headers: [
@@ -224,12 +245,16 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    brokerConfig () {
+      return {
+        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) }
+      }
+    },
     createdUTC () {
       return formatTimestampUTCLabel(this.tableDetails.created)
     }
   },
   mounted () {
-    console.debug('mounted', this.$store.state.table)
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
   },
@@ -268,6 +293,7 @@ export default {
         console.debug('table details', this.tableDetails)
         if (tableId) {
           this.openPanelByTableId(tableId)
+          await this.consumerDetails(this.tableDetails.topic)
         }
       } catch (err) {
         this.$toast.error('Failed to load table details')
@@ -306,6 +332,21 @@ export default {
       }
       this.dialogDelete = false
     },
+    async consumerDetails (topic) {
+      try {
+        this.loading = true
+        const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
+        const consumers = res.data.filter(c => c.queue.name === topic)
+        console.debug('consumers', consumers)
+        const state = res.data.filter(c => c.queue.name === topic && c.active)
+        this.tableDetails.consumers = consumers
+        this.tableDetails.consumersUp = consumers.length === state.length
+        this.loading = false
+      } catch (err) {
+        this.$toast.error('Could not find consumers.')
+      }
+      this.dialogDelete = false
+    },
     showDeleteTableDialog (id) {
       this.deleteTableId = id
       this.dialogDelete = true
@@ -332,5 +373,8 @@ export default {
 }
 .full-width {
   width: 100%;
+}
+.amqp-consumer {
+  display: inline;
 }
 </style>

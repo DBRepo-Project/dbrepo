@@ -108,7 +108,6 @@
               <v-text-field
                 v-model="user.orcid"
                 :disabled="error"
-                :rules="[v => validateOrcid(v) || $t('Invalid ORCID')]"
                 maxlength="19"
                 hint="e.g. 0000-0002-1825-0097"
                 label="ORCID" />
@@ -178,7 +177,6 @@
   </div>
 </template>
 <script>
-import { isValidOrcid } from '@/utils'
 export default {
   data () {
     return {
@@ -263,12 +261,6 @@ export default {
         this.error = true
       }
       this.loading = false
-    },
-    validateOrcid (orcid) {
-      if (!orcid) {
-        return true
-      }
-      return isValidOrcid(orcid)
     },
     async resend () {
       try {

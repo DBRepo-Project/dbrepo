@@ -2,64 +2,94 @@ package at.tuwien.gateway.impl;
 
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
-import at.tuwien.api.user.UserModifyPasswordDto;
+import at.tuwien.config.AmqpConfig;
+import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.BrokerUserCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.nio.charset.Charset;
 
 @Slf4j
 @Service
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
-    private final RestTemplate restTemplate;
     private final UserMapper userMapper;
+    private final AmqpConfig amqpConfig;
+    private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(RestTemplate restTemplate, UserMapper userMapper) {
-        this.restTemplate = restTemplate;
+    public BrokerServiceGatewayImpl(UserMapper userMapper, RestTemplate restTemplate, AmqpConfig amqpConfig,
+                                    GatewayConfig gatewayConfig) {
         this.userMapper = userMapper;
+        this.amqpConfig = amqpConfig;
+        this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override
-    public void createUser(CreateUserDto data) throws BrokerUserCreationException {
-        final GrantVirtualHostPermissionsDto grantDto = userMapper.signupRequestDtoToGrantComponentDto();
-        final ResponseEntity<Void> createResponse = restTemplate.exchange("/api/broker/user", HttpMethod.POST,
-                new HttpEntity<>(data), Void.class);
+    public void createUser(String username, CreateUserDto data) throws BrokerUserCreationException {
+        /* create user */
+        final String createUrl = "/api/broker/users/" + username;
+        final ResponseEntity<Void> createResponse = restTemplate.exchange(createUrl, HttpMethod.PUT,
+                new HttpEntity<>(data, getHeaders()), Void.class);
         if (!createResponse.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to create user at queue service: {}", createResponse.getStatusCode());
-            throw new BrokerUserCreationException("Failed to create user at queue service");
+            log.error("Failed to create user at broker service: {}", createResponse.getStatusCode());
+            throw new BrokerUserCreationException("Failed to create user at broker service");
         }
-        log.info("Created user at queue service with username {}", data.getUsername());
-        final ResponseEntity<Void> grantResponse = restTemplate.exchange(
-                "/api/broker/user/" + data.getUsername() + "/permission", HttpMethod.PUT, new HttpEntity<>(grantDto),
-                Void.class);
-        if (!grantResponse.getStatusCode().equals(HttpStatus.ACCEPTED)) {
-            log.error("Failed to grant permissions at queue service: {}", createResponse.getStatusCode());
+        log.info("Created user at broker service with username {}", username);
+    }
+
+    @Override
+    public void grantUserHost(String username) throws BrokerUserCreationException {
+        /* grant */
+        final URI grantUrl = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
+        final GrantVirtualHostPermissionsDto grantDto = userMapper.signupRequestDtoToGrantComponentDto();
+        final ResponseEntity<Void> grantResponse = restTemplate.exchange(grantUrl, HttpMethod.PUT,
+                new HttpEntity<>(grantDto, getHeaders()), Void.class);
+        if (!grantResponse.getStatusCode().equals(HttpStatus.CREATED)) {
+            log.error("Failed to grant permissions at queue service: {}", grantResponse.getStatusCode());
             throw new BrokerUserCreationException("Failed to grant permissions at queue service");
         }
-        log.info("Granted user permissions at queue service for username {}", data.getUsername());
+        log.info("Granted user permissions at queue service for username {}", username);
         log.debug("granted user permissions at queue service {}", grantDto);
     }
 
     @Override
-    public void modifyUserPassword(String username, UserModifyPasswordDto data) throws BrokerUserCreationException {
+    public void modifyUserPassword(String username, CreateUserDto data) throws BrokerUserCreationException {
+        /* modify at broker service */
         log.debug("modify user at broker service {}", data);
-        final ResponseEntity<Void> response = restTemplate.exchange("/api/broker/user/" + username + "/password",
-                HttpMethod.PUT, new HttpEntity<>(data), Void.class);
-        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+        final String modifyUrl = "/api/broker/users/" + username;
+        final ResponseEntity<Void> response = restTemplate.exchange(modifyUrl, HttpMethod.PUT,
+                new HttpEntity<>(data, getHeaders()), Void.class);
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to update user password at queue service: {}", response.getStatusCode());
             throw new BrokerUserCreationException("Failed to update user password at queue service");
         }
         log.info("Updated user password at queue service for username {}", username);
         log.debug("updated user password at queue service {}", data);
+    }
+
+    /**
+     * Retrieves the authentication headers from the configuration for the broker service.
+     *
+     * @return The headers.
+     */
+    private HttpHeaders getHeaders() {
+        return new HttpHeaders() {{
+            String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
+            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
     }
 
 }

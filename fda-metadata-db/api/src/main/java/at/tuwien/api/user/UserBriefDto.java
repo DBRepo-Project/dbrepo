@@ -47,4 +47,9 @@ public class UserBriefDto {
     @Parameter(name = "theme dark")
     private Boolean themeDark;
 
+    @NotNull
+    @JsonProperty("email_verified")
+    @Parameter(name = "mail address verified")
+    private Boolean emailVerified;
+
 }
