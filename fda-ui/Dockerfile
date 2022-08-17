@@ -30,7 +30,7 @@ COPY ./utils ./utils
 
 RUN yarn build > /dev/null
 
-ENV API=http://fda-gateway-service:9095
+ENV API=http://gateway-service:9095
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false

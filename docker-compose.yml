@@ -6,14 +6,14 @@ volumes:
   fda-broker-service-data:
 
 networks:
-  fda-public:
-    name: fda-public
+  public:
+    name: public
     driver: bridge
     ipam:
       config:
         - subnet: 172.29.0.0/16
-  fda-userdb:
-    name: fda-userdb
+  userdb:
+    name: userdb
     driver: bridge
     ipam:
       config:
@@ -28,7 +28,7 @@ services:
     build: ./fda-metadata-db
     image: fda-metadata-db
     networks:
-      fda-public:
+      public:
     volumes:
       - fda-metadata-db-data:/var/lib/postgresql/data
     ports:
@@ -47,7 +47,7 @@ services:
     build: ./fda-discovery-service
     image: fda-discovery-service
     networks:
-      fda-public:
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
@@ -62,7 +62,7 @@ services:
     build: ./fda-gateway-service
     image: fda-gateway-service
     networks:
-      fda-public:
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
@@ -80,8 +80,8 @@ services:
     build: ./fda-database-service
     image: fda-database-service
     networks:
-      fda-userdb:
-      fda-public:
+      userdb:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SEARCH_ENDPOINT: fda-search-service:9200
@@ -107,7 +107,7 @@ services:
     build: ./fda-container-service
     image: fda-container-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
@@ -128,7 +128,7 @@ services:
     image: fda-authentication-service
     build: fda-authentication-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       WEBSITE: http://localhost:3000
@@ -157,8 +157,8 @@ services:
     build: ./fda-query-service
     image: fda-query-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
@@ -181,8 +181,8 @@ services:
     build: ./fda-table-service
     image: fda-table-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SEARCH_ENDPOINT: fda-search-service:9200
@@ -210,7 +210,7 @@ services:
     build: ./fda-identifier-service
     image: fda-identifier-service
     networks:
-      fda-public:
+      public:
     environment:
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
@@ -231,8 +231,8 @@ services:
     build: ./fda-analyse-service
     image: fda-analyse-service
     networks:
-      fda-public:
-      fda-userdb:
+      public:
+      userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
@@ -255,7 +255,7 @@ services:
     build: ./fda-units-service
     image: fda-units-service
     networks:
-      fda-public:
+      public:
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
     ports:
@@ -279,7 +279,7 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     networks:
-      fda-public:
+      public:
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -298,7 +298,7 @@ services:
     image: elasticsearch:7.13.4
     command: [ "elasticsearch" ]
     networks:
-      fda-public:
+      public:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -321,7 +321,7 @@ services:
     build: ./fda-ui
     image: fda-ui
     networks:
-      fda-public:
+      public:
     ports:
       - "3000:3000"
     volumes:

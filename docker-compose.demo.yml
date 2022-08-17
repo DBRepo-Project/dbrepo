@@ -1,3 +1,5 @@
+# Docker compose file for the public demo instance
+
 version: "3.6"
 
 volumes:
@@ -96,7 +98,7 @@ services:
       container-service:
         condition: service_healthy
       broker-service:
-        condition: service_healthy
+        condition: service_started
       authentication-service:
         condition: service_healthy
     logging:
@@ -153,7 +155,7 @@ services:
       discovery-service:
         condition: service_healthy
       broker-service:
-        condition: service_healthy
+        condition: service_started
       metadata-db:
         condition: service_healthy
     logging:
@@ -211,7 +213,7 @@ services:
       search-service:
         condition: service_started
       broker-service:
-        condition: service_healthy
+        condition: service_started
     logging:
       driver: json-file
 
@@ -343,6 +345,6 @@ services:
     environment:
       KEY: "${UI_KEY}"
       CERT: "${UI_CERT}"
-      SANDBOX: true
+      SANDBOX: 1
     logging:
       driver: json-file

@@ -96,7 +96,7 @@ services:
       container-service:
         condition: service_healthy
       broker-service:
-        condition: service_healthy
+        condition: service_started
       authentication-service:
         condition: service_healthy
     logging:
@@ -153,7 +153,7 @@ services:
       discovery-service:
         condition: service_healthy
       broker-service:
-        condition: service_healthy
+        condition: service_started
       metadata-db:
         condition: service_healthy
     logging:
@@ -211,7 +211,7 @@ services:
       search-service:
         condition: service_started
       broker-service:
-        condition: service_healthy
+        condition: service_started
     logging:
       driver: json-file
 

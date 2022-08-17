@@ -4,10 +4,10 @@ docker container stop $(docker container ls -aq -f name=^/dbrepo-.*) || true
 echo "=== [ Removing dbrepo-* ] ==="
 docker container rm $(docker container ls -aq -f name=^/dbrepo-.*) || true
 docker volume rm $(docker volume ls -q -f name=^dbrepo-.*) || true
-docker network rm $(docker network ls -q -f name=^/dbrepo-.*) || true
+docker network rm $(docker network ls -q -f name=^dbrepo-.*) || true
 echo "=== [ Stopping fda-* ] ==="
 docker container stop $(docker container ls -aq -f name=^/fda-.*) || true
 echo "=== [ Removing fda-* ] ==="
 docker container rm $(docker container ls -aq -f name=^/fda-.*) || true
 docker volume rm $(docker volume ls -q -f name=^fda-.*) || true
-docker network rm $(docker network ls -q -f name=^/fda-.*) || true
+docker network rm $(docker network ls -q -f name=^fda-.*) || true

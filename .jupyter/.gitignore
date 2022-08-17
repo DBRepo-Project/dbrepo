@@ -1,4 +1,6 @@
 __pycache__
 venv/
 
+publish.py
+
 ./swagger-codegen-cli.jar
