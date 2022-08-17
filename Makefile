@@ -60,47 +60,46 @@ build-frontend:
 tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker
 
 tag-analyse:
-	docker tag "fda-analyse-service:${TAG}" "dbrepo/analyse-service:${TAG}"
+	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
 
 tag-authentication:
-	docker tag "fda-authentication-service:${TAG}" "dbrepo/authentication-service:${TAG}"
+	docker tag fda-authentication-service:latest "dbrepo/authentication-service:${TAG}"
 
 tag-metadata-db:
-	docker tag "fda-metadata-db:${TAG}" "dbrepo/metadata-db:${TAG}"
+	docker tag fda-metadata-db:latest "dbrepo/metadata-db:${TAG}"
 
 tag-ui:
-	docker tag "fda-ui:${TAG}" "dbrepo/ui:${TAG}"
+	docker tag fda-ui:latest "dbrepo/ui:${TAG}"
 
 tag-identifier:
-	docker tag fda-identifier-service:latest dbrepo/identifier-service:latest
+	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
 
 tag-metadata:
-	docker tag fda-metadata-db:latest dbrepo/metadata-db:latest
-	docker tag "fda-identifier-service:${TAG}" "dbrepo/identifier-service:${TAG}"
+	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
 
 tag-container:
-	docker tag "fda-container-service:${TAG}" "dbrepo/container-service:${TAG}"
+	docker tag fda-container-service:latest "dbrepo/container-service:${TAG}"
 
 tag-database:
-	docker tag "fda-database-service:${TAG}" "dbrepo/database-service:${TAG}"
+	docker tag fda-database-service:latest "dbrepo/database-service:${TAG}"
 
 tag-discovery:
-	docker tag "fda-discovery-service:${TAG}" "dbrepo/discovery-service:${TAG}"
+	docker tag fda-discovery-service:latest "dbrepo/discovery-service:${TAG}"
 
 tag-gateway:
-	docker tag "fda-gateway-service:${TAG}" "dbrepo/gateway-service:${TAG}"
+	docker tag fda-gateway-service:latest "dbrepo/gateway-service:${TAG}"
 
 tag-query:
-	docker tag "fda-query-service:${TAG}" "dbrepo/query-service:${TAG}"
+	docker tag fda-query-service:latest "dbrepo/query-service:${TAG}"
 
 tag-table:
-	docker tag "fda-table-service:${TAG}" "dbrepo/table-service:${TAG}"
+	docker tag fda-table-service:latest "dbrepo/table-service:${TAG}"
 
 tag-units:
-	docker tag "fda-units-service:${TAG}" "dbrepo/units-service:${TAG}"
+	docker tag fda-units-service:latest "dbrepo/units-service:${TAG}"
 
 tag-broker:
-	docker tag "fda-broker-service:${TAG}" "dbrepo/broker-service:${TAG}"
+	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
 release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker
 

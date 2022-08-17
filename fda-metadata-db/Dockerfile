@@ -16,6 +16,10 @@ RUN mvn -q clean package -DskipTests > /dev/null
 # Install to local repository
 RUN mvn -q clean install > /dev/null
 
+ENV METADATA_DB=fda
+ENV METADATA_USERNAME=postgres
+ENV METADATA_PASSWORD=postgres
+
 ###### SECOND STAGE ######
 FROM postgres:latest as runtime
 
