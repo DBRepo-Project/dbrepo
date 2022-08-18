@@ -117,6 +117,7 @@ services:
       METADATA_PASSWORD: ${METADATA_PASSWORD}
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+      SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
