@@ -19,6 +19,9 @@ target/
 # Environment
 .env
 
+# macOS
+.DS_Store
+
 # IDE
 fda-analyse-service/venv
 .git.bfg-*

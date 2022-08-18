@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.user.User;
@@ -38,6 +39,7 @@ public class ContainerServiceImpl implements ContainerService {
     private final ImageMapper imageMapper;
     private final UserService userService;
     private final DockerClient dockerClient;
+    private final DockerConfig dockerConfig;
     private final ContainerMapper containerMapper;
     private final ImageRepository imageRepository;
     private final ContainerRepository containerRepository;
@@ -45,7 +47,7 @@ public class ContainerServiceImpl implements ContainerService {
     @Autowired
     public ContainerServiceImpl(DockerClient dockerClient, ContainerRepository containerRepository,
                                 ImageRepository imageRepository, HostConfig hostConfig, ContainerMapper containerMapper,
-                                ImageMapper imageMapper, UserService userService) {
+                                ImageMapper imageMapper, UserService userService, DockerConfig dockerConfig) {
         this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
         this.imageRepository = imageRepository;
@@ -53,6 +55,7 @@ public class ContainerServiceImpl implements ContainerService {
         this.containerMapper = containerMapper;
         this.imageMapper = imageMapper;
         this.userService = userService;
+        this.dockerConfig = dockerConfig;
     }
 
     @Override
@@ -68,7 +71,7 @@ public class ContainerServiceImpl implements ContainerService {
         final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         final HostConfig hostConfig = this.hostConfig
                 .withNetworkMode("userdb")
-                .withBinds(Bind.parse("/tmp:/tmp"))
+                .withBinds(Bind.parse(dockerConfig.getMountPath() + ":/tmp"))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
         /* save to metadata database */
         Container container = new Container();
