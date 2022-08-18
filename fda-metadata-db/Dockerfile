@@ -16,12 +16,12 @@ RUN mvn -q clean package -DskipTests > /dev/null
 # Install to local repository
 RUN mvn -q clean install > /dev/null
 
-ENV METADATA_DB=fda
-ENV METADATA_USERNAME=postgres
-ENV METADATA_PASSWORD=postgres
-
 ###### SECOND STAGE ######
 FROM postgres:latest as runtime
+
+ENV POSTGRES_DB=fda
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
 
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD pg_isready
