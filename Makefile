@@ -101,6 +101,50 @@ tag-units:
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
+update: update-identifier update-container update-database update-discovery update-gateway update-query update-table update-analyse update-authentication update-metadata-db update-ui update-units update-broker
+
+update-analyse:
+	docker pull "dbrepo/analyse-service:${TAG}"
+
+update-authentication:
+	docker pull "dbrepo/authentication-service:${TAG}"
+
+update-metadata-db:
+	docker pull "dbrepo/metadata-db:${TAG}"
+
+update-ui:
+	docker pull "dbrepo/ui:${TAG}"
+
+update-identifier:
+	docker pull "dbrepo/identifier-service:${TAG}"
+
+update-metadata:
+	docker pull "dbrepo/identifier-service:${TAG}"
+
+update-container:
+	docker pull "dbrepo/container-service:${TAG}"
+
+update-database:
+	docker pull "dbrepo/database-service:${TAG}"
+
+update-discovery:
+	docker pull "dbrepo/discovery-service:${TAG}"
+
+update-gateway:
+	docker pull "dbrepo/gateway-service:${TAG}"
+
+update-query:
+	docker pull "dbrepo/query-service:${TAG}"
+
+update-table:
+	docker pull "dbrepo/table-service:${TAG}"
+
+update-units:
+	docker pull "dbrepo/units-service:${TAG}"
+
+update-broker:
+	docker pull "dbrepo/broker-service:${TAG}"
+
 release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker
 
 release-analyse:
