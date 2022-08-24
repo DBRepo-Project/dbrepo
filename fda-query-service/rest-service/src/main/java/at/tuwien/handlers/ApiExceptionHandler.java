@@ -114,11 +114,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.LOCKED)
     @ExceptionHandler(TableMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.LOCKED)
                 .message(e.getLocalizedMessage())
                 .code("error.table.malformed")
                 .build();

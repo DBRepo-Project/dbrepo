@@ -327,15 +327,32 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             queryMapper.generateTemporaryTableSQL(connection, table)
                     .executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to create temporary table: {}", e.getMessage());
+            log.debug("failed to create temporary table {}", table);
+            dataSource.close();
+            throw new TableMalformedException("Failed to create temporary table", e);
+        }
+        try {
+            final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)
                     .executeUpdate();
             queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
                     .executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to insert temporary table: {}", e.getMessage());
+            log.debug("failed to insert temporary table {}", table);
+            dataSource.close();
+            throw new TableMalformedException("Failed to insert temporary table", e);
+        }
+        try {
+            final Connection connection = dataSource.getConnection();
             queryMapper.dropTemporaryTableSQL(connection, table)
                     .executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create/insert/drop temporary table");
-            throw new TableMalformedException("Failed to create/insert/drop temporary table");
+            log.error("Failed to drop temporary table: {}", e.getMessage());
+            log.debug("failed to drop temporary table {}", table);
+            throw new TableMalformedException("Failed to drop temporary table", e);
         } finally {
             dataSource.close();
         }

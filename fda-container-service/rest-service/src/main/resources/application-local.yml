@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    url: jdbc:postgresql://localhost:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -17,27 +17,21 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: query-service
-  rabbitmq:
-    host: broker-service
-    username: fda
-    password: fda
+    name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
-server.port: 9093
+springdoc.swagger-ui.enabled: true
+server.port: 9091
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
     at.tuwien.: debug
-    at.tuwien.mapper.: trace
-    at.tuwien.service.: debug
-    at.tuwien.config.: debug
-    at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: query-service
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+  instance.hostname: container-service
+  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  ready.path: /ready
+  mount.path: /tmp
+  ready.path: ./ready
+  gateway.endpoint: http://localhost:9095

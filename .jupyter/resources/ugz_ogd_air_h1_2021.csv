@@ -1,4 +1,3 @@
-Date,Location,Parameter,Interval,Unit,Value,Status
 2021-01-01,Stampfenbachstrasse,CO,h1,mg/m3,0.44,tentative
 2021-01-01,Stampfenbachstrasse,SO2,h1,µg/m3,4.88,tentative
 2021-01-01,Stampfenbachstrasse,NOx,h1,ppb,29.46,tentative

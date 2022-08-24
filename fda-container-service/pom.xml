@@ -27,7 +27,7 @@
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <docker.version>3.2.7</docker.version>
         <testcontainers.version>1.15.2</testcontainers.version>
-        <swagger.version>2.1.7</swagger.version>
+        <swagger.version>2.2.2</swagger.version>
         <jacoco.version>0.8.7</jacoco.version>
         <sqlserver.version>9.2.1.jre11</sqlserver.version>
     </properties>
@@ -58,6 +58,12 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <!-- Swagger -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>2.2.2</version>
         </dependency>
         <!-- Data Source -->
         <dependency>

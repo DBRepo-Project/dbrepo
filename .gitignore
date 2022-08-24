@@ -8,7 +8,6 @@ target/
 .jupyter/.idea/
 .jupyter/.ipynb_checkpoints
 .jupyter/api_authentication
-.jupyter/api_broker
 .jupyter/api_container
 .jupyter/api_database
 .jupyter/api_identifier

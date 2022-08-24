@@ -27,18 +27,6 @@
         <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
-        <v-btn class="ml-2 mb-1" :loading="downloadLoading" @click.stop="download">
-          <v-icon left>mdi-download</v-icon> Download csv
-        </v-btn>
-        <v-btn
-          v-if="false"
-          color="primary"
-          class="mb-1"
-          :disabled="!token"
-          :href="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data/export`"
-          target="_blank">
-          <v-icon left>mdi-download</v-icon> Download
-        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-toolbar :color="versionColor" flat>
@@ -48,6 +36,9 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
+        <v-btn class="mr-2" :loading="downloadLoading" @click.stop="download">
+          <v-icon left>mdi-download</v-icon> Download csv
+        </v-btn>
         <v-btn @click="pick()">
           <v-icon left>mdi-update</v-icon> Pick
         </v-btn>
@@ -196,9 +187,16 @@ export default {
   },
   methods: {
     async download () {
+      if (!this.token) {
+        return
+      }
       this.downloadLoading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`, {
+        let exportUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`
+        if (this.version) {
+          exportUrl += `?timestamp=${this.versionISO}`
+        }
+        const res = await this.$axios.get(exportUrl, {
           headers: { Authorization: `Bearer ${this.token}` },
           responseType: 'text'
         })

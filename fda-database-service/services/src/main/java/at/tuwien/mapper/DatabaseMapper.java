@@ -28,11 +28,6 @@ public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
 
-    @Mappings({
-            @Mapping(target = "name", source = "internalName")
-    })
-    CreateVirtualHostDto databaseToCreateVirtualHostDto(Database data);
-
     @Named("internalMapping")
     default String nameToInternalName(String data) {
         if (data == null || data.length() == 0) {

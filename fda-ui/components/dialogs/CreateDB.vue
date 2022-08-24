@@ -38,11 +38,13 @@
             :rules="[v => !!v || $t('Required')]"
             return-object
             required />
-          <v-checkbox
+          <v-switch
             id="public"
             v-model="createDatabase.is_public"
-            name="public"
-            label="Public" />
+            color="primary"
+            :label="publicLabel"
+            name="public" />
+          <p>{{ summary }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -76,7 +78,10 @@ export default {
       valid: false,
       loading: false,
       error: false,
-      engine: null,
+      engine: {
+        repository: null,
+        tag: null
+      },
       engines: [],
       progress: 0,
       createContainer: {
@@ -107,6 +112,15 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    publicLabel () {
+      return this.createDatabase.is_public ? 'Public' : 'Private'
+    },
+    summary () {
+      return 'Your database will be ' +
+        (this.createDatabase.is_public ? 'publicly visible to the world' : 'visible only to you') +
+        ' and run ' +
+        (this.engine.repository === 'mariadb' ? 'MariaDB Engine (' + this.engine.tag + ')' : 'other')
     }
   },
   mounted () {

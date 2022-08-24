@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.mapper.UserMapper;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -43,9 +46,9 @@ public class StoreEndpoint extends AbstractEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<QueryDto>> findAll(@NotNull @PathVariable("id") Long containerId,
-                                                  @NotNull @PathVariable("databaseId") Long databaseId,
-                                                  Principal principal)
+    public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
+                                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                                       Principal principal)
             throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException,
             DatabaseConnectionException, TableMalformedException {
@@ -54,7 +57,16 @@ public class StoreEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing view all queries permission");
         }
         final List<Query> queries = storeService.findAll(containerId, databaseId);
-        return ResponseEntity.ok(queryMapper.queryListToQueryDtoList(queries));
+        final List<User> users = userService.findAll();
+        final List<QueryBriefDto> out = queries.stream()
+                .map(q -> {
+                    final QueryBriefDto dto = queryMapper.queryToQueryBriefDto(q);
+                    final Optional<User> optional = users.stream().filter(u -> u.getId().equals(q.getCreatedBy())).findFirst();
+                    optional.ifPresent(user -> dto.setCreator(userMapper.userToUserDto(user)));
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(out);
     }
 
     @GetMapping("/{queryId}")

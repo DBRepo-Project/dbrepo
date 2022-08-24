@@ -150,13 +150,7 @@ public class ImageServiceImpl implements ImageService {
         return imageMapper.inspectImageResponseToContainerImage(response);
     }
 
-    /**
-     * Pulls a container image by given repository and tag.
-     *
-     * @param repository The repository.
-     * @param tag        The tag.
-     * @throws ImageNotFoundException The image was not found.
-     */
+    @Override
     public void pull(String repository, String tag) throws ImageNotFoundException {
         final ResultCallback.Adapter<PullResponseItem> response;
         try {
@@ -165,7 +159,8 @@ public class ImageServiceImpl implements ImageService {
                     .start();
             final Instant now = Instant.now();
             response.awaitCompletion();
-            log.debug("pulled image in {} seconds", Duration.between(now, Instant.now()).getSeconds());
+            log.info("Pulled image {}:{}", repository, tag);
+            log.debug("pulled image {}:{} in {} seconds", repository, tag, Duration.between(now, Instant.now()).getSeconds());
         } catch (NotFoundException | InterruptedException | InternalServerErrorException e) {
             log.warn("image {}:{} not found in library", repository, tag);
             throw new ImageNotFoundException("image not found in library", e);

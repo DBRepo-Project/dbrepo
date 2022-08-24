@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+@ResponseStatus(code = HttpStatus.LOCKED)
 public class TableMalformedException extends Exception {
 
     public TableMalformedException(String msg) {

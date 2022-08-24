@@ -580,4 +580,24 @@ VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
+INSERT INTO mdb_images (repository, tag, default_port, dialect, driver_class, jdbc_method)
+VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
+
+INSERT INTO mdb_images_environment_item (key, value, etype, iid)
+VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
+       ('MARIADB_ROOT_PASSWORD', 'mariadb', 'PRIVILEGED_PASSWORD', 1),
+       ('MARIADB_USER', 'mariadb', 'USERNAME', 1),
+       ('MARIADB_PASSWORD', 'mariadb', 'PASSWORD', 1);
+
+INSERT INTO mdb_images_date (iid, database_format, unix_format, example, has_time)
+VALUES (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
+       (1, '%d.%c.%Y', 'yyyy-MM-dd', '30.01.2022', false),
+       (1, '%d.%c.%y', 'yyyy-MM-dd', '30.01.22', false),
+       (1, '%c/%d/%Y', 'yyyy-MM-dd', '01/30/2022', false),
+       (1, '%c/%d/%y', 'yyyy-MM-dd', '01/30/22', false),
+       (1, '%Y-%c-%d''T''%H:%i:%S.%f', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS', '2022-01-30T13:44:25.499', true),
+       (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
+       (1, '%Y-%c-%d''T''%H:%i:%S', 'yyyy-MM-dd''T''HH:mm:ss', '2022-01-30T13:44:25', true),
+       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true);
+
 COMMIT;

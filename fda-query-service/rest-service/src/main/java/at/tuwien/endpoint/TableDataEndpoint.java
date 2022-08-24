@@ -109,7 +109,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
-        log.info("Insert data from location {} into database id {}", data, databaseId);
+        log.info("Insert data into database with id {}", databaseId);
+        log.debug("insert data from location {} into database with id {}", data, databaseId);
         queryService.insert(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();

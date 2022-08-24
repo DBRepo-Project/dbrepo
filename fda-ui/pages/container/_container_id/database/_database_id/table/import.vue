@@ -171,7 +171,7 @@
       </v-stepper-step>
 
       <v-stepper-content step="4">
-        <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :error="error" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
 
       <v-stepper-step
@@ -206,6 +206,7 @@ export default {
       validStep2: false,
       validStep3: false,
       validStep4: false,
+      error: false,
       separators: [
         { key: ',', value: ',' },
         { key: ';', value: ';' },
@@ -276,6 +277,9 @@ export default {
         .replace(/\s+/g, '-')
         .replace(/[^\w-]+/g, '')
         .replace(/--+/g, '_'))
+    },
+    shared_filesystem () {
+      return this.$config.shared_filesystem
     }
   },
   mounted () {
@@ -391,6 +395,7 @@ export default {
         console.debug('created table', createResult.data)
       } catch (err) {
         this.loading = false
+        this.error = true
         if (err.response.status === 409) {
           this.$toast.error('Table name already exists.')
         } else {
@@ -406,6 +411,7 @@ export default {
         console.debug('inserted table', insertResult.data)
       } catch (err) {
         this.loading = false
+        this.error = true
         console.error('insert table failed', err)
         this.$toast.error('Could not insert csv into table.')
         return

@@ -59,4 +59,13 @@ public interface ImageService {
      * @throws PersistenceException   The database returned an error.
      */
     void delete(Long id) throws ImageNotFoundException, PersistenceException;
+
+    /**
+     * Pulls a container image by given repository and tag.
+     *
+     * @param repository The repository.
+     * @param tag        The tag.
+     * @throws ImageNotFoundException The image was not found.
+     */
+    void pull(String repository, String tag) throws ImageNotFoundException;
 }

@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.InsertTableRawQuery;
 import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
@@ -21,7 +20,6 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.mariadb.jdbc.MariaDbBlob;
-import org.mariadb.jdbc.internal.ColumnType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
@@ -53,12 +51,9 @@ public interface QueryMapper {
 
     ExecuteStatementDto saveStatementDtoToExecuteStatementDto(SaveStatementDto data);
 
-    @Mappings({
-            @Mapping(target = "creator", ignore = true)
-    })
     QueryDto queryToQueryDto(Query data);
 
-    List<QueryDto> queryListToQueryDtoList(List<Query> data);
+    QueryBriefDto queryToQueryBriefDto(Query data);
 
     @Named("internalMapping")
     default String nameToInternalName(String data) {
@@ -286,7 +281,8 @@ public interface QueryMapper {
                     .append(column.getInternalName())
                     .append(", NULL), '")
                     .append(column.getDateFormat()
-                            .getDatabaseFormat())
+                            .getDatabaseFormat()
+                            .replace('\'', '\\'))
                     .append("')");
             return;
         }
@@ -294,7 +290,8 @@ public interface QueryMapper {
                 .append(column.getInternalName())
                 .append(", '")
                 .append(column.getDateFormat()
-                        .getDatabaseFormat())
+                        .getDatabaseFormat()
+                        .replace('\'', '\\'))
                 .append("')");
     }
 

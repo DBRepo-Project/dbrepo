@@ -4,12 +4,6 @@ import colors from 'vuetify/es5/util/colors'
 // pick env vars from .env file or get them passed through docker-compose
 require('dotenv').config()
 
-if (!process.env.API) {
-  throw new Error(`Environment variable API not defined.
-
-Have you passed env vars from docker-compose or defined them in your .env file?`)
-}
-
 if (process.env.SANDBOX) {
   console.info('[FDA] Running in sandbox environment')
 }
@@ -87,13 +81,15 @@ export default {
   },
 
   publicRuntimeConfig: {
-    brokerUsername: process.env.BROKER_USERNAME,
-    brokerPassword: process.env.BROKER_PASSWORD,
-    sandbox: process.env.SANDBOX
+    brokerUsername: process.env.BROKER_USERNAME || 'fda',
+    brokerPassword: process.env.BROKER_PASSWORD || 'fda',
+    sandbox: process.env.SANDBOX || false,
+    shared_filesystem: process.env.SHARED_FILESYSTEM || '/tmp',
+    version: process.env.VERSION || 'latest'
   },
 
   proxy: {
-    '/api': process.env.API
+    '/api': process.env.API || 'http://localhost:9095'
   },
 
   serverMiddleware: [

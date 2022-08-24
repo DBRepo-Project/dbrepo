@@ -1,32 +1,51 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" fixed app>
-      <v-img
-        contain
-        class="tu-logo"
-        src="/tu_logo_512.png" />
-      <v-img
-        contain
-        class="univie-logo"
-        src="/univie_logo_512.png" />
-      <v-list>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-subtitle>
+            {{ version }}
+          </v-list-item-subtitle>
+          <v-list-item-title class="text-h6">
+            Database Repository
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list nav>
         <v-list-item
-          v-for="(item, i) in filteredItems"
-          :key="i"
-          :to="item.to"
+          to="/"
           router>
           <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon>mdi-information-outline</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
+            <v-list-item-title>Information</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          to="/container"
+          router>
+          <v-list-item-action>
+            <v-icon>mdi-database</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Databases</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <div>
+        <v-img
+          contain
+          class="tu-logo"
+          src="/tu_logo_512.png" />
+        <v-img
+          contain
+          class="univie-logo"
+          src="/univie_logo_512.png" />
+      </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-btn
         v-if="!token"
@@ -93,15 +112,6 @@
 </template>
 
 <script>
-import {
-  mdiDatabase,
-  mdiTable,
-  mdiFileDelimited,
-  mdiDatabaseSearch,
-  mdiHome,
-  mdiCog
-} from '@mdi/js'
-
 export default {
   name: 'DefaultLayout',
   data () {
@@ -110,43 +120,7 @@ export default {
       user: {
         theme_dark: null
       },
-      loadingUser: true,
-      items: [
-        {
-          icon: mdiHome,
-          title: 'Home',
-          to: '/'
-        },
-        {
-          icon: mdiDatabase,
-          title: 'Databases',
-          to: '/container'
-        },
-        {
-          icon: mdiCog,
-          title: 'Privacy',
-          to: '/privacy'
-        },
-        {
-          icon: mdiTable,
-          title: 'Tables',
-          to: '/tables',
-          needsContainer: true
-        },
-        {
-          icon: mdiFileDelimited,
-          title: 'Import CSV',
-          to: '/import_csv',
-          needsContainer: true
-        },
-        {
-          icon: mdiDatabaseSearch,
-          title: 'SQL Query',
-          to: '/queries',
-          needsContainer: true
-        }
-      ],
-      title: 'FAIR Data Austria — Database Repository'
+      loadingUser: true
     }
   },
   computed: {
@@ -170,6 +144,9 @@ export default {
     },
     db () {
       return this.$store.state.db
+    },
+    version () {
+      return this.$config.version
     },
     config () {
       if (this.token === null) {
@@ -254,5 +231,8 @@ export default {
 }
 .univie-logo {
   margin: 1em 1em .5em;
+}
+.sl {
+  padding-left: 36px;
 }
 </style>

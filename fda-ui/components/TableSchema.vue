@@ -89,7 +89,7 @@
         <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
           Back
         </v-btn>
-        <v-btn color="primary" :loading="finished" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
+        <v-btn color="primary" :loading="finished && !error" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
           Continue
         </v-btn>
       </div>
@@ -111,6 +111,12 @@ export default {
       default () {
         return false
       }
+    },
+    error: {
+      type: Boolean,
+      default () {
+        return false
+      }
     }
   },
   data () {
@@ -118,7 +124,6 @@ export default {
       loading: false,
       dateFormats: [],
       valid: true,
-      error: false,
       finished: false,
       tableColumns: [],
       container: {

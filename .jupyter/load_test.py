@@ -8,6 +8,7 @@ import requests as rq
 from postgres import Postgres
 
 import api_query.rest
+from api_broker.BrokerServiceClient import BrokerServiceClient
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
@@ -96,6 +97,12 @@ def create_database(container_id, is_public=True):
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
+    return response
+
+
+def find_database(container_id, database_id):
+    response = database.find_by_id(container_id, database_id)
+    print("found database with id %d" % response.id)
     return response
 
 
@@ -295,6 +302,14 @@ def download_identifier_metadata(container_id, database_id, identifier_id):
     return response
 
 
+def send_tuple(exchange, routing_key, username, password, payload):
+    broker = BrokerServiceClient(exchange=exchange, routing_key=routing_key, host="localhost", username=username,
+                                 password=password)
+    response = broker.send(payload)
+    print("sent tuple to exchange with routing key %s" % routing_key)
+    return response
+
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -349,6 +364,7 @@ if __name__ == '__main__':
     cid = create_container().id
     start_container(cid)
     dbid = create_database(cid).id
+    dbexchange = find_database(cid, dbid).exchange
     update_database(cid, dbid)
     create_table(cid, dbid, columns=[])
     create_table(cid, dbid, columns=[{
@@ -365,6 +381,10 @@ if __name__ == '__main__':
         "primary_key": True,
         "null_allowed": False,
     }]).id
+    ttopic = find_table(cid, dbid, tid).topic
+    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 1})
+    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 2})
+    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 3})
     create_table(cid, dbid, columns=[{
         "name": "primary",
         "type": "date",
@@ -400,3 +420,4 @@ if __name__ == '__main__':
     auth_user("test3")
     update_user(uid)
     update_theme(uid)
+    print("FINISHED")

@@ -79,8 +79,6 @@ services:
       userdb:
       public:
     environment:
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
-      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9092:9092"
@@ -105,7 +103,6 @@ services:
     networks:
       public:
     environment:
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9091:9091"
@@ -126,13 +123,6 @@ services:
     networks:
       public:
     environment:
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
-      WEBSITE: http://localhost:3000
-      MAIL_FROM: Database Repository <noreply@dbrepo.ossdip.at>
-      MAIL_REPLY_TO: Martin Weise <martin.weise@tuwien.ac.at>
-      JWT_ISSUER: fda-dbrepo
-      JWT_SECRET: fda-secret
-      JWT_EXPIRATION: 86400000
       SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9097:9097"
@@ -157,7 +147,6 @@ services:
       userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     ports:
       - "9093:9093"
     volumes:
@@ -208,7 +197,6 @@ services:
     networks:
       public:
     environment:
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
       SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9096:9096"
@@ -231,7 +219,6 @@ services:
       userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
-      EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
       hostname: analyse-service
     ports:
       - "5000:5000"
@@ -273,7 +260,6 @@ services:
     image: fda-broker-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
     networks:
       public:
     ports:

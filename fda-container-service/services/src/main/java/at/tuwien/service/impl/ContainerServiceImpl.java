@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.user.User;
@@ -38,6 +39,7 @@ public class ContainerServiceImpl implements ContainerService {
     private final ImageMapper imageMapper;
     private final UserService userService;
     private final DockerClient dockerClient;
+    private final DockerConfig dockerConfig;
     private final ContainerMapper containerMapper;
     private final ImageRepository imageRepository;
     private final ContainerRepository containerRepository;
@@ -45,7 +47,7 @@ public class ContainerServiceImpl implements ContainerService {
     @Autowired
     public ContainerServiceImpl(DockerClient dockerClient, ContainerRepository containerRepository,
                                 ImageRepository imageRepository, HostConfig hostConfig, ContainerMapper containerMapper,
-                                ImageMapper imageMapper, UserService userService) {
+                                ImageMapper imageMapper, UserService userService, DockerConfig dockerConfig) {
         this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
         this.imageRepository = imageRepository;
@@ -53,6 +55,7 @@ public class ContainerServiceImpl implements ContainerService {
         this.containerMapper = containerMapper;
         this.imageMapper = imageMapper;
         this.userService = userService;
+        this.dockerConfig = dockerConfig;
     }
 
     @Override
@@ -65,27 +68,30 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("failed to get image with name {}:{}", createDto.getRepository(), createDto.getTag());
             throw new ImageNotFoundException("image was not found in metadata database.");
         }
-        final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
-        final HostConfig hostConfig = this.hostConfig
-                .withNetworkMode("userdb")
-                .withBinds(Bind.parse("/tmp:/tmp"))
-                .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
         /* save to metadata database */
+        final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         Container container = new Container();
         container.setImage(image.get());
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
-        final User user = userService.findByUsername(principal.getName());
-        container.setCreator(user);
-        log.trace("will create host config {} and container {}", hostConfig, container);
         /* create the volume */
         final CreateVolumeResponse response = dockerClient.createVolumeCmd()
                 .withName(container.getInternalName())
                 .exec();
         log.info("Created volume {}", response.getName());
         log.debug("created volume {} with mapping /var/lib/mysql", response.getName());
-//        final Volume volume = new Volume("/var/lib/mysql");
+        /* create host mapping */
+        log.info("Configured container binds");
+        log.debug("configured container binds as {} and {}", dockerConfig.getMountPath() + ":/tmp", response.getName() + ":/var/lib/mysql");
+        final HostConfig hostConfig = this.hostConfig
+                .withNetworkMode("userdb")
+                .withBinds(Bind.parse(dockerConfig.getMountPath() + ":/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"))
+                .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
+        log.debug("host config {}", hostConfig);
+        final User user = userService.findByUsername(principal.getName());
+        container.setCreator(user);
+        log.trace("will create host config {} and container {}", hostConfig, container);
         /* create the container */
         final CreateContainerResponse response1;
         try {

@@ -35,7 +35,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         try {
             user = userService.findByUsername(username);
         } catch (UserNotFoundException e) {
-            log.error("Failed to find user");
+            log.error("Failed to find user with username {}", username);
             throw new UsernameNotFoundException("Failed to find user", e);
         }
         log.trace("loaded user {}", user);

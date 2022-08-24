@@ -61,16 +61,10 @@
                       AMQP Consumer(s)
                     </v-list-item-title>
                     <v-list-item-content class="amqp-consumer">
-                      {{ tableDetails.consumers.length }} <v-badge
-                        v-if="!tableDetails.consumersUp"
-                        class="ml-1"
-                        color="error"
-                        content="down" />
                       <v-badge
-                        v-if="tableDetails.consumersUp"
                         class="ml-1"
-                        color="success"
-                        content="up" />
+                        :color="consumersState"
+                        :content="`${consumersUp}/${consumersTotal} up`" />
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -188,11 +182,13 @@ export default {
     return {
       loading: false,
       loadingDetails: false,
+      loadingConsumers: false,
       error: false,
       tables: [],
       panel: null,
       column: null,
       unitDialog: false,
+      consumers: [],
       database: {
         exchange: null,
         tables: []
@@ -203,9 +199,7 @@ export default {
         description: null,
         topic: null,
         columns: [],
-        created: null,
-        consumers: [],
-        consumersUp: false
+        created: null
       },
       dialogDelete: false,
       headers: [
@@ -252,6 +246,21 @@ export default {
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.tableDetails.created)
+    },
+    consumersState () {
+      if (this.consumersTotal === 0) {
+        return 'error'
+      }
+      if (this.consumersTotal - this.consumersUp > 0) {
+        return 'warning'
+      }
+      return 'success'
+    },
+    consumersTotal () {
+      return this.consumers.length
+    },
+    consumersUp () {
+      return this.consumers.filter(c => c.active).length
     }
   },
   mounted () {
@@ -286,6 +295,10 @@ export default {
       return column.column_type
     },
     async details (tableId) {
+      if (tableId === this.tableDetails.id) {
+        /* prevent weird glitch of opening and collapsing simultaneously */
+        return
+      }
       try {
         this.loadingDetails = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
@@ -334,18 +347,16 @@ export default {
     },
     async consumerDetails (topic) {
       try {
-        this.loading = true
+        this.loadingConsumers = true
         const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
         const consumers = res.data.filter(c => c.queue.name === topic)
         console.debug('consumers', consumers)
-        const state = res.data.filter(c => c.queue.name === topic && c.active)
-        this.tableDetails.consumers = consumers
-        this.tableDetails.consumersUp = consumers.length === state.length
-        this.loading = false
+        this.consumers = consumers
       } catch (err) {
+        console.error('Could not find consumers')
         this.$toast.error('Could not find consumers.')
       }
-      this.dialogDelete = false
+      this.loadingConsumers = false
     },
     showDeleteTableDialog (id) {
       this.deleteTableId = id

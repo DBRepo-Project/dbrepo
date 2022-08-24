@@ -32,6 +32,6 @@ eureka:
   instance.hostname: container-service
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  mount.path: /tmp
+  mount.path: "${SHARED_FILESYSTEM}"
   ready.path: /ready
   gateway.endpoint: http://gateway-service:9095

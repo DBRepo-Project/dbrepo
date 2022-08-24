@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
@@ -50,7 +51,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(QUERY_1));
 
         /* test */
-        final ResponseEntity<List<QueryDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
+        final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());

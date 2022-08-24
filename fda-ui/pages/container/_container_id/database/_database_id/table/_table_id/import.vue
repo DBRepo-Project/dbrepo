@@ -154,6 +154,9 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    shared_filesystem () {
+      return this.$config.shared_filesystem
     }
   },
   mounted () {
@@ -190,7 +193,7 @@ export default {
         })
         if (res.data.success) {
           this.fileLocation = res.data.file.filename
-          this.tableImport.location = `/tmp/${this.fileLocation}`
+          this.tableImport.location = `${this.shared_filesystem()}/${this.fileLocation}`
           console.debug('upload csv', res.data)
         } else {
           console.error('Could not upload CSV data', res.data)

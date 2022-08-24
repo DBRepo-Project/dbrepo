@@ -22,8 +22,7 @@ const colTypeMap = {
 
 app.post('/table_from_csv', upload.single('file'), async (req, res) => {
   const { file } = req
-  const { path } = file
-
+  const { filename } = file
   // send path to analyse service
   let analysis
   let json
@@ -31,10 +30,10 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
     const analyseUrl = `${process.env.API}/api/analyse/determinedt`
     analysis = await fetch(analyseUrl, {
       method: 'post',
-      body: JSON.stringify({ filepath: path }),
+      body: JSON.stringify({ filepath: `/tmp/${filename}` }),
       headers: { 'Content-Type': 'application/json' }
     }).catch((error) => {
-      console.error('data type determination failed', error)
+      console.error('data type determination failed:', error)
       throw error
     })
     json = await analysis.json()
@@ -42,7 +41,7 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
       return res.json({ success: false, message: 'Columns array missing' })
     }
   } catch (error) {
-    console.error('failed to analyze', error)
+    console.error('failed to analyze:', error)
     return res.json({ success: false, error })
   }
 
