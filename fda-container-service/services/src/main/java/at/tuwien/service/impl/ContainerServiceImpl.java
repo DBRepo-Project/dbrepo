@@ -101,7 +101,6 @@ public class ContainerServiceImpl implements ContainerService {
                     .withHostName(container.getInternalName())
                     .withEnv(imageMapper.environmentItemsToStringList(image.get().getEnvironment()))
                     .withHostConfig(hostConfig)
-//                    .withVolumes(volume)
                     .exec();
         } catch (ConflictException e) {
             log.error("Conflicting names {}", createDto.getName());
