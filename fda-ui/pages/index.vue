@@ -25,7 +25,7 @@
       <v-card-text>
         <div>Release Notes</div>
         <p class="text-h4 text--primary">
-          1.1.1
+          1.1
         </p>
         <p>
           <a href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/CHANGELOG.md">Detailed Changelog</a>
