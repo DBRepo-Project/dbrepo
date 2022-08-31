@@ -126,7 +126,7 @@ class TableHistoryEndpointApi(object):
         auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/table/{tableId}/history', 'HEAD',
+            '/api/container/{id}/database/{databaseId}/table/{tableId}/history', 'GET',
             path_params,
             query_params,
             header_params,
@@ -235,7 +235,7 @@ class TableHistoryEndpointApi(object):
         auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/table/{tableId}/history', 'GET',
+            '/api/container/{id}/database/{databaseId}/table/{tableId}/history', 'HEAD',
             path_params,
             query_params,
             header_params,

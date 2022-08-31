@@ -21,7 +21,6 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "identifierindex", createIndex = false)
 @Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "update mdb_identifiers set deleted = NOW() where id = ?")

@@ -40,7 +40,9 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -413,7 +415,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 i = true;
             }
             if (i) {
-                log.error("Table {} does not exist", queryMapper.stringToEscapedString(fromItem.toString()));
+                final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
+                log.error("Table {} does not exist", tableName);
+                log.debug("table {} does not exist, available tables are {}", tableName, database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Table does not exist");
             }
         }
@@ -436,6 +440,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             if (i) {
                 log.error("Column {} does not exist", item);
+                log.debug("column {} does not exist, available columns are {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Column does not exist");
             }
         }

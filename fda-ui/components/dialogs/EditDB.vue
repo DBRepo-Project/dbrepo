@@ -4,7 +4,7 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
-          Modify Database
+          Database Metadata
         </v-card-title>
         <v-card-text>
           <v-checkbox
@@ -40,10 +40,11 @@
             required />
           <v-text-field
             id="publication-year"
-            v-model="modify.publication"
+            v-model.number="modify.publication_year"
             name="publication"
-            label="Publication Date *"
-            hint="e.g. 2022-07-16"
+            label="Publication Year *"
+            hint="e.g. 2022"
+            type="number"
             :rules="[v => !!v || $t('Required')]"
             required />
           <v-select
@@ -72,7 +73,7 @@
             color="primary"
             type="submit"
             @click="updateDatabase">
-            Create
+            Update
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -100,7 +101,7 @@ export default {
         publisher: null,
         description: null,
         language: null,
-        publication: null,
+        publication_year: null,
         license: null
       },
       licenses: [],
@@ -313,7 +314,7 @@ export default {
     this.modify.is_public = this.database.is_public
     this.modify.publisher = this.database.publisher
     this.modify.description = this.database.description
-    this.modify.publication = this.database.publication
+    this.modify.publication_year = this.database.publication_year
     this.modify.language = this.database.language
     this.modify.license = this.database.license
   },

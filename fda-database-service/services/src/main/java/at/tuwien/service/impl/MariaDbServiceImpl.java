@@ -17,20 +17,14 @@ import at.tuwien.service.LicenseService;
 import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.NativeQuery;
-import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceException;
 import java.security.Principal;
 import java.sql.*;
 import java.time.Instant;
-import java.time.temporal.ChronoField;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;

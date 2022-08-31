@@ -8,10 +8,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="secondary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="result_visibility" :disabled="error" color="primary" :loading="downloadLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" class="mb-1" :disabled="error" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
@@ -25,7 +25,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card flat>
+    <v-card flat tile>
       <v-card-title>
         Subset Information
       </v-card-title>
@@ -237,6 +237,7 @@
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import { formatTimestampUTCLabel } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   name: 'QueryShow',
@@ -266,6 +267,9 @@ export default {
           firstname: null,
           lastname: null
         }
+      },
+      user: {
+        username: null
       },
       identifier: {
         id: null,
@@ -344,6 +348,9 @@ export default {
     },
     database_visibility () {
       return this.database.is_public
+    },
+    is_owner () {
+      return this.token && this.query.creator.username === this.user.username
     },
     result_visibility () {
       if (this.erroneous) {
@@ -488,6 +495,12 @@ export default {
       if (event.action === 'persisted') {
         this.loadMetadata()
       }
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

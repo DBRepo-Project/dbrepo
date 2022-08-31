@@ -81,7 +81,7 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-btn color="secondary" @click="editDbDialog = true">Edit</v-btn>
+            <v-btn color="secondary" @click="editDbDialog = true">Update Metadata</v-btn>
             <v-dialog
               v-model="editDbDialog"
               persistent

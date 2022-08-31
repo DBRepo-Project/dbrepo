@@ -8,13 +8,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="token && canModify" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
         <v-btn v-if="token" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="token" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="token && canModify" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
@@ -36,15 +36,24 @@
 </template>
 
 <script>
+import { decodeJwt } from 'jose'
+
 export default {
   data () {
     return {
       tab: null,
       loading: false,
       error: false,
+      user: {
+        username: null
+      },
       database: {
         id: null,
-        is_public: null
+        is_public: null,
+        creator: {
+          id: null,
+          username: null
+        }
       }
     }
   },
@@ -60,6 +69,13 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    canModify () {
+      if (!this.user.username) {
+        /* not yet loaded */
+        return false
+      }
+      return this.database.creator.username === this.user.username
     },
     config () {
       if (this.token === null) {
@@ -85,6 +101,7 @@ export default {
       return
     }
     this.loadDatabase()
+    this.loadUser()
   },
   methods: {
     async loadDatabase () {
@@ -94,11 +111,17 @@ export default {
         this.database = res.data
         console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
-        this.loading = false
       } catch (err) {
+        console.error('Could not load database', err)
         this.$toast.error('Could not load database.')
-        this.loading = false
       }
+      this.loading = false
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }
