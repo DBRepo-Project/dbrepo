@@ -60,7 +60,6 @@
         solo
         flat
         single-line
-        clearable
         label="Search ..."
         return-object>
         <template v-slot:item="data">
@@ -69,8 +68,8 @@
               <v-icon :title="metadata(data).text">{{ metadata(data).icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content @click="navigate(data)">
-              <v-list-item-title>{{ metadata(data).title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ metadata(data).subtitle }}</v-list-item-subtitle>
+              <v-list-item-title class="search-result-title">{{ metadata(data).title }}</v-list-item-title>
+              <v-list-item-subtitle class="search-result-subtitle">{{ metadata(data).subtitle }}</v-list-item-subtitle>
             </v-list-item-content>
           </template>
         </template>
@@ -387,7 +386,15 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
+.search-result-title,
+.search-result-subtitle {
+  overflow: hidden;
+  white-space: pre-line;
+}
+.v-menu__content {
+  max-width: 988px !important;
+}
 .tu-logo {
   margin: 1em 1em 0;
 }
