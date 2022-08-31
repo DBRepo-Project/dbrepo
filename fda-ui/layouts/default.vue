@@ -50,18 +50,29 @@
         v-model="model"
         :items="searchResults"
         :loading="loadingSearch"
-        :search-input.sync="search"
+        :search-input.sync="query"
         hide-no-data
         hide-selected
         hide-details
         item-text="name"
-        item-value="id"
+        item-value="name"
         solo
         flat
-        clearable
         single-line
         label="Search ..."
-        return-object />
+        return-object>
+        <template v-slot:item="data">
+          <template>
+            <v-list-item-icon>
+              <v-icon :title="icon(data).text">{{ icon(data).icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>{{ title(data) }}</v-list-item-title>
+              <v-list-item-subtitle>{{ subtitle(data) }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </template>
+      </v-autocomplete>
       <v-spacer />
       <v-btn
         v-if="!token"
@@ -108,7 +119,6 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <pre>{{ searchResults }}</pre>
         <nuxt />
       </v-container>
     </v-main>
@@ -135,7 +145,7 @@ export default {
     return {
       drawer: false,
       model: null,
-      search: null,
+      query: null,
       searchResults: [],
       user: {
         theme_dark: null
@@ -188,15 +198,18 @@ export default {
           .then(() => this.setTheme())
       }
     },
-    search (val) {
+    query (val) {
       if (!val) {
         return
       }
-      this.model = null
-      this.searchResults = []
-      this.queryDatabases(val)
-      this.queryTables(val)
-      this.queryColumns(val)
+      setTimeout(() => {
+        if (val !== this.query) {
+          return
+        }
+        this.queryDatabases(val)
+        this.queryTables(val)
+        this.queryColumns(val)
+      })
     }
   },
   mounted () {
@@ -205,6 +218,30 @@ export default {
       .then(() => this.setTheme())
   },
   methods: {
+    icon (item) {
+      if (item.item.exchange !== undefined) {
+        return {
+          icon: 'mdi-database',
+          text: 'Database'
+        }
+      }
+      if (item.item.topic !== undefined) {
+        return {
+          icon: 'mdi-table',
+          text: 'Table'
+        }
+      }
+      return {
+        icon: 'mdi-view-column-outline',
+        text: 'Column'
+      }
+    },
+    title (item) {
+      return item.item.name
+    },
+    subtitle (item) {
+      return item.item.description
+    },
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
@@ -212,56 +249,41 @@ export default {
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
-    queryDatabases (v) {
-      if (v !== this.search) {
-        return
-      }
+    async queryDatabases (v) {
       this.loadingSearch = true
-      setTimeout(async () => {
-        try {
-          const res = await this.$axios.get(`/search/databaseindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
-          const databases = res.data.hits.hits.map(h => h._source)
-          console.debug('search databases results', databases)
-          databases.forEach(d => this.searchResults.push(d))
-        } catch (err) {
-          console.error('Failed to load search results', err)
-        }
-        this.loadingSearch = false
-      }, 500)
+      try {
+        const res = await this.$axios.get(`/search/databaseindex/_search?q=*${v}*&_source_includes=id,name,description,exchange&terminate_after=10`)
+        const databases = res.data.hits.hits.map(h => h._source)
+        console.debug('search databases results', databases)
+        databases.forEach(d => this.searchResults.push(d))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
     },
-    queryTables (v) {
-      if (v !== this.search) {
-        return
-      }
+    async queryTables (v) {
       this.loadingSearch = true
-      setTimeout(async () => {
-        try {
-          const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
-          const tables = res.data.hits.hits.map(h => h._source)
-          console.debug('search tables results', tables)
-          tables.forEach(t => this.searchResults.push(t))
-        } catch (err) {
-          console.error('Failed to load search results', err)
-        }
-        this.loadingSearch = false
-      }, 500)
+      try {
+        const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name,description,topic&terminate_after=10`)
+        const tables = res.data.hits.hits.map(h => h._source)
+        console.debug('search tables results', tables)
+        tables.forEach(t => this.searchResults.push(t))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
     },
-    queryColumns (v) {
-      if (v !== this.search) {
-        return
-      }
+    async queryColumns (v) {
       this.loadingSearch = true
-      setTimeout(async () => {
-        try {
-          const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
-          const columns = res.data.hits.hits.map(h => h._source)
-          console.debug('search column results', columns)
-          columns.forEach(c => this.searchResults.push(c))
-        } catch (err) {
-          console.error('Failed to load search results', err)
-        }
-        this.loadingSearch = false
-      }, 500)
+      try {
+        const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name,description&terminate_after=10`)
+        const columns = res.data.hits.hits.map(h => h._source)
+        console.debug('search column results', columns)
+        columns.forEach(c => this.searchResults.push(c))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
     },
     async loadDB () {
       if (this.$route.params.db_id && !this.db) {
