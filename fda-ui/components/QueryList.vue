@@ -170,4 +170,8 @@ export default {
   flex: 0 !important;
   margin-right: 16px;
 }
+pre {
+  white-space: break-spaces;
+  overflow: hidden;
+}
 </style>

@@ -7,45 +7,63 @@
           Modify Database
         </v-card-title>
         <v-card-text>
-          <v-checkbox
+          <v-switch
             id="public"
             v-model="modify.is_public"
-            name="public"
-            label="Public" />
+            color="primary"
+            :label="publicLabel"
+            name="public" />
           <v-text-field
             id="publisher"
             v-model="modify.publisher"
             name="publisher"
-            label="Publisher *"
-            autofocus
-            :rules="[v => !!v || $t('Required')]"
-            required />
+            label="Publisher"
+            autofocus />
           <v-textarea
             id="description"
             v-model="modify.description"
             name="description"
-            rows="2"
-            label="Description *"
             :rules="[v => !!v || $t('Required')]"
-            required />
+            rows="2"
+            label="Description *" />
           <v-select
             id="language"
             v-model="modify.language"
             name="language"
-            label="Language *"
+            label="Language"
             :items="languages"
             item-value="value"
-            item-text="text"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-text-field
-            id="publication-year"
-            v-model="modify.publication"
-            name="publication"
-            label="Publication Date *"
-            hint="e.g. 2022-07-16"
-            :rules="[v => !!v || $t('Required')]"
-            required />
+            item-text="text" />
+          <v-menu
+            v-model="menu"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="auto">
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="modify.publication"
+                name="publication"
+                label="Publication Date"
+                prepend-icon="mdi-calendar"
+                readonly
+                v-bind="attrs"
+                v-on="on" />
+            </template>
+            <v-date-picker
+              v-model="modify.publication"
+              color="primary"
+              @input="menu = false">
+              <v-spacer />
+              <v-btn
+                text
+                color="primary"
+                @click="reset">
+                Reset
+              </v-btn>
+            </v-date-picker>
+          </v-menu>
           <v-select
             id="license"
             v-model="modify.license"
@@ -54,7 +72,6 @@
             :items="licenses"
             item-value="identifier"
             item-text="identifier"
-            :rules="[v => !!v || $t('Required')]"
             return-object
             required />
         </v-card-text>
@@ -72,7 +89,7 @@
             color="primary"
             type="submit"
             @click="updateDatabase">
-            Create
+            Update
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -95,6 +112,7 @@ export default {
       valid: false,
       loading: false,
       error: false,
+      menu: false,
       modify: {
         is_public: null,
         publisher: null,
@@ -299,6 +317,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    publicLabel () {
+      return this.modify.is_public ? 'Public' : 'Private'
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -323,6 +344,10 @@ export default {
     },
     cancel () {
       this.$emit('close-dialog')
+    },
+    reset () {
+      this.modify.publication = null
+      this.menu = false
     },
     async loadLicenses () {
       try {

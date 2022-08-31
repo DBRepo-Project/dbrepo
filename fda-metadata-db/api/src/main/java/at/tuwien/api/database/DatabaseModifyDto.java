@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.sql.Date;
 import java.util.List;
 
 @Getter
@@ -31,10 +32,8 @@ public class DatabaseModifyDto {
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 
-    @NotNull
-    @JsonProperty("publication_year")
-    @Parameter(name = "database publication year")
-    private Integer publicationYear;
+    @Parameter(name = "database publication")
+    private Date publication;
 
     @Parameter(name = "database license")
     private LicenseDto license;

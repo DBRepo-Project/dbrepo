@@ -12,9 +12,9 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
+import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
@@ -104,7 +104,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static String DATABASE_1_PUBLISHER = "TU Wien";
-    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
+    public final static Date DATABASE_1_PUBLICATION_YEAR = Date.valueOf("2022-08-28");
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
@@ -128,7 +128,7 @@ public abstract class BaseUnitTest {
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .license(LICENSE_1_DTO)
-            .publicationYear(DATABASE_1_PUBLICATION_YEAR)
+            .publication(DATABASE_1_PUBLICATION_YEAR)
             .publisher(DATABASE_1_PUBLISHER)
             .build();
 

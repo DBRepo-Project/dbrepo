@@ -38,6 +38,16 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
+                      Table Description
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      {{ tableDetails.description }}
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
                       AMQP Exchange
                     </v-list-item-title>
                     <v-list-item-content>

@@ -151,7 +151,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setName(createDto.getName());
         database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
         database.setContainer(container);
-        database.setPublicationYear(Calendar.getInstance().get(Calendar.YEAR));
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
         try {
             /* create database */
@@ -201,7 +200,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setIsPublic(modifyDto.getIsPublic());
         database.setDescription(modifyDto.getDescription());
         database.setPublisher(modifyDto.getPublisher());
-        database.setPublicationYear(modifyDto.getPublicationYear());
+        database.setPublication(modifyDto.getPublication());
         database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
 
         final Database dbdb = databaseRepository.save(database);
