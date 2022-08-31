@@ -23,7 +23,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "tblindex", createIndex = false)
+@Document(indexName = "tableindex", createIndex = false)
 @IdClass(TableKey.class)
 @ToString
 @Log4j2

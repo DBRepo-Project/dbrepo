@@ -89,7 +89,14 @@ export default {
   },
 
   proxy: {
-    '/api': process.env.API || 'http://localhost:9095'
+    '/api': process.env.API || 'http://localhost:9095',
+    '/search': {
+      target: process.env.SEARCH || 'http://localhost:9200',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/search': ''
+      }
+    }
   },
 
   serverMiddleware: [

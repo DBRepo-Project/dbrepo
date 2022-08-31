@@ -46,6 +46,22 @@
     </v-navigation-drawer>
     <v-app-bar fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-autocomplete
+        v-model="model"
+        :items="searchResults"
+        :loading="loadingSearch"
+        :search-input.sync="search"
+        hide-no-data
+        hide-selected
+        hide-details
+        item-text="name"
+        item-value="id"
+        solo
+        flat
+        clearable
+        single-line
+        label="Search ..."
+        return-object />
       <v-spacer />
       <v-btn
         v-if="!token"
@@ -92,6 +108,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
+        <pre>{{ searchResults }}</pre>
         <nuxt />
       </v-container>
     </v-main>
@@ -117,10 +134,14 @@ export default {
   data () {
     return {
       drawer: false,
+      model: null,
+      search: null,
+      searchResults: [],
       user: {
         theme_dark: null
       },
-      loadingUser: true
+      loadingUser: true,
+      loadingSearch: false
     }
   },
   computed: {
@@ -135,12 +156,6 @@ export default {
     },
     container () {
       return this.$store.state.container
-    },
-    filteredItems () {
-      return this.items.filter((x) => {
-        if (x.needsContainer && !this.container) { return false }
-        return true
-      })
     },
     db () {
       return this.$store.state.db
@@ -172,6 +187,15 @@ export default {
         this.loadUser()
           .then(() => this.setTheme())
       }
+    },
+    search (val) {
+      if (!val) {
+        return
+      }
+      this.searchResults = []
+      this.queryDatabases(val)
+      this.queryTables(val)
+      this.queryColumns(val)
     }
   },
   mounted () {
@@ -186,6 +210,57 @@ export default {
       this.$toast.success('Logged out')
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
+    },
+    queryDatabases (v) {
+      setTimeout(async () => {
+        if (v !== this.search) {
+          return
+        }
+        this.loadingSearch = true
+        try {
+          const res = await this.$axios.get(`/search/databaseindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
+          const databases = res.data.hits.hits.map(h => h._source)
+          console.debug('search databases results', databases)
+          databases.forEach(d => this.searchResults.push(d))
+        } catch (err) {
+          console.error('Failed to load search results', err)
+        }
+        this.loadingSearch = false
+      }, 500)
+    },
+    queryTables (v) {
+      setTimeout(async () => {
+        if (v !== this.search) {
+          return
+        }
+        this.loadingSearch = true
+        try {
+          const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
+          const tables = res.data.hits.hits.map(h => h._source)
+          console.debug('search tables results', tables)
+          tables.forEach(t => this.searchResults.push(t))
+        } catch (err) {
+          console.error('Failed to load search results', err)
+        }
+        this.loadingSearch = false
+      }, 500)
+    },
+    queryColumns (v) {
+      setTimeout(async () => {
+        if (v !== this.search) {
+          return
+        }
+        this.loadingSearch = true
+        try {
+          const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
+          const columns = res.data.hits.hits.map(h => h._source)
+          console.debug('search column results', columns)
+          columns.forEach(c => this.searchResults.push(c))
+        } catch (err) {
+          console.error('Failed to load search results', err)
+        }
+        this.loadingSearch = false
+      }, 500)
     },
     async loadDB () {
       if (this.$route.params.db_id && !this.db) {
