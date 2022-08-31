@@ -1,69 +1,86 @@
-[![pipeline status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master) [![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
+[![pipeline status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
+[![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
+[![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# FAIR Data Austria Services
-
-## Install
-
-Pull the latest dev/master images on your client through:
-
-```bash
-docker login https://docker.martinweise.at
-> Username: fda
-> Password: fda-docker
-```
-
-The `dev` branch images have suffix `:latest` (=optional), to pull them execute the following
-
-```bash
-docker pull docker.martinweise.at/fda-analyse-service:latest
-docker pull docker.martinweise.at/fda-discovery-server:latest
-docker pull docker.martinweise.at/fda-gateway-service:latest
-docker pull docker.martinweise.at/fda-database-managing-service:latest
-docker pull docker.martinweise.at/fda-container-managing-service:latest
-docker pull docker.martinweise.at/fda-query-service:latest
-docker pull docker.martinweise.at/fda-table-service:latest
-docker pull docker.martinweise.at/fda-ui:latest
-```
-
-The `master` branch images have suffix `:stable`, they are pulled similar:
-
-```bash
-docker pull docker.martinweise.at/fda-analyse-service:stable
-...
-```
-
-Note: the domain martinweise.at is private and I do not own any of these images, it is just a necessary condition for Docker to pull from a (private, non-public) remote repository! The domain should of course be changed before release!
+# FAIR Data Austria Database Repository
 
 ## Build
+
+Local development minimum requirements:
+
+- Ubuntu 18.04 LTS (Rocky Linux is also supported)
+- Apache Maven 3.0.0
+- OpenJDK 11.0.0
+- Docker Engine 20.10.0
+- Docker Compose 1.28.0
 
 Everything is handled by compose, just build it by running:
 
 ```bash
 docker-compose build
 ```
-Local development minimum requirements:
 
-- Ubuntu 18.04 LTS
-- Apache Maven 3.0.0
-- OpenJDK 11.0.0
+## Run
 
-Local deployment minimum versions:
+To use the citation service you need to provide a
+[Zenodo API token](https://zenodo.org/account/settings/applications/tokens/new/). Create a `.env` file at the project
+root. A sample file is available at `.env.example`
 
-- Docker Engine 20.10.0
-- Docker Compose 1.28.0
+```bash
+ZENODO_API_KEY=
+API=http://fda-gateway-service:9095
+```
 
-## Deployment
+Add to your `/etc/hosts` for executing the tests:
 
-The pipeline is set-up to build and test all commits. A commit to dev or master branch triggers additional jobs.
+```bash
+172.29.0.6      fda-gateway-service
+```
 
-### Development
+## Development
 
-A commit to `dev` triggers the following pipeline. It deploys the docker images to the docker registry hosted on the fda-runner server and deploys it also to a test server (fda-deployment) at TU Wien. 
+The backend endpoints are accessible in the browser:
 
-![pipeline dev](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-docs/-/raw/master/figures/fda-pipeline-dev.png)
+- [Image Endpoint](http://localhost:9091/swagger-ui/)
+- [Container Endpoint](http://localhost:9091/swagger-ui/)
+- [Database Endpoint](http://localhost:9092/swagger-ui/)
+- [Query Endpoint](http://localhost:9093/swagger-ui/)
+- [Table Endpoint](http://localhost:9094/swagger-ui/)
 
-### Production
+The frontend is accessible in the browser:
 
-A commit to `master` triggers the following pipeline. It deploys the docker images to the docker registry hosted on the fda-runner server and deploys it also to a production server tbd.
+- [FAIR Portal](http://localhost:3000)
+- [Query Endpoint Management Portal](http://localhost:15672) (username=guest, password=guest)
 
-![pipeline master](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-docs/-/raw/master/figures/fda-pipeline-prod.png)
+Other:
+
+- [Discovery Endpoint](http://localhost:9090/) (Eureka)
+- [Gateway Endpoint](http://localhost:9095/swagger-ui/) (Webflux)
+
+Hosts:
+
+```bash
+# FDA PUBLIC
+172.29.0.2      fda-gateway-service
+172.29.0.3      fda-broker-service
+172.29.0.4      fda-discovery-service
+172.29.0.5      fda-metadata-db
+172.29.0.6      fda-search-service
+172.29.0.7      fda-units-service
+172.29.0.8      fda-container-service
+172.29.0.9      fda-database-service
+172.29.0.10     fda-analyse-service
+172.29.0.11     fda-table-service
+172.29.0.12     fda-query-service
+
+```
+
+## Contribute
+
+Contributions are always welcome and encouraged, simply fork the repository and
+contact [Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/).
+
+# License
+
+This work is licensed under
+a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)

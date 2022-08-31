@@ -1,27 +1,40 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
-    show-sql: true
+    show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
   application:
-    name: fda-database-service
+    name: database-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
     at.tuwien.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: fda-database-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance.hostname: database-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  elastic.endpoint: localhost:9200
+  elastic.endpoint: search-service:9200
+  ready.path: /ready
+  gateway.endpoint: http://gateway-service:9095

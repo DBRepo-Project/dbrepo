@@ -5,9 +5,11 @@ import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
+import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.exception.*;
-import at.tuwien.service.ImageService;
+import at.tuwien.service.impl.ImageServiceImpl;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,7 +33,10 @@ import static org.mockito.Mockito.*;
 public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
-    private ImageService imageService;
+    private ReadyConfig readyConfig;
+
+    @MockBean
+    private ImageServiceImpl imageService;
 
     @Autowired
     private ImageEndpoint imageEndpoint;
@@ -47,75 +53,90 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws ImageNotFoundException, DockerClientException {
+    public void create_succeeds()
+            throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
-        when(imageService.create(request))
-                .thenReturn(CONTAINER_1_IMAGE);
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(imageService.create(request, principal))
+                .thenReturn(IMAGE_1);
 
         /* test */
-        final ResponseEntity<ImageDto> response = imageEndpoint.create(request);
+        final ResponseEntity<ImageDto> response = imageEndpoint.create(request, principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(IMAGE_1_REPOSITORY, Objects.requireNonNull(response.getBody()).getRepository());
         assertEquals(IMAGE_1_TAG, Objects.requireNonNull(response.getBody()).getTag());
     }
 
     @Test
-    public void create_duplicate_fails() throws ImageNotFoundException, DockerClientException {
+    public void create_duplicate_fails()
+            throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
-        given(imageService.create(request))
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        given(imageService.create(request, principal))
                 .willAnswer(invocation -> {
                     throw new ImageAlreadyExistsException("duplicate");
                 });
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageEndpoint.create(request);
+            imageEndpoint.create(request, principal);
         });
     }
 
     @Test
-    public void create_notExists_fails() throws ImageNotFoundException, DockerClientException {
+    public void create_notExists_fails()
+            throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
-        given(imageService.create(request))
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        given(imageService.create(request, principal))
                 .willAnswer(invocation -> {
                     throw new ImageNotFoundException("not existing in docker hub");
                 });
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageEndpoint.create(request);
+            imageEndpoint.create(request, principal);
         });
     }
 
     @Test
     public void findById_succeeds() throws ImageNotFoundException {
-        when(imageService.getById(IMAGE_1_ID))
-                .thenReturn(CONTAINER_1_IMAGE);
+
+        /* mock */
+        when(imageService.find(IMAGE_1_ID))
+                .thenReturn(IMAGE_1);
 
         /* test */
         final ResponseEntity<ImageDto> response = imageEndpoint.findById(IMAGE_1_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(IMAGE_1_HASH, Objects.requireNonNull(response.getBody()).getHash());
     }
 
     @Test
     public void findById_notFound_fails() throws ImageNotFoundException {
-        given(imageService.getById(IMAGE_1_ID))
+
+        /* mock */
+        given(imageService.find(IMAGE_1_ID))
                 .willAnswer(invocation -> {
                     throw new ImageNotFoundException("not existing in docker hub");
                 });
@@ -128,6 +149,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_success() throws ImageNotFoundException, PersistenceException {
+
+        /* mock */
         doNothing()
                 .when(imageService)
                 .delete(IMAGE_1_ID);
@@ -139,6 +162,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_fails() throws ImageNotFoundException, PersistenceException {
+
+        /* mock */
         doThrow(new ImageNotFoundException("not found"))
                 .when(imageService)
                 .delete(IMAGE_1_ID);
@@ -166,6 +191,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .defaultPort(1111)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
+
+        /* mock */
         given(imageService.update(IMAGE_1_ID, request))
                 .willAnswer(invocation -> {
                     throw new ImageNotFoundException("not existing in docker hub");

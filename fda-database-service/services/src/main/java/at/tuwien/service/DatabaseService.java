@@ -2,151 +2,97 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.ImageMapper;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.elastic.DatabaseidxRepository;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
-import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.SQLException;
+import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
-
-@Log4j2
-@Service
-public class DatabaseService extends JdbcConnector {
-
-    private final ContainerRepository containerRepository;
-    private final DatabaseRepository databaseRepository;
-    private final DatabaseidxRepository databaseidxRepository;
-    private final DatabaseMapper databaseMapper;
-
-    @Autowired
-    public DatabaseService(ContainerRepository containerRepository, DatabaseRepository databaseRepository,
-                           DatabaseidxRepository databaseidxRepository, ImageMapper imageMapper,
-                           DatabaseMapper databaseMapper) {
-        super(imageMapper, databaseMapper);
-        this.containerRepository = containerRepository;
-        this.databaseRepository = databaseRepository;
-        this.databaseMapper = databaseMapper;
-        this.databaseidxRepository = databaseidxRepository;
-    }
-
+public interface DatabaseService {
     /**
-     * Finds all known databases in the metadata database
+     * Finds all public databases in the metadata database for a given container id.
      *
+     * @param containerId The container id.
      * @return A list of databases
      */
-    @Transactional
-    public List<Database> findAll() {
-        return StreamSupport.stream(databaseRepository.findAll()
-                .spliterator(), false)
-                .collect(Collectors.toList());
-    }
+    List<Database> findAllPublic(Long containerId);
 
     /**
-     * Finds a database by primary key in the metadata database
+     * Finds all public databases or my private database in the metadata database for a given container id.
      *
-     * @param databaseId The key
-     * @return The database
-     * @throws DatabaseNotFoundException In case the database was not found
+     * @param containerId The container id.
+     * @param principal   The principal.
+     * @return A list of databases
      */
-    @Transactional
-    public Database findById(Long databaseId) throws DatabaseNotFoundException {
-        final Optional<Database> opt = databaseRepository.findById(databaseId);
-        if (opt.isEmpty()) {
-            log.warn("could not find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("could not find database with this id");
-        }
-        return opt.get();
-    }
+    List<Database> findAllPublicOrMine(Long containerId, Principal principal);
 
-    @Transactional
-    public void delete(Long databaseId) throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException {
-        log.trace("Delete database {}", databaseId);
-        final Optional<Database> databaseResponse = databaseRepository.findById(databaseId);
-        if (databaseResponse.isEmpty()) {
-            log.warn("Database with id {} does not exist", databaseId);
-            throw new DatabaseNotFoundException("Database does not exist.");
-        }
-        try {
-            delete(databaseResponse.get());
-        } catch (SQLException e) {
-            log.error("Could not delete the database: {}", e.getMessage());
-            throw new DatabaseMalformedException(e);
-        }
-        databaseRepository.deleteById(databaseId);
-        log.info("Deleted database {}", databaseId);
-        log.debug("deleted database {}", databaseResponse.get());
-    }
+    /**
+     * Finds a specific database for a given id in the metadata database.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param principal   The principal.
+     * @return The database if found.
+     * @throws DatabaseNotFoundException The database was not found.
+     */
+    Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException;
 
-    @Transactional
-    public Database create(DatabaseCreateDto createDto) throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException {
-        log.trace("Create database {}", createDto);
-        final Optional<Container> containerResponse = containerRepository.findById(createDto.getContainerId());
-        if (containerResponse.isEmpty()) {
-            log.warn("Container with id {} does not exist", createDto.getContainerId());
-            throw new ContainerNotFoundException("Container does not exist.");
-        }
-        // call container to create database
-        final Database database = new Database();
-        database.setName(createDto.getName());
-        database.setInternalName(databaseMapper.databaseToInternalDatabaseName(database));
-        database.setContainer(containerResponse.get());
-        database.setDescription(createDto.getDescription());
-        database.setIsPublic(createDto.getIsPublic());
-        try {
-            create(database);
-        } catch (SQLException e) {
-            log.error("Could not create the database: {}", e.getMessage());
-            throw new DatabaseMalformedException(e);
-        }
-        // save in metadata database
-        final Database out = databaseRepository.save(database);
-        log.info("Created database {}", out.getId());
-        log.debug("created database {}", out);
-        // save in database_index - elastic search
-        databaseidxRepository.save(database);
-        return out;
-    }
+    /**
+     * Find a database by id, only used in the authentication service
+     *
+     * @param containerId the container id.
+     * @param databaseId  the database id.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     */
+    Database findById(Long containerId, Long databaseId) throws DatabaseNotFoundException;
 
-    @Transactional
-    public Database modify(DatabaseModifyDto modifyDto) throws ImageNotSupportedException, DatabaseNotFoundException,
-            DatabaseMalformedException {
-        log.trace("Modify database {}", modifyDto);
-        final Optional<Database> databaseResponse = databaseRepository.findById(modifyDto.getDatabaseId());
-        if (databaseResponse.isEmpty()) {
-            log.warn("Database with id {} does not exist", modifyDto.getDatabaseId());
-            throw new DatabaseNotFoundException("Database does not exist.");
-        }
-        // call container to create database
-        final Database database = databaseMapper.modifyDatabaseByDatabaseModifyDto(databaseResponse.get(), modifyDto);
-        try {
-            modify(databaseResponse.get(), database);
-        } catch (SQLException e) {
-            log.error("Could not modify the database: {}", e.getMessage());
-            throw new DatabaseMalformedException(e);
-        }
-        // save in metadata database
-        final Database out = databaseRepository.save(database);
-        log.info("Updated database {}", out.getId());
-        log.debug("updated database {}", out);
-        // save in database_index - elastic search 
-        databaseidxRepository.save(database);
-        return out;
-    }
+    /**
+     * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
+     * does not actually delete it.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @throws DatabaseNotFoundException  The database was not found.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws DatabaseMalformedException The query string is malformed.
+     * @throws AmqpException              The exchange could not be deleted.
+     */
+    void delete(Long id, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
 
+    /**
+     * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
+     *
+     * @param id        The container id.
+     * @param createDto The metadata.
+     * @return The created database as stored on the metadata database.
+     * @throws ImageNotSupportedException   The image is not supported.
+     * @throws ContainerNotFoundException   The container was not found.
+     * @throws DatabaseMalformedException   The query string is malformed.
+     * @throws AmqpException                The exchange could not be created.
+     * @throws ContainerConnectionException The connection to the container did not establish.
+     * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
+     */
+    Database create(Long id, DatabaseCreateDto createDto, Principal principal)
+            throws ImageNotSupportedException, ContainerNotFoundException,
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException;
+
+    /**
+     * Updates the database metadata.
+     *
+     * @param id         The container id.
+     * @param databaseId The database id.
+     * @param modifyDto  The metadata.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     * @throws UserNotFoundException     The contact person was not found.
+     * @throws LicenseNotFoundException  The license was not found in the metadata database.
+     */
+    Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
+            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
 }

@@ -1,77 +1,91 @@
 package at.tuwien.entities.user;
 
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_users")
 public class User {
 
-	@Id
-	@EqualsAndHashCode.Include
-	@ToString.Include
-	@Column(name = "userid", columnDefinition = "numeric(19, 2)")
-	@GeneratedValue(generator = "user-sequence")
-	@GenericGenerator(
-			name = "user-sequence",
-			strategy = "enhanced-sequence",
-			parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_user_seq")
-	)
-	private Long id;
 
-	@ToString.Include
-	@EqualsAndHashCode.Include
-	@Column(name = "tiss_id", unique = true)
-	private Long tissId;
+    @Id
+    @EqualsAndHashCode.Include
+    @Column(name = "userid", columnDefinition = "numeric(19, 2)")
+    @GeneratedValue(generator = "user-sequence")
+    @GenericGenerator(
+            name = "user-sequence",
+            strategy = "enhanced-sequence",
+            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_user_seq")
+    )
+    private Long id;
 
-	@ToString.Include
-	@EqualsAndHashCode.Include
-	@Column(name = "oid", nullable = false)
-	private Long organizationid;
+    @Column(unique = true, nullable = false)
+    private String username;
 
-	@ToString.Include
-	@Column(name = "first_name", nullable = false)
-	private String firstname;
+    @Column(name = "first_name")
+    private String firstname;
 
-	@ToString.Include
-	@Column(name = "last_name", nullable = false)
-	private String lastname;
+    @Column(name = "last_name")
+    private String lastname;
 
-	@ToString.Include
-	@Column(name = "preceding_titles")
-	private String titlesBefore;
+    @Column(name = "preceding_titles")
+    private String titlesBefore;
 
-	@ToString.Include
-	@Column(name = "postpositioned_title")
-	private String titlesAfter;
+    @Column(name = "postpositioned_title")
+    private String titlesAfter;
 
-	@ToString.Include
-	@Column(name = "main_email")
-	private String email;
+    @Column(name = "main_email", unique = true, nullable = false)
+    private String email;
 
+    @Column
+    private String affiliation;
 
+    @Column
+    private String orcid;
 
-	@Column(nullable = false, updatable = false)
-	@CreatedDate
-	private Instant created;
+    @Column(nullable = false)
+    private Boolean themeDark;
 
-	@Column
-	@LastModifiedDate
-	private Instant lastModified;
+    @Column(name = "main_email_verified", nullable = false)
+    private Boolean emailVerified;
+
+    @ToString.Exclude
+    @Column(nullable = false)
+    private String password;
+
+    @ElementCollection(targetClass = RoleType.class)
+    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"uid", "role"})
+    })
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private List<RoleType> roles;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Token> tokens;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private Instant created;
+
+    @LastModifiedDate
+    @Column(name = "last_modified")
+    private Instant lastModified;
 
 }

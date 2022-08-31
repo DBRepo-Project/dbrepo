@@ -4,6 +4,17 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# Notebooks
+.jupyter/.idea/
+.jupyter/.ipynb_checkpoints
+.jupyter/venv
+
+# Environment
+.env
+
+# macOS
+.DS_Store
+
 # IDE
 fda-analyse-service/venv
 .git.bfg-*

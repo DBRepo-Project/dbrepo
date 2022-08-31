@@ -1,0 +1,37 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fda
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  application:
+    name: container-service
+  cloud:
+    loadbalancer.ribbon.enabled: false
+springdoc.swagger-ui.enabled: true
+server.port: 9091
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+eureka:
+  instance.hostname: container-service
+  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+fda:
+  mount.path: /tmp
+  ready.path: ./ready
+  gateway.endpoint: http://localhost:9095

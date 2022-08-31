@@ -1,42 +1,87 @@
 <template>
   <div>
-    <v-row dense>
-      <v-col cols="6">
-        <v-select
-          v-model="table"
-          :items="tables"
-          item-text="name"
-          return-object
-          label="Table"
-          @change="loadColumns" />
-      </v-col>
-      <v-col cols="6">
-        <v-select
-          v-model="select"
-          item-text="name"
-          :disabled="!table"
-          :items="selectItems"
-          label="Columns"
-          return-object
-          multiple
-          @change="buildQuery" />
-      </v-col>
-    </v-row>
-    <QueryFilters
-      v-if="table"
-      v-model="clauses"
-      :columns="columnNames" />
-    <v-row v-if="query.formatted">
-      <v-col>
-        <highlightjs autodetect :code="query.formatted" />
-      </v-col>
-      <v-col cols="3" class="actions">
-        <v-btn class="execute" color="primary">
-          <v-icon>mdi-refresh</v-icon>
+    <v-toolbar flat>
+      <v-toolbar-title>Create Subset</v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn :disabled="!canExecute || !token" color="primary" @click="execute">
+          <v-icon left>mdi-run</v-icon>
           Execute
         </v-btn>
-      </v-col>
-    </v-row>
+      </v-toolbar-title>
+    </v-toolbar>
+    <v-toolbar flat>
+      <v-tabs
+        color="primary"
+        v-model="tabs">
+        <v-tab>
+          Simple
+        </v-tab>
+        <v-tab>
+          Expert
+        </v-tab>
+      </v-tabs>
+    </v-toolbar>
+    <v-card flat>
+      <v-tabs-items v-model="tabs">
+        <v-tab-item>
+          <v-card-text>
+            <v-row>
+              <v-col cols="6">
+                <v-select
+                  v-model="table"
+                  :items="tables"
+                  item-text="name"
+                  :loading="loadingTables"
+                  return-object
+                  label="Table"
+                  @change="loadColumns" />
+              </v-col>
+              <v-col cols="6">
+                <v-select
+                  v-model="select"
+                  item-text="name"
+                  :disabled="!table"
+                  :items="selectItems"
+                  :loading="loadingColumns"
+                  label="Columns"
+                  return-object
+                  multiple
+                  @change="buildQuery" />
+              </v-col>
+            </v-row>
+            <QueryFilters
+              v-if="table"
+              v-model="clauses"
+              :columns="columnNames" />
+            <v-row v-if="query.formatted">
+              <v-col>
+                <v-progress-linear v-if="loadingQuery" color="primary" />
+                <QueryRaw
+                  v-model="query.formatted"
+                  disabled
+                  class="mt-2 ml-3" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-tab-item>
+        <v-tab-item>
+          <QueryRaw
+            v-model="rawSQL"
+            class="mt-2 ml-3" />
+        </v-tab-item>
+      </v-tabs-items>
+      <v-card-text v-if="queryId">
+        <v-row>
+          <v-col>
+            <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+              View
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+    <QueryResults ref="queryResults" v-model="queryId" />
   </div>
 </template>
 
@@ -47,9 +92,17 @@ export default {
       table: null,
       tables: [],
       tableDetails: null,
-      query: {},
+      queryId: null,
+      query: {
+        sql: ''
+      },
+      loadingTables: false,
+      loadingColumns: false,
+      loadingQuery: false,
+      rawSQL: '',
       select: [],
-      clauses: []
+      clauses: [],
+      tabs: 0
     }
   },
   computed: {
@@ -58,7 +111,41 @@ export default {
       return columns || []
     },
     columnNames () {
-      return this.selectItems && this.selectItems.map(s => s.name)
+      return this.selectItems && this.selectItems.map(s => s.internal_name)
+    },
+    databaseId () {
+      return this.$route.params.database_id
+    },
+    tableId () {
+      return this.table.id
+    },
+    token () {
+      return this.$store.state.token
+    },
+    headers () {
+      if (this.token === null) {
+        return null
+      }
+      return { Authorization: `Bearer ${this.token}` }
+    },
+    sql () {
+      if (this.tabs === 0) {
+        // builder
+        return this.query.sql
+      } else {
+        // raw sql
+        return this.rawSQL
+      }
+    },
+    canExecute () {
+      if (this.tabs === 0) {
+        // builder
+        return this.sql.length &&
+                 this.select.length // select `*` columns not supported in backend
+      } else {
+        // raw sql
+        return this.sql.length
+      }
     }
   },
   watch: {
@@ -66,31 +153,67 @@ export default {
       deep: true,
       handler () {
         this.buildQuery()
+        this.queryId = null
       }
+    },
+    table () {
+      this.queryId = null
+    },
+    sql () {
+      this.queryId = null
+    },
+    select () {
+      this.queryId = null
     }
   },
-  async mounted () {
-    // XXX same as in TableList
-    try {
-      const res = await this.$axios.get(
-        `/api/database/${this.$route.params.database_id}/table`)
-      this.tables = res.data
-    } catch (err) {
-      this.$toast.error('Could not list table.')
-    }
+  mounted () {
+    this.loadTables()
+      .then(() => this.selectTable())
+      .then(() => this.loadColumns())
   },
   methods: {
+    async loadTables () {
+      try {
+        this.loadingTables = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, {
+          headers: this.headers
+        })
+        this.tables = res.data
+        console.debug('tables', this.tables)
+      } catch (err) {
+        this.$toast.error('Could not list table.')
+      }
+      this.loadingTables = false
+    },
+    selectTable () {
+      if (this.$route.query.tid === undefined) {
+        return
+      }
+      const tid = parseInt(this.$route.query.tid)
+      const selection = this.tables.filter(t => t.id === tid)
+      if (selection.length > 0) {
+        this.table = selection[0]
+        console.info('Preselect table with id', tid)
+        console.debug('preselected table', this.table)
+      } else {
+        console.warn('Failed to find table with id', tid)
+      }
+    },
+    execute () {
+      this.$refs.queryResults.executeFirstTime(this)
+    },
     async buildQuery () {
       if (!this.table) {
         return
       }
       const url = '/server-middleware/query/build'
       const data = {
-        table: this.table.internalName,
-        select: this.select.map(s => s.name),
+        table: this.table.internal_name,
+        select: this.select.map(s => s.internal_name),
         clauses: this.clauses
       }
       try {
+        this.loadingQuery = true
         const res = await this.$axios.post(url, data)
         if (res && !res.error) {
           this.query = res.data
@@ -98,16 +221,21 @@ export default {
       } catch (e) {
         console.log(e)
       }
+      this.loadingQuery = false
     },
     async loadColumns () {
       const tableId = this.table.id
       try {
-        const res = await this.$axios.get(`/api/database/${this.$route.params.database_id}/table/${tableId}`)
+        this.loadingColumns = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${tableId}`, {
+          headers: this.headers
+        })
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
         this.$toast.error('Could not get table details.')
       }
+      this.loadingColumns = false
     }
   }
 }
@@ -121,9 +249,4 @@ main.scss file from vuetify, because it paints it red */
   color: #657b83;
 }
 
-.actions {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-}
 </style>

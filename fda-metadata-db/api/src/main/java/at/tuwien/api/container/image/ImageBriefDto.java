@@ -1,6 +1,6 @@
 package at.tuwien.api.container.image;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,23 +15,15 @@ import javax.validation.constraints.NotNull;
 public class ImageBriefDto {
 
     @NotNull
-    @ApiModelProperty(required = true, example = "1")
+    @Parameter(required = true, example = "1")
     private Long id;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "postgres:latest")
-    private String label;
-
-    @NotBlank
-    @ApiModelProperty(required = true, example = "postgres")
+    @Parameter(required = true, example = "mariadb")
     private String repository;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "base64:aaaa")
-    private String logo;
-
-    @NotBlank
-    @ApiModelProperty(required = true, example = "latest")
+    @Parameter(required = true, example = "10.5")
     private String tag;
 
 }

@@ -1,45 +1,40 @@
 # FROM node:lts as build
-FROM mcr.microsoft.com/playwright:v1.11.1-focal as build
+FROM node:14-alpine as build
 MAINTAINER Kirill Stytsenko <kirill.stytsenko@univie.ac.at>
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV API=http://gateway-service:9095
 
 WORKDIR /app
 
-# python, make, g++ are needed by node-gyp
-# RUN apk add --no-cache build-base python3 > /dev/null
-RUN apt-get install make g++ python3 -y > /dev/null
+COPY ./package.json ./
+COPY ./yarn.lock ./
 
-# Install Chromium dependencies - playwright
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  libnss3 \
-  libxss1 \
-  libasound2 \
-  fonts-noto-color-emoji \
-  libxtst6
+# Install yarn dependencies
+RUN yarn install --frozen-lockfile > /dev/null 2>&1
 
-# Our app
-COPY ./.env-docker ./.env
-COPY ./assets ./assets
+COPY ./nuxt.config.js ./
 COPY ./ava.config.cjs ./
 COPY ./babel.config.js ./
+COPY ./assets ./assets
 COPY ./components ./components
 COPY ./lang ./lang
 COPY ./layouts ./layouts
-COPY ./nuxt.config.js ./
-COPY ./package.json ./
 COPY ./pages ./pages
 COPY ./plugins ./plugins
-COPY ./scripts ./scripts
 COPY ./server-middleware ./server-middleware
 COPY ./static ./static
 COPY ./store ./store
-COPY ./test ./test
-COPY ./yarn.lock ./
+COPY ./utils ./utils
 
-# Install npm dependencies
-RUN yarn install --frozen-lockfile > /dev/null 2>&1
+RUN yarn build > /dev/null
 
-RUN yarn build
-
-EXPOSE 3000
+ENV API=http://gateway-service:9095
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
+ENV SANDBOX=false
+ENV SHARED_FILESYSTEM=/tmp
+ENV VERSION=1.1.1
 
 ENTRYPOINT ["yarn", "start"]

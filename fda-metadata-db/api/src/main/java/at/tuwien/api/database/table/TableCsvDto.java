@@ -1,9 +1,9 @@
 package at.tuwien.api.database.table;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +15,8 @@ import java.util.Map;
 @NoArgsConstructor
 public class TableCsvDto {
 
-    @NotBlank
-    @ApiModelProperty(name = "data")
-    private List<Map<String, Object>> data;
+    @NotNull(message = "data is required")
+    @Parameter(name = "data")
+    private Map<String, Object> data;
 
 }

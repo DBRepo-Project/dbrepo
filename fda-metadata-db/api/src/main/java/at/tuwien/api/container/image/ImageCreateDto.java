@@ -1,6 +1,7 @@
 package at.tuwien.api.container.image;
 
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -16,38 +17,41 @@ import javax.validation.constraints.NotNull;
 public class ImageCreateDto {
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "postgres")
+    @Parameter(required = true, example = "postgres")
     private String repository;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "latest")
+    @Parameter(required = true, example = "latest")
     private String tag;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "org.postgresql.Driver")
+    @JsonProperty("driver_class")
+    @Parameter(required = true, example = "org.postgresql.Driver")
     private String driverClass;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "POSTGRES")
+    @Parameter(required = true, example = "POSTGRES")
     private String dialect;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "base64:aaaa")
+    @Parameter(required = true, example = "base64:aaaa")
     private String logo;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "postgresql")
+    @JsonProperty("jdbc_method")
+    @Parameter(required = true, example = "postgresql")
     private String jdbcMethod;
 
     @NotNull
-    @ApiModelProperty(required = true, example = "false", notes = "when false, the service pulls it from hub.docker.com")
+    @Parameter(required = true, example = "false")
     private Boolean local;
 
     @NotNull
-    @ApiModelProperty(required = true, example = "5432")
+    @JsonProperty("default_port")
+    @Parameter(required = true, example = "5432")
     private Integer defaultPort;
 
-    @ApiModelProperty(required = true, example = "[{\"key\":\"POSTGRES_USER\",\"value\":\"postgres\",\"type\":USERNAME},{\"key\":\"POSTGRES_PASSWORD\",\"value\":\"postgres\",\"type\":PASSWORD}]")
+    @Parameter(required = true, example = "[{\"key\":\"POSTGRES_USER\",\"value\":\"postgres\",\"type\":USERNAME},{\"key\":\"POSTGRES_PASSWORD\",\"value\":\"postgres\",\"type\":PASSWORD}]")
     private ImageEnvItemDto[] environment;
 
 }

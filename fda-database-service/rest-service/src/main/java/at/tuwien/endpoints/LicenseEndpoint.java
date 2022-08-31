@@ -1,0 +1,46 @@
+package at.tuwien.endpoints;
+
+import at.tuwien.api.database.LicenseDto;
+import at.tuwien.entities.database.License;
+import at.tuwien.mapper.LicenseMapper;
+import at.tuwien.service.LicenseService;
+import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Log4j2
+@RestController
+@CrossOrigin(origins = "*")
+@RequestMapping("/api/container/{id}/database")
+public class LicenseEndpoint {
+
+    private final LicenseMapper licenseMapper;
+    private final LicenseService licenseService;
+
+    @Autowired
+    public LicenseEndpoint(LicenseMapper licenseMapper, LicenseService licenseService) {
+        this.licenseMapper = licenseMapper;
+        this.licenseService = licenseService;
+    }
+
+    @GetMapping("/license")
+    @Transactional(readOnly = true)
+    @Operation(summary = "Get all licenses")
+    public ResponseEntity<List<LicenseDto>> delete(@NotBlank @PathVariable("id") Long containerId) {
+        final List<LicenseDto> licenses = licenseService.findAll()
+                .stream()
+                .map(licenseMapper::licenseToLicenseDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(licenses);
+    }
+
+}

@@ -6,11 +6,11 @@
     <parent>
         <artifactId>fda-query-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>1.1.0-alpha</version>
     </parent>
 
     <artifactId>rest-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-query-service-rest</name>
 
     <dependencies>
@@ -18,21 +18,6 @@
             <groupId>at.tuwien</groupId>
             <artifactId>services</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-oas</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-oas</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-oas</artifactId>
-            <version>3.0.0</version>
         </dependency>
     </dependencies>
 

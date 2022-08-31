@@ -3,31 +3,25 @@ MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
+ENV PORT_APP=5000
 ENV FLASK_ENV=production
+ENV HOSTNAME=analyse-service
+ENV EUREKA_SERVER=http://discovery-service:9090/eureka/
 
-RUN apt-get update > /dev/null
-RUN apt-get install -y libxml2-dev libxslt-dev python-lxml gcc > /dev/null
+WORKDIR /app
 
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt > /dev/null
 
-# Add docker-compose-wait tool -------------------
-ENV WAIT_VERSION 2.7.2
+HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ./service_ready
 
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
+COPY ./as-yml/ ./as-yml/
+COPY ./*.py ./
+COPY ./service_ready ./
 
-RUN chmod +x /wait
+RUN chmod +x ./service_ready
 
-COPY . .
+EXPOSE $PORT_APP
 
-EXPOSE 5000
-
-#CMD ["flask", "run"]
-
-RUN pip install Flask requests gevent
-
-COPY app.py /app.py
-COPY pywsgi.py /pywsgi.py
-
-CMD python /pywsgi.py
+ENTRYPOINT [ "python", "./pywsgi.py" ]

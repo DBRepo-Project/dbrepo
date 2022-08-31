@@ -1,0 +1,60 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
+    driver-class-name: org.postgresql.Driver
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  application:
+    name: authentication-service
+  cloud:
+    loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
+  mail:
+    default-encoding: UTF-8
+    host: "${SMTP_HOST}"
+    port: "${SMTP_PORT}"
+    username: "${SMTP_USERNAME}"
+    password: "${SMTP_PASSWORD}"
+    properties.mail.smtp:
+      timeout: 5000
+      auth: true
+      starttls.enable: true
+server:
+  port: 9097
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: debug
+    org.springframework.mail.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+eureka:
+  instance.hostname: authentication-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+fda:
+  ready.path: /ready
+  website: "${WEBSITE}"
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  mail:
+    prefix: /
+    from: "${MAIL_FROM}"
+    replyto: "${MAIL_REPLY_TO}"
+    verify: "${MAIL_VERIFY}"
+jwt:
+  issuer: "${JWT_ISSUER}"
+  secret: "${JWT_SECRET}"
+  expiration.ms: "${JWT_EXPIRATION}" # 24 hrs

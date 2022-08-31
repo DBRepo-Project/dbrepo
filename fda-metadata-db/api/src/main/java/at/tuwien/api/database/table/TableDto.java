@@ -1,12 +1,17 @@
 package at.tuwien.api.database.table;
 
-import at.tuwien.api.database.table.columns.RowDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import io.swagger.annotations.ApiModelProperty;
+import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,27 +22,36 @@ import javax.validation.constraints.NotNull;
 public class TableDto {
 
     @NotNull
-    @ApiModelProperty(name = "table id", example = "1")
+    @Parameter(name = "table id", example = "1")
     private Long id;
 
     @NotBlank
-    @ApiModelProperty(name = "table name", example = "Weather Australia")
+    @Parameter(name = "table name", example = "Weather Australia")
     private String name;
 
     @NotBlank
-    @ApiModelProperty(name = "table internal name", example = "weather_australia")
+    @JsonProperty("internal_name")
+    @Parameter(name = "table internal name", example = "weather_australia")
     private String internalName;
 
+    @NotNull
+    @Parameter(name = "database creator")
+    private UserBriefDto creator;
+
     @NotBlank
-    @ApiModelProperty(name = "table description", example = "Predict next-day rain in Australia", notes = "https://www.kaggle.com/jsphyg/weather-dataset-rattle-package")
+    @Parameter(name = "topic name", example = "fda.c1.d1.t1")
+    private String topic;
+
+    @NotBlank
+    @Parameter(name = "table description", example = "Predict next-day rain in Australia")
     private String description;
 
-    @NotNull
-    @ApiModelProperty(name = "table columns")
-    private ColumnDto[] columns;
+    @Parameter(name = "table creation time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+    private Instant created;
 
     @NotNull
-    @ApiModelProperty(name = "table rows")
-    private RowDto[] rows;
+    @Parameter(name = "table columns")
+    private List<ColumnDto> columns;
 
 }

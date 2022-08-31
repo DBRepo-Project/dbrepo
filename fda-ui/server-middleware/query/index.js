@@ -1,5 +1,5 @@
 const { format } = require('sql-formatter')
-const knex = require('knex')({ client: 'pg' })
+const knex = require('knex')({ client: 'mysql' })
 
 export function buildQuery ({ table, select, clauses }) {
   const builder = knex(table)
@@ -26,7 +26,9 @@ export function buildQuery ({ table, select, clauses }) {
   let sql, formatted
   try {
     sql = builder.toQuery()
-    formatted = format(sql)
+    formatted = format(sql, {
+      keywordCase: 'upper'
+    })
   } catch (e) {
     return {
       error: e.message

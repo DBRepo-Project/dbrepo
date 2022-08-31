@@ -2,8 +2,11 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -16,18 +19,20 @@ import java.util.List;
 @Data
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(indexName = "databaseindex", createIndex = false)
-@ToString(onlyExplicitlyIncluded = true)
+@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_databases")
+@SQLDelete(sql = "update mdb_databases set deleted = NOW() where id = ?")
+@javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"id", "internalName"})
+})
 public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     @GeneratedValue(generator = "database-sequence")
     @GenericGenerator(
             name = "database-sequence",
@@ -36,32 +41,67 @@ public class Database {
     )
     private Long id;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "Creator", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private Container container;
 
-    @ToString.Include
     @Column(nullable = false)
     private String name;
 
-    @ToString.Include
+    @ElementCollection
+    @CollectionTable(name = "mdb_databases_subjects", joinColumns = {
+            @JoinColumn(name = "dbid", referencedColumnName = "id")
+    })
+    private List<String> subjects;
+
     @Column(nullable = false)
     private String internalName;
 
-    @ToString.Include
+    @Column(nullable = false)
+    private String exchange;
+
     @Column
     private String description;
 
-    @ToString.Exclude
+    @Column
+    private String publisher;
+
+    @Column
+    private Integer publicationYear;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
+    })
+    private User contact;
+
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private List<Table> tables;
 
-    @ToString.Include
     @Column(nullable = false)
     private Boolean isPublic;
+
+    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
+    @Enumerated(EnumType.STRING)
+    private LanguageType language;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "License", referencedColumnName = "identifier")
+    })
+    private License license;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -70,5 +110,8 @@ public class Database {
     @Column
     @LastModifiedDate
     private Instant lastModified;
+
+    @Column
+    private Instant deleted;
 
 }

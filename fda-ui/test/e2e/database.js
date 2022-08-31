@@ -1,41 +1,63 @@
 const test = require('ava')
+const axios = require('axios')
 const { pageMacro, before, after } = require('./_utils')
 
 test.before(before)
 test.after(after)
 
-test('create & delete gffff', pageMacro, async (t, page) => {
-  const dbname = 'TestDB_' + Math.random().toString(36).substring(7)
+test('create database and see the tabs', pageMacro, async (t, page) => {
+  const database = 'Test Database ' + Math.random().toString(36).substring(7)
+  const description = 'Test Description'
 
-  await page.go('/gffff')
+  await page.go('/databases')
 
-  // Click button:has-text("Create Database")
-  await page.click('button:has-text("Create Database")')
+  // Click create new button
+  await page.click('button:has-text("Database")')
 
-  // Fill random DB Name
-  await page.fill('#dbname', dbname)
+  // Fill database name
+  await page.fill('input[name="database"]', database)
 
-  // Click Create button
-  await page.click('#createDB')
+  // Fill database description
+  await page.fill('textarea[name="description"]', description)
 
-  // make sure row exists
-  const newRow = await page.waitForSelector(`tr >> text=${dbname}`)
-  t.true(!!newRow, `DB ${dbname} row does not exist in DB list`)
+  // Press Tab
+  await page.press('textarea[name="description"]', 'Tab')
 
-  // Go to gffff info page
-  await page.click(`text=${dbname} >> a`)
+  // Select mariadb:10.5
+  await page.press('#engine', 'ArrowDown')
 
-  // click on admin tab
-  await page.click('text=admin')
+  // Click submit button
+  await page.click('button:has-text("Create")')
 
-  // click delete
-  await page.click('.v-btn >> text=delete')
+  // See page load
+  let success = await page.waitForSelector('text=' + database)
+  t.true(!!success, `Database ${database} seems not to be created, notification not found`)
 
-  // confirm deletion in dialog
-  await page.click('.v-dialog .v-btn >> text=delete')
-  // await page.go('/gffff')
+  const id = await axios.get('http://localhost:9092/api/database/').then(function (response) {
+    return response.filter(function (item) {
+      return item.name === database
+    }).id
+  })
 
-  // assert table row does not exist
-  const oldRow = await page.$(`tr >> text=${dbname}`)
-  t.false(!!oldRow, `Database ${dbname} not deleted`)
+  // -------------------------------------------------------------------------------------------------------------------
+
+  await page.go('/databases/' + id + '/info')
+
+  // find 'mariadb' anywhere on the page:
+  success = await page.waitForSelector('text=mariadb:10.5')
+  t.true(!!success, 'Could not find the mariadb image on the site')
+
+  await page.go('/databases/' + id + '/tables')
+
+  // find 'mariadb' anywhere on the page:
+  success = await page.waitForSelector('text=(no tables)')
+  t.true(!!success, 'Could not find the tables on the site')
+
+  // -------------------------------------------------------------------------------------------------------------------
+
+  await page.go('/databases/' + id + '/queries')
+
+  // find 'mariadb' anywhere on the page:
+  success = await page.waitForSelector('text=(no queries)')
+  t.true(!!success, 'Could not find the queries on the site')
 })

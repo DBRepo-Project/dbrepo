@@ -2,16 +2,18 @@ version: "3.6"
 
 volumes:
   fda-metadata-db-data:
+  fda-search-service-data:
+  fda-broker-service-data:
 
 networks:
-  fda-public:
-    name: fda-public
+  public:
+    name: public
     driver: bridge
     ipam:
       config:
         - subnet: 172.29.0.0/16
-  fda-userdb:
-    name: fda-userdb
+  userdb:
+    name: userdb
     driver: bridge
     ipam:
       config:
@@ -20,214 +22,297 @@ networks:
 services:
 
   fda-metadata-db:
-    restart: always
+    restart: on-failure
     container_name: fda-metadata-db
-    hostname: fda-metadata-db
+    hostname: metadata-db
     build: ./fda-metadata-db
     image: fda-metadata-db
     networks:
-      - fda-public
+      public:
     volumes:
       - fda-metadata-db-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: fda
+      - "5432:5432"
+    logging:
+      driver: json-file
 
   fda-discovery-service:
-    restart: always
+    restart: on-failure
     container_name: fda-discovery-service
-    hostname: fda-discovery-service
+    hostname: discovery-service
     build: ./fda-discovery-service
     image: fda-discovery-service
     networks:
-      - fda-public
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - 9090:9090
+      - "9090:9090"
+    logging:
+      driver: json-file
 
   fda-gateway-service:
-    restart: always
+    restart: on-failure
     container_name: fda-gateway-service
-    hostname: fda-gateway-service
+    hostname: gateway-service
     build: ./fda-gateway-service
     image: fda-gateway-service
     networks:
-      - fda-public
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - 9095:9095
+      - "9095:9095"
     depends_on:
-      - fda-discovery-service
+      fda-discovery-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
   fda-database-service:
-    restart: always
+    restart: on-failure
     container_name: fda-database-service
-    hostname: fda-database-service
+    hostname: database-service
     build: ./fda-database-service
     image: fda-database-service
     networks:
-      - fda-userdb
-      - fda-public
+      userdb:
+      public:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - 9092:9092
+      - "9092:9092"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - fda-discovery-service
-      - fda-container-service
-      - fda-metadata-db
     depends_on:
-      - fda-discovery-service
-      - fda-container-service
-      - fda-metadata-db
+      fda-container-service:
+        condition: service_healthy
+      fda-broker-service:
+        condition: service_started
+      fda-authentication-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
   fda-container-service:
-    restart: always
+    restart: on-failure
     container_name: fda-container-service
-    hostname: fda-container-service
+    hostname: container-service
     build: ./fda-container-service
     image: fda-container-service
     networks:
-      - fda-public
+      public:
     environment:
-      SPRING_PROFILES_ACTIVE: docker,seed
+      SPRING_PROFILES_ACTIVE: docker
     ports:
-      - 9091:9091
+      - "9091:9091"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - fda-discovery-service
-      - fda-metadata-db
     depends_on:
-      - fda-discovery-service
-      - fda-metadata-db
+      fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-authentication-service:
+    restart: on-failure
+    container_name: fda-authentication-service
+    hostname: authentication-service
+    image: fda-authentication-service
+    build: fda-authentication-service
+    networks:
+      public:
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9097:9097"
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
+      fda-broker-service:
+        condition: service_started
+      fda-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
   fda-query-service:
-    restart: always
+    restart: on-failure
     container_name: fda-query-service
-    hostname: fda-query-service
+    hostname: query-service
     build: ./fda-query-service
     image: fda-query-service
     networks:
-      - fda-public
-      - fda-userdb
+      public:
+      userdb:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - 9093:9093
+      - "9093:9093"
     volumes:
       - /tmp:/tmp
-    links:
-      - fda-discovery-service
-      - fda-container-service
     depends_on:
-      - fda-discovery-service
-      - fda-container-service
+      fda-table-service:
+        condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
   fda-table-service:
-    restart: always
+    restart: on-failure
     container_name: fda-table-service
-    hostname: fda-table-service
+    hostname: table-service
     build: ./fda-table-service
     image: fda-table-service
     networks:
-      - fda-public
-      - fda-userdb
+      public:
+      userdb:
     environment:
+      GATEWAY_ENDPOINT: http://fda-gateway-service:9095
+      SEARCH_ENDPOINT: fda-search-service:9200
       SPRING_PROFILES_ACTIVE: docker
       multipart.location: /tmp
     ports:
-      - 9094:9094
+      - "9094:9094"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp:/tmp
-    links:
-      - fda-metadata-db
-      - fda-discovery-service
     depends_on:
-      - fda-metadata-db
-      - fda-discovery-service
+      fda-authentication-service:
+        condition: service_healthy
+      fda-search-service:
+        condition: service_started
+      fda-broker-service:
+        condition: service_started
+    logging:
+      driver: json-file
+
+  fda-identifier-service:
+    restart: on-failure
+    container_name: fda-identifier-service
+    hostname: identifier-service
+    build: ./fda-identifier-service
+    image: fda-identifier-service
+    networks:
+      public:
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9096:9096"
+    depends_on:
+      fda-query-service:
+        condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
 
   fda-analyse-service:
-    restart: always
+    restart: on-failure
     container_name: fda-analyse-service
-    hostname: fda-analyse-service
+    hostname: analyse-service
     build: ./fda-analyse-service
     image: fda-analyse-service
     networks:
-      - fda-public
-      - fda-userdb
+      public:
+      userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     environment:
-      EUREKA_SERVER: http://fda-discovery-service:9090/eureka
-      WAIT_HOSTS: fda-database-service:9092
-      WAIT_HOSTS_TIMEOUT: 600
-      WAIT_SLEEP_INTERVAL: 30
-      WAIT_HOST_CONNECT_TIMEOUT: 30
+      hostname: analyse-service
     ports:
-      - 5000:5000
+      - "5000:5000"
     volumes:
       - /tmp:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
-    links:
-      - fda-discovery-service
     depends_on:
-      - fda-discovery-service
+      fda-discovery-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-units-service:
+    restart: on-failure
+    container_name: fda-units-service
+    hostname: units-service
+    build: ./fda-units-service
+    image: fda-units-service
+    networks:
+      public:
+    environment:
+      EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
+    ports:
+      - "5010:5010"
+    volumes:
+      - /tmp:/tmp
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-broker-service:
+    restart: on-failure
+    container_name: fda-broker-service
+    hostname: broker-service
+    build: ./fda-broker-service
+    image: fda-broker-service
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    networks:
+      public:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
+    volumes:
+      - fda-broker-service-data:/var/lib/rabbitmq/
     logging:
       driver: json-file
 
   fda-search-service:
     restart: always
     container_name: fda-search-service
-    hostname: fda-search-service
+    hostname: search-service
     image: elasticsearch:7.13.4
-    command: ["elasticsearch", "-Elogger.level=WARN"]
+    command: [ "elasticsearch" ]
     networks:
-      - fda-public
+      public:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - logger.level=WARN
+    depends_on:
+      fda-discovery-service:
+        condition: service_healthy
     ports:
       - 9200:9200
       - 9600:9600
+    volumes:
+      - fda-search-service-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
   fda-ui:
-    restart: always
+    restart: on-failure
     container_name: fda-ui
-    hostname: fda-ui
+    hostname: ui
     build: ./fda-ui
     image: fda-ui
     networks:
-      - fda-public
+      public:
     ports:
-      - 3000:3000
+      - "3000:3000"
     volumes:
       - /tmp:/tmp
+      - "./fda-ui/.prod:/certs"
     depends_on:
-      - fda-container-service
-      - fda-database-service
-      - fda-table-service
-    environment:
-      HOST: 0.0.0.0
-      API_CONTAINER: http://fda-container-service:9091
-      API_IMAGE: http://fda-container-service:9091
-      API_DATABASE: http://fda-database-service:9092
-      API_TABLES: http://fda-table-service:9094
-      API_ANALYSE: http://fda-analyse-service:5000
+      fda-identifier-service:
+        condition: service_healthy
+      fda-database-service:
+        condition: service_healthy
+    logging:
+      driver: json-file

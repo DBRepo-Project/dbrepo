@@ -1,7 +1,6 @@
 package at.tuwien.api.database.query;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -13,11 +12,19 @@ import java.util.Map;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @ToString
 public class QueryResultDto {
 
-    @NotNull
-    @ApiModelProperty(name = "query result")
+    @NotNull(message = "result set is required")
+    @Parameter(name = "query result")
     private List<Map<String, Object>> result;
+
+    @NotNull(message = "query id is required")
+    @Parameter(name = "query id")
+    private Long id;
+
+    @Parameter(name = "result number")
+    private Long resultNumber;
 
 }

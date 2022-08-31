@@ -10,7 +10,7 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>fda-table-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-table-service</name>
     <description>Demo project for Spring Boot</description>
 
@@ -19,6 +19,7 @@
         <module>rest-service</module>
         <module>services</module>
         <module>report</module>
+        <module>api</module>
     </modules>
 
     <properties>
@@ -27,11 +28,13 @@
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <docker.version>3.2.7</docker.version>
         <testcontainers.version>1.15.2</testcontainers.version>
-        <swagger.version>2.1.7</swagger.version>
-        <springfox.version>3.0.0</springfox.version>
         <jacoco.version>0.8.7</jacoco.version>
-        <jooq.version>3.14.11</jooq.version>
         <opencsv.version>5.4</opencsv.version>
+        <super-csv.version>2.4.0</super-csv.version>
+        <btrace-client.version>2.2.0</btrace-client.version>
+        <random-utils.version>2.0.0</random-utils.version>
+        <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <jsql.version>3.1</jsql.version>
     </properties>
 
     <dependencies>
@@ -43,10 +46,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <dependency><!-- https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.3-Release-Notes#validation-starter-no-longer-included-in-web-starters -->
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -55,6 +54,15 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
             <version>${spring-cloud.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- Entities and API -->
         <dependency>
@@ -66,6 +74,17 @@
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-api</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${hibernate-c3po.version}</version>
         </dependency>
         <!-- DataSource -->
         <dependency>
@@ -86,16 +105,45 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
         </dependency>
+        <!-- SQL Parser -->
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>${jsql.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- CSV -->
+        <dependency>
+            <groupId>net.sf.supercsv</groupId>
+            <artifactId>super-csv</artifactId>
+            <version>${super-csv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.btrace</groupId>
+            <artifactId>btrace-client</artifactId>
+            <version>${btrace-client.version}</version>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.aventrix.jnanoid</groupId>
+            <artifactId>jnanoid</artifactId>
+            <scope>test</scope>
+            <version>${random-utils.version}</version>
+        </dependency>
+        <!-- AMPQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbit-amqp-client.version}</version>
+        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
@@ -128,17 +176,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <!-- DSL -->
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq</artifactId>
-            <version>${jooq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq-meta</artifactId>
-            <version>${jooq.version}</version>
-        </dependency>
         <!-- Docker -->
         <dependency>
             <groupId>com.github.docker-java</groupId>
@@ -168,12 +205,6 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -187,8 +218,14 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/utils/**/*</exclude>
+                        <exclude>at/tuwien/api/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
+                        <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>**/FdaTableServiceApplication.class</exclude>
+                        <exclude>**/RabbitMqService.class</exclude>
+                        <exclude>**/TableSeeder.class</exclude>
+                        <exclude>**/DataSeeder.class</exclude>
+                        <exclude>**/ServiceSeeder.class</exclude>
                         <exclude>**/JdbcConnector.class</exclude>
                     </excludes>
                 </configuration>
@@ -205,6 +242,20 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>aggregate</id>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                        <phase>site</phase>
                     </execution>
                 </executions>
             </plugin>

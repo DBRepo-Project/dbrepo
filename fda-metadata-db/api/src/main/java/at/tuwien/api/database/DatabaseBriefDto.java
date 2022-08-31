@@ -1,9 +1,14 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -16,25 +21,32 @@ import java.time.Instant;
 @NoArgsConstructor
 public class DatabaseBriefDto {
 
-    @NotNull
-    @Min(value = 1)
+    @NotNull(message = "database id is required")
     @Parameter(name = "database id", example = "1")
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "name is required")
     @Parameter(name = "database name", example = "Weather Australia")
     private String name;
 
-    @NotBlank
     @Parameter(name = "database description", example = "Weather in Australia")
     private String description;
 
-    @NotBlank
+    @JsonProperty("is_public")
+    @Parameter(name = "database visibility")
+    private Boolean isPublic;
+
     @Parameter(name = "database engine", example = "mariadb:latest")
     private String engine;
 
-    @NotBlank
+    @Parameter(name = "container")
+    private ContainerBriefDto container;
+
+    @Parameter(name = "database creator")
+    private UserBriefDto creator;
+
     @Parameter(name = "database creation time", example = "2020-08-04 11:12:00")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
 }

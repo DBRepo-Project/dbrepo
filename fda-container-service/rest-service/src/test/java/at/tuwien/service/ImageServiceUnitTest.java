@@ -3,10 +3,12 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.api.container.image.ImageEnvItemDto;
+import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.service.impl.ImageServiceImpl;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,45 +31,52 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class ImageServiceUnitTest extends BaseUnitTest {
 
+    @MockBean
+    private ReadyConfig readyConfig;
+
     @Autowired
-    private ImageService imageService;
+    private ImageServiceImpl imageService;
 
     @MockBean
     private ImageRepository imageRepository;
 
     @Test
     public void getAll_succeeds() {
+
+        /* mock */
         when(imageRepository.findAll())
-                .thenReturn(List.of(IMAGE_1, IMAGE_2));
+                .thenReturn(List.of(IMAGE_1));
 
         /* test */
         final List<ContainerImage> response = imageService.getAll();
-        assertEquals(2, response.size());
+        assertEquals(1, response.size());
         assertEquals(IMAGE_1_REPOSITORY, response.get(0).getRepository());
         assertEquals(IMAGE_1_TAG, response.get(0).getTag());
-        assertEquals(IMAGE_2_REPOSITORY, response.get(1).getRepository());
-        assertEquals(IMAGE_2_TAG, response.get(1).getTag());
     }
 
     @Test
     public void getById_succeeds() throws ImageNotFoundException {
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
 
         /* test */
-        final ContainerImage response = imageService.getById(IMAGE_1_ID);
+        final ContainerImage response = imageService.find(IMAGE_1_ID);
         assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
         assertEquals(IMAGE_1_TAG, response.getTag());
     }
 
     @Test
     public void getById_notFound_fails() {
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.getById(IMAGE_1_ID);
+            imageService.find(IMAGE_1_ID);
         });
     }
 
@@ -78,12 +88,15 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
         when(imageRepository.save(any(ContainerImage.class)))
                 .thenThrow(ConstraintViolationException.class);
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
-            imageService.create(request);
+            imageService.create(request, principal);
         });
     }
 
@@ -93,6 +106,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
@@ -106,12 +121,12 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_port_succeeds() throws ImageNotFoundException, DockerClientException {
-        final ImageEnvItemDto[] env = IMAGE_1_ENV_DTO;
-        env[0].setValue("postgres2");
         final ImageChangeDto request = ImageChangeDto.builder()
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(9999)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
@@ -121,7 +136,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         final ContainerImage response = imageService.update(IMAGE_1_ID, request);
         assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
         assertEquals(IMAGE_1_TAG, response.getTag());
-        assertEquals("postgres2", response.getEnvironment().get(0).getValue());
     }
 
     @Test
@@ -130,6 +144,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
+
+        /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
 
@@ -141,6 +157,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_succeeds() throws ImageNotFoundException, PersistenceException {
+
+        /* mock */
         doNothing()
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
@@ -151,6 +169,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_notFound_fails() {
+
+        /* mock */
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);

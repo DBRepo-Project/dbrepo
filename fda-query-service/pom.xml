@@ -10,15 +10,33 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>fda-query-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-query-service</name>
-    <description>Demo project for Spring Boot</description>
+    <description>
+        The query service provides an interface to insert data into the tables created by the table service. It
+        also allows for view-only (possibly paginated and versioned) query execution to the raw data and consumes
+        messages in the message queue from the Broker Service.
+    </description>
+    <url>https://dbrepo.ossdip.at</url>
+    <developers>
+        <developer>
+            <name>Martin Weise</name>
+            <email>martin.weise@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Moritz Staudinger</name>
+            <email>moritz.staudinger@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+    </developers>
 
     <packaging>pom</packaging>
     <modules>
         <module>rest-service</module>
         <module>services</module>
         <module>report</module>
+        <module>api</module>
     </modules>
 
     <properties>
@@ -30,6 +48,9 @@
         <swagger.version>2.1.7</swagger.version>
         <springfox.version>3.0.0</springfox.version>
         <jacoco.version>0.8.7</jacoco.version>
+        <opencsv.version>5.4</opencsv.version>
+        <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <maven-report.version>3.0.0</maven-report.version>
     </properties>
 
     <dependencies>
@@ -41,6 +62,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
         <dependency><!-- https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.3-Release-Notes#validation-starter-no-longer-included-in-web-starters -->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -50,18 +75,55 @@
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
             <version>${spring-cloud.version}</version>
         </dependency>
-        <!-- Data Source -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Data Source -->
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
+        </dependency>
+        <!-- AMPQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbit-amqp-client.version}</version>
+        </dependency>
+        <!-- Docker -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>${docker.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-httpclient5</artifactId>
+            <version>${docker.version}</version>
         </dependency>
         <!-- IDE -->
         <dependency>
@@ -74,7 +136,7 @@
             <artifactId>tomcat-dbcp</artifactId>
             <version>9.0.33</version>
         </dependency>
-        <!-- Entity and API -->
+        <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-api</artifactId>
@@ -86,6 +148,17 @@
             <artifactId>fda-metadata-db-entites</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${hibernate-c3po.version}</version>
         </dependency>
         <!-- Testing -->
         <dependency>
@@ -114,44 +187,25 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
-            <optional>true</optional><!-- IntelliJ -->
+            <optional>true</optional>
+        <!-- IntelliJ -->
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
+        <!-- DTO -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
+        </dependency>
         <!-- SQL Parser -->
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
             <version>3.1</version>
-        </dependency>
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-spring-web</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-models</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
         <!-- Gateway -->
         <dependency>
@@ -163,45 +217,6 @@
             <groupId>javax.ws.rs</groupId>
             <artifactId>javax.ws.rs-api</artifactId>
             <version>2.1.1</version>
-        </dependency>
-
-        <!-- Swagger -->
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-spring-web</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-models</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <!-- Mapping -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>${mapstruct.version}</version>
-            <optional>true</optional><!-- IntelliJ -->
-        </dependency>
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>${mapstruct.version}</version>
         </dependency>
     </dependencies>
 
@@ -215,8 +230,13 @@
                     <excludes>
                         <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/mapper/**/*</exclude>
+                        <exclude>at/tuwien/entities/**/*</exclude>
+                        <exclude>at/tuwien/seeder/**/*</exclude>
+                        <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
+                        <exclude>**/RabbitMqServiceImpl.class</exclude>
+                        <exclude>**/ServiceSeeder.class</exclude>
                         <exclude>**/FdaQueryServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
@@ -235,6 +255,30 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+<!--                <configuration>-->
+<!--                    <outputDirectory>docs</outputDirectory>-->
+<!--                </configuration>-->
+            </plugin>
+            <plugin>
+                <groupId>com.soebes.maven.plugins</groupId>
+                <artifactId>doxygen-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <haveDot>false</haveDot>
+                    <quiet>false</quiet>
+                    <projectName>This is a Test Project (basicReportTest)</projectName>
+                    <outputDirectory>docs</outputDirectory>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -10,37 +10,44 @@ const { buildQuery } = require('./query')
 
 // TODO extend me
 const colTypeMap = {
-  Boolean: 'BOOLEAN',
-  Date: 'DATE',
-  Integer: 'NUMBER',
-  Numeric: 'NUMBER',
-  String: 'STRING',
-  Text: 'STRING',
-  Timestamp: 'DATE'
+  Boolean: 'boolean',
+  Date: 'date',
+  Blob: 'blob',
+  Integer: 'number',
+  Decimal: 'decimal',
+  String: 'string',
+  Text: 'text',
+  Timestamp: 'timestamp'
 }
 
 app.post('/table_from_csv', upload.single('file'), async (req, res) => {
   const { file } = req
-  const { path } = file
-
+  const { filename } = file
   // send path to analyse service
   let analysis
+  let json
   try {
-    analysis = await fetch(`${process.env.API_ANALYSE}/determinedt`, {
+    const analyseUrl = `${process.env.API}/api/analyse/determinedt`
+    analysis = await fetch(analyseUrl, {
       method: 'post',
-      body: JSON.stringify({ filepath: path }),
+      body: JSON.stringify({ filepath: `/tmp/${filename}` }),
       headers: { 'Content-Type': 'application/json' }
+    }).catch((error) => {
+      console.error('data type determination failed:', error)
+      throw error
     })
-    analysis = await analysis.json()
-    analysis = JSON.parse(analysis)
-    console.debug('analyzed', analysis)
+    json = await analysis.json()
+    if (!json.columns) {
+      return res.json({ success: false, message: 'Columns array missing' })
+    }
   } catch (error) {
+    console.error('failed to analyze:', error)
     return res.json({ success: false, error })
   }
 
   // map messytables / CoMi's `determine_dt` column types to ours
-  // e.g. "Integer" -> "NUMBER"
-  let entries = Object.entries(analysis.columns)
+  // e.g. "Integer" -> "number"
+  let entries = Object.entries(json.columns)
   entries = entries.map(([k, v]) => {
     if (colTypeMap[v]) {
       v = colTypeMap[v]
@@ -48,10 +55,13 @@ app.post('/table_from_csv', upload.single('file'), async (req, res) => {
     return {
       name: k,
       type: v,
-      nullAllowed: true,
-      primaryKey: false,
+      check_expression: null,
+      foreign_key: null,
+      references: null,
+      null_allowed: true,
+      primary_key: false,
       unique: null,
-      enumValues: []
+      enum_values: []
     }
   })
 

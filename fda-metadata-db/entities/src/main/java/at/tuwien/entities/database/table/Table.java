@@ -2,7 +2,10 @@ package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -22,15 +25,17 @@ import java.util.List;
 @NoArgsConstructor
 @Document(indexName = "tblindex", createIndex = false)
 @IdClass(TableKey.class)
-@ToString(onlyExplicitlyIncluded = true)
+@ToString
+@Log4j2
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_tables")
+@javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
+})
 public class Table {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     @GeneratedValue(generator = "table-sequence")
     @GenericGenerator(
             name = "table-sequence",
@@ -41,29 +46,34 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     private Long tdbid;
 
-    @ToString.Include
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+    })
+    private User creator;
+
     @Column(nullable = false, name = "tname")
     private String name;
 
-    @ToString.Include
-    @Column(name = "tdescription")
-    private String description;
-
-    @ToString.Include
     @Column(nullable = false)
     private String internalName;
 
+    @Column(nullable = false, updatable = false)
+    private String topic;
+
+    @Column(name = "tdescription")
+    private String description;
+
+    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
-    @ToString.Include
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "table")
-    @Field(type = FieldType.Nested)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
+    @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 
     @Column(nullable = false, updatable = false)
@@ -77,6 +87,17 @@ public class Table {
     @PreRemove
     public void preRemove() {
         this.database = null;
+    }
+
+    public boolean equals(FromItem other) {
+        final String name = other.toString()
+                .replace("`","");
+        if (other.getAlias() != null) {
+            final int idx = name.indexOf(' ');
+            return this.getInternalName()
+                    .equals(name.substring(0, idx));
+        }
+        return this.getInternalName().equals(name);
     }
 
 }

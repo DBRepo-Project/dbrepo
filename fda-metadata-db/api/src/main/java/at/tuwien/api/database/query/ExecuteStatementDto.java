@@ -1,15 +1,20 @@
 package at.tuwien.api.database.query;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
+
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class ExecuteStatementDto {
 
-    @JsonProperty("Statement")
+    @NotBlank(message = "statement is required")
+    @Parameter(name = "sql query")
     private String statement;
 }

@@ -1,47 +1,104 @@
 <template>
-  <v-toolbar v-if="db" flat>
-    <img id="engine-logo" :alt="`${db.image.repository}`" :src="`data:image/png;base64,${db.image.logo}`">
-    <v-toolbar-title>
-      {{ db.name }}
-    </v-toolbar-title>
-    <v-spacer />
-    <v-toolbar-title>
-      <v-btn :to="`/databases/${$route.params.database_id}/tables/import`" class="mr-2">
-        <v-icon left>mdi-cloud-upload</v-icon> Import CSV
-      </v-btn>
-      <v-btn color="primary" :to="`/databases/${$route.params.database_id}/tables/create`">
-        <v-icon left>mdi-table-large-plus</v-icon> Create Table
-      </v-btn>
-    </v-toolbar-title>
-    <template v-slot:extension>
-      <v-tabs v-model="tab" color="primary">
-        <v-tab :to="`/databases/${$route.params.database_id}/info`">
-          Info
-        </v-tab>
-        <v-tab :to="`/databases/${$route.params.database_id}/tables/`">
-          Tables
-        </v-tab>
-        <v-tab :to="`/databases/${$route.params.database_id}/queries/`">
-          Queries
-        </v-tab>
-        <v-tab :to="`/databases/${$route.params.database_id}/admin/`">
-          Admin
-        </v-tab>
-      </v-tabs>
-    </template>
-  </v-toolbar>
+  <div>
+    <v-toolbar v-if="cached_database" flat>
+      <v-toolbar-title>
+        <span>{{ cached_database.name }}</span>
+        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
+        <v-icon v-if="cached_database.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
+      </v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="token" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+          <v-icon left>mdi-cloud-upload</v-icon> Import CSV
+        </v-btn>
+        <v-btn v-if="token" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+          <v-icon left>mdi-wrench</v-icon> Create Subset
+        </v-btn>
+        <v-btn v-if="token" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+          <v-icon left>mdi-table-large-plus</v-icon> Create Table
+        </v-btn>
+      </v-toolbar-title>
+      <template v-slot:extension>
+        <v-tabs v-model="tab" color="primary">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/info`">
+            Info
+          </v-tab>
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/table`">
+            Tables
+          </v-tab>
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
+            Subsets
+          </v-tab>
+        </v-tabs>
+      </template>
+    </v-toolbar>
+  </div>
 </template>
 
 <script>
 export default {
   data () {
     return {
-      tab: null
+      tab: null,
+      loading: false,
+      error: false,
+      database: {
+        id: null,
+        is_public: null
+      }
     }
   },
   computed: {
-    db () {
+    cached_database () {
       return this.$store.state.db
+    },
+    databaseId () {
+      return this.$route.params.database_id
+    },
+    loadingColor () {
+      return 'primary'
+    },
+    token () {
+      return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    }
+  },
+  watch: {
+    $route () {
+      if (this.database.id !== this.$route.params.database_id) {
+        this.loadDatabase()
+      }
+    }
+  },
+  mounted () {
+    if (this.database.id) {
+      return
+    }
+    if (this.cached_database && this.cached_database.id === this.$route.params.database_id) {
+      return
+    }
+    this.loadDatabase()
+  },
+  methods: {
+    async loadDatabase () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.database = res.data
+        console.debug('database', res.data)
+        this.$store.commit('SET_DATABASE', res.data)
+        this.loading = false
+      } catch (err) {
+        this.$toast.error('Could not load database.')
+        this.loading = false
+      }
     }
   }
 }

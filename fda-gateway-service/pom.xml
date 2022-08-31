@@ -9,15 +9,22 @@
     </parent>
     <groupId>at.tuwien</groupId>
     <artifactId>fda-gateway-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.1.0-alpha</version>
     <name>fda-gateway-service</name>
     <description>Demo project for Spring Boot</description>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>gateway</module>
+        <module>report</module>
+    </modules>
 
     <properties>
         <java.version>11</java.version>
         <spring-cloud.version>Hoxton.SR10</spring-cloud.version><!-- SR11 not working yet -->
         <swagger.version>2.1.7</swagger.version>
         <springfox.version>3.0.0</springfox.version>
+        <jacoco.version>0.8.7</jacoco.version>
     </properties>
 
     <dependencies>
@@ -38,31 +45,20 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
-        <!-- Swagger -->
+        <!-- Embedded DataSource -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-boot-starter</artifactId>
-            <version>${springfox.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>${springfox.version}</version>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
         </dependency>
+        <!-- IDE -->
         <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-spring-web</artifactId>
-            <version>${springfox.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-models</artifactId>
-            <version>${swagger.version}</version>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 
@@ -81,12 +77,31 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>at/tuwien/utils/**/*</exclude>
+                        <exclude>at/tuwien/seeder/**/*</exclude>
+                        <exclude>at/tuwien/mapper/**/*</exclude>
+                        <exclude>at/tuwien/exception/**/*</exclude>
+                        <exclude>at/tuwien/config/**/*</exclude>
+                        <exclude>**/FdaContainerManagingApplication.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
+                        <id>default-prepare-agent</id>
                         <goals>
-                            <goal>repackage</goal><!-- to make it exuteable with $ java -jar ./app.jar -->
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
                         </goals>
                     </execution>
                 </executions>

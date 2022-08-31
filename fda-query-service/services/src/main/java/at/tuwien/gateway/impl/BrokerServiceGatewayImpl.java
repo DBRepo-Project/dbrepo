@@ -1,0 +1,60 @@
+package at.tuwien.gateway.impl;
+
+import at.tuwien.api.amqp.ConsumerDto;
+import at.tuwien.config.AmqpConfig;
+import at.tuwien.config.GatewayConfig;
+import at.tuwien.gateway.BrokerServiceGateway;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.List;
+
+@Slf4j
+@Service
+public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
+
+    private final AmqpConfig amqpConfig;
+    private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
+
+    @Autowired
+    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, RestTemplate restTemplate, GatewayConfig gatewayConfig) {
+        this.amqpConfig = amqpConfig;
+        this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
+    }
+
+    @Override
+    public List<ConsumerDto> findAllConsumers() {
+        final URI findUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/consumers/%2F");
+        final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
+                new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
+                });
+        return response.getBody();
+    }
+
+    /**
+     * Retrieves the authentication headers from the configuration for the broker service.
+     *
+     * @return The headers.
+     */
+    private HttpHeaders getHeaders() {
+        return new HttpHeaders() {{
+            String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
+            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
+    }
+
+}

@@ -2,6 +2,7 @@ before_script:
   - "docker version"
   - "docker-compose version"
   - "mvn --version"
+  - "df / -h"
 
 variables:
   HOSTALIASES: ./hosts
@@ -14,141 +15,77 @@ cache:
 
 image: "docker/compose:latest"
 
-stages: 
+stages:
   - build
-  - test-e2e
-  - test-backend
-  - deploy
+
+build-backend-metadata:
+  stage: build
+  script:
+    - "make build-backend-metadata"
+
+build-backend-authentication:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-authentication"
+
+build-backend-identifier:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-identifier"
+
+build-backend-container:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-container"
+
+build-backend-database:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-database"
+
+build-backend-discovery:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-discovery"
+
+build-backend-gateway:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-gateway"
+
+build-backend-query:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-query"
+
+build-backend-table:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-table"
 
 build-docker:
   stage: build
   script:
-    - "docker image pull postgres:latest || true"
-    - "docker image pull mysql:latest || true"
-    - "docker image pull mariadb:latest || true"
-    - "docker-compose down || true"
-    - "docker container stop $(docker container ls -aq) || true"
-    - "docker container rm $(docker container ls -aq) || true"
-    - "docker volume rm $(docker volume ls -q) || true"
-    - "docker-compose build"
+    - make build-docker
 
-build-metadata-db:
+build-frontend:
   stage: build
   script:
-    - "mvn -f fda-metadata-db/pom.xml clean install" # local maven2 repository
+    - make build-frontend
 
-test-e2e:
-  stage: test-e2e
-  script:
-    - "docker-compose up -d"
-    - "docker exec fda-ui bash -c './scripts/wait.sh http://fda-database-service:9092/api/database/'"
-    - "sleep 30"
-    - "docker exec fda-ui yarn test"
-  artifacts:
-    when: always
-    paths:
-      - "fda-ui/videos/*"
-    expire_in: 1 week
-  variables:
-    CI_DEBUG_TRACE: "true"
-
-test-backend-container:
-  stage: test-backend
-  script:
-    - docker system prune -f
-    - "./fda-container-service/rest-service/src/test/resources/integration-test.before"
-    - "mvn -f fda-container-service/pom.xml clean test verify"
-    - "./fda-container-service/rest-service/src/test/resources/integration-test.after"
-    - cat ./fda-container-service/report/target/site/jacoco-aggregate/index.html
-  needs:
-    - build-metadata-db
-  dependencies:
-    - build-metadata-db
-  artifacts:
-    when: always
-    paths:
-      - fda-container-service/rest-service/target/site/jacoco/jacoco.xml
-      - fda-container-service/rest-service/target/site/jacoco/index.html
-    reports:
-      junit:
-        - fda-container-service/rest-service/target/surefire-reports/TEST-*.xml
-
-test-backend-database:
-  stage: test-backend
-  script:
-    - docker system prune -f
-    - "./fda-database-service/rest-service/src/test/resources/integration-test.before"
-    - "mvn -f fda-database-service/pom.xml clean test verify"
-    - "./fda-database-service/rest-service/src/test/resources/integration-test.after"
-    - cat ./fda-database-service/report/target/site/jacoco-aggregate/index.html
-  needs:
-    - build-metadata-db
-  dependencies:
-    - build-metadata-db
-  artifacts:
-    when: always
-    paths:
-      - fda-database-service/rest-service/target/site/jacoco/jacoco.xml
-      - fda-database-service/rest-service/target/site/jacoco/index.html
-    reports:
-      junit:
-        - fda-database-service/rest-service/target/surefire-reports/TEST-*.xml
-
-test-backend-discovery:
-  stage: test-backend
-  script:
-    - "mvn -f fda-discovery-service/pom.xml clean test verify"
-
-test-backend-gateway:
-  stage: test-backend
-  script:
-    - "mvn -f fda-gateway-service/pom.xml clean test verify"
-
-test-backend-query:
-  stage: test-backend
-  script:
-    - docker system prune -f
-    - "./fda-query-service/rest-service/src/test/resources/integration-test.before"
-    - "mvn -f fda-query-service/pom.xml clean test verify"
-    - "./fda-query-service/rest-service/src/test/resources/integration-test.after"
-    - cat ./fda-query-service/report/target/site/jacoco-aggregate/index.html
-  needs:
-    - build-metadata-db
-  dependencies:
-    - build-metadata-db
-  artifacts:
-    when: always
-    paths:
-      - fda-query-service/rest-service/target/site/jacoco/jacoco.xml
-      - fda-query-service/rest-service/target/site/jacoco/index.html
-    reports:
-      junit:
-        - fda-query-service/rest-service/target/surefire-reports/TEST-*.xml
-
-test-backend-table:
-  stage: test-backend
-  script:
-    - docker system prune -f
-    - "./fda-table-service/rest-service/src/test/resources/integration-test.before"
-    - "mvn -f fda-table-service/pom.xml clean test verify"
-    - "./fda-table-service/rest-service/src/test/resources/integration-test.after"
-    - cat ./fda-table-service/report/target/site/jacoco-aggregate/index.html
-  needs:
-    - build-metadata-db
-  dependencies:
-    - build-metadata-db
-  artifacts:
-    when: always
-    paths:
-      - fda-table-service/rest-service/target/site/jacoco/jacoco.xml
-      - fda-table-service/rest-service/target/site/jacoco/index.html
-    reports:
-      junit:
-        - fda-table-service/rest-service/target/surefire-reports/TEST-*.xml
-
-deploy-all:
-  stage: deploy
-  script:
-    - "docker-compose down"
-    - "docker-compose up -d"
-    - "docker-compose down"

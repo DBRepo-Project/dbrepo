@@ -1,6 +1,7 @@
 package at.tuwien.api.container.image;
 
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.Max;
@@ -17,25 +18,27 @@ public class ImageChangeDto {
 
     @Min(value = 1024, message = "only user ports are allowed 1024-65535")
     @Max(value = 65535, message = "only user ports are allowed 1024-65535")
-    @ApiModelProperty(example = "5432")
+    @Parameter(example = "5432")
     private Integer defaultPort;
 
     private ImageEnvItemDto[] environment;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "org.postgresql.Driver")
+    @JsonProperty("driver_class")
+    @Parameter(required = true, example = "org.postgresql.Driver")
     private String driverClass;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "base64:aaaa")
+    @Parameter(required = true, example = "base64:aaaa")
     private String logo;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "Postgres")
+    @Parameter(required = true, example = "Postgres")
     private String dialect;
 
     @NotBlank
-    @ApiModelProperty(required = true, example = "postgresql")
+    @JsonProperty("jdbc_method")
+    @Parameter(required = true, example = "postgresql")
     private String jdbcMethod;
 
 }
