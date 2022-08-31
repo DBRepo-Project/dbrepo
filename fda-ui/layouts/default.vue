@@ -192,6 +192,7 @@ export default {
       if (!val) {
         return
       }
+      this.model = null
       this.searchResults = []
       this.queryDatabases(val)
       this.queryTables(val)
@@ -212,11 +213,11 @@ export default {
       this.$router.push('/container')
     },
     queryDatabases (v) {
+      if (v !== this.search) {
+        return
+      }
+      this.loadingSearch = true
       setTimeout(async () => {
-        if (v !== this.search) {
-          return
-        }
-        this.loadingSearch = true
         try {
           const res = await this.$axios.get(`/search/databaseindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
           const databases = res.data.hits.hits.map(h => h._source)
@@ -229,11 +230,11 @@ export default {
       }, 500)
     },
     queryTables (v) {
+      if (v !== this.search) {
+        return
+      }
+      this.loadingSearch = true
       setTimeout(async () => {
-        if (v !== this.search) {
-          return
-        }
-        this.loadingSearch = true
         try {
           const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
           const tables = res.data.hits.hits.map(h => h._source)
@@ -246,11 +247,11 @@ export default {
       }, 500)
     },
     queryColumns (v) {
+      if (v !== this.search) {
+        return
+      }
+      this.loadingSearch = true
       setTimeout(async () => {
-        if (v !== this.search) {
-          return
-        }
-        this.loadingSearch = true
         try {
           const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,name&terminate_after=10`)
           const columns = res.data.hits.hits.map(h => h._source)

@@ -94,9 +94,9 @@
                 Creators
               </v-list-item-title>
               <v-list-item-content>
-                <span v-for="(creator, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
-                  <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
-                  {{ creator.name }} <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
+                <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
+                  <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
+                  {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">

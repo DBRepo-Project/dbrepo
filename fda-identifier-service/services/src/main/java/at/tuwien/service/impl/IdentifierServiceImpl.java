@@ -15,6 +15,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.DocumentMapper;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.repository.jpa.RelatedIdentifierRepository;
 import at.tuwien.service.DatabaseService;
@@ -40,11 +41,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
+    private final IdentifierIdxRepository identifierIdxRepository;
     private final RelatedIdentifierRepository relatedIdentifierRepository;
 
     public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper,
                                  DatabaseService databaseService, IdentifierMapper identifierMapper,
                                  QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
+                                 IdentifierIdxRepository identifierIdxRepository,
                                  RelatedIdentifierRepository relatedIdentifierRepository) {
         this.userService = userService;
         this.documentMapper = documentMapper;
@@ -52,6 +55,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
+        this.identifierIdxRepository = identifierIdxRepository;
         this.relatedIdentifierRepository = relatedIdentifierRepository;
     }
 
@@ -130,6 +134,10 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.debug("created identifier {}", identifier);
+        /* save in identifier_index - elastic search */
+        final Identifier eId = identifierIdxRepository.save(identifier);
+        log.info("Saved identifier in elastic search with id {}", eId.getId());
+        log.debug("saved identifier in elastic search {}", eId);
         return identifier;
     }
 

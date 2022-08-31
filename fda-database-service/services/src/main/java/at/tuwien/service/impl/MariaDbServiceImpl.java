@@ -177,7 +177,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database dbdb = databaseRepository.save(database);
         log.info("Created database with id {}", dbdb.getId());
         log.debug("created database {}", dbdb);
-        // save in database_index - elastic search
+        /* save in database_index - elastic search */
         final Database edb = databaseidxRepository.save(database);
         log.info("Saved database in elastic search with id {}", edb.getId());
         log.debug("saved database in elastic search {}", edb);
