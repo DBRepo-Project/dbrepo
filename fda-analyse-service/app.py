@@ -86,6 +86,7 @@ swagger = Swagger(app, config=swagger_config, template=template)
 @app.route('/api/analyse/determinedt', methods=["POST"], endpoint='analyze_determinedt')
 @swag_from('as-yml/determinedt.yml')
 def determinedt():
+    logging.info('got body %s', request)
     input_json = request.get_json()
     try:
         filepath = str(input_json['filepath'])

@@ -595,9 +595,10 @@ VALUES (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
        (1, '%d.%c.%y', 'yyyy-MM-dd', '30.01.22', false),
        (1, '%c/%d/%Y', 'yyyy-MM-dd', '01/30/2022', false),
        (1, '%c/%d/%y', 'yyyy-MM-dd', '01/30/22', false),
-       (1, '%Y-%c-%d''T''%H:%i:%S.%f', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS', '2022-01-30T13:44:25.499', true),
+       (1, '%Y-%c-%dT%H:%i:%S.%f', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS', '2022-01-30T13:44:25.499', true),
        (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
-       (1, '%Y-%c-%d''T''%H:%i:%S', 'yyyy-MM-dd''T''HH:mm:ss', '2022-01-30T13:44:25', true),
-       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true);
+       (1, '%Y-%c-%dT%H:%i:%S', 'yyyy-MM-dd''T''HH:mm:ss', '2022-01-30T13:44:25', true),
+       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
+       (1, '%Y-%c-%d %H:%i', 'yyyy-MM-dd HH:mm', '2022-01-30 13:44', true);
 
 COMMIT;

@@ -118,30 +118,30 @@
               hide-default-footer
               :headers="headers"
               :items="tableDetails.columns">
-              <template v-slot:col.is_null_allowed="{ col }">
-                <span v-if="col.is_null_allowed">●</span> {{ col.is_null_allowed }}
+              <template v-slot:item.is_null_allowed="{ item }">
+                <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
               </template>
-              <template v-slot:col.unique="{ col }">
-                <span v-if="col.unique">●</span> {{ col.unique }}
+              <template v-slot:item.unique="{ item }">
+                <span v-if="item.unique">●</span> {{ item.unique }}
               </template>
-              <template v-slot:col.column_type="{ col }">
-                {{ columnName(col) }}
+              <template v-slot:item.column_type="{ item }">
+                {{ columnName(item) }}
               </template>
-              <template v-slot:col.is_primary_key="{ col }">
-                <span v-if="col.is_primary_key">●</span> {{ col.is_primary_key }}
+              <template v-slot:item.is_primary_key="{ item }">
+                <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
               </template>
-              <template v-slot:col.auto_generated="{ col }">
-                <span v-if="col.auto_generated">●</span> {{ col.auto_generated }}
+              <template v-slot:item.auto_generated="{ item }">
+                <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
               </template>
-              <template v-slot:col.column_concept="{ col }">
-                <v-btn v-if="!col.column_concept" small @click="pickUnit(col)">Assign</v-btn>
+              <template v-slot:item.column_concept="{ item }">
+                <v-btn v-if="!item.column_concept" small @click="pickUnit(item)">Assign</v-btn>
                 <v-btn
-                  v-if="col.column_concept"
-                  :title="col.column_concept.uri"
+                  v-if="item.column_concept"
+                  :title="item.column_concept.uri"
                   color="secondary"
                   small
-                  @click="pickUnit(col)">
-                  {{ col.column_concept.name }}
+                  @click="pickUnit(item)">
+                  {{ item.column_concept.name }}
                 </v-btn>
               </template>
             </v-data-table>
@@ -228,7 +228,7 @@ export default {
         { value: 'blob', text: 'Binary Large Object' },
         { value: 'date', text: 'Date' },
         { value: 'timestamp', text: 'Timestamp' },
-        { value: 'decimal', text: 'Decimal' },
+        { value: 'decimal', text: 'Floating Number' },
         { value: 'string', text: 'Character Varying' },
         { value: 'text', text: 'Text' }
       ]

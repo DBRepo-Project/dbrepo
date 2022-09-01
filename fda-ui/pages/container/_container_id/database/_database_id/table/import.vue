@@ -134,7 +134,7 @@
           <v-row dense>
             <v-col cols="4">
               <v-file-input
-                v-model="file"
+                v-model="fileModel"
                 accept=".csv,.tsv"
                 show-size
                 label="File Upload (.csv/.tsv)" />
@@ -154,11 +154,11 @@
               <v-btn class="mr-2 mb-1" @click="step = 2">Back</v-btn>
               <v-btn
                 class="mb-1"
-                :disabled="!file"
+                :disabled="!fileModel"
                 :loading="loading"
                 color="primary"
                 type="submit"
-                @click="upload">
+                @click="uploadAndAnalyse">
                 Continue
               </v-btn>
             </v-col>
@@ -207,6 +207,11 @@ export default {
       validStep3: false,
       validStep4: false,
       error: false,
+      fileModel: null,
+      file: {
+        filename: null,
+        path: null
+      },
       separators: [
         { key: ',', value: ',' },
         { key: ';', value: ';' },
@@ -245,7 +250,6 @@ export default {
         skip_lines: 1
       },
       loading: false,
-      file: null,
       url: null,
       columns: [],
       newTableId: 42 // FIXME ???
@@ -263,6 +267,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    fileConfig () {
+      return { headers: { 'Content-Type': 'multipart/form-data' } }
+    },
+    sharedFilesystem () {
+      return this.$config.sharedFilesystem
+    },
     validTableName () {
       if (this.tableCreate.name === null) {
         return true
@@ -277,9 +287,6 @@ export default {
         .replace(/\s+/g, '-')
         .replace(/[^\w-]+/g, '')
         .replace(/--+/g, '_'))
-    },
-    shared_filesystem () {
-      return this.$config.shared_filesystem
     }
   },
   mounted () {
@@ -289,38 +296,59 @@ export default {
   methods: {
     notEmpty,
     isNonNegativeInteger,
+    uploadAndAnalyse () {
+      return this.upload()
+        .then(() => this.analyse())
+    },
     submit () {
       this.$refs.form.validate()
     },
     async upload () {
       this.loading = true
-      const url = '/server-middleware/table_from_csv'
       const data = new FormData()
-      data.append('file', this.file)
+      data.append('file', this.fileModel)
       try {
-        const res = await this.$axios.post(url, data, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${this.token}`
-          }
-        })
-        console.log('data upload result', res.data)
-        if (res.data.success) {
-          this.tableCreate.columns = res.data.columns
-          this.tableImport.location = `/tmp/${res.data.file.filename}`
-          this.fileLocation = res.data.file.filename
-          this.step = 4
-          this.loading = false
-          console.debug('upload csv', res.data)
-        } else {
-          console.error('Upload failed. Try removing the last / from the API url', res)
-          this.$toast.error('Could not upload CSV data')
-          this.loading = false
-          return
-        }
+        const res = await this.$axios.post('/server-middleware/upload', data, this.fileConfig)
+        console.debug('file upload', res.data)
+        this.file = res.data
       } catch (err) {
+        console.error('Failed to upload .csv data', err)
+        console.debug('failed to upload .csv data, does the .csv contain a header line?')
         this.$toast.error('Could not upload data.')
+      }
+      this.loading = false
+    },
+    async analyse () {
+      this.loading = true
+      try {
+        const payload = { filepath: `${this.sharedFilesystem}/${this.file.filename}` }
+        const res = await this.$axios.post('/api/analyse/determinedt', payload, this.config)
+        const { columns } = res.data
+        console.log('data analyse result', columns)
+        this.tableCreate.columns = Object.entries(columns)
+          .map(([key, val]) => {
+            return {
+              name: key,
+              type: val,
+              check_expression: null,
+              foreign_key: null,
+              references: null,
+              null_allowed: true,
+              primary_key: false,
+              is_unique: false,
+              unique: null,
+              enum_values: []
+            }
+          })
+        this.tableImport.location = `/tmp/${this.file.filename}`
+        this.step = 4
+        this.loading = false
+        console.debug('upload csv', res.data)
         return
+      } catch (err) {
+        console.error('Failed to upload .csv data', err)
+        console.debug('failed to upload .csv data, does the .csv contain a header line?')
+        this.$toast.error('Could not upload data.')
       }
       this.loading = false
     },

@@ -82,7 +82,7 @@
           <v-row dense>
             <v-col cols="8">
               <v-file-input
-                v-model="file"
+                v-model="fileModel"
                 accept=".csv,.tsv"
                 show-size
                 label="CSV/TSV File" />
@@ -90,7 +90,7 @@
           </v-row>
           <v-row>
             <v-col cols="8">
-              <v-btn :disabled="!file" :loading="loading" color="primary" @click="upload">Upload</v-btn>
+              <v-btn :disabled="!fileModel" :loading="loading" color="primary" @click="uploadAndImport">Import</v-btn>
             </v-col>
           </v-row>
         </v-form>
@@ -133,8 +133,11 @@ export default {
         separator: ',',
         skip_lines: 1
       },
-      file: null,
-      fileLocation: null,
+      file: {
+        filename: null,
+        path: null
+      },
+      fileModel: null,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -155,8 +158,19 @@ export default {
     token () {
       return this.$store.state.token
     },
-    shared_filesystem () {
-      return this.$config.shared_filesystem
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    fileConfig () {
+      return { headers: { 'Content-Type': 'multipart/form-data' } }
+    },
+    sharedFilesystem () {
+      return this.$config.sharedFilesystem
     }
   },
   mounted () {
@@ -164,6 +178,10 @@ export default {
   },
   methods: {
     isNonNegativeInteger,
+    uploadAndImport () {
+      this.upload()
+        .then(() => this.import())
+    },
     submit () {
       this.$refs.form.validate()
     },
@@ -181,41 +199,33 @@ export default {
     },
     async upload () {
       this.loading = true
-      const url = '/server-middleware/table_from_csv'
       const data = new FormData()
-      data.append('file', this.file)
+      data.append('file', this.fileModel)
       try {
-        const res = await this.$axios.post(url, data, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${this.token}`
-          }
-        })
-        if (res.data.success) {
-          this.fileLocation = res.data.file.filename
-          this.tableImport.location = `${this.shared_filesystem()}/${this.fileLocation}`
-          console.debug('upload csv', res.data)
-        } else {
-          console.error('Could not upload CSV data', res.data)
-          return
-        }
+        const res = await this.$axios.post('/server-middleware/upload', data, this.fileConfig)
+        console.debug('file upload', res.data)
+        this.file = res.data
       } catch (err) {
-        console.error('Could not upload data.', err)
-        return
+        console.error('Failed to upload .csv data', err)
+        console.debug('failed to upload .csv data, does the .csv contain a header line?')
+        this.$toast.error('Could not upload data.')
       }
+      this.loading = false
+    },
+    async import () {
+      this.loading = true
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}/data/import`
+      this.tableImport.location = `${this.sharedFilesystem}/${this.file.filename}`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, this.tableImport, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
-        console.debug('inserted table', insertResult.data)
+        insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)
+        console.debug('imported data', insertResult.data)
       } catch (err) {
-        console.error('Could not insert data.', err)
+        console.error('Could not import data.', err)
         this.loading = false
         return
       }
-      this.$toast.success('Uploaded csv into table.')
+      this.$toast.success('Successfully imported data')
       this.loading = false
       this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
     }

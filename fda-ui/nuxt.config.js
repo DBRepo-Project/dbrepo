@@ -84,7 +84,7 @@ export default {
     brokerUsername: process.env.BROKER_USERNAME || 'fda',
     brokerPassword: process.env.BROKER_PASSWORD || 'fda',
     sandbox: process.env.SANDBOX || false,
-    shared_filesystem: process.env.SHARED_FILESYSTEM || '/tmp',
+    sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest'
   },
 
