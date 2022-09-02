@@ -33,8 +33,7 @@ class ContainerBriefDto(object):
         'name': 'str',
         'creator': 'UserBriefDto',
         'created': 'datetime',
-        'internal_name': 'str',
-        'is_public': 'bool'
+        'internal_name': 'str'
     }
 
     attribute_map = {
@@ -43,11 +42,10 @@ class ContainerBriefDto(object):
         'name': 'name',
         'creator': 'creator',
         'created': 'created',
-        'internal_name': 'internal_name',
-        'is_public': 'is_public'
+        'internal_name': 'internal_name'
     }
 
-    def __init__(self, id=None, hash=None, name=None, creator=None, created=None, internal_name=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, hash=None, name=None, creator=None, created=None, internal_name=None):  # noqa: E501
         """ContainerBriefDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._hash = None
@@ -55,7 +53,6 @@ class ContainerBriefDto(object):
         self._creator = None
         self._created = None
         self._internal_name = None
-        self._is_public = None
         self.discriminator = None
         self.id = id
         self.hash = hash
@@ -65,8 +62,6 @@ class ContainerBriefDto(object):
         if created is not None:
             self.created = created
         self.internal_name = internal_name
-        if is_public is not None:
-            self.is_public = is_public
 
     @property
     def id(self):
@@ -201,27 +196,6 @@ class ContainerBriefDto(object):
             raise ValueError("Invalid value for `internal_name`, must not be `None`")  # noqa: E501
 
         self._internal_name = internal_name
-
-    @property
-    def is_public(self):
-        """Gets the is_public of this ContainerBriefDto.  # noqa: E501
-
-
-        :return: The is_public of this ContainerBriefDto.  # noqa: E501
-        :rtype: bool
-        """
-        return self._is_public
-
-    @is_public.setter
-    def is_public(self, is_public):
-        """Sets the is_public of this ContainerBriefDto.
-
-
-        :param is_public: The is_public of this ContainerBriefDto.  # noqa: E501
-        :type: bool
-        """
-
-        self._is_public = is_public
 
     def to_dict(self):
         """Returns the model properties as a dict"""

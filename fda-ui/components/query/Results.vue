@@ -1,11 +1,11 @@
 <template>
   <v-data-table
+    flat
     :headers="result.headers"
     :items="result.rows"
     :loading="loading"
     :options.sync="options"
-    :server-items-length="total"
-    class="elevation-1" />
+    :server-items-length="total" />
 </template>
 
 <script>
