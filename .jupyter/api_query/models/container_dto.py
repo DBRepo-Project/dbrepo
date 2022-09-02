@@ -37,8 +37,7 @@ class ContainerDto(object):
         'port': 'int',
         'created': 'datetime',
         'internal_name': 'str',
-        'ip_address': 'str',
-        'is_public': 'bool'
+        'ip_address': 'str'
     }
 
     attribute_map = {
@@ -51,11 +50,10 @@ class ContainerDto(object):
         'port': 'port',
         'created': 'created',
         'internal_name': 'internal_name',
-        'ip_address': 'ip_address',
-        'is_public': 'is_public'
+        'ip_address': 'ip_address'
     }
 
-    def __init__(self, id=None, hash=None, name=None, state=None, databases=None, image=None, port=None, created=None, internal_name=None, ip_address=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, hash=None, name=None, state=None, databases=None, image=None, port=None, created=None, internal_name=None, ip_address=None):  # noqa: E501
         """ContainerDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._hash = None
@@ -67,7 +65,6 @@ class ContainerDto(object):
         self._created = None
         self._internal_name = None
         self._ip_address = None
-        self._is_public = None
         self.discriminator = None
         self.id = id
         self.hash = hash
@@ -84,8 +81,6 @@ class ContainerDto(object):
         self.internal_name = internal_name
         if ip_address is not None:
             self.ip_address = ip_address
-        if is_public is not None:
-            self.is_public = is_public
 
     @property
     def id(self):
@@ -312,27 +307,6 @@ class ContainerDto(object):
         """
 
         self._ip_address = ip_address
-
-    @property
-    def is_public(self):
-        """Gets the is_public of this ContainerDto.  # noqa: E501
-
-
-        :return: The is_public of this ContainerDto.  # noqa: E501
-        :rtype: bool
-        """
-        return self._is_public
-
-    @is_public.setter
-    def is_public(self, is_public):
-        """Sets the is_public of this ContainerDto.
-
-
-        :param is_public: The is_public of this ContainerDto.  # noqa: E501
-        :type: bool
-        """
-
-        self._is_public = is_public
 
     def to_dict(self):
         """Returns the model properties as a dict"""

@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card flat>
+        <v-card flat tile>
           <v-card-text>
             <v-list dense>
               <v-list-item>
@@ -80,6 +80,24 @@
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ container_name }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Internal Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ container_internal_name }}</span>
+                  </v-list-item-content>
+                </v-list-item-content>
+              </v-list-item>
             </v-list>
             <v-btn color="secondary" @click="editDbDialog = true">Edit</v-btn>
             <v-dialog
@@ -119,6 +137,10 @@ export default {
         created: null,
         subject: [],
         language: null,
+        container: {
+          name: null,
+          internal_name: null
+        },
         license: {
           uri: null,
           identifier: null
@@ -171,6 +193,12 @@ export default {
     internal_name () {
       return this.database.internal_name
     },
+    container_name () {
+      return this.database.container.name
+    },
+    container_internal_name () {
+      return this.database.container.internal_name
+    },
     publication () {
       return this.database.publication === null ? '(none)' : this.database.publication
     },
@@ -201,9 +229,6 @@ export default {
 }
 </script>
 <style>
-.v-card__text {
-  font-size: initial;
-}
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
 }
