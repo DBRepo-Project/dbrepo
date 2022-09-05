@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-progress-linear v-if="loading" v-model="progress" :color="loadingColor" />
       <v-card>
         <v-card-title>
           Create Database
@@ -14,18 +13,10 @@
           </v-alert>
           <v-text-field
             id="database"
-            v-model="createContainer.name"
+            v-model="createContainerDto.name"
             name="database"
             label="Name *"
             autofocus
-            :rules="[v => notEmpty(v) || $t('Required')]"
-            required />
-          <v-textarea
-            id="description"
-            v-model="createDatabase.description"
-            name="description"
-            rows="2"
-            label="Description *"
             :rules="[v => notEmpty(v) || $t('Required')]"
             required />
           <v-select
@@ -40,11 +31,18 @@
             required />
           <v-switch
             id="public"
-            v-model="createDatabase.is_public"
+            v-model="createDatabaseDto.is_public"
             color="primary"
             :label="publicLabel"
             name="public" />
-          <p>{{ summary }}</p>
+          <p v-if="createDatabaseDto.is_public">
+            Your database tables will be <strong>publicly visible</strong>. The metadata is also publicly visible to the
+            world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
+          </p>
+          <p v-if="!createDatabaseDto.is_public">
+            Your database tables will be <strong>private</strong>. The metadata will still be <strong>publicly visible</strong>
+            to the world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -60,7 +58,7 @@
             color="primary"
             type="submit"
             :loading="loading"
-            @click="createDB">
+            @click="create">
             Create
           </v-btn>
         </v-card-actions>
@@ -83,15 +81,20 @@ export default {
         tag: null
       },
       engines: [],
-      progress: 0,
-      createContainer: {
+      createContainerDto: {
         name: null,
         repository: null,
         tag: null
       },
-      createDatabase: {
+      container: {
+        id: null,
+        name: null
+      },
+      database: {
+        id: null
+      },
+      createDatabaseDto: {
         name: null,
-        description: null,
         is_public: true
       }
     }
@@ -114,13 +117,7 @@ export default {
       }
     },
     publicLabel () {
-      return this.createDatabase.is_public ? 'Public' : 'Private'
-    },
-    summary () {
-      return 'Your database will be ' +
-        (this.createDatabase.is_public ? 'publicly visible to the world' : 'visible only to you') +
-        ' and run ' +
-        (this.engine.repository === 'mariadb' ? 'MariaDB Engine (' + this.engine.tag + ')' : 'other')
+      return this.createDatabaseDto.is_public ? 'Public' : 'Private'
     }
   },
   mounted () {
@@ -134,99 +131,95 @@ export default {
       this.$parent.$parent.$parent.$parent.createDbDialog = false
     },
     async getImages () {
-      let res
       try {
         this.loading = true
-        this.error = false
-        res = await this.$axios.get('/api/image')
+        const res = await this.$axios.get('/api/image')
         this.engines = res.data
         console.debug('engines', this.engines)
         if (this.engines.length > 0) {
           this.engine = this.engines[0]
         }
-        this.loading = false
       } catch (err) {
         this.error = true
-        this.$toast.error('Failed to fetch supported engines. Try reload the page.')
+        this.$toast.error('Failed to fetch supported engines. Try reload the page')
       }
       this.loading = false
     },
-    sleep (ms) {
-      return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-      })
+    async createContainer () {
+      this.createContainerDto.repository = this.engine.repository
+      this.createContainerDto.tag = this.engine.tag
+      try {
+        this.loading = true
+        const res = await this.$axios.post('/api/container', this.createContainerDto, this.config)
+        this.container = res.data
+        console.debug('created container', this.container)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to create container')
+      }
+      this.loading = false
+    },
+    async startContainer () {
+      try {
+        this.loading = true
+        const res = await this.$axios.put(`/api/container/${this.container.id}`, { action: 'start' }, this.config)
+        console.debug('started container', res.data)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to start container')
+      }
+      this.loading = false
+    },
+    async inspectContainer () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.container.id}`, this.config)
+        const { state } = res.data
+        console.debug('inspected container', res.data)
+        if (state !== 'running') {
+          this.error = true
+          console.error('Container is not running')
+        }
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to start container')
+      }
+      this.loading = false
+    },
+    async createDatabase () {
+      try {
+        this.loading = true
+        this.createDatabaseDto.name = this.container.name
+        const res = await this.$axios.post(`/api/container/${this.container.id}/database`, this.createDatabaseDto, this.config)
+        this.database = res.data
+        console.debug('created database', this.database)
+        await this.$router.push(`/container/${this.container.id}/database/${this.database.id}/info`)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to create database')
+      }
+      this.loading = false
+    },
+    async deleteContainer () {
+      try {
+        this.loading = true
+        await this.$axios.delete(`/api/container/${this.container.id}`, this.config)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to delete container')
+      }
+      this.loading = false
     },
     notEmpty,
-    async createDB () {
-      let res
-      // create a container
-      let containerId
-      console.debug('model', this.engine)
-      try {
-        this.loading = true
-        this.error = false
-        this.createContainer.repository = this.engine.repository
-        this.createContainer.tag = this.engine.tag
-        res = await this.$axios.post('/api/container', this.createContainer, this.config)
-        containerId = res.data.id
-        console.debug('created container', res.data)
-        this.progress = 25
-      } catch (err) {
-        this.error = true
-        this.loading = false
-        if (err.status === 401) {
-          this.$toast.error('Authentication missing')
-          console.error('permission denied', err)
-          return
-        }
-        console.error('failed to create container', err)
-        this.$toast.error('Could not create container.')
-        return
-      }
-
-      // start the container
-      try {
-        this.loading = true
-        this.error = false
-        res = await this.$axios.put(`/api/container/${containerId}`, { action: 'start' }, this.config)
-        console.debug('started container', res.data)
-        this.progress = 50
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Could not start container.')
-        return
-      }
-
-      // Pause.
-      // DB fails to create when container has not started up yet
-      await new Promise(resolve => setTimeout(resolve, 2000))
-
-      // wait for it to finish
-      this.loading = true
-      this.error = false
-      this.createDatabase.name = this.createContainer.name
-      for (let i = 0; i < 5; i++) {
-        try {
-          res = await this.$axios.post(`/api/container/${containerId}/database`, this.createDatabase, this.config)
-          console.debug('created database', res)
-          break
-        } catch (err) {
-          console.debug('wait', res)
-          this.progress += 10
-          await this.sleep(3000)
-        }
-      }
-      if (res.status !== 201) {
-        this.loading = false
-        this.error = true
-        this.$toast.error('Could not create database.')
-        return
-      }
-      this.progress = 100
-      this.loading = false
-      this.$toast.success(`Database "${res.data.name}" created.`)
-      this.$emit('close')
-      await this.$router.push(`/container/${containerId}/database/${res.data.id}/info`)
+    create () {
+      this.createContainer()
+        .then(() => this.startContainer()
+          .then(() => this.inspectContainer()
+            .then(() => this.createDatabase())))
+        .catch((err) => {
+          console.error('Failed to create database, rollback container', err)
+          this.deleteContainer()
+        })
     }
   }
 }

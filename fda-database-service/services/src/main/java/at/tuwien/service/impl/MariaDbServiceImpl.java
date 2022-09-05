@@ -170,7 +170,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
-        database.setDescription(createDto.getDescription());
         database.setIsPublic(createDto.getIsPublic());
         final User creator = userService.findByUsername(principal.getName());
         database.setCreator(creator);

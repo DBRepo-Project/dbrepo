@@ -12,7 +12,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -114,7 +113,6 @@ public abstract class BaseUnitTest {
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
-            .description(DATABASE_1_DESCRIPTION)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()

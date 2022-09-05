@@ -24,8 +24,4 @@ public class DatabaseCreateDto {
     @Parameter(name = "database publicity", example = "true")
     private Boolean isPublic;
 
-    @NotBlank(message = "description is required")
-    @Parameter(name = "database description", example = "true")
-    private String description;
-
 }
