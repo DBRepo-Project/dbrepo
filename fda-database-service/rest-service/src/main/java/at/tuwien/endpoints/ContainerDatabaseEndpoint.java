@@ -1,12 +1,10 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.DatabaseBriefDto;
-import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.DatabaseModifyDto;
+import at.tuwien.api.database.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/container/{id}/database")
-public class ContainerDatabaseEndpoint {
+public class ContainerDatabaseEndpoint extends AbstractEndpoint {
 
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
@@ -38,8 +37,10 @@ public class ContainerDatabaseEndpoint {
     private final MessageQueueService messageQueueService;
 
     @Autowired
-    public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, MariaDbServiceImpl databaseService,
-                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
+    public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
+                                     MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                                     MessageQueueService messageQueueService) {
+        super(databaseService, containerService);
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
@@ -49,22 +50,11 @@ public class ContainerDatabaseEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId,
-                                                          Principal principal) {
-        final List<DatabaseBriefDto> databases;
-        if (principal == null) {
-            log.trace("principal missing, listing all public databases only");
-            databases = databaseService.findAllPublic(containerId)
-                    .stream()
-                    .map(databaseMapper::databaseToDatabaseBriefDto)
-                    .collect(Collectors.toList());
-        } else {
-            log.trace("principal present, listing all public databases and my private databases");
-            databases = databaseService.findAllPublicOrMine(containerId, principal)
-                    .stream()
-                    .map(databaseMapper::databaseToDatabaseBriefDto)
-                    .collect(Collectors.toList());
-        }
+    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId) {
+        final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
+                .stream()
+                .map(databaseMapper::databaseToDatabaseBriefDto)
+                .collect(Collectors.toList());
         log.info("Found {} databases", databases.size());
         log.debug("found databases {}", databases);
         return ResponseEntity.ok(databases);
@@ -79,7 +69,12 @@ public class ContainerDatabaseEndpoint {
                                                    Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
+            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
+            QueryMalformedException, NotAllowedException {
+        if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {
+            log.error("Missing database create permission");
+            throw new NotAllowedException("Missing database create permission");
+        }
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId());
@@ -91,30 +86,47 @@ public class ContainerDatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseBriefDto> update(@NotBlank @PathVariable("id") Long containerId,
-                                                   @NotBlank @PathVariable Long databaseId,
-                                                   @Valid @RequestBody DatabaseModifyDto modifyDto)
-            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
+    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long containerId,
+                                              @NotBlank @PathVariable Long databaseId,
+                                              @Valid @RequestBody DatabaseModifyDto modifyDto,
+                                              @NotNull Principal principal)
+            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException, NotAllowedException {
+        if (!hasDatabasePermission(containerId, databaseId, "UPDATE_DATABASE", principal)) {
+            log.error("Missing database update permission");
+            throw new NotAllowedException("Missing database update permission");
+        }
         final Database database = databaseService.modify(containerId, databaseId, modifyDto);
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(databaseMapper.databaseToDatabaseBriefDto(database));
+                .body(dto);
+    }
+
+    @PutMapping("/{databaseId}/transfer")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseDto> transfer(@NotBlank @PathVariable("id") Long containerId,
+                                                @NotBlank @PathVariable Long databaseId,
+                                                @Valid @RequestBody DatabaseTransferDto transferDto,
+                                                @NotNull Principal principal)
+            throws DatabaseNotFoundException, NotAllowedException {
+        if (!hasDatabasePermission(containerId, databaseId, "TRANSFER_DATABASE", principal)) {
+            log.error("Missing database update permission");
+            throw new NotAllowedException("Missing database update permission");
+        }
+        final Database database = databaseService.transfer(containerId, databaseId, transferDto);
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
     }
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
-                                                @NotBlank @PathVariable Long databaseId,
-                                                Principal principal)
+                                                @NotBlank @PathVariable Long databaseId)
             throws DatabaseNotFoundException {
-        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
-        if (!database.getIsPublic() && !principal.getName().equals(database.getCreator().getUsername())) {
-            log.error("Found database but is private and creator does not match");
-            log.debug("found database {}", database);
-            log.debug("creator {} does not equal principal {}", database.getCreator().getUsername(), principal.getName());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .build();
-        }
+        final Database database = databaseService.findById(containerId, databaseId);
         log.info("Found database with id {}", database.getId());
         log.debug("found database {}", database);
         return ResponseEntity.ok(databaseMapper.databaseToDatabaseDto(database));

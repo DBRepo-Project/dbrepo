@@ -128,7 +128,7 @@ export default {
       this.$refs.form.validate()
     },
     cancel () {
-      this.$parent.$parent.$parent.$parent.createDbDialog = false
+      this.$emit('close', { success: false })
     },
     async getImages () {
       try {
@@ -194,6 +194,7 @@ export default {
         this.database = res.data
         console.debug('created database', this.database)
         await this.$router.push(`/container/${this.container.id}/database/${this.database.id}/info`)
+        this.$emit('close', { success: true })
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to create database')

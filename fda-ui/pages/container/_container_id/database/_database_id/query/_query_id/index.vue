@@ -314,7 +314,7 @@ export default {
       return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
     },
     baseUrl () {
-      return 'http://' + location.host
+      return 'https://' + location.host
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'

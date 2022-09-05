@@ -49,26 +49,32 @@
                       </sup>
                     </span>
                   </v-list-item-content>
+                  <v-list-item-title>
+                    Persistent Identifier
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <a :href="`${baseUrl}/container/${database.container.id}/database/${database.id}`" v-text="`${baseUrl}/container/${database.container.id}/database/${database.id}`" />
+                  </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Created
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ createdUTC }}</span>
+                    <span v-if="!loading" v-text="createdUTC" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Language
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ language }}</span>
+                    <span v-if="!loading" v-text="language" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Publication Date
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ publication }}</span>
+                    <span v-if="!loading" v-text="publication" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     License
@@ -87,24 +93,30 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ container_name }}</span>
+                    <span v-if="!loading" v-text="container_name" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Container Internal Name
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ container_internal_name }}</span>
+                    <span v-if="!loading" v-text="container_internal_name" />
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-btn color="secondary" @click="editDbDialog = true">Edit</v-btn>
+            <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
+            <v-btn v-if="token" class="ml-2" @click="editVisibilityDialog = true">Visibility</v-btn>
             <v-dialog
               v-model="editDbDialog"
               persistent
               max-width="640">
               <EditDB :database="database" @close-dialog="closeDialog" />
+            </v-dialog>
+            <v-dialog
+              v-model="editVisibilityDialog"
+              max-width="640">
+              <EditVisibility :database="database" @close-dialog="closeDialog" />
             </v-dialog>
           </v-card-text>
         </v-card>
@@ -117,10 +129,12 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
+import EditVisibility from '@/components/dialogs/EditVisibility'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   components: {
+    EditVisibility,
     DBToolbar,
     EditDB
   },
@@ -128,6 +142,7 @@ export default {
     return {
       loading: false,
       editDbDialog: false,
+      editVisibilityDialog: false,
       database: {
         id: null,
         name: null,
@@ -135,9 +150,13 @@ export default {
         is_public: null,
         publisher: null,
         created: null,
+        publication_year: null,
+        publication_month: null,
+        publication_day: null,
         subject: [],
         language: null,
         container: {
+          id: null,
           name: null,
           internal_name: null
         },
@@ -166,6 +185,9 @@ export default {
   computed: {
     tab () {
       return 0
+    },
+    baseUrl () {
+      return 'https://' + location.host
     },
     description () {
       return this.database.description === null ? '(no description)' : this.database.description
@@ -200,7 +222,13 @@ export default {
       return this.database.container.internal_name
     },
     publication () {
-      return this.database.publication === null ? '(none)' : this.database.publication
+      if (this.database.publication_year === null) {
+        return '(none)'
+      } else if (this.database.publication_month !== null && this.database.publication_day !== null) {
+        return this.database.publication_year + '-' + this.database.publication_month + '-' + this.database.publication_day
+      } else {
+        return this.database.publication_year
+      }
     },
     creator () {
       return formatUser(this.database.creator)
@@ -224,6 +252,7 @@ export default {
     closeDialog () {
       this.loadDatabase()
       this.editDbDialog = false
+      this.editVisibilityDialog = false
     }
   }
 }

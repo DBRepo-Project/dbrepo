@@ -116,13 +116,11 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE2 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .license(LICENSE_1_DTO)

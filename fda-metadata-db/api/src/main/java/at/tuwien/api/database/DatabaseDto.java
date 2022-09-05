@@ -69,6 +69,14 @@ public class DatabaseDto {
     @Parameter(name = "database publication year")
     private Integer publicationYear;
 
+    @JsonProperty("publication_month")
+    @Parameter(name = "database publication month")
+    private Integer publicationMonth;
+
+    @JsonProperty("publication_day")
+    @Parameter(name = "database publication day")
+    private Integer publicationDay;
+
     @Parameter(name = "tables")
     private List<TableBriefDto> tables;
 

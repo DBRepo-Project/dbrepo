@@ -26,7 +26,7 @@
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/table`">
             Tables
           </v-tab>
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
+          <v-tab v-if="isPublicOrOwner" :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
             Subsets
           </v-tab>
         </v-tabs>
@@ -36,15 +36,23 @@
 </template>
 
 <script>
+import { decodeJwt } from 'jose'
+
 export default {
   data () {
     return {
       tab: null,
       loading: false,
       error: false,
+      user: {
+        username: null
+      },
       database: {
         id: null,
-        is_public: null
+        is_public: null,
+        creator: {
+          username: null
+        }
       }
     }
   },
@@ -68,6 +76,9 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    isPublicOrOwner () {
+      return this.database.is_public || this.database.creator.username === this.user.username
     }
   },
   watch: {
@@ -85,8 +96,15 @@ export default {
       return
     }
     this.loadDatabase()
+    this.loadUser()
   },
   methods: {
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
+    },
     async loadDatabase () {
       try {
         this.loading = true

@@ -78,6 +78,12 @@ public class Database {
     @Column
     private Integer publicationYear;
 
+    @Column
+    private Integer publicationMonth;
+
+    @Column
+    private Integer publicationDay;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)

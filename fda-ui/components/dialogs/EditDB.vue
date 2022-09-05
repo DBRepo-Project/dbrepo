@@ -3,60 +3,97 @@
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-        <v-card-title>
-          Modify Database
-        </v-card-title>
+        <v-card-title v-text="database.name" />
+        <v-card-subtitle>Modify Metadata</v-card-subtitle>
         <v-card-text>
-          <v-checkbox
-            id="public"
-            v-model="modify.is_public"
-            name="public"
-            label="Public" />
-          <v-text-field
-            id="publisher"
-            v-model="modify.publisher"
-            name="publisher"
-            label="Publisher *"
-            autofocus
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-textarea
-            id="description"
-            v-model="modify.description"
-            name="description"
-            rows="2"
-            label="Description *"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-select
-            id="language"
-            v-model="modify.language"
-            name="language"
-            label="Language *"
-            :items="languages"
-            item-value="value"
-            item-text="text"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-text-field
-            id="publication-year"
-            v-model="modify.publication"
-            name="publication"
-            label="Publication Date *"
-            hint="e.g. 2022-07-16"
-            :rules="[v => !!v || $t('Required')]"
-            required />
-          <v-select
-            id="license"
-            v-model="modify.license"
-            name="license"
-            label="License *"
-            :items="licenses"
-            item-value="identifier"
-            item-text="identifier"
-            :rules="[v => !!v || $t('Required')]"
-            return-object
-            required />
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="publisher"
+                v-model="modify.publisher"
+                name="publisher"
+                label="Publisher *"
+                autofocus
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-textarea
+                id="description"
+                v-model="modify.description"
+                name="description"
+                rows="2"
+                label="Description *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="language"
+                v-model="modify.language"
+                name="language"
+                label="Language *"
+                :items="languages"
+                item-value="value"
+                item-text="text"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-year"
+                v-model.number="modify.publication_year"
+                name="publication-year"
+                label="Publication Year *"
+                hint="e.g. 2022"
+                type="number"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-month"
+                v-model.number="modify.publication_month"
+                name="publication-month"
+                label="Publication Month"
+                hint="e.g. 12"
+                type="number"
+                min="1"
+                max="12" />
+            </v-col>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-day"
+                v-model.number="modify.publication_day"
+                name="publication-day"
+                label="Publication Day"
+                hint="e.g. 08"
+                type="number"
+                min="1"
+                max="31" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="license"
+                v-model="modify.license"
+                name="license"
+                label="License *"
+                :items="licenses"
+                item-value="identifier"
+                item-text="identifier"
+                :rules="[v => !!v || $t('Required')]"
+                return-object
+                required />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -67,12 +104,12 @@
           </v-btn>
           <v-btn
             id="database"
-            class="mb-2"
+            class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
             type="submit"
             @click="updateDatabase">
-            Create
+            Update
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -96,11 +133,12 @@ export default {
       loading: false,
       error: false,
       modify: {
-        is_public: null,
         publisher: null,
+        publication_year: null,
+        publication_month: null,
+        publication_day: null,
         description: null,
         language: null,
-        publication: null,
         license: null
       },
       licenses: [],
@@ -310,10 +348,15 @@ export default {
   },
   mounted () {
     this.loadLicenses()
-    this.modify.is_public = this.database.is_public
     this.modify.publisher = this.database.publisher
     this.modify.description = this.database.description
-    this.modify.publication = this.database.publication
+    if (this.database.publication_year === null) {
+      this.modify.publication_year = new Date().getFullYear()
+    } else {
+      this.modify.publication_year = this.database.publication_year
+    }
+    this.modify.publication_month = this.database.publication_month
+    this.modify.publication_day = this.database.publication_day
     this.modify.language = this.database.language
     this.modify.license = this.database.license
   },
