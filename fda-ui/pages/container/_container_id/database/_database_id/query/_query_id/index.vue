@@ -319,7 +319,7 @@ export default {
       return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
     },
     baseUrl () {
-      return 'https://' + location.host
+      return location.protocol + '//' + location.host
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'

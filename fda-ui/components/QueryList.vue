@@ -110,7 +110,7 @@ export default {
       return this.$route.params.database_id
     },
     baseUrl () {
-      return 'http://' + location.host
+      return location.protocol + '//' + location.host
     },
     token () {
       return this.$store.state.token

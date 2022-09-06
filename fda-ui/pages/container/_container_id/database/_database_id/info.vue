@@ -5,6 +5,7 @@
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card flat tile>
+          <v-card-title>Database</v-card-title>
           <v-card-text>
             <v-list dense>
               <v-list-item>
@@ -16,10 +17,10 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ database.is_public ? 'Public' : 'Private' }}</span>
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="publisher" class="mt-2">
                     Database Publisher
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="publisher">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ publisher }}</span>
                   </v-list-item-content>
@@ -30,10 +31,10 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ internal_name }}</span>
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="description" class="mt-2">
                     Database Description
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="description">
                     <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
                     <span v-if="!loading">{{ description }}</span>
                   </v-list-item-content>
@@ -50,24 +51,24 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="createdUTC" />
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="language" class="mt-2">
                     Language
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="language">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="language" />
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="publication" class="mt-2">
                     Publication Date
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="publication">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="publication" />
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="database.license" class="mt-2">
                     License
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="database.license">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <a v-if="database.license" target="_blank" :href="database.license.uri">{{ database.license.identifier }}</a>
                     <span v-if="!database.license">(none)</span>
@@ -79,15 +80,37 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="creator" />
                   </v-list-item-content>
-                  <v-list-item-title class="mt-2">
+                  <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
                   </v-list-item-title>
-                  <v-list-item-content>
+                  <v-list-item-content v-if="contact">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="contact" />
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
+            </v-list>
+            <v-card-actions>
+              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
+              <v-btn v-if="token" class="ml-2" @click="editVisibilityDialog = true">Visibility</v-btn>
+              <v-dialog
+                v-model="editDbDialog"
+                persistent
+                max-width="640">
+                <EditDB :database="database" @close-dialog="closeDialog" />
+              </v-dialog>
+              <v-dialog
+                v-model="editVisibilityDialog"
+                max-width="640">
+                <EditVisibility :database="database" @close-dialog="closeDialog" />
+              </v-dialog>
+            </v-card-actions>
+          </v-card-text>
+        </v-card>
+        <v-card flat tile>
+          <v-card-title>Container</v-card-title>
+          <v-card-text>
+            <v-list dense>
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title class="mt-2">
@@ -107,19 +130,6 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
-            <v-btn v-if="token" class="ml-2" @click="editVisibilityDialog = true">Visibility</v-btn>
-            <v-dialog
-              v-model="editDbDialog"
-              persistent
-              max-width="640">
-              <EditDB :database="database" @close-dialog="closeDialog" />
-            </v-dialog>
-            <v-dialog
-              v-model="editVisibilityDialog"
-              max-width="640">
-              <EditVisibility :database="database" @close-dialog="closeDialog" />
-            </v-dialog>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -190,13 +200,13 @@ export default {
       return 0
     },
     baseUrl () {
-      return 'https://' + location.host
+      return location.protocol + '//' + location.host
     },
     description () {
-      return this.database.description === null ? '(no description)' : this.database.description
+      return this.database.description
     },
     publisher () {
-      return this.database.publisher === null ? '(none)' : this.database.publisher
+      return this.database.publisher
     },
     token () {
       return this.$store.state.token
@@ -213,7 +223,7 @@ export default {
       return formatTimestampUTCLabel(this.database.created)
     },
     language () {
-      return this.database.language === null ? '(none)' : this.database.language
+      return this.database.language
     },
     internal_name () {
       return this.database.internal_name
@@ -232,7 +242,7 @@ export default {
     },
     publication () {
       if (this.database.publication_year === null) {
-        return '(none)'
+        return null
       } else if (this.database.publication_month !== null && this.database.publication_day !== null) {
         return this.database.publication_year + '-' + this.database.publication_month + '-' + this.database.publication_day
       } else {
@@ -259,7 +269,6 @@ export default {
       this.loading = false
     },
     closeDialog (event) {
-      console.debug('======>', event)
       if (event.success) {
         this.loadDatabase()
       }

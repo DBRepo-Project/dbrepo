@@ -104,7 +104,7 @@ export default {
       this.$refs.form.validate()
     },
     cancel () {
-      this.$emit('close-dialog')
+      this.$emit('close-dialog', { success: false })
     },
     async updateDatabase () {
       try {
@@ -113,7 +113,7 @@ export default {
         this.database = res.data
         console.debug('database', this.database)
         this.$toast.success('Successfully updated the database.')
-        this.cancel()
+        this.$emit('close-dialog', { success: true })
         await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/`)
       } catch (err) {
         this.error = true

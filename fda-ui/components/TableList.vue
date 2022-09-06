@@ -2,9 +2,9 @@
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
     <v-card v-if="!loading && tables.length === 0" flat>
-      <v-card-title>
+      <v-card-text>
         (no tables)
-      </v-card-title>
+      </v-card-text>
     </v-card>
     <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion>
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
