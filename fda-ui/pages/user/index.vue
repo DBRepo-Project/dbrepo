@@ -11,7 +11,7 @@
         </span>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card flat>
+    <v-card flat tile>
       <v-card-title>Verify E-Mail-Address</v-card-title>
       <v-card-text>
         <v-form v-model="valid1" @submit.prevent="submit">

@@ -4,7 +4,7 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
-          Modify Database
+          Database Metadata
         </v-card-title>
         <v-card-text>
           <v-switch
@@ -23,9 +23,8 @@
             id="description"
             v-model="modify.description"
             name="description"
-            :rules="[v => !!v || $t('Required')]"
             rows="2"
-            label="Description *" />
+            label="Description" />
           <v-select
             id="language"
             v-model="modify.language"

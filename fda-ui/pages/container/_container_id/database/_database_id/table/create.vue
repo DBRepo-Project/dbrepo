@@ -6,7 +6,7 @@
         <span>Create Table</span>
       </v-toolbar-title>
     </v-toolbar>
-    <v-stepper v-model="step" vertical flat>
+    <v-stepper v-model="step" vertical flat tile>
       <v-stepper-step :complete="step > 1" step="1">
         Table Information
       </v-stepper-step>
@@ -54,6 +54,7 @@
         <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
     </v-stepper>
+    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
@@ -78,7 +79,16 @@ export default {
         name: null,
         description: null,
         columns: []
-      }
+      },
+      items: [
+        { text: 'Databases', to: '/container', activeClass: '' },
+        {
+          text: `${this.$route.params.database_id}`,
+          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          activeClass: ''
+        },
+        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' }
+      ]
     }
   },
   computed: {

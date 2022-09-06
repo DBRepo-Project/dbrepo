@@ -69,6 +69,7 @@ public interface TableMapper {
             @Mapping(source = "data.name", target = "name"),
             @Mapping(source = "data.internalName", target = "internalName"),
             @Mapping(source = "data.created", target = "created"),
+            @Mapping(source = "data.isUnique", target = "isUnique"),
             @Mapping(source = "data.dfid", target = "dfid"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
@@ -302,7 +303,7 @@ public interface TableMapper {
                         .append("`"));
         statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
                 .append(data.getInternalName())
-                .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC");
+                .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC LIMIT 100");
         log.trace("created history view query [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());

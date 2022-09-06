@@ -43,6 +43,13 @@ function formatUser (user) {
   return user.username
 }
 
+function padLeft (str, padString, length) {
+  while (str.length < length) {
+    str = padString + str
+  }
+  return str
+}
+
 function formatDateUTC (str) {
   if (str === null) {
     return null
@@ -108,5 +115,6 @@ module.exports = {
   formatUser,
   formatYearUTC,
   formatMonthUTC,
-  formatDayUTC
+  formatDayUTC,
+  padLeft
 }

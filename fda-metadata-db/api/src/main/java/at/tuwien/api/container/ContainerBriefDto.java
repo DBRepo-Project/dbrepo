@@ -41,10 +41,6 @@ public class ContainerBriefDto {
     @Parameter(name = "container internal name", example = "weather-world")
     private String internalName;
 
-    @JsonProperty("is_public")
-    @Parameter(name = "container public", example = "true")
-    private Boolean isPublic;
-
     @Parameter(name = "container created")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

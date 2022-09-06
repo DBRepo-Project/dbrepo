@@ -18,13 +18,13 @@
         <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="is_owner && canDelete" color="error" class="mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class=" mb-1" @click="deleteItems">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="is_owner" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
       </v-toolbar-title>
@@ -75,6 +75,7 @@
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -323,18 +324,11 @@ export default {
       }
       this.loadingData = false
     },
-    async loadUser () {
+    loadUser () {
       if (!this.token) {
         return
       }
-      try {
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        this.user = res.data
-        console.debug('user', this.user)
-      } catch (err) {
-        this.$toast.error('Failed to get user details')
-        console.error('Failed to get user details', err)
-      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

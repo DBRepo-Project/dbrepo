@@ -4,14 +4,11 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import lombok.*;
-import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -21,14 +18,12 @@ import java.util.List;
 @Data
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "tblindex", createIndex = false)
-@IdClass(TableKey.class)
-@ToString
-@Log4j2
+@Document(indexName = "tableindex", createIndex = false)
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@IdClass(TableKey.class)
 @javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
 })
@@ -89,9 +84,16 @@ public class Table {
         this.database = null;
     }
 
+    /**
+     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
+     * Custom equality function implementation.
+     *
+     * @param other The other table
+     * @return True if tables are equal, false otherwise
+     */
     public boolean equals(FromItem other) {
         final String name = other.toString()
-                .replace("`","");
+                .replace("`", "");
         if (other.getAlias() != null) {
             final int idx = name.indexOf(' ');
             return this.getInternalName()

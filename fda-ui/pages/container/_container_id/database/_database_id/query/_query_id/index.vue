@@ -1,6 +1,5 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingDatabase || loadingIdentifier || loadingQuery" />
     <v-toolbar flat>
       <v-toolbar-title>
         <v-skeleton-loader v-if="loadingIdentifier" type="text" class="skeleton-small" />
@@ -8,10 +7,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !identifier.id && !loadingIdentifier" color="secondary" class="mr-2" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="result_visibility" :disabled="error" color="primary" :loading="downloadLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" class="mb-1" :disabled="error" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
@@ -25,7 +24,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card flat>
+    <v-card flat tile>
       <v-card-title>
         Subset Information
       </v-card-title>
@@ -94,16 +93,16 @@
                 Creators
               </v-list-item-title>
               <v-list-item-content>
-                <span v-for="(creator, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
-                  <OrcidIcon v-if="creator.orcid" :orcid="creator.orcid" />
-                  {{ creator.name }} <sup v-if="creator.affiliation">{{ creator.affiliation }}</sup>
+                <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
+                  <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
+                  {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Publication Date
               </v-list-item-title>
               <v-list-item-content>
-                {{ identifier.publication }}
+                {{ publication }}
               </v-list-item-content>
               <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
                 Related Identifiers
@@ -236,7 +235,8 @@
 <script>
 import PersistQuery from '@/components/dialogs/PersistQuery'
 import OrcidIcon from '@/components/icons/OrcidIcon'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   name: 'QueryShow',
@@ -267,6 +267,9 @@ export default {
           lastname: null
         }
       },
+      user: {
+        username: null
+      },
       identifier: {
         id: null,
         dbid: null,
@@ -280,6 +283,8 @@ export default {
         result_number: null,
         execution: null,
         publication_year: null,
+        publication_month: null,
+        publication_day: null,
         related: [],
         doi: null,
         creators: []
@@ -314,7 +319,7 @@ export default {
       return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
     },
     baseUrl () {
-      return 'http://' + location.host
+      return 'https://' + location.host
     },
     loadingColor () {
       return this.error ? 'red' : 'primary'
@@ -345,6 +350,9 @@ export default {
     database_visibility () {
       return this.database.is_public
     },
+    is_owner () {
+      return this.token && this.query.creator.username === this.user.username
+    },
     result_visibility () {
       if (this.erroneous) {
         return false
@@ -365,6 +373,15 @@ export default {
         return true
       }
       return this.identifier.visibility === 'everyone'
+    },
+    publication () {
+      if (this.identifier.publication_year && !this.identifier.publication_month && !this.identifier.publication_day) {
+        return this.identifier.publication_year
+      } else if (this.identifier.publication_year && this.identifier.publication_month && this.identifier.publication_day) {
+        return formatDateUTC(this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day)
+      } else {
+        return null
+      }
     },
     query_hash () {
       return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
@@ -395,6 +412,7 @@ export default {
     }
   },
   mounted () {
+    this.loadUser()
     this.loadDatabase()
       .then(() => this.loadQuery())
       .then(() => this.loadMetadata())
@@ -488,6 +506,12 @@ export default {
       if (event.action === 'persisted') {
         this.loadMetadata()
       }
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }
