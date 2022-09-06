@@ -46,6 +46,34 @@
     </v-navigation-drawer>
     <v-app-bar fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-autocomplete
+        v-model="model"
+        class="ml-1"
+        :items="searchResults"
+        :loading="loadingSearch"
+        :search-input.sync="query"
+        hide-no-data
+        hide-selected
+        hide-details
+        item-text="name"
+        item-value="name"
+        solo
+        flat
+        single-line
+        label="Search ..."
+        return-object>
+        <template v-slot:item="data">
+          <template>
+            <v-list-item-icon>
+              <v-icon :title="metadata(data).text">{{ metadata(data).icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content @click="navigate(data)">
+              <v-list-item-title class="search-result-title">{{ metadata(data).title }}</v-list-item-title>
+              <v-list-item-subtitle class="search-result-subtitle">{{ metadata(data).subtitle }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </template>
+      </v-autocomplete>
       <v-spacer />
       <v-btn
         v-if="!token"
@@ -117,10 +145,16 @@ export default {
   data () {
     return {
       drawer: false,
+      model: null,
+      query: null,
+      searchResults: [],
+      databases: [],
       user: {
         theme_dark: null
       },
-      loadingUser: true
+      loadingUser: true,
+      loadingSearch: false,
+      loadingDatabases: false
     }
   },
   computed: {
@@ -135,12 +169,6 @@ export default {
     },
     container () {
       return this.$store.state.container
-    },
-    filteredItems () {
-      return this.items.filter((x) => {
-        if (x.needsContainer && !this.container) { return false }
-        return true
-      })
     },
     db () {
       return this.$store.state.db
@@ -172,20 +200,153 @@ export default {
         this.loadUser()
           .then(() => this.setTheme())
       }
+    },
+    query (val) {
+      if (!val) {
+        return
+      }
+      setTimeout(() => {
+        if (val !== this.query) {
+          return
+        }
+        this.queryDatabases(val)
+        this.queryTables(val)
+        this.queryColumns(val)
+      })
     }
   },
   mounted () {
     this.loadDB()
+    this.loadContainers()
+      .then(() => this.loadDatabases())
     this.loadUser()
       .then(() => this.setTheme())
   },
   methods: {
+    metadata (item) {
+      if (item.item.exchange !== undefined) {
+        /* is database */
+        return {
+          icon: 'mdi-database',
+          text: 'Database',
+          link: `/container/${item.item.id}/database/${item.item.id}`,
+          title: item.item.name,
+          subtitle: item.item.description
+        }
+      }
+      if (item.item.topic !== undefined) {
+        /* is table */
+        return {
+          icon: 'mdi-table',
+          text: 'Table',
+          link: `/container/${item.item.tdbid}/database/${item.item.tdbid}/table/${item.item.id}`,
+          title: item.item.name,
+          subtitle: item.item.description
+        }
+      }
+      if (item.item.columnType !== undefined) {
+        /* is column */
+        return {
+          icon: 'mdi-view-column-outline',
+          text: 'Column',
+          link: `/container/${item.item.cdbid}/database/${item.item.cdbid}/table/${item.item.tid}`,
+          title: item.item.name,
+          subtitle: item.item.columnType
+        }
+      }
+      /* is identifier */
+      return {
+        icon: 'mdi-lock-clock',
+        text: 'Identifier',
+        link: `/pid/${item.item.id}`,
+        title: item.item.name,
+        subtitle: item.item.description
+      }
+    },
+    navigate (item) {
+      this.$router.push(this.metadata(item).link)
+    },
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
       this.$toast.success('Logged out')
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
+    },
+    async queryDatabases (v) {
+      this.loadingSearch = true
+      try {
+        const res = await this.$axios.get(`/search/databaseindex/_search?q=isPublic:true%20AND%20*${v}*&_source_includes=id,name,description,exchange&terminate_after=10`)
+        console.info('search databases results', res.data.hits.total.value)
+        console.debug('search databases results', res.data.hits.hits)
+        const databases = res.data.hits.hits.map(h => h._source)
+        databases.forEach(d => this.searchResults.push(d))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
+    },
+    async queryTables (v) {
+      this.loadingSearch = true
+      try {
+        const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,tdbid,name,description,topic&terminate_after=10`)
+        console.info('search tables results', res.data.hits.total.value)
+        console.debug('search tables results', res.data.hits.hits)
+        const tables = res.data.hits.hits.map(h => h._source)
+        tables.forEach(t => this.searchResults.push(t))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
+    },
+    async queryColumns (v) {
+      this.loadingSearch = true
+      try {
+        const res = await this.$axios.get(`/search/columnindex/_search?q=*${v}*&_source_includes=id,cdbid,tid,name,columnType&terminate_after=10`)
+        console.info('search column results', res.data.hits.total.value)
+        console.debug('search column results', res.data.hits.hits)
+        const dbpubids = this.databases.filter(d => d.is_public).map(d => d.id)
+        const columns = res.data.hits.hits.map(h => h._source).filter(c => dbpubids.includes(c.cdbid))
+        columns.forEach(c => this.searchResults.push(c))
+      } catch (err) {
+        console.error('Failed to load search results', err)
+      }
+      this.loadingSearch = false
+    },
+    async loadContainers () {
+      this.createDbDialog = false
+      try {
+        this.loadingContainers = true
+        const res = await this.$axios.get('/api/container/')
+        this.containers = res.data
+        console.debug('containers', this.containers)
+        this.error = false
+      } catch (err) {
+        console.error('containers', err)
+        this.error = true
+      }
+      this.loadingContainers = false
+    },
+    async loadDatabases () {
+      if (this.containers.length === 0) {
+        return
+      }
+      this.loading = true
+      for (const container of this.containers) {
+        try {
+          const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
+          for (const info of res.data) {
+            info.container_id = container.id
+            this.databases.push(info)
+          }
+        } catch (err) {
+          if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
+            console.error('Failed to load databases for container', err)
+          }
+        }
+      }
+      this.loading = false
+      console.debug('databases', this.databases)
     },
     async loadDB () {
       if (this.$route.params.db_id && !this.db) {
@@ -225,7 +386,15 @@ export default {
   }
 }
 </script>
-<style scoped>
+<style>
+.search-result-title,
+.search-result-subtitle {
+  overflow: hidden;
+  white-space: pre-line;
+}
+.v-menu__content {
+  max-width: 988px !important;
+}
 .tu-logo {
   margin: 1em 1em 0;
 }

@@ -79,6 +79,7 @@ export default {
   },
   data () {
     return {
+      loadingContainers: false,
       createDbDialog: false,
       databases: [],
       containers: [],
@@ -121,7 +122,7 @@ export default {
     async loadContainers () {
       this.createDbDialog = false
       try {
-        this.loading = true
+        this.loadingContainers = true
         const res = await this.$axios.get('/api/container/')
         this.containers = res.data
         console.debug('containers', this.containers)
@@ -129,8 +130,8 @@ export default {
       } catch (err) {
         console.error('containers', err)
         this.error = true
-        this.loading = false
       }
+      this.loadingContainers = false
     },
     async loadDatabases () {
       if (this.containers.length === 0) {

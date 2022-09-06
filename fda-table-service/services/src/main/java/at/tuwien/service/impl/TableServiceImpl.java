@@ -7,6 +7,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.repository.elastic.TableColumnidxRepository;
 import at.tuwien.repository.elastic.TableidxRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.DatabaseService;
@@ -25,8 +26,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
-
 @Log4j2
 @Service
 public class TableServiceImpl extends HibernateConnector implements TableService {
@@ -36,15 +35,18 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
     private final TableidxRepository tableidxRepository;
+    private final TableColumnidxRepository tableColumnidxRepository;
 
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
-                            DatabaseService databaseService, TableidxRepository tableidxRepository) {
+                            DatabaseService databaseService, TableidxRepository tableidxRepository,
+                            TableColumnidxRepository tableColumnidxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
         this.tableidxRepository = tableidxRepository;
+        this.tableColumnidxRepository = tableColumnidxRepository;
     }
 
     @Override
@@ -78,6 +80,12 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         log.info("Deleted table with id {}", table.getId());
         log.debug("deleted table {}", table);
+        /* delete in database_index - elastic search */
+        tableidxRepository.delete(table);
+        /* delete in column_index - elastic search */
+        tableColumnidxRepository.deleteAll(table.getColumns());
+        log.info("Deleted columns in elastic search with id {}", databaseId);
+        log.debug("deleted columns in elastic search {}", database);
     }
 
     @Override
@@ -141,7 +149,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         log.debug("mapped new table {}", tmp);
         /* save in metadata database */
         final Table entity = tableRepository.save(tmp);
-        entity.setColumns(Arrays.stream(createDto.getColumns())
+        entity.setColumns(createDto.getColumns()
+                .stream()
                 .map(tableMapper::columnCreateDtoToTableColumn)
                 .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
                 .collect(Collectors.toList()));
@@ -167,10 +176,12 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());
         log.debug("created table {}", table);
-        /* save in elastic search */
-        tableidxRepository.save(entity);
-        log.info("Added table with id {} to search index", table.getId());
-        log.debug("added table {} to search index", table);
+        /* save in database_index - elastic search */
+        final Table eTbl = tableidxRepository.save(entity);
+        /* save in column_index - elastic search */
+        tableColumnidxRepository.saveAll(eTbl.getColumns());
+        log.info("Saved table with id {} in elastic search", eTbl.getId());
+        log.debug("saved database in elastic search {}", eTbl);
         return table;
     }
 

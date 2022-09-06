@@ -12,9 +12,9 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 
+import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
@@ -114,17 +114,14 @@ public abstract class BaseUnitTest {
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
-            .description(DATABASE_1_DESCRIPTION)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE2 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .license(LICENSE_1_DTO)

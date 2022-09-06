@@ -259,7 +259,7 @@ class TableDataEndpointApi(object):
         auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/table/{tableId}/data', 'HEAD',
+            '/api/container/{id}/database/{databaseId}/table/{tableId}/data', 'GET',
             path_params,
             query_params,
             header_params,
@@ -380,7 +380,7 @@ class TableDataEndpointApi(object):
         auth_settings = ['bearerAuth']  # noqa: E501
 
         return self.api_client.call_api(
-            '/api/container/{id}/database/{databaseId}/table/{tableId}/data', 'GET',
+            '/api/container/{id}/database/{databaseId}/table/{tableId}/data', 'HEAD',
             path_params,
             query_params,
             header_params,

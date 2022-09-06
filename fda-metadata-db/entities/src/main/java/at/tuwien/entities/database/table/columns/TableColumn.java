@@ -2,17 +2,14 @@ package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.entities.user.User;
 import lombok.*;
-import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -22,13 +19,12 @@ import java.util.List;
 @Data
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "columnindex", createIndex = false)
 @IdClass(TableColumnKey.class)
-@ToString
-@Log4j2
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
 })
@@ -140,15 +136,20 @@ public class TableColumn implements Comparable<TableColumn> {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
     }
 
+    /**
+     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
+     * Custom equality function implementation.
+     *
+     * @param other The other column.
+     * @return True if columns are equal, false otherwise
+     */
     public boolean equals(SelectItem other) {
         final String name = other.toString()
-                .replace("`","");
+                .replace("`", "");
         final int idx = name.indexOf('.');
         if (idx == -1) {
-            log.trace("internal name {} =?= name {}", this.internalName, name);
             return name.equals(this.internalName);
         }
-        log.trace("internal name {} =?= name {}", this.internalName, name.substring(idx + 1));
         return name.substring(idx + 1)
                 .equals(this.internalName);
     }

@@ -29,8 +29,6 @@ import org.thymeleaf.context.Context;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,15 +59,15 @@ public class UserEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ROLE_DATA_STEWARD') or hasRole('ROLE_DEVELOPER')")
-    @Operation(summary = "List users", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<UserDto>> list() throws OrcidMalformedException {
-        final List<User> users = userService.findAll();
-        final List<UserDto> out = new LinkedList<>();
-        for (User user : users) {
-            out.add(userMapper.userToUserDto(user));
-        }
-        return ResponseEntity.ok(out);
+    @Operation(summary = "List users")
+    public ResponseEntity<List<UserBriefDto>> list() {
+        final List<UserBriefDto> users = userService.findAll()
+                .stream()
+                .map(userMapper::userToUserBriefDto)
+                .collect(Collectors.toList());
+        log.info("Found {} users", users.size());
+        log.debug("found users {}", users);
+        return ResponseEntity.ok(users);
     }
 
     @PostMapping
@@ -162,7 +160,7 @@ public class UserEndpoint {
     @PreAuthorize("hasPermission(#id, 'UPDATE_THEME')")
     @Operation(summary = "Update user theme", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> updateTheme(@NotNull @PathVariable("id") Long id,
-                                               @NotNull @Valid @RequestBody UserThemeSetDto data) throws UserNotFoundException {
+                                            @NotNull @Valid @RequestBody UserThemeSetDto data) throws UserNotFoundException {
         userService.updateTheme(id, data);
         return ResponseEntity.accepted()
                 .build();

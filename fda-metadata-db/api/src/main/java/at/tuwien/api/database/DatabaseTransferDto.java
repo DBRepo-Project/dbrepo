@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -13,13 +12,9 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class DatabaseCreateDto {
+public class DatabaseTransferDto {
 
-    @NotBlank(message = "database name is required")
-    @Parameter(name = "database name", example = "Weather Australia")
-    private String name;
-
-    @NotNull(message = "public attribute is required")
+    @NotNull
     @JsonProperty("is_public")
     @Parameter(name = "database publicity", example = "true")
     private Boolean isPublic;

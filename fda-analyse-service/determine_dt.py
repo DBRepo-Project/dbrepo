@@ -51,18 +51,18 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None):
 
     for i in range(0, (len(types))):
         if type(types[i]) == messytables.types.BoolType:
-            r[headers[i]] = "Boolean"
+            r[headers[i]] = "boolean"
         elif type(types[i]) == messytables.types.IntegerType:
-            r[headers[i]] = "Integer"
+            r[headers[i]] = "number"
         elif type(types[i]) == messytables.types.FloatType:
-            r[headers[i]] = "Decimal"
+            r[headers[i]] = "decimal"
         elif type(types[i]) == messytables.types.DateType:
             if ("S" in str(types[i])):
-                r[headers[i]] = "Timestamp"
+                r[headers[i]] = "timestamp"
             else:
-                r[headers[i]] = "Date"
+                r[headers[i]] = "date"
         elif type(types[i]) == messytables.types.DecimalType:
-            r[headers[i]] = "Decimal"
+            r[headers[i]] = "decimal"
         else:
             if enum == True:
                 enum_set = set()
@@ -79,9 +79,9 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None):
                     enum_set.discard(None)
                     r[headers[i]] = {"Enum": list(enum_set)}
                 else:
-                    r[headers[i]] = "Text"
+                    r[headers[i]] = "text"
             else:
-                r[headers[i]] = "Text"
+                r[headers[i]] = "text"
 
     s = {'columns': r, 'separator': separator}
 

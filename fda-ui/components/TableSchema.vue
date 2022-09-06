@@ -35,7 +35,7 @@
               label="Enumeration"
               multiple />
           </v-col>
-          <v-col v-if="c.type.match('(timestamp)|(date)')" cols="2" class="pl-10">
+          <v-col v-if="c.type.match('(timestamp)|(date)')" cols="2">
             <v-select
               v-if="c.type !== 'timestamp'"
               v-model="c.dfid"
@@ -43,7 +43,7 @@
               :rules="[v => !!v || $t('Required')]"
               :items="dateFormats.filter(f => !f.has_time)"
               label="Date Format *"
-              item-text="example"
+              :item-text="item => `${item.example}`"
               item-value="id" />
             <v-select
               v-if="c.type !== 'date'"
@@ -52,9 +52,10 @@
               :rules="[v => !!v || $t('Required')]"
               :items="dateFormats.filter(f => f.has_time)"
               label="Timestamp Format *"
-              item-text="example"
+              :item-text="item => `${item.example}`"
               item-value="id" />
           </v-col>
+          <v-col v-if="needsShift(c)" cols="2" />
           <v-col cols="auto" class="pl-10" :hidden="c.type !== 'string' || c.type !== 'VARCHAR'">
             <v-text-field v-model="c.check_expression" label="Check Expression" />
           </v-col>
@@ -62,7 +63,7 @@
             <v-checkbox v-model="c.primary_key" label="Primary Key" @click="setOthers(c)" />
           </v-col>
           <v-col cols="auto" class="pl-10">
-            <v-checkbox v-model="c.null_allowed" :disabled="c.primary_key" label="Null Allowed" />
+            <v-checkbox v-model="c.null_allowed" :disabled="c.primary_key" label="Null" />
           </v-col>
           <v-col cols="auto" class="pl-10">
             <v-checkbox v-model="c.unique" :hidden="c.primary_key" label="Unique" />
@@ -75,7 +76,7 @@
           </v-col>
           <v-col v-if="canRemove(idx)" cols="auto" class="mt-5 ml-5">
             <v-btn x-small @click="removeColumn(idx)">
-              Remove Column
+              Remove
             </v-btn>
           </v-col>
         </v-row>
@@ -155,6 +156,12 @@ export default {
       .then(() => this.loadImage())
   },
   methods: {
+    needsShift (column) {
+      if (column.type === 'date' || column.type === 'timestamp') {
+        return false
+      }
+      return this.columns.filter(c => c.type === 'date' || c.type === 'timestamp').length > 0
+    },
     async loadContainer () {
       const getUrl = `/api/container/${this.$route.params.container_id}`
       try {

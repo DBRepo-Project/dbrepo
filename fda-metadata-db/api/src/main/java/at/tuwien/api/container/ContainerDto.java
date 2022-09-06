@@ -49,10 +49,6 @@ public class ContainerDto {
     @JsonProperty("ip_address")
     private String ipAddress;
 
-    @JsonProperty("is_public")
-    @Parameter(name = "container public", example = "true")
-    private Boolean isPublic;
-
     @Parameter(name = "container image")
     private ImageBriefDto image;
 

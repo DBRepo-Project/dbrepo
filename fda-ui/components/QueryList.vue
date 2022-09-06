@@ -3,9 +3,7 @@
     <v-progress-linear v-if="loading" indeterminate />
     <v-tabs-items>
       <v-card v-if="!loading && queries.length === 0" flat>
-        <v-card-title>
-          (no subsets)
-        </v-card-title>
+        <v-card-text v-text="emptyMessage" />
       </v-card>
       <v-expansion-panels v-if="!loading && queries.length > 0" accordion>
         <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
@@ -81,12 +79,22 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
+import { decodeJwt } from 'jose'
 export default {
   data () {
     return {
       loading: false,
       queries: [],
       identifiers: [],
+      user: {
+        username: null
+      },
+      database: {
+        is_public: null,
+        creator: {
+          username: null
+        }
+      },
       queryDetails: {
         id: null,
         doi: null,
@@ -120,19 +128,28 @@ export default {
     },
     creator () {
       return this.queryDetails.creator
+    },
+    emptyMessage () {
+      if (this.isPublicOrOwner()) {
+        return '(no subsets)'
+      }
+      return '(private database)'
     }
   },
   mounted () {
-    this.$root.$on('query-create', this.refresh)
-    this.refresh()
+    this.loadUser()
+    this.loadDatabase()
+      .then(() => this.loadQueries())
   },
   methods: {
-    async refresh () {
-      // XXX same as in QueryBuilder
-      let res
+    async loadQueries () {
+      if (!this.isPublicOrOwner()) {
+        return
+      }
+      console.debug(1, this.database.is_public, 2, this.database.creator.username, 3, this.user.username, 4, this.token)
       try {
         this.loading = true
-        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
         try {
@@ -160,6 +177,33 @@ export default {
     },
     details (query) {
       this.queryDetails = query
+    },
+    isPublicOrOwner () {
+      if (this.database.is_public) {
+        return true
+      }
+      if (this.token === null) {
+        return false
+      }
+      return this.database.creator.username === this.user.username
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
+    },
+    async loadDatabase () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.database = res.data
+        console.debug('database', this.database)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Could not get database details.')
+      }
+      this.loading = false
     }
   }
 }
@@ -169,5 +213,9 @@ export default {
 .pid-icon {
   flex: 0 !important;
   margin-right: 16px;
+}
+pre {
+  white-space: break-spaces;
+  overflow: hidden;
 }
 </style>

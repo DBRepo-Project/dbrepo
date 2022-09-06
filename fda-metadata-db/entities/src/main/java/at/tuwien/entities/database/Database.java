@@ -48,7 +48,7 @@ public class Database {
     private User creator;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -78,9 +78,15 @@ public class Database {
     @Column
     private Integer publicationYear;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @Column
+    private Integer publicationMonth;
+
+    @Column
+    private Integer publicationDay;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
+            @JoinColumn(name = "Contactperson", referencedColumnName = "UserID")
     })
     private User contact;
 

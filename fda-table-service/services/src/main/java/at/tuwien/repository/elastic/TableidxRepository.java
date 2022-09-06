@@ -4,6 +4,6 @@ import at.tuwien.entities.database.table.Table;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository(value = "ElasticDatabaseService")
+@Repository
 public interface TableidxRepository extends ElasticsearchRepository<Table, Long> {
 }

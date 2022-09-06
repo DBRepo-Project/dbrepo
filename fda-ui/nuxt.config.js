@@ -84,12 +84,19 @@ export default {
     brokerUsername: process.env.BROKER_USERNAME || 'fda',
     brokerPassword: process.env.BROKER_PASSWORD || 'fda',
     sandbox: process.env.SANDBOX || false,
-    shared_filesystem: process.env.SHARED_FILESYSTEM || '/tmp',
+    sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest'
   },
 
   proxy: {
-    '/api': process.env.API || 'http://localhost:9095'
+    '/api': process.env.API || 'http://localhost:9095',
+    '/search': {
+      target: process.env.SEARCH || 'http://localhost:9200',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/search': ''
+      }
+    }
   },
 
   serverMiddleware: [
@@ -108,7 +115,7 @@ export default {
           info: colors.amber.lighten4,
           code: colors.grey.lighten4,
           warning: colors.amber.base,
-          error: colors.red.lighten1,
+          error: colors.red.lighten2,
           success: colors.teal.base
         },
         dark: {

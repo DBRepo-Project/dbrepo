@@ -66,9 +66,9 @@ public class ContainerEndpoint {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Operation(summary = "Find some container")
-    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable Long id) throws DockerClientException,
+    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId) throws DockerClientException,
             ContainerNotFoundException, ContainerNotRunningException {
-        final Container container = containerService.inspect(id);
+        final Container container = containerService.inspect(containerId);
         return ResponseEntity.ok()
                 .body(containerMapper.containerToContainerDto(container));
     }
@@ -77,14 +77,14 @@ public class ContainerEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable Long id,
+    public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
                                                     @Valid @RequestBody ContainerChangeDto changeDto)
             throws ContainerNotFoundException, DockerClientException {
         final Container container;
         if (changeDto.getAction().equals(ContainerActionTypeDto.START)) {
-            container = containerService.start(id);
+            container = containerService.start(containerId);
         } else {
-            container = containerService.stop(id);
+            container = containerService.stop(containerId);
         }
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(containerMapper.containerToDatabaseContainerBriefDto(container));
@@ -92,11 +92,11 @@ public class ContainerEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#containerId, 'DELETE_CONTAINER')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ContainerNotFoundException,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId) throws ContainerNotFoundException,
             DockerClientException, ContainerStillRunningException {
-        containerService.remove(id);
+        containerService.remove(containerId);
         return ResponseEntity.status(HttpStatus.OK)
                 .build();
     }

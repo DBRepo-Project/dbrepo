@@ -12,8 +12,8 @@
     </v-toolbar>
     <v-toolbar flat>
       <v-tabs
-        color="primary"
-        v-model="tabs">
+        v-model="tabs"
+        color="primary">
         <v-tab>
           Simple
         </v-tab>

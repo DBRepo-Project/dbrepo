@@ -1,14 +1,11 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.database.DatabaseBriefDto;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.querystore.Query;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -28,6 +25,7 @@ public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
 
+    /* keep */
     @Named("internalMapping")
     default String nameToInternalName(String data) {
         if (data == null || data.length() == 0) {
@@ -41,11 +39,19 @@ public interface DatabaseMapper {
         return slug.toLowerCase(Locale.ENGLISH);
     }
 
+    /* keep */
+    @Named("languageMapping")
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
+
+    /* keep */
+    @Named("engineMapping")
+    default String containerImageToEngine(ContainerImage data) {
+        return data.getRepository() + ":" + data.getTag();
+    }
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
-            @Mapping(target = "engine", expression = "java(data.getContainer().getImage().getRepository()+\":\"+data.getContainer().getImage().getTag())"),
+            @Mapping(target = "engine", source = "container.image", qualifiedByName = "engineMapping"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
     })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
@@ -56,6 +62,11 @@ public interface DatabaseMapper {
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm")
     })
     DatabaseDto databaseToDatabaseDto(Database data);
+
+    @Mappings({
+            @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping"),
+    })
+    Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
     default PreparedStatement databaseToRawCreateDatabaseQuery(Connection connection, Database database) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
