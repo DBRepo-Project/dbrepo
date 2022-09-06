@@ -84,6 +84,9 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    isPublicOrOwner () {
+      return this.database.is_public || this.database.creator.username === this.user.username
     }
   },
   watch: {

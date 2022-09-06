@@ -115,7 +115,7 @@ export default {
           info: colors.amber.lighten4,
           code: colors.grey.lighten4,
           warning: colors.amber.base,
-          error: colors.red.lighten1,
+          error: colors.red.lighten2,
           success: colors.teal.base
         },
         dark: {

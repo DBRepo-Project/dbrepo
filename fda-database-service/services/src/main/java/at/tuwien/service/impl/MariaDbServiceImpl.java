@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyDto;
+import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.License;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.sql.*;
 import java.time.Instant;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,17 +54,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         this.databaseidxRepository = databaseidxRepository;
     }
 
-
     @Override
-    @Transactional(readOnly = true)
-    public List<Database> findAllPublic(Long containerId) {
-        return databaseRepository.findAllByPublicAndContainerId(containerId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Database> findAllPublicOrMine(Long containerId, Principal principal) {
-        return databaseRepository.findAllByPublicAndContainerIdOrMine(containerId, principal.getName());
+    public List<Database> findAll(Long containerId) {
+        return databaseRepository.findAll(containerId);
     }
 
     @Override
@@ -141,9 +133,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }
         /* start the object */
-        final Database database = new Database();
-        database.setName(createDto.getName());
-        database.setInternalName(databaseMapper.nameToInternalName(database.getName()));
+        final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         database.setContainer(container);
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
         try {
@@ -163,7 +153,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
-        database.setDescription(createDto.getDescription());
         database.setIsPublic(createDto.getIsPublic());
         final User creator = userService.findByUsername(principal.getName());
         database.setCreator(creator);
@@ -181,24 +170,50 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Transactional
     public Database modify(Long containerId, Long databaseId, DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
+        /* check */
         final Database database = findById(containerId, databaseId);
+        /* map */
         if (modifyDto.getContactPerson() != null) {
             database.setContact(userService.findByUsername(modifyDto.getContactPerson()));
+        } else {
+            database.setContact(null);
         }
         if (modifyDto.getLicense() != null) {
             final License license = licenseService.find(modifyDto.getLicense().getIdentifier());
             log.info("Found license with identifier {}", modifyDto.getLicense().getIdentifier());
             log.debug("found license {}", license);
             database.setLicense(license);
+        } else {
+            database.setLicense(null);
         }
-        database.setIsPublic(modifyDto.getIsPublic());
-        database.setDescription(modifyDto.getDescription());
-        database.setPublisher(modifyDto.getPublisher());
-        database.setPublication(modifyDto.getPublication());
         database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
-
-        final Database dbdb = databaseRepository.save(database);
+        database.setDescription(modifyDto.getDescription());
+        database.setPublicationYear(modifyDto.getPublicationYear());
+        database.setPublicationMonth(modifyDto.getPublicationMonth());
+        database.setPublicationDay(modifyDto.getPublicationDay());
+        database.setSubjects(modifyDto.getSubjects());
+        database.setPublisher(modifyDto.getPublisher());
         /* update entity in metadata database */
+        final Database dbdb = databaseRepository.save(database);
+        log.info("Updated database with id {}", dbdb.getId());
+        log.debug("updated database {}", dbdb);
+        // save in database_index - elastic search
+        final Database edb = databaseidxRepository.save(database);
+        log.info("Updated database in elastic search with id {}", edb.getId());
+        log.debug("updated database in elastic search {}", edb);
+        return dbdb;
+    }
+
+    @Override
+    @Transactional
+    public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
+            throws DatabaseNotFoundException {
+        /* check */
+        final Database database = findById(containerId, databaseId);
+        /* map */
+        database.setIsPublic(transferDto.getIsPublic());
+        /* update entity in metadata database */
+        final Database dbdb = databaseRepository.save(database);
         log.info("Updated database with id {}", dbdb.getId());
         log.debug("updated database {}", dbdb);
         // save in database_index - elastic search

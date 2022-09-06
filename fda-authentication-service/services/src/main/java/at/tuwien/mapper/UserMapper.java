@@ -35,6 +35,8 @@ public interface UserMapper {
 
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
+    UserBriefDto userToUserBriefDto(User data);
+
     @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {
         final UserDetailsDto details = (UserDetailsDto) data;

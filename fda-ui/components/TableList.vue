@@ -20,9 +20,7 @@
                     <v-list-item-title>
                       Table ID
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.id }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="tableDetails.id " />
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
@@ -30,6 +28,7 @@
                     <v-list-item-title>
                       Table Internal Name
                     </v-list-item-title>
+                    <v-list-item-content v-text="tableDetails.internal_name" />
                     <v-list-item-content>
                       {{ tableDetails.internal_name }}
                     </v-list-item-content>
@@ -50,22 +49,18 @@
                     <v-list-item-title>
                       AMQP Exchange
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ database.exchange }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="database.exchange" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="tableDetails.topic">
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Routing Key
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.topic }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="tableDetails.topic" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="isPublicOrOwner">
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Consumer(s)
@@ -79,30 +74,18 @@
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Description
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.description }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="createdUTC">
                   <v-list-item-content>
                     <v-list-item-title>
                       Table Creation
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ createdUTC }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="createdUTC" />
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-col>
           </v-row>
-          <v-row dense>
+          <v-row v-if="isPublicOrOwner" dense>
             <v-col>
               <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
@@ -114,13 +97,13 @@
                 Import csv
               </v-btn>
             </v-col>
-            <v-col class="align-right">
-              <v-btn v-if="false" outlined color="error" @click="showDeleteTableDialog(item.id)">
+            <v-col v-if="false" class="align-right">
+              <v-btn outlined color="error" @click="showDeleteTableDialog(item.id)">
                 Delete
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-if="tableDetails.columns">
+          <v-row v-if="isPublicOrOwner && tableDetails.columns">
             <v-data-table
               class="full-width"
               disable-sort
@@ -208,6 +191,7 @@ export default {
       },
       database: {
         exchange: null,
+        is_public: null,
         tables: [],
         creator: {
           username: null
@@ -265,7 +249,13 @@ export default {
       }
     },
     createdUTC () {
+      if (this.tableDetails.created === undefined || this.tableDetails.created === null) {
+        return null
+      }
       return formatTimestampUTCLabel(this.tableDetails.created)
+    },
+    isPublicOrOwner () {
+      return this.database.is_public || this.database.creator.username === this.user.username
     },
     consumersState () {
       if (this.consumersTotal === 0) {
@@ -335,25 +325,24 @@ export default {
       }
       this.attemptedLoadingConsumers = false
       /* use cache */
-      this.tableDetails.id = table.id
-      this.tableDetails.name = table.name
-      this.tableDetails.internal_name = table.internal_name
-      this.tableDetails.topic = table.topic
+      this.tableDetails = table
       /* load remaining info */
-      try {
-        this.loadingDetails = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)
-        this.tableDetails = res.data
-        console.debug('table details', this.tableDetails)
-        if (table.id) {
-          this.openPanelByTableId(table.id)
-          await this.consumerDetails(this.tableDetails.topic)
+      if (this.isPublicOrOwner) {
+        try {
+          this.loadingDetails = true
+          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)
+          this.tableDetails = res.data
+          console.debug('table details', this.tableDetails)
+          if (table.id) {
+            this.openPanelByTableId(table.id)
+            await this.consumerDetails(this.tableDetails.topic)
+          }
+        } catch (err) {
+          this.$toast.error('Failed to load table details')
+          console.error('Failed to load table details', err)
         }
-      } catch (err) {
-        this.$toast.error('Failed to load table details')
-        console.error('Failed to load table details', err)
+        this.loadingDetails = false
       }
-      this.loadingDetails = false
     },
     closed (data) {
       console.debug('closed dialog', data)

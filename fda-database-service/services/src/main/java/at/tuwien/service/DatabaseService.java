@@ -2,31 +2,25 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyDto;
+import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
 
 public interface DatabaseService {
-    /**
-     * Finds all public databases in the metadata database for a given container id.
-     *
-     * @param containerId The container id.
-     * @return A list of databases
-     */
-    List<Database> findAllPublic(Long containerId);
 
     /**
-     * Finds all public databases or my private database in the metadata database for a given container id.
+     * Finds all databases in the metadata database for a given container id.
      *
      * @param containerId The container id.
-     * @param principal   The principal.
      * @return A list of databases
      */
-    List<Database> findAllPublicOrMine(Long containerId, Principal principal);
+    List<Database> findAll(Long containerId);
 
     /**
      * Finds a specific database for a given id in the metadata database.
@@ -95,4 +89,16 @@ public interface DatabaseService {
      */
     Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
             throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
+
+    /**
+     * Updates the visibility of the database.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param transferDto The visibility
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     */
+    Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
+            throws DatabaseNotFoundException;
 }

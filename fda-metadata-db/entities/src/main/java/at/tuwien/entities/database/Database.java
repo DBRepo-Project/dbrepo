@@ -13,7 +13,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
@@ -77,11 +76,17 @@ public class Database {
     private String publisher;
 
     @Column
-    private Date publication;
+    private Integer publicationYear;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @Column
+    private Integer publicationMonth;
+
+    @Column
+    private Integer publicationDay;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "contactperson", referencedColumnName = "UserID", insertable = false, updatable = false)
+            @JoinColumn(name = "Contactperson", referencedColumnName = "UserID")
     })
     private User contact;
 

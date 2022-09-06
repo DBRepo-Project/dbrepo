@@ -149,7 +149,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         log.debug("mapped new table {}", tmp);
         /* save in metadata database */
         final Table entity = tableRepository.save(tmp);
-        entity.setColumns(Arrays.stream(createDto.getColumns())
+        entity.setColumns(createDto.getColumns()
+                .stream()
                 .map(tableMapper::columnCreateDtoToTableColumn)
                 .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
                 .collect(Collectors.toList()));

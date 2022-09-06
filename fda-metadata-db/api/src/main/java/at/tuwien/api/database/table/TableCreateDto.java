@@ -1,13 +1,12 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,6 +26,6 @@ public class TableCreateDto {
 
     @NotNull
     @Parameter(name = "table columns", required = true)
-    private ColumnCreateDto[] columns;
+    private List<ColumnCreateDto> columns;
 
 }

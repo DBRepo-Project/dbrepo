@@ -183,7 +183,8 @@ public interface TableMapper {
                 .append(nameToInternalName(data.getName()))
                 .append("` (");
         /* internal checks */
-        final boolean primaryColumnExists = Arrays.stream(data.getColumns())
+        final boolean primaryColumnExists = data.getColumns()
+                .stream()
                 .anyMatch(ColumnCreateDto::getPrimaryKey);
         /* create columns */
         if (!primaryColumnExists) {
@@ -195,46 +196,45 @@ public interface TableMapper {
                     .unique(true)
                     .build();
             log.debug("attempt to create id column {}", idColumn);
-            if (Arrays.stream(data.getColumns()).anyMatch(c -> c.getName().equals("id"))) {
+            if (data.getColumns().stream().anyMatch(c -> c.getName().equals("id"))) {
                 log.error("Cannot create id column, it already exists");
                 throw new TableMalformedException("Cannot create id column");
             }
-            final ColumnCreateDto[] columns = new ColumnCreateDto[data.getColumns().length + 1];
-            columns[0] = idColumn;
-            for (int i = 0; i < data.getColumns().length; i++) {
-                columns[i + 1] = data.getColumns()[i];
-            }
+            final List<ColumnCreateDto> columns = new LinkedList<>();
+            columns.add(idColumn);
+            columns.addAll(data.getColumns());
             data.setColumns(columns);
         }
         final int[] idx = {0};
-        for (int i = 0; i < data.getColumns().length; i++) {
-            final ColumnCreateDto c = data.getColumns()[i];
+        for (ColumnCreateDto column : data.getColumns()) {
             query.append(idx[0]++ > 0 ? ", " : "")
                     .append("`")
-                    .append(nameToInternalName(c.getName()))
+                    .append(nameToInternalName(column.getName()))
                     .append("` ")
                     /* data type */
-                    .append(columnTypeDtoToDataType(c))
+                    .append(columnTypeDtoToDataType(column))
                     /* null expressions */
-                    .append(c.getNullAllowed() ? " NULL" : " NOT NULL")
+                    .append(column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
-                    .append(!primaryColumnExists && c.getName().equals(
+                    .append(!primaryColumnExists && column.getName().equals(
                             "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
                     /* check expressions */
-                    .append(c.getCheckExpression() != null &&
-                            !c.getCheckExpression().isEmpty() ? " CHECK (" + c.getCheckExpression() + ")" : "");
+                    .append(column.getCheckExpression() != null &&
+                            !column.getCheckExpression().isEmpty() ? " CHECK (" + column.getCheckExpression() + ")" : "");
         }
         /* create primary key index */
         query.append(", PRIMARY KEY (")
-                .append(String.join(",", Arrays.stream(data.getColumns())
+                .append(String.join(",", data.getColumns()
+                                .stream()
                         .filter(ColumnCreateDto::getPrimaryKey)
                         .map(c -> "`" + nameToInternalName(
                                 c.getName()) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(c))
                         .toArray(String[]::new)))
                 .append(")");
         /* create unique indices */
-        log.trace("columns {}", Arrays.stream(data.getColumns()).collect(Collectors.toList()));
-        Arrays.stream(data.getColumns())
+        log.trace("columns {}", new ArrayList<>(data.getColumns()));
+        data.getColumns()
+                .stream()
                 .filter(c -> Objects.nonNull(c.getUnique()))
                 .filter(ColumnCreateDto::getUnique)
                 .filter(c -> Objects.nonNull(c.getPrimaryKey()))
@@ -244,7 +244,8 @@ public interface TableMapper {
                         .append(nameToInternalName(c.getName()))
                         .append("`)"));
         /* create foreign key indices */
-        Arrays.stream(data.getColumns())
+        data.getColumns()
+                .stream()
                 .filter(c -> Objects.nonNull(c.getForeignKey()))
                 .forEach(c -> query.append(", FOREIGN KEY (`")
                         .append(nameToInternalName(c.getName()))
@@ -254,7 +255,7 @@ public interface TableMapper {
                         .append(nameToInternalName(c.getForeignKey()))
                         .append("`) ON DELETE CASCADE ON UPDATE RESTRICT"));
         query.append(") WITH SYSTEM VERSIONING;");
-        log.debug("create table query built with {} columns and system versioning", data.getColumns().length);
+        log.debug("create table query built with {} columns and system versioning", data.getColumns().size());
         log.debug("raw create table query: [{}]", query);
         try {
             return CreateTableRawQuery.builder()

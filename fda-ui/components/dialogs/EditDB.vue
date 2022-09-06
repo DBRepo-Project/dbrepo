@@ -3,76 +3,108 @@
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-        <v-card-title>
-          Database Metadata
-        </v-card-title>
+        <v-card-title v-text="database.name" />
+        <v-card-subtitle>Modify Metadata</v-card-subtitle>
         <v-card-text>
-          <v-switch
-            id="public"
-            v-model="modify.is_public"
-            color="primary"
-            :label="publicLabel"
-            name="public" />
-          <v-text-field
-            id="publisher"
-            v-model="modify.publisher"
-            name="publisher"
-            label="Publisher"
-            autofocus />
-          <v-textarea
-            id="description"
-            v-model="modify.description"
-            name="description"
-            rows="2"
-            label="Description" />
-          <v-select
-            id="language"
-            v-model="modify.language"
-            name="language"
-            label="Language"
-            :items="languages"
-            item-value="value"
-            item-text="text" />
-          <v-menu
-            v-model="menu"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="auto">
-            <template v-slot:activator="{ on, attrs }">
+          <v-row dense>
+            <v-col>
               <v-text-field
-                v-model="modify.publication"
-                name="publication"
-                label="Publication Date"
-                prepend-icon="mdi-calendar"
-                readonly
-                v-bind="attrs"
-                v-on="on" />
-            </template>
-            <v-date-picker
-              v-model="modify.publication"
-              color="primary"
-              @input="menu = false">
-              <v-spacer />
-              <v-btn
-                text
-                color="primary"
-                @click="reset">
-                Reset
-              </v-btn>
-            </v-date-picker>
-          </v-menu>
-          <v-select
-            id="license"
-            v-model="modify.license"
-            name="license"
-            label="License *"
-            :items="licenses"
-            item-value="identifier"
-            item-text="identifier"
-            return-object
-            required />
+                id="publisher"
+                v-model="modify.publisher"
+                name="publisher"
+                label="Publisher" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-textarea
+                id="description"
+                v-model="modify.description"
+                name="description"
+                rows="2"
+                label="Description *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="language"
+                v-model="modify.language"
+                name="language"
+                label="Language"
+                :items="languages"
+                clearable
+                item-value="value"
+                item-text="text" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-year"
+                v-model.number="modify.publication_year"
+                name="publication-year"
+                label="Publication Year *"
+                hint="e.g. 2022"
+                type="number"
+                clearable
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-month"
+                v-model.number="modify.publication_month"
+                name="publication-month"
+                label="Publication Month"
+                hint="e.g. 12"
+                type="number"
+                clearable
+                min="1"
+                max="12" />
+            </v-col>
+            <v-col cols="4">
+              <v-text-field
+                id="publication-day"
+                v-model.number="modify.publication_day"
+                name="publication-day"
+                label="Publication Day"
+                hint="e.g. 08"
+                type="number"
+                clearable
+                min="1"
+                max="31" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="license"
+                v-model="modify.license"
+                name="license"
+                label="License"
+                :items="licenses"
+                clearable
+                item-value="identifier"
+                item-text="identifier"
+                return-object />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="contact"
+                v-model="modify.contact_person"
+                name="contact"
+                label="Contact"
+                :items="users"
+                clearable
+                item-value="username"
+                :item-text="item => `${printUser(item)}`" />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -83,7 +115,7 @@
           </v-btn>
           <v-btn
             id="database"
-            class="mb-2"
+            class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
             type="submit"
@@ -97,6 +129,7 @@
 </template>
 
 <script>
+import { formatUser } from '@/utils'
 export default {
   props: {
     database: {
@@ -112,13 +145,16 @@ export default {
       loading: false,
       error: false,
       menu: false,
+      users: [],
       modify: {
-        is_public: null,
         publisher: null,
+        publication_year: null,
+        publication_month: null,
+        publication_day: null,
         description: null,
         language: null,
-        publication: null,
-        license: null
+        license: null,
+        contact_person: null
       },
       licenses: [],
       languages: [
@@ -316,9 +352,6 @@ export default {
     token () {
       return this.$store.state.token
     },
-    publicLabel () {
-      return this.modify.is_public ? 'Public' : 'Private'
-    },
     config () {
       if (this.token === null) {
         return {}
@@ -330,19 +363,29 @@ export default {
   },
   mounted () {
     this.loadLicenses()
-    this.modify.is_public = this.database.is_public
+    this.loadUsers()
     this.modify.publisher = this.database.publisher
     this.modify.description = this.database.description
-    this.modify.publication = this.database.publication
+    if (this.database.publication_year === null) {
+      this.modify.publication_year = new Date().getFullYear()
+    } else {
+      this.modify.publication_year = this.database.publication_year
+    }
+    this.modify.publication_month = this.database.publication_month
+    this.modify.publication_day = this.database.publication_day
     this.modify.language = this.database.language
     this.modify.license = this.database.license
+    this.modify.contact_person = this.database.contact_person
   },
   methods: {
+    printUser (item) {
+      return formatUser(item)
+    },
     submit () {
       this.$refs.form.validate()
     },
     cancel () {
-      this.$emit('close-dialog')
+      this.$emit('close-dialog', { success: false })
     },
     reset () {
       this.modify.publication = null
@@ -356,7 +399,19 @@ export default {
         console.debug('licenses', this.licenses)
       } catch (err) {
         this.error = true
-        this.$toast.error('Failed to fetch licenses.')
+        this.$toast.error('Failed to fetch licenses')
+      }
+      this.loading = false
+    },
+    async loadUsers () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get('/api/user')
+        this.users = res.data
+        console.debug('users', this.users)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to fetch users')
       }
       this.loading = false
     },
@@ -374,7 +429,7 @@ export default {
         return
       }
       this.loading = false
-      this.cancel()
+      this.$emit('close-dialog', { success: true })
     }
   }
 }

@@ -36,6 +36,7 @@ public class Token {
     @Column(nullable = false)
     private Long uid;
 
+    @ToString.Exclude
     @Column(nullable = false, updatable = false)
     private String token;
 

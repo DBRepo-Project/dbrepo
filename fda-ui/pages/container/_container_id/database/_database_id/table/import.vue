@@ -335,7 +335,7 @@ export default {
               references: null,
               null_allowed: true,
               primary_key: false,
-              unique: null,
+              unique: false,
               enum_values: []
             }
           })

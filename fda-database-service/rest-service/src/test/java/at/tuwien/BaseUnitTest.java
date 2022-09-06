@@ -104,7 +104,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static String DATABASE_1_PUBLISHER = "TU Wien";
-    public final static Date DATABASE_1_PUBLICATION_YEAR = Date.valueOf("2022-08-28");
+    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
@@ -114,21 +114,18 @@ public abstract class BaseUnitTest {
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
-            .description(DATABASE_1_DESCRIPTION)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .build();
 
     public final static DatabaseModifyDto DATABASE_1_UPDATE2 = DatabaseModifyDto.builder()
-            .isPublic(DATABASE_1_PUBLIC)
             .description(DATABASE_1_DESCRIPTION)
             .language(LanguageTypeDto.EN)
             .license(LICENSE_1_DTO)
-            .publication(DATABASE_1_PUBLICATION_YEAR)
+            .publicationYear(DATABASE_1_PUBLICATION_YEAR)
             .publisher(DATABASE_1_PUBLISHER)
             .build();
 

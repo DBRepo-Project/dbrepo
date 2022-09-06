@@ -13,7 +13,6 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
@@ -65,8 +64,17 @@ public class DatabaseDto {
     @Schema(name = "database contact person")
     private UserDto contact;
 
-    @Schema(name = "database publication")
-    private Date publication;
+    @JsonProperty("publication_year")
+    @Schema(name = "database publication year")
+    private Integer publicationYear;
+
+    @JsonProperty("publication_month")
+    @Schema(name = "database publication month")
+    private Integer publicationMonth;
+
+    @JsonProperty("publication_day")
+    @Schema(name = "database publication day")
+    private Integer publicationDay;
 
     @Schema(name = "tables")
     private List<TableBriefDto> tables;
@@ -85,7 +93,7 @@ public class DatabaseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
-    @Schema(name = "database deletion time", example = "2020-08-04 11:13:00")
+    @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant deleted;
 
