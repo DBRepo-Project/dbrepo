@@ -92,11 +92,11 @@
             </v-list>
             <v-card-actions>
               <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
-              <v-btn v-if="token" class="ml-2" @click="editVisibilityDialog = true">Visibility</v-btn>
+              <v-btn v-if="token" class="ml-3" @click="editVisibilityDialog = true">Visibility</v-btn>
               <v-dialog
                 v-model="editDbDialog"
-                persistent
-                max-width="640">
+                fullscreen
+                transition="fade">
                 <EditDB :database="database" @close-dialog="closeDialog" />
               </v-dialog>
               <v-dialog
@@ -281,5 +281,11 @@ export default {
 <style>
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
+}
+.theme--light .v-dialog--fullscreen {
+  background: white;
+}
+.theme--dark .v-dialog--fullscreen {
+  background: #1E1E1E;
 }
 </style>

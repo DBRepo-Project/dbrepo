@@ -1,7 +1,10 @@
 <template>
-  <div>
+  <div class="d-flex flex-row">
+    <v-btn class="mt-4 ml-4" icon large @click="cancel">
+      <v-icon>mdi-close</v-icon>
+    </v-btn>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card>
+      <v-card flat>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="database.name" />
         <v-card-subtitle>Modify Metadata</v-card-subtitle>
@@ -108,11 +111,6 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            class="mb-2"
-            @click="cancel">
-            Cancel
-          </v-btn>
           <v-btn
             id="database"
             class="mb-2 mr-2"
@@ -434,3 +432,5 @@ export default {
   }
 }
 </script>
+<style>
+</style>

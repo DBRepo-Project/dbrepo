@@ -58,13 +58,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(readOnly = true)
     public List<Identifier> findAll(Long containerId, Long databaseId) {
-        return identifierRepository.findByDbid(databaseId);
+        return identifierRepository.findByDatabaseId(databaseId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        final Optional<Identifier> identifier = identifierRepository.findByDbidAndQid(databaseId, queryId);
+        final Optional<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (identifier.isEmpty()) {
             log.error("Failed to find identifier with query id {}", queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
@@ -90,7 +90,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
         }
         /* find */
-        final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(data.getDatabaseId(), data.getQueryId());
+        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDatabaseId(), data.getQueryId());
         if (optional.isPresent()) {
             log.error("Identifier already issued for database {} and query id {}", data.getDatabaseId(), data.getQueryId());
             log.debug("identifier already exists similar to request {}", data);

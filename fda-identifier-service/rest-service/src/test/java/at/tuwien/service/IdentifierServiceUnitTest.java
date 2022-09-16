@@ -52,7 +52,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void findAll_succeeds() {
 
         /* mock */
-        when(identifierRepository.findByDbid(DATABASE_1_ID))
+        when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */

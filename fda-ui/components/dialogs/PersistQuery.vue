@@ -1,17 +1,20 @@
 <template>
-  <div>
-    <v-card>
-      <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-      <v-card-title>
-        Persist Query and Result
-      </v-card-title>
-      <v-card-text>
-        <v-alert
-          border="left"
-          color="info">
-          Choose an expressive query title and describe what result the query produces.
-        </v-alert>
-        <v-form v-model="formValid" autocomplete="off">
+  <div class="d-flex flex-row">
+    <v-btn class="mt-4 ml-4" icon large @click="cancel">
+      <v-icon>mdi-close</v-icon>
+    </v-btn>
+    <v-form v-model="formValid" autocomplete="off">
+      <v-card flat>
+        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
+        <v-card-title>
+          Persist Query and Result
+        </v-card-title>
+        <v-card-text>
+          <v-alert
+            border="left"
+            color="info">
+            Choose an expressive query title and describe what result the query produces.
+          </v-alert>
           <v-row dense>
             <v-col>
               <v-text-field
@@ -144,25 +147,20 @@
               </v-btn>
             </v-col>
           </v-row>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          class="mb-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
-        <v-btn
-          id="createDB"
-          class="mb-2"
-          :disabled="!formValid || loading"
-          color="primary"
-          @click="persist">
-          Persist
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            id="createDB"
+            class="mb-2"
+            :disabled="!formValid || loading"
+            color="primary"
+            @click="persist">
+            Persist
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </div>
 </template>
 

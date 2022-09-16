@@ -226,8 +226,8 @@
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="persistQueryDialog"
-      persistent
-      max-width="860">
+      fullscreen
+      transition="fade">
       <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
@@ -535,5 +535,11 @@ pre {
 }
 .skeleton-xsmall .v-skeleton-loader__text {
   width: 50px;
+}
+.theme--light .v-dialog--fullscreen {
+  background: white;
+}
+.theme--dark .v-dialog--fullscreen {
+  background: #1E1E1E;
 }
 </style>
