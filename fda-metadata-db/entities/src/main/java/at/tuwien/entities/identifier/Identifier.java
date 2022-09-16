@@ -40,14 +40,14 @@ public class Identifier {
     )
     private Long id;
 
-    @Column(nullable = false)
-    private Long cid;
+    @Column(name = "cid", nullable = false)
+    private Long containerId;
 
-    @Column(nullable = false)
-    private Long dbid;
+    @Column(name = "dbid", nullable = false)
+    private Long databaseId;
 
-    @Column(nullable = false)
-    private Long qid;
+    @Column(name = "qid", nullable = false)
+    private Long queryId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -60,6 +60,10 @@ public class Identifier {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
+    @Enumerated(EnumType.STRING)
+    private IdentifierType type;
 
     @Column(nullable = false)
     private String query;

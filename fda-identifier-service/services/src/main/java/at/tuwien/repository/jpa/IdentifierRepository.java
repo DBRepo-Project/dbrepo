@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
-    List<Identifier> findByDbid(Long databaseId);
+    List<Identifier> findByDatabaseId(Long databaseId);
 
-    Optional<Identifier> findByDbidAndQid(Long databaseId, Long queryId);
+    Optional<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
 
 }

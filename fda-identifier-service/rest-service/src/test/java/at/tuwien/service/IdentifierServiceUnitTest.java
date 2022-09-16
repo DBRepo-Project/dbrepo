@@ -97,7 +97,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.update(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+            identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
         });
     }
 
@@ -106,7 +106,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(IDENTIFIER_1_QUERY_ID)
+                .queryId(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
                 .doi(IDENTIFIER_1_DOI)
@@ -128,7 +128,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
 
         /* test */
-        identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
+        identifierService.create(request, principal, bearer);
     }
 
     @Test
@@ -142,7 +142,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .delete(IDENTIFIER_1);
 
         /* test */
-        identifierService.delete(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID);
+        identifierService.delete(IDENTIFIER_1_ID);
     }
 
     @Test
@@ -157,7 +157,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.delete(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID);
+            identifierService.delete(IDENTIFIER_1_ID);
         });
     }
 

@@ -275,10 +275,9 @@ public abstract class BaseUnitTest {
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .cid(CONTAINER_1_ID)
-            .dbid(DATABASE_1_ID)
-            .qid(IDENTIFIER_1_QUERY_ID)
-            .dbid(IDENTIFIER_1_DATABASE_ID)
+            .containerId(CONTAINER_1_ID)
+            .databaseId(DATABASE_1_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
@@ -296,10 +295,9 @@ public abstract class BaseUnitTest {
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
-            .cid(CONTAINER_2_ID)
-            .dbid(DATABASE_2_ID)
-            .qid(IDENTIFIER_2_QUERY_ID)
-            .dbid(IDENTIFIER_2_DATABASE_ID)
+            .containerId(CONTAINER_2_ID)
+            .databaseId(DATABASE_2_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
@@ -378,8 +376,8 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Identifier IDENTIFIER_1_REQUEST = Identifier.builder()
-            .qid(IDENTIFIER_1_QUERY_ID)
-            .dbid(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
@@ -391,8 +389,8 @@ public abstract class BaseUnitTest {
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .qid(IDENTIFIER_1_QUERY_ID)
-            .dbid(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
@@ -403,7 +401,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
-            .qid(IDENTIFIER_1_QUERY_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
@@ -423,7 +421,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
-            .qid(IDENTIFIER_2_QUERY_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)

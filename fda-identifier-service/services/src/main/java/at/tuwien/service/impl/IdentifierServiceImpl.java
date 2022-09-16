@@ -73,29 +73,34 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Identifier> findAll() {
+        return identifierRepository.findAll();
+    }
+
+    @Override
     @Transactional
-    public Identifier create(Long containerId, Long databaseId, IdentifierCreateDto data, Principal principal,
-                             String authorization)
+    public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException {
         /* check */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(data.getContainerId(), data.getDatabaseId());
         if (database.getIsPublic() && !data.getVisibility().equals(VisibilityTypeDto.EVERYONE)) {
             log.error("Identifier cannot restrict the result set");
             throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
         }
         /* find */
-        final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(databaseId, data.getQid());
+        final Optional<Identifier> optional = identifierRepository.findByDbidAndQid(data.getDatabaseId(), data.getQueryId());
         if (optional.isPresent()) {
-            log.error("Identifier already issued for database {} and query id {}", databaseId, data.getQid());
+            log.error("Identifier already issued for database {} and query id {}", data.getDatabaseId(), data.getQueryId());
             log.debug("identifier already exists similar to request {}", data);
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
-        final QueryDto query = queryServiceGateway.find(containerId, databaseId, data, authorization);
+        final QueryDto query = queryServiceGateway.find(data.getContainerId(), data.getDatabaseId(), data, authorization);
         log.debug("found query in query service {}", query);
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
-        tmp.setCid(containerId);
-        tmp.setDbid(databaseId);
+        tmp.setContainerId(data.getContainerId());
+        tmp.setDatabaseId(data.getDatabaseId());
         tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
@@ -146,11 +151,10 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource exportMetadata(Long containerId, Long databaseId, Long identifierId)
-            throws IdentifierNotFoundException, DatabaseNotFoundException {
+    public ExportResource exportMetadata(Long id) throws IdentifierNotFoundException {
         /* check */
-        final Identifier identifier = find(identifierId);
-        final Database database = databaseService.find(containerId, databaseId);
+        final Identifier identifier = find(id);
+        final Database database = identifier.getDatabase();
         /* map */
         final InputStreamResource resource = documentMapper.identifierToInputStreamResource(database, identifier);
         return ExportResource.builder()
@@ -161,7 +165,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier update(Long containerId, Long databaseId, Long identifierId, IdentifierDto data)
+    public Identifier update(Long identifierId, IdentifierDto data)
             throws IdentifierNotFoundException {
         /* check */
         find(identifierId);
@@ -174,7 +178,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier publish(Long containerId, Long databaseId, Long identifierId, VisibilityTypeDto visibility)
+    public Identifier publish(Long identifierId, VisibilityTypeDto visibility)
             throws IdentifierNotFoundException, IdentifierAlreadyPublishedException {
         final Identifier identifier = find(identifierId);
         if (identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
@@ -191,7 +195,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public void delete(Long containerId, Long databaseId, Long identifierId) throws IdentifierNotFoundException {
+    public void delete(Long identifierId) throws IdentifierNotFoundException {
         /* check */
         final Identifier identifier = find(identifierId);
         /* delete */

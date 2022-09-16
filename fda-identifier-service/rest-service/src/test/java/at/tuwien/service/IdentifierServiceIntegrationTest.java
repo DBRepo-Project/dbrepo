@@ -76,8 +76,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         identifierRepository.save(Identifier.builder()
                 .id(IDENTIFIER_2_ID)
-                .qid(IDENTIFIER_2_QUERY_ID)
-                .dbid(IDENTIFIER_2_DATABASE_ID)
+                .queryId(IDENTIFIER_2_QUERY_ID)
+                .databaseId(IDENTIFIER_2_DATABASE_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
@@ -92,8 +92,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         final List<Identifier> response = identifierService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1_ID, response.get(0).getId());
-        assertEquals(IDENTIFIER_1_DATABASE_ID, response.get(0).getDbid());
-        assertEquals(IDENTIFIER_1_QUERY_ID, response.get(0).getQid());
+        assertEquals(IDENTIFIER_1_DATABASE_ID, response.get(0).getDatabaseId());
+        assertEquals(IDENTIFIER_1_QUERY_ID, response.get(0).getQueryId());
         assertEquals(IDENTIFIER_1_TITLE, response.get(0).getTitle());
         assertEquals(IDENTIFIER_1_DESCRIPTION, response.get(0).getDescription());
         assertEquals(IDENTIFIER_1_DOI, response.get(0).getDoi());
@@ -114,11 +114,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
-        final Identifier response = identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST,
-                principal, bearer);
+        final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST,              principal, bearer);
         assertEquals(IDENTIFIER_2_ID, response.getId());
-        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDbid());
-        assertEquals(IDENTIFIER_2_QUERY_ID, response.getQid());
+        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_2_QUERY_ID, response.getQueryId());
         assertEquals(IDENTIFIER_2_DOI, response.getDoi());
         assertEquals(IDENTIFIER_2_TITLE, response.getTitle());
         assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
@@ -128,7 +127,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_queryNotExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(IDENTIFIER_2_QUERY_ID)
+                .queryId(IDENTIFIER_2_QUERY_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
@@ -145,14 +144,14 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
+            identifierService.create(request, principal, bearer);
         });
     }
 
     @Test
     public void create_identifierAlreadyExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(IDENTIFIER_1_QUERY_ID)
+                .queryId(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
@@ -168,7 +167,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, request, principal, bearer);
+            identifierService.create(request, principal, bearer);
         });
     }
 
@@ -184,7 +183,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            identifierService.create(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_DTO_REQUEST, principal, bearer);
+            identifierService.create(IDENTIFIER_2_DTO_REQUEST, principal, bearer);
         });
     }
 
@@ -195,8 +194,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.find(IDENTIFIER_1_ID);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDbid());
-        assertEquals(IDENTIFIER_1_QUERY_ID, response.getQid());
+        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_1_QUERY_ID, response.getQueryId());
         assertEquals(IDENTIFIER_1_TITLE, response.getTitle());
         assertEquals(IDENTIFIER_1_DESCRIPTION, response.getDescription());
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
@@ -217,7 +216,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.update(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, IDENTIFIER_1_DTO);
+            identifierService.update(IDENTIFIER_2_ID, IDENTIFIER_1_DTO);
         });
     }
 
@@ -225,11 +224,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void update_succeeds() throws IdentifierNotFoundException {
 
         /* test */
-        final Identifier response = identifierService.update(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID,
-                IDENTIFIER_1_DTO);
+        final Identifier response = identifierService.update( IDENTIFIER_1_ID,                IDENTIFIER_1_DTO);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDbid());
-        assertEquals(IDENTIFIER_1_QUERY_ID, response.getQid());
+        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_1_QUERY_ID, response.getQueryId());
         assertEquals(IDENTIFIER_1_TITLE, response.getTitle());
         assertEquals(IDENTIFIER_1_DESCRIPTION, response.getDescription());
         assertEquals(IDENTIFIER_1_DOI, response.getDoi());
@@ -240,14 +238,14 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void publish_everyone_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
 
         /* test */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
+        identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
     }
 
     @Test
     public void publish_trusted_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
 
         /* test */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.TRUSTED);
+        identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.TRUSTED);
     }
 
     @Test
@@ -255,7 +253,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
+            identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
         });
     }
 
@@ -265,11 +263,11 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
 
         /* mock */
-        identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
+        identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
 
         /* test */
         assertThrows(IdentifierAlreadyPublishedException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
+            identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.EVERYONE);
         });
     }
 
@@ -284,7 +282,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
+            identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
         });
     }
 
@@ -299,7 +297,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
+            identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
         });
     }
 
@@ -307,7 +305,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void delete_succeeds() throws IdentifierNotFoundException {
 
         /* test */
-        identifierService.delete(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_ID);
+        identifierService.delete(IDENTIFIER_1_ID);
     }
 
     @Test
@@ -315,7 +313,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.delete(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_2_ID);
+            identifierService.delete(IDENTIFIER_2_ID);
         });
     }
 

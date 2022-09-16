@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/identifier")
+@RequestMapping("/api/identifier")
 public class IdentifierEndpoint {
 
     private final IdentifierMapper identifierMapper;
@@ -43,18 +44,8 @@ public class IdentifierEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "Find identifiers")
-    public ResponseEntity<List<IdentifierDto>> findAll(@NotNull @PathVariable("id") Long containerId,
-                                                       @NotNull @PathVariable("databaseId") Long databaseId,
-                                                       @RequestParam(required = false) Long qid)
-            throws IdentifierNotFoundException {
-        if (qid != null) {
-            final Identifier identifier = identifierService.find(containerId, databaseId, qid);
-            log.info("Found identifier with id {} filtered by query id {}", identifier.getId(), qid);
-            log.debug("found identifier {} filtered by query id {}", identifier, qid);
-            final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifier);
-            return ResponseEntity.ok(List.of(dto));
-        }
-        final List<Identifier> identifiers = identifierService.findAll(containerId, databaseId);
+    public ResponseEntity<List<IdentifierDto>> findAll() {
+        final List<Identifier> identifiers = identifierService.findAll();
         log.info("Found {} identifiers", identifiers.size());
         log.debug("found identifiers {}", identifiers);
         return ResponseEntity.ok(identifiers.stream()
@@ -62,15 +53,13 @@ public class IdentifierEndpoint {
                 .collect(Collectors.toList()));
     }
 
-    @GetMapping("/{identifierId}")
+    @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Operation(summary = "Export some identifier metadata")
-    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
-                                                    @NotNull @PathVariable("databaseId") Long databaseId,
-                                                    @NotNull @PathVariable("identifierId") Long identifierId)
-            throws IdentifierNotFoundException, DatabaseNotFoundException {
+    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id)
+            throws IdentifierNotFoundException {
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResource resource = identifierService.exportMetadata(containerId, databaseId, identifierId);
+        final ExportResource resource = identifierService.exportMetadata(id);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         return ResponseEntity.ok()
                 .headers(headers)
@@ -81,41 +70,42 @@ public class IdentifierEndpoint {
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<IdentifierDto> create(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody IdentifierCreateDto data,
+    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException {
-        final Identifier identifier = identifierService.create(containerId, databaseId, data, principal, authorization);
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException {
+        if (data.getIdentifierTypeDto().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
+            log.error("Identifier of type subset need to have a qid present.");
+            throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
+        } else if (data.getIdentifierTypeDto().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
+            log.error("Identifier of type database must not have a qid present.");
+            throw new IdentifierRequestException("Identifier of type database must not have a qid present");
+        }
+        final Identifier identifier = identifierService.create(data, principal, authorization);
         log.info("Created identifier with id {}", identifier.getId());
         log.debug("created identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
-    @PutMapping("/{identiferId}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestParam("identiferId") Long identiferId,
+    public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
             throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
-        final Identifier identifier = identifierService.update(containerId, databaseId, identiferId, data);
+        final Identifier identifier = identifierService.update(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
-    @DeleteMapping("/{identiferId}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
-                                    @NotNull @PathVariable("databaseId") Long databaseId,
-                                    @NotNull @Valid @RequestParam("identiferId") Long identiferId)
+    public ResponseEntity<?> delete(@NotNull @Valid @RequestParam("id") Long id)
             throws IdentifierNotFoundException {
-        identifierService.delete(containerId, databaseId, identiferId);
+        identifierService.delete(id);
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
                 .build();
     }
