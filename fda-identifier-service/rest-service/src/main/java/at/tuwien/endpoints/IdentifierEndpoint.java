@@ -75,10 +75,10 @@ public class IdentifierEndpoint {
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException {
-        if (data.getIdentifierTypeDto().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
+        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
             log.error("Identifier of type subset need to have a qid present.");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
-        } else if (data.getIdentifierTypeDto().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
             log.error("Identifier of type database must not have a qid present.");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }

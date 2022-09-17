@@ -1,5 +1,6 @@
 package at.tuwien.querystore;
 
+import at.tuwien.api.identifier.IdentifierDto;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -7,9 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import javax.persistence.Table;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
 
@@ -33,11 +32,11 @@ public class Query implements Serializable {
     )
     private Long id;
 
-    @javax.persistence.Column(nullable = false)
-    private Long cid;
+    @javax.persistence.Column(name = "cid", nullable = false)
+    private Long containerId;
 
-    @javax.persistence.Column(nullable = false)
-    private Long dbid;
+    @javax.persistence.Column(name = "dbid", nullable = false)
+    private Long databaseId;
 
     @javax.persistence.Column
     private Instant execution;
@@ -56,6 +55,9 @@ public class Query implements Serializable {
 
     @javax.persistence.Column(name = "result_number")
     private Long resultNumber;
+
+    @Transient
+    private IdentifierDto identifier;
 
     @javax.persistence.Column(nullable = false, updatable = false)
     @CreatedDate

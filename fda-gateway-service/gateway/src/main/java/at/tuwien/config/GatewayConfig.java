@@ -28,7 +28,7 @@ public class GatewayConfig {
                         .and()
                         .uri("lb://analyse-service"))
                 .route("identifier-service", r -> r.path("/api/pid/**",
-                                "/api/container/**/database/**/identifier/**")
+                                "/api/identifier/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()

@@ -1,8 +1,11 @@
 package at.tuwien.api.identifier;
 
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -23,13 +26,16 @@ public class IdentifierDto {
     private Long id;
 
     @NotNull
+    @JsonProperty("container_id")
     @Schema(name = "container id", example = "1")
     private Long containerId;
 
     @NotNull
+    @JsonProperty("database_id")
     @Schema(name = "database id", example = "1")
     private Long databaseId;
 
+    @JsonProperty("query_id")
     @Schema(name = "query id", example = "1")
     private Long queryId;
 
@@ -44,6 +50,16 @@ public class IdentifierDto {
     @NotBlank
     @Schema(name = "query")
     private String query;
+
+    @NotBlank
+    @Schema(name = "publisher")
+    private String publisher;
+
+    @Parameter(name = "database license")
+    private LicenseDto license;
+
+    @Parameter(name = "database language", example = "EN")
+    private LanguageTypeDto language;
 
     @NotBlank
     @JsonProperty("query_normalized")
@@ -80,7 +96,7 @@ public class IdentifierDto {
 
     @NotNull
     @Schema(name = "identifier type")
-    private IdentifierTypeDto identifierTypeDto;
+    private IdentifierTypeDto type;
 
     @Schema(name = "doi", example = "Digital Object Identifier")
     private String doi;

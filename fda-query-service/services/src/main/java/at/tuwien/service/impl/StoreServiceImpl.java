@@ -3,12 +3,15 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.SaveStatementDto;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
@@ -23,6 +26,7 @@ import java.security.Principal;
 import java.sql.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -32,14 +36,19 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     private final StoreMapper storeMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
+    private final IdentifierMapper identifierMapper;
+    private final IdentifierRepository identifierRepository;
 
     @Autowired
     public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, UserService userService,
-                            DatabaseService databaseService) {
+                            DatabaseService databaseService, IdentifierMapper identifierMapper,
+                            IdentifierRepository identifierRepository) {
         this.queryMapper = queryMapper;
         this.storeMapper = storeMapper;
         this.userService = userService;
         this.databaseService = databaseService;
+        this.identifierMapper = identifierMapper;
+        this.identifierRepository = identifierRepository;
     }
 
     @Override
@@ -56,11 +65,11 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* select all */
+        final List<Query> queries;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return storeMapper.resultSetToQueryList(resultSet);
+            queries = storeMapper.resultSetToQueryList(preparedStatement.executeQuery());
         } catch (SQLException e) {
             log.error("Failed to find queries");
             log.debug("failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
@@ -68,7 +77,15 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         } finally {
             dataSource.close();
         }
-
+        /* find all identifiers */
+        final List<Identifier> identifiers = identifierRepository.findAll();
+        queries.forEach(q -> {
+            final Optional<Identifier> optional = identifiers.stream()
+                    .filter(i -> i.getQueryId().equals(q.getId()))
+                    .findFirst();
+            optional.ifPresent(i -> q.setIdentifier(identifierMapper.identifierToIdentifierDto(i)));
+        });
+        return queries;
     }
 
     @Override
@@ -89,13 +106,21 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             query = storeMapper.resultSetToQuery(resultSet, true);
-            return query;
         } catch (SQLException e) {
             log.error("Query not found with id {}", queryId);
             throw new QueryNotFoundException("Query not found");
         } finally {
             dataSource.close();
         }
+        /* find identifier */
+        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+        if (optional.isPresent()) {
+            final Identifier identifier = optional.get();
+            log.info("Found identifier with id {} for query with id {}", identifier.getId(), identifier.getQueryId());
+            log.debug("found identifier {} for query {}", identifier, query);
+            query.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
+        }
+        return query;
     }
 
     @Override
@@ -125,8 +150,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         final at.tuwien.querystore.Query query = at.tuwien.querystore.Query.builder()
-                .cid(containerId)
-                .dbid(databaseId)
+                .containerId(containerId)
+                .databaseId(databaseId)
                 .query(metadata.getStatement())
                 .queryNormalized(metadata.getStatement())
                 .queryHash(DigestUtils.sha256Hex(metadata.getStatement()))

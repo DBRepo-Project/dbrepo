@@ -731,8 +731,8 @@ public abstract class BaseUnitTest {
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
+            .containerId(QUERY_1_CONTAINER_ID)
+            .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
@@ -741,8 +741,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
+            .containerId(QUERY_1_CONTAINER_ID)
+            .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)

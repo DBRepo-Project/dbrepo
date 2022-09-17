@@ -1,7 +1,10 @@
 package at.tuwien.entities.identifier;
 
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
@@ -12,6 +15,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.List;
 
@@ -60,6 +64,20 @@ public class Identifier {
 
     @Column(nullable = false)
     private String description;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String publisher;
+
+    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
+    @Enumerated(EnumType.STRING)
+    private LanguageType language;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "License", referencedColumnName = "identifier")
+    })
+    private License license;
 
     @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
     @Enumerated(EnumType.STRING)

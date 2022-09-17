@@ -464,6 +464,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     dbid              bigint                      NOT NULL,
     qid               bigint                      NOT NULL,
     title             VARCHAR(255)                NOT NULL,
+    publisher         VARCHAR(255)                NOT NULL,
     description       TEXT                        NOT NULL,
     visibility        VARCHAR(10)                 NOT NULL DEFAULT 'SELF',
     publication_year  INTEGER                     NOT NULL,

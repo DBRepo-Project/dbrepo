@@ -6,23 +6,31 @@
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card flat>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-        <v-card-title v-text="database.name" />
-        <v-card-subtitle>Modify Metadata</v-card-subtitle>
+        <v-card-title>
+          Persist Database
+        </v-card-title>
         <v-card-text>
+          <v-alert
+            border="left"
+            color="info">
+            Choose an expressive database description for the information stored.
+          </v-alert>
           <v-row dense>
             <v-col>
               <v-text-field
                 id="publisher"
-                v-model="modify.publisher"
+                v-model="identifier.publisher"
                 name="publisher"
-                label="Publisher" />
+                label="Publisher *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
             </v-col>
           </v-row>
           <v-row dense>
             <v-col>
               <v-textarea
                 id="description"
-                v-model="modify.description"
+                v-model="identifier.description"
                 name="description"
                 rows="2"
                 label="Description *"
@@ -34,7 +42,7 @@
             <v-col>
               <v-select
                 id="language"
-                v-model="modify.language"
+                v-model="identifier.language"
                 name="language"
                 label="Language"
                 :items="languages"
@@ -44,34 +52,10 @@
             </v-col>
           </v-row>
           <v-row dense>
-            <v-col cols="4">
-              <v-text-field
-                id="publication-year"
-                v-model.number="modify.publication_year"
-                name="publication-year"
-                label="Publication Year *"
-                hint="e.g. 2022"
-                type="number"
-                clearable
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-            <v-col cols="4">
-              <v-text-field
-                id="publication-month"
-                v-model.number="modify.publication_month"
-                name="publication-month"
-                label="Publication Month"
-                hint="e.g. 12"
-                type="number"
-                clearable
-                min="1"
-                max="12" />
-            </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
                 id="publication-day"
-                v-model.number="modify.publication_day"
+                v-model.number="identifier.publication_day"
                 name="publication-day"
                 label="Publication Day"
                 hint="e.g. 08"
@@ -80,12 +64,36 @@
                 min="1"
                 max="31" />
             </v-col>
+            <v-col cols="3">
+              <v-text-field
+                id="publication-month"
+                v-model.number="identifier.publication_month"
+                name="publication-month"
+                label="Publication Month"
+                hint="e.g. 12"
+                type="number"
+                clearable
+                min="1"
+                max="12" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                id="publication-year"
+                v-model.number="identifier.publication_year"
+                name="publication-year"
+                label="Publication Year *"
+                hint="e.g. 2022"
+                type="number"
+                clearable
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
           </v-row>
           <v-row dense>
             <v-col>
               <v-select
                 id="license"
-                v-model="modify.license"
+                v-model="identifier.license"
                 name="license"
                 label="License"
                 :items="licenses"
@@ -99,7 +107,7 @@
             <v-col>
               <v-select
                 id="contact"
-                v-model="modify.contact_person"
+                v-model="identifier.contact_person"
                 name="contact"
                 label="Contact"
                 :items="users"
@@ -117,7 +125,7 @@
             :disabled="!valid || loading"
             color="primary"
             type="submit"
-            @click="updateDatabase">
+            @click="persist">
             Update
           </v-btn>
         </v-card-actions>
@@ -127,7 +135,8 @@
 </template>
 
 <script>
-import { formatUser } from '@/utils'
+import { formatDayUTC, formatMonthUTC, formatUser, formatYearUTC } from '@/utils'
+import _ from 'lodash'
 export default {
   props: {
     database: {
@@ -144,16 +153,77 @@ export default {
       error: false,
       menu: false,
       users: [],
-      modify: {
+      identifier: {
+        container_id: parseInt(this.$route.params.container_id),
+        database_id: parseInt(this.$route.params.database_id),
+        title: null,
         publisher: null,
-        publication_year: null,
-        publication_month: null,
-        publication_day: null,
         description: null,
-        language: null,
-        license: null,
-        contact_person: null
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
+        type: 'database',
+        visibility: 'everyone',
+        doi: null,
+        creators: [],
+        related_identifiers: []
       },
+      relatedTypes: [
+        { value: 'DOI' },
+        { value: 'URL' },
+        { value: 'URN' },
+        { value: 'ARK' },
+        { value: 'arXiv' },
+        { value: 'bibcode' },
+        { value: 'EAN13' },
+        { value: 'EISSN' },
+        { value: 'Handle' },
+        { value: 'IGSN' },
+        { value: 'ISBN' },
+        { value: 'ISTC' },
+        { value: 'LISSN' },
+        { value: 'LSID' },
+        { value: 'PMID' },
+        { value: 'PURL' },
+        { value: 'UPC' },
+        { value: 'w3id' }
+      ],
+      relationTypes: [
+        { value: 'IsCitedBy' },
+        { value: 'Cites' },
+        { value: 'IsSupplementTo' },
+        { value: 'IsSupplementedBy' },
+        { value: 'IsContinuedBy' },
+        { value: 'Continues' },
+        { value: 'IsDescribedBy' },
+        { value: 'Describes' },
+        { value: 'HasMetadata' },
+        { value: 'IsMetadataFor' },
+        { value: 'HasVersion' },
+        { value: 'IsVersionOf' },
+        { value: 'IsNewVersionOf' },
+        { value: 'IsPreviousVersionOf' },
+        { value: 'IsPartOf' },
+        { value: 'HasPart' },
+        { value: 'IsPublishedIn' },
+        { value: 'IsReferencedBy' },
+        { value: 'References' },
+        { value: 'IsDocumentedBy' },
+        { value: 'Documents' },
+        { value: 'IsCompiledBy' },
+        { value: 'Compiles' },
+        { value: 'IsVariantFormOf' },
+        { value: 'IsOriginalFormOf' },
+        { value: 'IsIdenticalTo' },
+        { value: 'IsReviewedBy' },
+        { value: 'Reviews' },
+        { value: 'IsDerivedFrom' },
+        { value: 'IsSourceOf' },
+        { value: 'IsRequiredBy' },
+        { value: 'Requires' },
+        { value: 'IsObsoletedBy' },
+        { value: 'Obsoletes' }
+      ],
       licenses: [],
       languages: [
         { text: 'aa', value: 'aa' },
@@ -362,18 +432,17 @@ export default {
   mounted () {
     this.loadLicenses()
     this.loadUsers()
-    this.modify.publisher = this.database.publisher
-    this.modify.description = this.database.description
+    this.identifier.description = this.database.description
     if (this.database.publication_year === null) {
-      this.modify.publication_year = new Date().getFullYear()
+      this.identifier.publication_year = parseInt(formatYearUTC(Date.now()))
     } else {
-      this.modify.publication_year = this.database.publication_year
+      this.identifier.publication_year = this.database.publication_year
     }
-    this.modify.publication_month = this.database.publication_month
-    this.modify.publication_day = this.database.publication_day
-    this.modify.language = this.database.language
-    this.modify.license = this.database.license
-    this.modify.contact_person = this.database.contact_person
+    this.identifier.publication_month = this.database.publication_month
+    this.identifier.publication_day = this.database.publication_day
+    this.identifier.language = this.database.language
+    this.identifier.license = this.database.license
+    this.identifier.contact_person = this.database.contact_person
   },
   methods: {
     printUser (item) {
@@ -386,7 +455,6 @@ export default {
       this.$emit('close-dialog', { success: false })
     },
     reset () {
-      this.modify.publication = null
       this.menu = false
     },
     async loadLicenses () {
@@ -413,24 +481,31 @@ export default {
       }
       this.loading = false
     },
-    async updateDatabase () {
+    async persist () {
+      this.loading = true
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.modify, this.config)
-        this.database = res.data
-        console.debug('database', this.database)
+        const dto = _.pick(this.identifier, ['publisher', 'description', 'publication_year', 'publication_month', 'publication_day'])
+        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, dto, this.config)
+        const res = await this.$axios.post('/api/identifier', this.identifier, this.config)
         this.$toast.success('Successfully updated the database.')
+        console.debug('persist', res.data)
       } catch (err) {
         this.error = true
         this.loading = false
-        this.$toast.error('Failed to update database.')
+        this.$toast.error('Failed to persist database')
+        console.error('persist failed', err)
         return
       }
+      this.$toast.success('Database persisted.')
+      this.$emit('close', { action: 'persisted' })
       this.loading = false
-      this.$emit('close-dialog', { success: true })
     }
   }
 }
 </script>
-<style>
+<style scoped>
+.v-card {
+  min-width: 800px;
+}
 </style>

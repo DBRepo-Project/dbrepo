@@ -20,13 +20,16 @@ import java.util.List;
 public class IdentifierCreateDto {
 
     @NotNull
+    @JsonProperty("container_id")
     @Schema(name = "container id", example = "1")
     private Long containerId;
 
     @NotNull
+    @JsonProperty("database_id")
     @Schema(name = "database id", example = "1")
     private Long databaseId;
 
+    @JsonProperty("query_id")
     @Schema(name = "query id", example = "1")
     private Long queryId;
 
@@ -38,13 +41,17 @@ public class IdentifierCreateDto {
     @Schema(name = "query description", example = "Returns a list of measurements for the year 2012")
     private String description;
 
+    @NotBlank
+    @Schema(name = "publisher")
+    private String publisher;
+
     @NotNull
     @Schema(name = "query result visibility")
     private VisibilityTypeDto visibility;
 
     @NotNull
     @Schema(name = "identifier type")
-    private IdentifierTypeDto identifierTypeDto;
+    private IdentifierTypeDto type;
 
     @Schema(name = "doi", example = "Digital Object Identifier")
     private String doi;

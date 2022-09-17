@@ -74,7 +74,7 @@
       <v-card-text v-if="queryId">
         <v-row>
           <v-col>
-            <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+            <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/${queryId}`">
               View
             </v-btn>
           </v-col>
@@ -112,12 +112,6 @@ export default {
     },
     columnNames () {
       return this.selectItems && this.selectItems.map(s => s.internal_name)
-    },
-    databaseId () {
-      return this.$route.params.database_id
-    },
-    tableId () {
-      return this.table.id
     },
     token () {
       return this.$store.state.token
@@ -175,7 +169,7 @@ export default {
     async loadTables () {
       try {
         this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, {
           headers: this.headers
         })
         this.tables = res.data
@@ -224,15 +218,18 @@ export default {
       this.loadingQuery = false
     },
     async loadColumns () {
-      const tableId = this.table.id
+      if (this.table === null) {
+        return
+      }
       try {
         this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${tableId}`, {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.table.id}`, {
           headers: this.headers
         })
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
+        console.error('Could not get table details', err)
         this.$toast.error('Could not get table details.')
       }
       this.loadingColumns = false

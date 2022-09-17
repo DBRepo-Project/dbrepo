@@ -37,8 +37,8 @@ public interface StoreMapper {
         final String statement = "INSERT INTO `qs_queries` (`cid`, `dbid`, `query`, `query_normalized`, `query_hash`, `result_number`, `result_hash`, `execution`, `created`, `created_by`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING `id`";
         try {
             final PreparedStatement ps = connection.prepareStatement(statement);
-            ps.setLong(1, data.getCid());
-            ps.setLong(2, data.getDbid());
+            ps.setLong(1, data.getContainerId());
+            ps.setLong(2, data.getDatabaseId());
             ps.setString(3, data.getQuery());
             ps.setString(4, data.getQueryNormalized());
             ps.setString(5, data.getQueryHash());
@@ -101,8 +101,8 @@ public interface StoreMapper {
             ps.setLong(6, data.getResultNumber());
             ps.setString(7, data.getQueryNormalized());
             /* where */
-            ps.setLong(8, data.getCid());
-            ps.setLong(9, data.getDbid());
+            ps.setLong(8, data.getContainerId());
+            ps.setLong(9, data.getDatabaseId());
             ps.setLong(10, data.getId());
             return ps;
         } catch (SQLException e) {
@@ -155,11 +155,11 @@ public interface StoreMapper {
         }
         return Query.builder()
                 .id(data.getLong(1))
-                .cid(data.getLong(2))
+                .containerId(data.getLong(2))
                 .created(data.getTimestamp(3)
                         .toInstant())
                 .createdBy(data.getLong(4))
-                .dbid(data.getLong(5))
+                .databaseId(data.getLong(5))
                 .execution(data.getTimestamp(6)
                         .toInstant())
                 .lastModified(data.getTimestamp(7) != null ? data.getTimestamp(7)

@@ -1,12 +1,16 @@
 package at.tuwien.api.database.query;
 
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -27,11 +31,11 @@ public class QueryBriefDto {
 
     @NotNull(message = "container id is required")
     @Parameter(name = "container id", example = "1")
-    private Long cid;
+    private Long containerId;
 
     @NotNull(message = "database id is required")
     @Parameter(name = "database id", example = "1")
-    private Long dbid;
+    private Long databaseId;
 
     @JsonIgnore
     @NotNull(message = "created by is required")
@@ -65,6 +69,10 @@ public class QueryBriefDto {
     @JsonProperty("result_number")
     @Parameter(name = "result number of records", example = "1")
     private Long resultNumber;
+
+    @Transient
+    @Schema(name = "identifier", example = "1")
+    private IdentifierBriefDto identifier;
 
     @NotNull(message = "created timestamp is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

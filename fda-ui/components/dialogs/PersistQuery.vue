@@ -3,17 +3,17 @@
     <v-btn class="mt-4 ml-4" icon large @click="cancel">
       <v-icon>mdi-close</v-icon>
     </v-btn>
-    <v-form v-model="formValid" autocomplete="off">
+    <v-form ref="form" v-model="formValid" autocomplete="off">
       <v-card flat>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title>
-          Persist Query and Result
+          Persist Subset and Result
         </v-card-title>
         <v-card-text>
           <v-alert
             border="left"
             color="info">
-            Choose an expressive query title and describe what result the query produces.
+            Choose an expressive subset title and describe what result the query produces.
           </v-alert>
           <v-row dense>
             <v-col>
@@ -34,15 +34,24 @@
                 required />
             </v-col>
           </v-row>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="publisher"
+                v-model="identifier.publisher"
+                name="publisher"
+                label="Publisher" />
+            </v-col>
+          </v-row>
           <v-row>
-            <v-col cols="2">
+            <v-col cols="3">
               <v-text-field
                 id="publication-day"
                 v-model.number="identifier.publication_day"
                 type="number"
                 label="Publication Day" />
             </v-col>
-            <v-col cols="2">
+            <v-col cols="3">
               <v-text-field
                 id="publication-month"
                 v-model.number="identifier.publication_month"
@@ -249,12 +258,16 @@ export default {
         { value: 'Obsoletes' }
       ],
       identifier: {
-        qid: parseInt(this.$route.params.query_id),
+        container_id: parseInt(this.$route.params.container_id),
+        database_id: parseInt(this.$route.params.database_id),
+        query_id: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
+        publisher: null,
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),
+        type: 'subset',
         visibility: 'everyone',
         doi: null,
         creators: [],
@@ -336,7 +349,7 @@ export default {
       this.loading = true
       let res
       try {
-        res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier`, this.identifier, {
+        res = await this.$axios.post('/api/identifier', this.identifier, {
           headers: this.headers
         })
         console.debug('persist', res.data)
@@ -372,11 +385,14 @@ export default {
   }
 }
 </script>
-<style>
+<style scoped>
 #creators,
 #creators-btn {
   background-color: #f00;
   margin-left: -16px !important;
   margin-right: -16px !important;
+}
+.v-card {
+  min-width: 800px;
 }
 </style>

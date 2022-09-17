@@ -1,10 +1,9 @@
 <template>
   <div>
-    <v-card v-if="loading">
-      <v-card-title>PID Not Found</v-card-title>
-      <v-card-subtitle>{{ pid }}</v-card-subtitle>
+    <v-card v-if="!loading" flat>
+      <v-card-title>Not Found</v-card-title>
       <v-card-text>
-        <p>This PID cannot be found in the system. Possible reasons are:</p>
+        <p>This PID <code>{{ pid }}</code> cannot be found in the system. Possible reasons are:</p>
         <ul>
           <li>The PID is incorrect in your source.</li>
           <li>The PID was copied incorrectly.</li>
@@ -36,12 +35,30 @@ export default {
       try {
         const res = await this.$axios.get(`/api/pid/${this.$route.params.pid_id}`)
         console.debug('persistent id', res.data)
-        this.$router.push(`/container/${res.data.cid}/database/${res.data.dbid}/query/${res.data.qid}`)
+        this.visitPid(res.data.container_id, res.data.database_id, res.data.query_id, res.data.type)
       } catch (err) {
         console.error('Could not load query', err)
         this.$toast.error('Could not load query')
       }
       this.loading = false
+    },
+    visitPid (containerId, databaseId, queryId, type) {
+      if (!Number.isInteger(containerId) || !Number.isInteger(databaseId)) {
+        return false
+      }
+      this.loading = true
+      switch (type) {
+        case 'subset':
+          if (!Number.isInteger(queryId)) {
+            return false
+          }
+          this.$router.push(`/container/${containerId}/database/${databaseId}/query/${queryId}`)
+          break
+        case 'database':
+          this.$router.push(`/container/${containerId}/database/${databaseId}`)
+          break
+      }
+      return false
     }
   }
 }

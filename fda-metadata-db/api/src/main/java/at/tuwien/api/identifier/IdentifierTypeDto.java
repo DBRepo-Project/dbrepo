@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum IdentifierTypeDto {
 
-    @JsonProperty("DATABASE")
+    @JsonProperty("database")
     DATABASE("database"),
 
-    @JsonProperty("SUBSET")
+    @JsonProperty("subset")
     SUBSET("subset");
 
     private String name;

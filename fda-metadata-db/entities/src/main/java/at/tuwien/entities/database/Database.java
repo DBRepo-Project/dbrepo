@@ -99,16 +99,6 @@ public class Database {
     @Column(nullable = false)
     private Boolean isPublic;
 
-    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
-    @Enumerated(EnumType.STRING)
-    private LanguageType language;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "License", referencedColumnName = "identifier")
-    })
-    private License license;
-
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;

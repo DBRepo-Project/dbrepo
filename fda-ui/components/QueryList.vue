@@ -85,7 +85,6 @@ export default {
     return {
       loading: false,
       queries: [],
-      identifiers: [],
       user: {
         username: null
       },
@@ -146,31 +145,15 @@ export default {
       if (!this.isPublicOrOwner()) {
         return
       }
-      console.debug(1, this.database.is_public, 2, this.database.creator.username, 3, this.user.username, 4, this.token)
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
-        try {
-          this.loading = true
-          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier`, this.config)
-          this.identifiers = res.data
-          console.debug('identifiers', this.identifiers)
-          this.queries.forEach((query) => {
-            const id = this.identifiers.find(id => id.qid === query.id)
-            console.debug('id', id)
-            if (id !== undefined) {
-              query.identifier = id
-            }
-          })
-        } catch (err) {
-          console.error('Failed to get identifiers', err)
-        }
-        this.loading = false
       } catch (err) {
         this.$toast.error('Could not list queries.')
       }
+      this.loading = false
     },
     erroneous (query) {
       return !query.result_hash

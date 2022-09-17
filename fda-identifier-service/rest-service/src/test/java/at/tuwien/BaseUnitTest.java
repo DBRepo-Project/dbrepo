@@ -198,8 +198,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
+            .containerId(QUERY_1_CONTAINER_ID)
+            .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .queryNormalized(QUERY_1_STATEMENT)
             .resultNumber(QUERY_1_RESULT_NUMBER)
@@ -223,8 +223,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
-            .cid(QUERY_2_CONTAINER_ID)
-            .dbid(QUERY_2_DATABASE_ID)
+            .containerId(QUERY_2_CONTAINER_ID)
+            .databaseId(QUERY_2_DATABASE_ID)
             .query(QUERY_2_STATEMENT)
             .queryNormalized(QUERY_2_STATEMENT)
             .resultNumber(QUERY_2_RESULT_NUMBER)
