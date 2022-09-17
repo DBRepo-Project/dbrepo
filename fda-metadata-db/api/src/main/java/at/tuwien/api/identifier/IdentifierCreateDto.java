@@ -47,6 +47,9 @@ public class IdentifierCreateDto {
     @Parameter(name = "publication month")
     private Integer publicationMonth;
 
+    @Parameter(name = "publisher", example = "TU Wien")
+    private String publisher;
+
     @NotNull
     @JsonProperty("publication_year")
     @Parameter(name = "publication year")

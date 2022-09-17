@@ -38,6 +38,7 @@ class IdentifierDto(object):
         'execution': 'datetime',
         'visibility': 'str',
         'doi': 'str',
+        'publisher': 'str',
         'creator': 'UserDto',
         'creators': 'list[CreatorDto]',
         'created': 'datetime',
@@ -63,6 +64,7 @@ class IdentifierDto(object):
         'execution': 'execution',
         'visibility': 'visibility',
         'doi': 'doi',
+        'publisher': 'publisher',
         'creator': 'creator',
         'creators': 'creators',
         'created': 'created',
@@ -77,7 +79,7 @@ class IdentifierDto(object):
         'last_modified': 'last_modified'
     }
 
-    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication_day=None, publication_month=None, publication_year=None, last_modified=None):  # noqa: E501
+    def __init__(self, id=None, cid=None, dbid=None, qid=None, title=None, description=None, query=None, execution=None, visibility=None, doi=None, publisher=None, creator=None, creators=None, created=None, query_normalized=None, related=None, query_hash=None, result_hash=None, result_number=None, publication_day=None, publication_month=None, publication_year=None, last_modified=None):  # noqa: E501
         """IdentifierDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._cid = None
@@ -89,6 +91,7 @@ class IdentifierDto(object):
         self._execution = None
         self._visibility = None
         self._doi = None
+        self._publisher = None
         self._creator = None
         self._creators = None
         self._created = None
@@ -114,6 +117,8 @@ class IdentifierDto(object):
         self.visibility = visibility
         if doi is not None:
             self.doi = doi
+        if publisher is not None:
+            self.publisher = publisher
         self.creator = creator
         self.creators = creators
         if created is not None:
@@ -363,6 +368,27 @@ class IdentifierDto(object):
         """
 
         self._doi = doi
+
+    @property
+    def publisher(self):
+        """Gets the publisher of this IdentifierDto.  # noqa: E501
+
+
+        :return: The publisher of this IdentifierDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._publisher
+
+    @publisher.setter
+    def publisher(self, publisher):
+        """Sets the publisher of this IdentifierDto.
+
+
+        :param publisher: The publisher of this IdentifierDto.  # noqa: E501
+        :type: str
+        """
+
+        self._publisher = publisher
 
     @property
     def creator(self):

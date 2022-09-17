@@ -33,6 +33,7 @@ class IdentifierCreateDto(object):
         'description': 'str',
         'visibility': 'str',
         'doi': 'str',
+        'publisher': 'str',
         'creators': 'list[CreatorCreateDto]',
         'publication_day': 'int',
         'publication_month': 'int',
@@ -46,6 +47,7 @@ class IdentifierCreateDto(object):
         'description': 'description',
         'visibility': 'visibility',
         'doi': 'doi',
+        'publisher': 'publisher',
         'creators': 'creators',
         'publication_day': 'publication_day',
         'publication_month': 'publication_month',
@@ -53,13 +55,14 @@ class IdentifierCreateDto(object):
         'related_identifiers': 'related_identifiers'
     }
 
-    def __init__(self, qid=None, title=None, description=None, visibility=None, doi=None, creators=None, publication_day=None, publication_month=None, publication_year=None, related_identifiers=None):  # noqa: E501
+    def __init__(self, qid=None, title=None, description=None, visibility=None, doi=None, publisher=None, creators=None, publication_day=None, publication_month=None, publication_year=None, related_identifiers=None):  # noqa: E501
         """IdentifierCreateDto - a model defined in Swagger"""  # noqa: E501
         self._qid = None
         self._title = None
         self._description = None
         self._visibility = None
         self._doi = None
+        self._publisher = None
         self._creators = None
         self._publication_day = None
         self._publication_month = None
@@ -72,6 +75,8 @@ class IdentifierCreateDto(object):
         self.visibility = visibility
         if doi is not None:
             self.doi = doi
+        if publisher is not None:
+            self.publisher = publisher
         self.creators = creators
         if publication_day is not None:
             self.publication_day = publication_day
@@ -199,6 +204,27 @@ class IdentifierCreateDto(object):
         """
 
         self._doi = doi
+
+    @property
+    def publisher(self):
+        """Gets the publisher of this IdentifierCreateDto.  # noqa: E501
+
+
+        :return: The publisher of this IdentifierCreateDto.  # noqa: E501
+        :rtype: str
+        """
+        return self._publisher
+
+    @publisher.setter
+    def publisher(self, publisher):
+        """Sets the publisher of this IdentifierCreateDto.
+
+
+        :param publisher: The publisher of this IdentifierCreateDto.  # noqa: E501
+        :type: str
+        """
+
+        self._publisher = publisher
 
     @property
     def creators(self):

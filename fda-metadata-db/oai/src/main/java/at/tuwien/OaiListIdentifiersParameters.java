@@ -41,6 +41,7 @@ public class OaiListIdentifiersParameters extends RequestParameters {
     @Override
     public String getParametersString() {
         StringBuilder builder = new StringBuilder();
+        appendIfNotEmpty(builder, "verb", "ListIdentifiers");
         appendIfNotEmpty(builder, "metadataPrefix", this.getMetadataPrefix());
         appendIfNotEmpty(builder, "from", this.getFrom());
         appendIfNotEmpty(builder, "until", this.getUntil());

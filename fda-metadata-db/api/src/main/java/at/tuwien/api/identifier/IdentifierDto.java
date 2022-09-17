@@ -82,6 +82,9 @@ public class IdentifierDto {
     @Parameter(name = "doi", example = "Digital Object Identifier")
     private String doi;
 
+    @Parameter(name = "publisher", example = "TU Wien")
+    private String publisher;
+
     @NotNull
     @Parameter(name = "database creator")
     private UserDto creator;

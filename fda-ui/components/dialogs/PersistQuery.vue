@@ -3,13 +3,13 @@
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title>
-        Persist Query and Result
+        Persist Subset and Result
       </v-card-title>
       <v-card-text>
         <v-alert
           border="left"
           color="info">
-          Choose an expressive query title and describe what result the query produces.
+          Choose an expressive subset title and describe what it produces.
         </v-alert>
         <v-form v-model="formValid" autocomplete="off">
           <v-row dense>
@@ -18,7 +18,7 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
-                label="Query Title *"
+                label="Subset Title *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
@@ -27,6 +27,17 @@
                 name="description"
                 rows="2"
                 label="Query Description *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="publisher"
+                v-model="identifier.publisher"
+                name="publisher"
+                label="Subset Publisher *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -254,6 +265,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
+        publisher: null,
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),

@@ -41,6 +41,7 @@ public class OaiListRecordsParameters extends RequestParameters {
     @Override
     public String getParametersString() {
         StringBuilder builder = new StringBuilder();
+        appendIfNotEmpty(builder, "verb", "ListRecords");
         appendIfNotEmpty(builder, "metadataPrefix", this.getMetadataPrefix());
         appendIfNotEmpty(builder, "from", this.getFrom());
         appendIfNotEmpty(builder, "until", this.getUntil());

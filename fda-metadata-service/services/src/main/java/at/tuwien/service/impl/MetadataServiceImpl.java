@@ -2,13 +2,16 @@ package at.tuwien.service.impl;
 
 import at.tuwien.OaiErrorType;
 import at.tuwien.OaiListIdentifiersParameters;
+import at.tuwien.OaiRecordParameters;
 import at.tuwien.config.MetadataConfig;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -47,6 +50,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String listIdentifiers(OaiListIdentifiersParameters parameters) {
         final StringBuilder builder = new StringBuilder("<ListIdentifiers>");
         final List<Identifier> identifiers = identifierService.findAll();
@@ -54,10 +58,38 @@ public class MetadataServiceImpl implements MetadataService {
             final Context context = new Context();
             context.setVariable("identifier", metadataConfig.getPidBase() + identifier.getId());
             context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
-            builder.append(templateEngine.process("record.xml", context));
+            builder.append(templateEngine.process("identifier.xml", context));
         });
         builder.append("</ListIdentifiers>");
         return parseResponse(parameters.getParametersString(), builder.toString());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getRecord(OaiRecordParameters parameters) throws IdentifierNotFoundException {
+        final Long id = Long.parseLong(parameters.getIdentifier());
+        final Identifier identifier = identifierService.find(id);
+        final StringBuilder builder = new StringBuilder();
+        final Context context = new Context();
+        context.setVariable("identifier", identifier.getId());
+        context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
+        context.setVariable("title", identifier.getTitle());
+        context.setVariable("description", identifier.getDescription());
+        context.setVariable("publisher", identifier.getPublisher());
+        identifier.getCreators()
+                .forEach(c -> builder.append("<dc:creator>")
+                        .append(c.getName())
+                        .append("</dc:creator>"));
+        context.setVariable("creators", builder.toString());
+        return parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
+    }
+
+    @Override
+    public String listMetadataFormats() {
+        final StringBuilder builder = new StringBuilder("<ListMetadataFormats>");
+        builder.append(templateEngine.process("metadata-format.xml", new Context()));
+        builder.append("</ListMetadataFormats>");
+        return parseResponse("verb=\"ListMetadataFormats\"", builder.toString());
     }
 
     @Override
@@ -76,13 +108,17 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     private String parseResponse(String body) {
-        return parseResponse("", body);
+        return parseResponse(null, body);
     }
 
     private String parseResponse(String parameterString, String body) {
         final Context context = new Context();
         context.setVariable("responseDate", metadataMapper.instantToDatestamp(Instant.now()));
-        context.setVariable("request", "<request" + (parameterString != null ? parameterString : "") + ">" + requestUrl() + "</request>");
+        if (parameterString == null) {
+            context.setVariable("request", "<request>" + requestUrl() + "</request>");
+        } else {
+            context.setVariable("request", "<request " + parameterString + ">" + requestUrl() + "</request>");
+        }
         context.setVariable("body", body);
         return templateEngine.process("_header.xml", context);
     }
