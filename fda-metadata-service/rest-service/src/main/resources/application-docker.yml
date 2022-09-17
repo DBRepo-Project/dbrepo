@@ -1,0 +1,45 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  application:
+    name: metadata-service
+  cloud:
+    loadbalancer.ribbon.enabled: false
+server.port: 9098
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: debug
+    at.tuwien.mapper.: trace
+    at.tuwien.service.: debug
+    at.tuwien.config.: debug
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+eureka:
+  instance.hostname: metadata-service
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+fda:
+  ready.path: ./ready
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+dbrepo:
+  repository-name: "${REPOSITORY_NAME}"
+  base-url: "${BASE_URL}"
+  admin-email: "${ADMIN_MAIL}"
+  earliest-datestamp: "${EARLIEST_DATESTAMP}"
+  deleted-record: "${DELETED_RECORD}"
+  granularity: "${GRANULARITY}"
