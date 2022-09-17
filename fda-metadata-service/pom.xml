@@ -74,6 +74,12 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-querystore</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <!-- IDE -->
         <dependency>
             <groupId>org.projectlombok</groupId>

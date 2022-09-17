@@ -26,4 +26,7 @@ public class MetadataConfig {
     @Value("${dbrepo.granularity}")
     private String granularity;
 
+    @Value("${fda.pid.base}")
+    private String pidBase;
+
 }

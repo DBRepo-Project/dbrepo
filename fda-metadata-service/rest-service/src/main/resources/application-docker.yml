@@ -35,6 +35,7 @@ eureka:
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
+  pid.base: "${PID_BASE}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
 dbrepo:
   repository-name: "${REPOSITORY_NAME}"

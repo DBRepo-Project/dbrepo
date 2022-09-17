@@ -25,6 +25,7 @@ ENV METADATA_DB=fda
 ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV PID_BASE="https://example.com/pid/"
 ENV REPOSITORY_NAME="Example Repository"
 ENV BASE_URL="https://example.com"
 ENV ADMIN_MAIL="noreply@example.com"
