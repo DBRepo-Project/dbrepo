@@ -33,7 +33,7 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <div>
+      <div v-if="hasLogo">
         <v-img
           contain
           class="tu-logo"
@@ -188,10 +188,12 @@ export default {
       console.debug('env sandbox found', this.$config.sandbox)
       return this.$config.sandbox
     },
+    hasLogo () {
+      return this.$config.logo !== undefined && this.$config.logo
+    },
     logo () {
-      if (this.$config.logo === undefined) {
-        console.debug('env logo not found, default to /logos.png')
-        return '/logos.png'
+      if (!this.hasLogo) {
+        return null
       }
       console.debug('env logo found', this.$config.logo)
       return this.$config.logo

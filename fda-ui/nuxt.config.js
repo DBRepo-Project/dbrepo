@@ -86,7 +86,7 @@ export default {
     sandbox: process.env.SANDBOX || false,
     sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest',
-    logo: process.env.LOGO || '/logos.png'
+    logo: process.env.LOGO || false
   },
 
   proxy: {
