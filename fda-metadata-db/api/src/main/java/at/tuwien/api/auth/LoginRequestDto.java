@@ -1,6 +1,6 @@
 package at.tuwien.api.auth;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,12 +14,11 @@ import javax.validation.constraints.NotNull;
 public class LoginRequestDto {
 
     @NotNull
-    @Parameter(name = "user name")
+    @Schema(example = "user")
     private String username;
 
     @NotNull
     @ToString.Exclude
-    @Parameter(name = "password hash")
     private String password;
 
 }

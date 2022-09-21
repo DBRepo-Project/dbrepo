@@ -1,9 +1,9 @@
-package at.tuwien.api.amqp;
+package at.tuwien.api.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -11,16 +11,17 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GrantVirtualHostPermissionsDto {
-    @NotNull
-    @Schema(example = ".*")
-    private String configure;
+public class ExchangeUpdatePermissionsDto {
 
-    @NotNull
+    @NotBlank
+    @Schema(example = "airquality")
+    private String exchange;
+
+    @NotBlank
     @Schema(example = ".*")
     private String write;
 
-    @NotNull
+    @NotBlank
     @Schema(example = ".*")
     private String read;
 

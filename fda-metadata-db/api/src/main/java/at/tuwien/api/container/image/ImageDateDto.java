@@ -2,7 +2,7 @@ package at.tuwien.api.container.image;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -18,26 +18,25 @@ import java.time.Instant;
 public class ImageDateDto {
 
     @NotNull
-    @Parameter(required = true, example = "1")
     private Long id;
 
     @NotBlank
-    @Parameter(required = true, example = "30.01.2022")
+    @Schema(example = "30.01.2022")
     private String example;
 
     @NotBlank
     @JsonProperty("database_format")
-    @Parameter(required = true, example = "%d.%c.%Y")
+    @Schema(example = "%d.%c.%Y")
     private String databaseFormat;
 
     @NotBlank
     @JsonProperty("unix_format")
-    @Parameter(required = true, example = "dd.MM.YYYY")
+    @Schema(example = "dd.MM.YYYY")
     private String unixFormat;
 
     @NotNull
     @JsonProperty("has_time")
-    @Parameter(required = true)
+    @Schema(example = "false")
     private Boolean hasTime;
 
     @JsonProperty("created_at")

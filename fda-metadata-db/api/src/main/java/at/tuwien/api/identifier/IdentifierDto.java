@@ -4,6 +4,7 @@ import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -23,45 +24,40 @@ public class IdentifierDto {
     private Long id;
 
     @NotNull
-    @Parameter(name = "container id", example = "1")
     private Long cid;
 
     @NotNull
-    @Parameter(name = "database id", example = "1")
     private Long dbid;
 
     @NotNull
-    @Parameter(name = "query id", example = "1")
     private Long qid;
 
     @NotBlank
-    @Parameter(name = "query title", example = "Select all weather events for 2012")
+    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
     private String title;
 
     @NotBlank
-    @Parameter(name = "query description", example = "Returns a list of measurements for the year 2012")
+    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
     @NotBlank
-    @Parameter(name = "query")
+    @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String query;
 
     @NotBlank
     @JsonProperty("query_normalized")
-    @Parameter(name = "query normalized")
+    @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String queryNormalized;
 
     @JsonProperty("related")
-    @Parameter(name = "related identifiers")
     private List<RelatedIdentifierDto> related;
 
     @NotBlank
     @JsonProperty("query_hash")
-    @Parameter(name = "query hash in sha512")
+    @Parameter(description = "query hash in sha512")
     private String queryHash;
 
     @NotNull
-    @Parameter(name = "query execution time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
@@ -72,35 +68,33 @@ public class IdentifierDto {
 
     @NotNull
     @JsonProperty("result_number")
-    @Parameter(name = "query result number")
+    @Schema(example = "1")
     private Long resultNumber;
 
     @NotNull
-    @Parameter(name = "query result visibility")
+    @Schema(example = "everyone")
     private VisibilityTypeDto visibility;
 
-    @Parameter(name = "doi", example = "Digital Object Identifier")
+    @Schema(example = "10.1038/nphys1170")
     private String doi;
 
     @NotNull
-    @Parameter(name = "database creator")
     private UserDto creator;
 
     @JsonProperty("publication_day")
-    @Parameter(name = "publication day")
+    @Schema(example = "15")
     private Integer publicationDay;
 
     @JsonProperty("publication_month")
-    @Parameter(name = "publication month")
+    @Schema(example = "12")
     private Integer publicationMonth;
 
     @NotNull
     @JsonProperty("publication_year")
-    @Parameter(name = "publication year")
+    @Schema(example = "2022")
     private Integer publicationYear;
 
     @NotNull
-    @Parameter(name = "creators")
     private List<CreatorDto> creators;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

@@ -7,7 +7,6 @@ import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -25,75 +24,68 @@ import java.util.List;
 public class DatabaseDto {
 
     @NotNull
-    @Schema(name = "database id", example = "1")
     private Long id;
 
     @NotBlank
-    @Schema(name = "database name", example = "Weather Australia")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
-    @Schema(name = "database exchange")
+    @Schema(example = "air_quality")
     private String exchange;
 
     @NotNull
-    @Schema(name = "database creator")
     private UserBriefDto creator;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Schema(name = "database internal name", example = "weather_australia")
+    @Schema(example = "air_quality")
     private String internalName;
 
-    @Schema(name = "database subjects")
+    @Schema(description = "database subjects")
     private List<String> subjects;
 
-    @Schema(name = "database language", example = "EN")
+    @Schema(example = "en")
     private LanguageTypeDto language;
 
-    @Schema(name = "database license", example = "MIT2")
     private LicenseDto license;
 
     @NotBlank
-    @Schema(name = "database description", example = "Weather Australia 2009-2021")
+    @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @Schema(name = "database publisher", example = "TU Wien")
+    @Schema(example = "TU Wien")
     private String publisher;
 
-    @Schema(name = "database contact person")
     private UserDto contact;
 
     @JsonProperty("publication_year")
-    @Schema(name = "database publication year")
+    @Schema(description = "database publication year", example = "2022")
     private Integer publicationYear;
 
     @JsonProperty("publication_month")
-    @Schema(name = "database publication month")
+    @Schema(description = "database publication month", example = "12")
     private Integer publicationMonth;
 
     @JsonProperty("publication_day")
-    @Schema(name = "database publication day")
+    @Schema(description = "database publication day", example = "15")
     private Integer publicationDay;
 
-    @Schema(name = "tables")
     private List<TableBriefDto> tables;
 
     @JsonProperty("is_public")
-    @Schema(name = "database public")
+    @Schema(description = "database publicity", example = "true")
     private Boolean isPublic;
 
-    @Schema(name = "database container image")
     private ImageDto image;
 
-    @Schema(name = "container")
     private ContainerDto container;
 
-    @Schema(name = "database creation time", example = "2020-08-04 11:12:00")
+    @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
-    @Parameter(name = "database deletion time", example = "2020-08-04 11:13:00")
+    @Schema(example = "2020-08-04 11:13:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant deleted;
 

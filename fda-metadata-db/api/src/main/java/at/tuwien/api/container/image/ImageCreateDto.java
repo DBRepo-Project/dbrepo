@@ -2,11 +2,12 @@ package at.tuwien.api.container.image;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,41 +18,32 @@ import javax.validation.constraints.NotNull;
 public class ImageCreateDto {
 
     @NotBlank
-    @Parameter(required = true, example = "postgres")
+    @Schema(example = "mariadb")
     private String repository;
 
     @NotBlank
-    @Parameter(required = true, example = "latest")
+    @Parameter(example = "10.5")
     private String tag;
 
     @NotBlank
     @JsonProperty("driver_class")
-    @Parameter(required = true, example = "org.postgresql.Driver")
+    @Parameter(example = "'org.mariadb.jdbc.Driver")
     private String driverClass;
 
     @NotBlank
-    @Parameter(required = true, example = "POSTGRES")
+    @Parameter(required = true, example = "org.hibernate.dialect.MariaDBDialect")
     private String dialect;
 
     @NotBlank
-    @Parameter(required = true, example = "base64:aaaa")
-    private String logo;
-
-    @NotBlank
     @JsonProperty("jdbc_method")
-    @Parameter(required = true, example = "postgresql")
+    @Parameter(required = true, example = "mariadb")
     private String jdbcMethod;
 
     @NotNull
-    @Parameter(required = true, example = "false")
-    private Boolean local;
-
-    @NotNull
     @JsonProperty("default_port")
-    @Parameter(required = true, example = "5432")
+    @Parameter(required = true, example = "3006")
     private Integer defaultPort;
 
-    @Parameter(required = true, example = "[{\"key\":\"POSTGRES_USER\",\"value\":\"postgres\",\"type\":USERNAME},{\"key\":\"POSTGRES_PASSWORD\",\"value\":\"postgres\",\"type\":PASSWORD}]")
-    private ImageEnvItemDto[] environment;
+    private List<ImageEnvItemDto> environment;
 
 }

@@ -1,5 +1,6 @@
 package at.tuwien.entities.user;
 
+import at.tuwien.entities.container.Container;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
@@ -79,6 +80,11 @@ public class User {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Token> tokens;
+
+    @Transient
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
+    private List<Container> containers;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

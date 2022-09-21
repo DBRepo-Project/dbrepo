@@ -29,7 +29,6 @@ public class QueueServiceImpl implements QueueService {
                 .tags("")
                 .build();
         brokerServiceGateway.createUser(username, userDto);
-        brokerServiceGateway.grantUserHost(username);
     }
 
     @Override

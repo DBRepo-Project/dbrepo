@@ -1,6 +1,6 @@
 package at.tuwien.api.user;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 @Getter
@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 public class GrantedAuthorityDto {
 
-    @Parameter(name = "authority name")
+    @Schema(example = "ROLE_RESEARCHER")
     private String authority;
 
 

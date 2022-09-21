@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.columns;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -17,43 +18,41 @@ import javax.validation.constraints.NotNull;
 public class ColumnCreateDto {
 
     @NotBlank
-    @Parameter(name = "name", example = "Date")
+    @Schema(example = "Date")
     private String name;
 
     @NotNull
     @JsonProperty("primary_key")
-    @Parameter(name = "primary key", example = "true")
-    private Boolean primaryKey = false;
+    @Schema(example = "false")
+    private Boolean primaryKey;
 
     @NotNull
-    @Parameter(name = "column type", example = "STRING")
+    @Schema(example = "string")
     private ColumnTypeDto type;
 
     @NotNull
     @JsonProperty("null_allowed")
-    @Parameter(name = "null value", example = "false")
-    private Boolean nullAllowed = true;
+    @Schema(example = "true")
+    private Boolean nullAllowed;
 
-    @Parameter(name = "date format id", example = "1")
+    @Schema(description = "date format id")
     private Long dfid;
 
     @NotNull
-    @Parameter(name = "unique", example = "true")
-    private Boolean unique = false;
+    @Schema(example = "false")
+    private Boolean unique;
 
     @JsonProperty("check_expression")
-    @Parameter(name = "check expression", example = "null")
-    private String checkExpression = null;
+    private String checkExpression;
 
     @JsonProperty("foreign_key")
-    @Parameter(name = "foreign key", example = "null")
     private String foreignKey = null;
 
-    @Parameter(name = "foreign key reference, only considered when foreignKey != null", example = "null")
+    @Parameter(description = "foreign key reference, only considered when foreignKey != null")
     private String references = null;
 
     @JsonProperty("enum_values")
-    @Parameter(name = "enum values, only considered when type = ENUM", example = "[\"male\",\"female\",\"other\"]")
+    @Parameter(description = "enum values, only considered when type = ENUM")
     private String[] enumValues = null;
 
 }

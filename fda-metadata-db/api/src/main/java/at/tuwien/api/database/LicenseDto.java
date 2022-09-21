@@ -1,6 +1,6 @@
 package at.tuwien.api.database;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,11 +15,11 @@ import javax.validation.constraints.NotNull;
 public class LicenseDto {
 
     @NotNull
-    @Parameter(name = "license identifier")
+    @Schema(example = "MIT")
     private String identifier;
 
     @NotBlank
-    @Parameter(name = "license uri")
+    @Schema(name = "https://opensource.org/licenses/MIT")
     private String uri;
 
 }

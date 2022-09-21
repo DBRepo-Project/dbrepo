@@ -93,7 +93,6 @@ def start_container(container_id):
 def create_database(container_id, is_public=True):
     response = database.create({
         "name": "Airquality " + str(uuid.uuid1()),
-        "description": "Hourly measurements in Zürich, Switzerland",
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
@@ -106,7 +105,7 @@ def find_database(container_id, database_id):
     return response
 
 
-def update_database(container_id, database_id, is_public=True):
+def update_database(container_id, database_id):
     response = database.update({
         "description": "This dataset includes daily values from 1983 to the current day, divided into annual files. This includes the maximum hourly average and the number of times the hourly average limit value for ozone was exceeded and the daily averages for sulfur dioxide (SO2), carbon monoxide (CO), nitrogen oxide (NOx), nitrogen monoxide (NO), nitrogen dioxide (NO2), particulate matter (PM10 and PM2.5). ) and particle number (PN), provided that they are of sufficient quality. The values of the completed day for the current year are updated every 30 minutes after midnight (UTC+1).",
         "publisher": "Technical University of Vienna",
@@ -115,7 +114,6 @@ def update_database(container_id, database_id, is_public=True):
             "uri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
         },
         "language": "en",
-        "is_public": is_public,
         "publication_year": 2022
     }, container_id, database_id)
     print("updated database with id %d" % response.id)
@@ -340,7 +338,7 @@ if __name__ == '__main__':
     cid = create_container().id
     start_container(cid)
     dbid = create_database(cid, False).id
-    update_database(cid, dbid, is_public=False)
+    update_database(cid, dbid)
     tid = create_table(cid, dbid).id
     tname = find_table(cid, dbid, tid).internal_name
     fill_table(cid, dbid, tid)

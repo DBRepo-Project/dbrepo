@@ -1,7 +1,7 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -17,15 +17,14 @@ import java.util.List;
 public class TableCreateDto {
 
     @NotBlank
-    @Parameter(name = "name", example = "Weather Australia")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
-    @Parameter(name = "table description", required = true, example = "Predict next-day rain in Australia")
+    @Schema(example = "Air Quality in Austria")
     private String description;
 
     @NotNull
-    @Parameter(name = "table columns", required = true)
     private List<ColumnCreateDto> columns;
 
 }

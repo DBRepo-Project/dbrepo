@@ -1,6 +1,6 @@
 package at.tuwien.api.container.image;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,19 +15,18 @@ import javax.validation.constraints.NotNull;
 public class ImageEnvItemDto {
 
     @NotNull
-    @Parameter(required = true, example = "1")
     private Long iid;
 
     @NotBlank
-    @Parameter(required = true, example = "POSTGRES_USER")
+    @Schema(example = "MARIADB_ROOT_PASSWORD")
     private String key;
 
     @NotBlank
-    @Parameter(required = true, example = "postgres")
+    @Schema(example = "mariadb")
     private String value;
 
-    @NonNull
-    @Parameter(required = true, example = "USERNAME")
+    @NotNull
+    @Schema(example = "PRIVILEGED_PASSWORD")
     private ImageEnvItemTypeDto type;
 
 }

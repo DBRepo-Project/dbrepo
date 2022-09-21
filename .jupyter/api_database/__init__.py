@@ -15,7 +15,7 @@
 from __future__ import absolute_import
 
 # import apis into sdk package
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_database.api.database_endpoint_api import DatabaseEndpointApi
 from api_database.api.license_endpoint_api import LicenseEndpointApi
 # import ApiClient
 from api_database.api_client import ApiClient
@@ -28,6 +28,7 @@ from api_database.models.database_brief_dto import DatabaseBriefDto
 from api_database.models.database_create_dto import DatabaseCreateDto
 from api_database.models.database_dto import DatabaseDto
 from api_database.models.database_modify_dto import DatabaseModifyDto
+from api_database.models.database_transfer_dto import DatabaseTransferDto
 from api_database.models.granted_authority_dto import GrantedAuthorityDto
 from api_database.models.image_brief_dto import ImageBriefDto
 from api_database.models.image_date_dto import ImageDateDto

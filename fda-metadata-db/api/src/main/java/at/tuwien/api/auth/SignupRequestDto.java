@@ -1,6 +1,6 @@
 package at.tuwien.api.auth;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.Email;
@@ -17,17 +17,16 @@ public class SignupRequestDto {
 
     @NotNull
     @Pattern(regexp = "^[a-z0-9]{3,}$")
-    @Parameter(name = "user name")
+    @Schema(example = "user")
     private String username;
 
     @NotNull
     @Email
-    @Parameter(name = "user email")
+    @Schema(example = "user@example.com")
     private String email;
 
     @NotNull
     @ToString.Exclude
-    @Parameter(name = "password hash")
     private String password;
 
 }

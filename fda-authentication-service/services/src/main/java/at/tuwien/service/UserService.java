@@ -4,9 +4,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.List;
 
 public interface UserService {
@@ -52,7 +50,7 @@ public interface UserService {
      * @param user The information.
      * @return The created user.
      * @throws UserEmailExistsException The email in the information exists already.
-     * @throws UserNameExistsException  The user name extists already.
+     * @throws UserNameExistsException  The username exists already.
      * @throws RoleNotFoundException    The role specified was not found.
      */
     User create(SignupRequestDto user) throws UserEmailExistsException, UserNameExistsException, RoleNotFoundException;

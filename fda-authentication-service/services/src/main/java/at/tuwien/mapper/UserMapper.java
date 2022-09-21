@@ -6,6 +6,9 @@ import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.container.Container;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.OrcidMalformedException;
@@ -17,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -116,11 +121,25 @@ public interface UserMapper {
                 .toString();
     }
 
-    default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
+    default GrantVirtualHostPermissionsDto signupRequestDtoToGrantVirtualHostPermissionsDto() {
         return GrantVirtualHostPermissionsDto.builder()
-                .configure(".*")
-                .write(".*")
-                .read(".*")
+                .configure("")
+                .write("")
+                .read("")
+                .build();
+    }
+
+    default GrantVirtualHostPermissionsDto userToGrantVirtualHostPermissionsDto(User data) {
+        final List<Database> databases = new LinkedList<>();
+        data.getContainers()
+                .forEach(container -> databases.addAll(container.getDatabases()));
+        final String permissions = "^[" + databases.stream()
+                .map(Database::getExchange)
+                .collect(Collectors.joining("|")) + "]";
+        return GrantVirtualHostPermissionsDto.builder()
+                .configure("")
+                .write(permissions)
+                .read(permissions)
                 .build();
     }
 

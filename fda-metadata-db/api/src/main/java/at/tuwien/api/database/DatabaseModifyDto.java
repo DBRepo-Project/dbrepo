@@ -20,41 +20,38 @@ import java.util.List;
 @NoArgsConstructor
 public class DatabaseModifyDto {
 
-    @Parameter(name = "database subjects", example = "[\"test\"]")
     private List<String> subjects;
 
     @NotBlank
-    @Parameter(name = "database description", example = "Sample")
+    @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @Parameter(name = "database publisher", example = "TU Wien")
+    @Schema(example = "TU Wien")
     private String publisher;
 
     @NotNull
     @JsonProperty("publication_year")
-    @Schema(name = "database publication year")
+    @Schema(description = "database publication year", example = "2022")
     private Integer publicationYear;
 
     @Min(1)
     @Max(12)
     @JsonProperty("publication_month")
-    @Parameter(name = "database publication month")
+    @Schema(description = "database publication month", example = "12")
     private Integer publicationMonth;
 
     @Min(1)
     @Max(31)
     @JsonProperty("publication_day")
-    @Parameter(name = "database publication day")
+    @Schema(description = "database publication day", example = "15")
     private Integer publicationDay;
 
-    @Parameter(name = "database license")
     private LicenseDto license;
 
-    @Parameter(name = "database language", example = "EN")
+    @Schema(example = "en")
     private LanguageTypeDto language;
 
     @JsonProperty("contact_person")
-    @Parameter(name = "database contact person")
     private String contactPerson;
 
 }

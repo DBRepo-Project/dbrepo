@@ -2,7 +2,7 @@ package at.tuwien.api.container.image;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -20,51 +20,49 @@ import java.util.List;
 public class ImageDto {
 
     @NotNull
-    @Parameter(required = true, example = "1")
     private Long id;
 
     @NotBlank
-    @Parameter(required = true, example = "mariadb")
+    @Schema(example = "mariadb")
     private String repository;
 
     @NotBlank
-    @Parameter(required = true, example = "10.5")
+    @Schema(example = "10.5")
     private String tag;
 
     @NotBlank
     @JsonProperty("driver_class")
-    @Parameter(required = true, example = "org.postgresql.Driver")
+    @Schema(example = "org.mariadb.jdbc.Driver")
     private String driverClass;
 
     @JsonProperty("date_formats")
     private List<ImageDateDto> dateFormats;
 
     @NotBlank
-    @Parameter(required = true, example = "Postgres")
+    @Schema(example = "org.hibernate.dialect.MariaDBDialect")
     private String dialect;
 
     @NotBlank
     @JsonProperty("jdbc_method")
-    @Parameter(required = true, example = "postgres")
+    @Schema(example = "mariadb")
     private String jdbcMethod;
 
-    @Parameter(required = true, example = "sha256:c5ec7353d87dfc35067e7bffeb25d6a0d52dad41e8b7357213e3b12d6e7ff78e")
+    @Schema(example = "sha256:c5ec7353d87dfc35067e7bffeb25d6a0d52dad41e8b7357213e3b12d6e7ff78e")
     private String hash;
 
-    @Parameter(required = true, example = "2021-03-12T15:26:21.678396092Z")
+    @Schema(example = "2021-03-12T15:26:21.678396092Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant compiled;
 
-    @Parameter(required = true, example = "314295447")
+    @Schema(example = "314295447")
     private BigInteger size;
 
     @NotNull
     @JsonProperty("default_port")
-    @Parameter(required = true, example = "5432")
+    @Schema(example = "3306")
     private Integer defaultPort;
 
     @NotNull
-    @Parameter(required = true)
-    private ImageEnvItemDto[] environment;
+    private List<ImageEnvItemDto> environment;
 
 }

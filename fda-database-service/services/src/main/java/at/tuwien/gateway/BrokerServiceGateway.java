@@ -3,6 +3,7 @@ package at.tuwien.gateway;
 
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 
 public interface BrokerServiceGateway {
@@ -22,6 +23,6 @@ public interface BrokerServiceGateway {
      * @param data     The grant data.
      * @throws BrokerVirtualHostCreationException The queue service did not respond within the 3s timeout.
      */
-    void grantPermission(String username, GrantVirtualHostPermissionsDto data)
+    void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostCreationException;
 }

@@ -3,7 +3,7 @@ package at.tuwien.api.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -11,13 +11,10 @@ import javax.validation.constraints.Email;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserForgotDto {
+public class UserUpdatePermissionsDto {
 
+    @NotBlank
     @Schema(example = "jcarberry")
     private String username;
-
-    @Email
-    @Schema(example = "jcarberry@brown.edu")
-    private String email;
 
 }

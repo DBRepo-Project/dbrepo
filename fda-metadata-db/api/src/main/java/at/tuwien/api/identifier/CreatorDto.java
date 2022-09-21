@@ -3,6 +3,7 @@ package at.tuwien.api.identifier;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -19,13 +20,13 @@ public class CreatorDto {
     private Long id;
 
     @NotBlank
-    @Parameter(name = "name", example = "Mustermann, Maximilian")
+    @Schema(example = "Carberry, Josiah")
     private String name;
 
-    @Parameter(name = "affiliation", example = "TU Wien")
+    @Schema(example = "Wesleyan University")
     private String affiliation;
 
-    @Parameter(name = "orcid", example = "ORCID")
+    @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
     @NotNull

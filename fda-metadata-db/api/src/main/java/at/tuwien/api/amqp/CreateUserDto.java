@@ -1,9 +1,8 @@
 package at.tuwien.api.amqp;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -16,10 +15,9 @@ public class CreateUserDto {
 
     @NotNull
     @ToString.Exclude
-    @Parameter(name = "user password")
     private String password;
 
-    @Parameter(name = "user tags")
+    @Schema(example = "administrator")
     private String tags;
 
 }

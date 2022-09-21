@@ -2,6 +2,7 @@ package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -15,41 +16,39 @@ import javax.validation.constraints.NotNull;
 public class UserBriefDto {
 
     @NotNull
-    @Parameter(name = "id")
     private Long id;
 
     @NotNull
-    @Parameter(name = "user name")
+    @Schema(example = "user", description = "Only contains lowercase characters")
     private String username;
 
     @JsonProperty("titles_before")
-    @Parameter(name = "titles before the first name")
+    @Schema(example = "Prof.")
     private String titlesBefore;
 
     @JsonProperty("titles_after")
-    @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @Parameter(name = "first name")
+    @Schema(example = "Josiah")
     private String firstname;
 
-    @Parameter(name = "last name")
+    @Schema(example = "Carberry")
     private String lastname;
 
-    @Parameter(name = "affiliation")
+    @Schema(example = "Brown University")
     private String affiliation;
 
-    @Parameter(name = "orcid")
+    @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
     @NotNull
     @JsonProperty("theme_dark")
-    @Parameter(name = "theme dark")
+    @Schema(example = "true")
     private Boolean themeDark;
 
     @NotNull
     @JsonProperty("email_verified")
-    @Parameter(name = "mail address verified")
+    @Schema(example = "true")
     private Boolean emailVerified;
 
 }

@@ -1,8 +1,12 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
@@ -23,17 +27,22 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
     private final Channel channel;
     private final AmqpConfig amqpConfig;
+    private final AmqpMapper amqpMapper;
     private final DatabaseRepository databaseRepository;
+    private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, DatabaseRepository databaseRepository) {
+    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
+                               DatabaseRepository databaseRepository, BrokerServiceGateway brokerServiceGateway) {
         this.channel = channel;
         this.amqpConfig = amqpConfig;
+        this.amqpMapper = amqpMapper;
         this.databaseRepository = databaseRepository;
+        this.brokerServiceGateway = brokerServiceGateway;
     }
 
     @PostConstruct
-    public void init() throws AmqpException {
+    public void init() throws AmqpException, BrokerVirtualHostCreationException {
         final List<Database> databases = databaseRepository.findAll();
         final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
         for (Database database : databases) {
@@ -42,7 +51,8 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createExchange(Database database, Principal principal) throws AmqpException {
+    public void createExchange(Database database, Principal principal) throws AmqpException,
+            BrokerVirtualHostCreationException {
         try {
             channel.exchangeDeclare(database.getExchange(), BuiltinExchangeType.FANOUT, true);
             log.info("Declared exchange {}", database.getExchange());
@@ -50,6 +60,9 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to declare exchange {}", database.getExchange());
             throw new AmqpException("Failed to declare exchange", e);
         }
+        final ExchangeUpdatePermissionsDto permissions = amqpMapper.exchangeToExchangeUpdatePermissionsDto(
+                database.getExchange());
+        brokerServiceGateway.grantPermission(principal.getName(), permissions);
     }
 
     @Override

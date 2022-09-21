@@ -1,7 +1,7 @@
 package at.tuwien.api.database;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -16,12 +16,12 @@ import javax.validation.constraints.NotNull;
 public class DatabaseCreateDto {
 
     @NotBlank(message = "database name is required")
-    @Parameter(name = "database name", example = "Weather Australia")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotNull(message = "public attribute is required")
     @JsonProperty("is_public")
-    @Parameter(name = "database publicity", example = "true")
+    @Schema(example = "true")
     private Boolean isPublic;
 
 }

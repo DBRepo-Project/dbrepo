@@ -30,21 +30,19 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/container/{id}/database")
-public class ContainerDatabaseEndpoint extends AbstractEndpoint {
+public class DatabaseEndpoint extends AbstractEndpoint {
 
-    private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
 
     @Autowired
-    public ContainerDatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
-                                     UserService userService, MariaDbServiceImpl databaseService,
-                                     QueryStoreService queryStoreService, MessageQueueService messageQueueService) {
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
+                            MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            MessageQueueService messageQueueService) {
         super(databaseService, containerService);
         this.databaseMapper = databaseMapper;
-        this.userService = userService;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
         this.messageQueueService = messageQueueService;
@@ -73,7 +71,7 @@ public class ContainerDatabaseEndpoint extends AbstractEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException {
+            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException {
         if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {
             log.error("Missing database create permission");
             throw new NotAllowedException("Missing database create permission");

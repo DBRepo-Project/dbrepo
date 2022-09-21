@@ -1,11 +1,8 @@
 package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -16,25 +13,22 @@ import javax.validation.constraints.NotNull;
 public class UserUpdateDto {
 
     @JsonProperty("titles_before")
-    @Parameter(name = "titles before the first name")
+    @Schema(example = "Prof.")
     private String titlesBefore;
 
     @JsonProperty("titles_after")
-    @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @NotBlank
-    @Parameter(name = "first name")
+    @Schema(example = "Josiah")
     private String firstname;
 
-    @NotBlank
-    @Parameter(name = "last name")
+    @Schema(example = "Carberry")
     private String lastname;
 
-    @Parameter(name = "affiliation")
+    @Schema(example = "Brown University")
     private String affiliation;
 
-    @Parameter(name = "orcid")
+    @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
 }

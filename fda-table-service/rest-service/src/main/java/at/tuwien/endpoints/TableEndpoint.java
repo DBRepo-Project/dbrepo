@@ -65,7 +65,8 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
-                                                @NotNull Principal principal)
+                                                @NotNull Principal principal,
+                                                @NotNull @RequestHeader(name = "Authorization") String authorization)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException {
         if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
@@ -104,7 +105,7 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId,
-                                                Principal principal) {
+                                                @NotNull Principal principal) {
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
             log.error("Missing table update permission");
             throw new NotAllowedException("Missing table update permission");
@@ -119,7 +120,8 @@ public class TableEndpoint extends AbstractEndpoint {
     public void delete(@NotNull @PathVariable("id") Long containerId,
                        @NotNull @PathVariable("databaseId") Long databaseId,
                        @NotNull @PathVariable("tableId") Long tableId,
-                       Principal principal)
+                       @NotNull Principal principal,
+                       @NotNull @RequestHeader(name = "Authorization") String authorization)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {

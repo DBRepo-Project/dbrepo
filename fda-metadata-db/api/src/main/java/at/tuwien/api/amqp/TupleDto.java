@@ -1,6 +1,6 @@
 package at.tuwien.api.amqp;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,11 +14,11 @@ import javax.validation.constraints.NotNull;
 public class TupleDto {
 
     @NotNull
-    @Parameter(name = "key", example = "name")
+    @Schema(example = "name")
     private String k;
 
     @NotNull
-    @Parameter(name = "value", example = "Max Mustermann")
+    @Schema(example = "Max Mustermann")
     private String v;
 
 }

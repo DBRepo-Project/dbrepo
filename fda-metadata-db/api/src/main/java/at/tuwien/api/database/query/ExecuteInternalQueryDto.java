@@ -12,10 +12,9 @@ import lombok.*;
 @ToString
 public class ExecuteInternalQueryDto {
 
-    @JsonProperty("ContainerID")
+    @JsonProperty("container_id")
     private String containerId;
 
-    @JsonProperty("Query")
     private String query;
 
 }

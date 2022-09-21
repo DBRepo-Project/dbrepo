@@ -3,7 +3,7 @@ package at.tuwien.api.user;
 import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -18,63 +18,56 @@ import java.util.List;
 public class UserDto {
 
     @NotNull
-    @Parameter(name = "id")
     private Long id;
 
     @ToString.Exclude
-    @Parameter(name = "user authorities")
     private List<GrantedAuthorityDto> authorities;
 
     @NotNull
-    @Parameter(name = "user name")
+    @Schema(example = "jcarberry", description = "Only contains lowercase characters")
     private String username;
 
     @JsonProperty("titles_before")
-    @Parameter(name = "titles before the first name")
+    @Schema(example = "Prof.")
     private String titlesBefore;
 
     @JsonProperty("titles_after")
-    @Parameter(name = "titles after the last name")
     private String titlesAfter;
 
-    @Parameter(name = "first name")
+    @Schema(example = "Josiah")
     private String firstname;
 
-    @Parameter(name = "last name")
+    @Schema(example = "Carberry")
     private String lastname;
 
-    @Parameter(name = "affiliation")
+    @Schema(example = "Brown University")
     private String affiliation;
 
-    @Parameter(name = "orcid")
+    @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
     @NotNull
     @JsonProperty("theme_dark")
-    @Parameter(name = "theme dark")
+    @Schema(example = "true")
     private Boolean themeDark;
 
-    @Parameter(name = "list of containers")
     private List<ContainerDto> containers;
 
-    @Parameter(name = "list of databases")
     private List<ContainerDto> databases;
 
-    @Parameter(name = "list of identifiers")
     private List<ContainerDto> identifiers;
 
     @ToString.Exclude
     @JsonIgnore
-    @Parameter(name = "password hash")
     private String password;
 
     @NotNull
-    @Parameter(name = "mail address")
+    @Schema(example = "jcarberry@brown.edu")
     private String email;
 
     @NotNull
     @JsonProperty("email_verified")
-    @Parameter(name = "mail address verified")
+    @Schema(example = "true")
     private Boolean emailVerified;
 
 }

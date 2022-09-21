@@ -6,6 +6,7 @@ import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -22,36 +23,32 @@ import java.util.List;
 public class TableDto {
 
     @NotNull
-    @Parameter(name = "table id", example = "1")
     private Long id;
 
     @NotBlank
-    @Parameter(name = "table name", example = "Weather Australia")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Parameter(name = "table internal name", example = "weather_australia")
+    @Schema(example = "air_quality")
     private String internalName;
 
     @NotNull
-    @Parameter(name = "database creator")
     private UserBriefDto creator;
 
     @NotBlank
-    @Parameter(name = "topic name", example = "fda.c1.d1.t1")
+    @Schema(example = "air_quality")
     private String topic;
 
     @NotBlank
-    @Parameter(name = "table description", example = "Predict next-day rain in Australia")
+    @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @Parameter(name = "table creation time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @NotNull
-    @Parameter(name = "table columns")
     private List<ColumnDto> columns;
 
 }
