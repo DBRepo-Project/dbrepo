@@ -37,11 +37,7 @@
         <v-img
           contain
           class="tu-logo"
-          src="/tu_logo_512.png" />
-        <v-img
-          contain
-          class="univie-logo"
-          src="/univie_logo_512.png" />
+          :src="logo" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -191,6 +187,14 @@ export default {
       }
       console.debug('env sandbox found', this.$config.sandbox)
       return this.$config.sandbox
+    },
+    logo () {
+      if (this.$config.logo === undefined) {
+        console.debug('env logo not found, default to /logos.png')
+        return '/logos.png'
+      }
+      console.debug('env logo found', this.$config.logo)
+      return this.$config.logo
     }
   },
   watch: {

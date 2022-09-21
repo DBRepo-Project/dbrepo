@@ -85,7 +85,8 @@ export default {
     brokerPassword: process.env.BROKER_PASSWORD || 'fda',
     sandbox: process.env.SANDBOX || false,
     sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
-    version: process.env.VERSION || 'latest'
+    version: process.env.VERSION || 'latest',
+    logo: process.env.LOGO || '/logos.png'
   },
 
   proxy: {

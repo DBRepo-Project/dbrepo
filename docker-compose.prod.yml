@@ -336,6 +336,7 @@ services:
       - "3000:3000"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
+      - /logos:/app/static/logos
     depends_on:
       identifier-service:
         condition: service_healthy
@@ -345,5 +346,6 @@ services:
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
       SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
+      LOGO: ${LOGO}
     logging:
       driver: json-file
