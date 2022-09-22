@@ -5,6 +5,7 @@ import os
 import shutil
 import uuid
 import requests as rq
+from pika.exceptions import ProbableAuthenticationError, ChannelClosedByBroker
 from postgres import Postgres
 
 import api_query.rest
@@ -170,7 +171,7 @@ def create_table(container_id, database_id, columns=None):
         "name": "Airquality " + str(uuid.uuid1()),
         "description": "Airquality in Zürich, Switzerland",
         "columns": columns
-    }, container_id, database_id)
+    }, "Bearer " + token, container_id, database_id)
     print("created table with id %d" % response.id)
     return response
 
@@ -307,6 +308,16 @@ def send_tuple(exchange, routing_key, username, password, payload):
     print("sent tuple to exchange with routing key %s" % routing_key)
     return response
 
+def send_tuple_fails(exchange, routing_key, username, password, payload):
+    broker = BrokerServiceClient(exchange=exchange, routing_key=routing_key, host="localhost", username=username,
+                                 password=password)
+    try:
+        broker.send(payload)
+    except ChannelClosedByBroker:
+        print("... access to exchange successfully refused")
+        return True
+    raise Exception("Tuple successfully sent, should have failed")
+
 
 if __name__ == '__main__':
     #
@@ -383,6 +394,8 @@ if __name__ == '__main__':
     send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 1})
     send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 2})
     send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 3})
+    create_user("other")
+    send_tuple_fails(dbexchange, ttopic, "other", "other", {"primary": 4})
     create_table(cid, dbid, columns=[{
         "name": "primary",
         "type": "date",

@@ -51,8 +51,7 @@ class ImageEnvItemDto(object):
         self.iid = iid
         self.key = key
         self.value = value
-        if type is not None:
-            self.type = type
+        self.type = type
 
     @property
     def iid(self):
@@ -141,7 +140,9 @@ class ImageEnvItemDto(object):
         :param type: The type of this ImageEnvItemDto.  # noqa: E501
         :type: str
         """
-        allowed_values = ["USERNAME", "PASSWORD", "PRIVILEGED_USERNAME", "PRIVILEGED_PASSWORD"]  # noqa: E501
+        if type is None:
+            raise ValueError("Invalid value for `type`, must not be `None`")  # noqa: E501
+        allowed_values = ["username", "password", "privileged_username", "privileged_password"]  # noqa: E501
         if type not in allowed_values:
             raise ValueError(
                 "Invalid value for `type` ({0}), must be one of {1}"  # noqa: E501

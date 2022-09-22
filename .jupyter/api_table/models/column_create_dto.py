@@ -138,6 +138,7 @@ class ColumnCreateDto(object):
     def dfid(self):
         """Gets the dfid of this ColumnCreateDto.  # noqa: E501
 
+        date format id  # noqa: E501
 
         :return: The dfid of this ColumnCreateDto.  # noqa: E501
         :rtype: int
@@ -148,6 +149,7 @@ class ColumnCreateDto(object):
     def dfid(self, dfid):
         """Sets the dfid of this ColumnCreateDto.
 
+        date format id  # noqa: E501
 
         :param dfid: The dfid of this ColumnCreateDto.  # noqa: E501
         :type: int

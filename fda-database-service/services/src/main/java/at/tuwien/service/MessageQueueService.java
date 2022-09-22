@@ -14,7 +14,15 @@ public interface MessageQueueService {
      * @param principal The user.
      * @throws AmqpException Could not create the exchange.
      */
-    void createExchange(Database database, Principal principal) throws AmqpException, BrokerVirtualHostCreationException;
+    void createExchange(Database database, Principal principal) throws AmqpException;
+
+    /**
+     * Updates the virtual host permissions in the broker service.
+     *
+     * @param principal Te user.
+     * @throws BrokerVirtualHostCreationException Could not update the permissions.
+     */
+    void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException;
 
     /**
      * Deletes an exchange for a database.

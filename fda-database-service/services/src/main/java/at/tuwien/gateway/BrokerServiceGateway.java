@@ -25,4 +25,14 @@ public interface BrokerServiceGateway {
      */
     void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostCreationException;
+
+    /**
+     * Grants a user permission at a virtual host in the queue service.
+     *
+     * @param username The username of the user.
+     * @param data     The grant data.
+     * @throws BrokerVirtualHostCreationException The queue service did not respond within the 3s timeout.
+     */
+    void grantPermission(String username, GrantVirtualHostPermissionsDto data)
+            throws BrokerVirtualHostCreationException;
 }

@@ -31,8 +31,6 @@ class ImageCreateDto(object):
         'repository': 'str',
         'tag': 'str',
         'dialect': 'str',
-        'logo': 'str',
-        'local': 'bool',
         'environment': 'list[ImageEnvItemDto]',
         'driver_class': 'str',
         'jdbc_method': 'str',
@@ -43,21 +41,17 @@ class ImageCreateDto(object):
         'repository': 'repository',
         'tag': 'tag',
         'dialect': 'dialect',
-        'logo': 'logo',
-        'local': 'local',
         'environment': 'environment',
         'driver_class': 'driver_class',
         'jdbc_method': 'jdbc_method',
         'default_port': 'default_port'
     }
 
-    def __init__(self, repository=None, tag=None, dialect=None, logo=None, local=None, environment=None, driver_class=None, jdbc_method=None, default_port=None):  # noqa: E501
+    def __init__(self, repository=None, tag=None, dialect=None, environment=None, driver_class=None, jdbc_method=None, default_port=None):  # noqa: E501
         """ImageCreateDto - a model defined in Swagger"""  # noqa: E501
         self._repository = None
         self._tag = None
         self._dialect = None
-        self._logo = None
-        self._local = None
         self._environment = None
         self._driver_class = None
         self._jdbc_method = None
@@ -66,8 +60,6 @@ class ImageCreateDto(object):
         self.repository = repository
         self.tag = tag
         self.dialect = dialect
-        self.logo = logo
-        self.local = local
         if environment is not None:
             self.environment = environment
         self.driver_class = driver_class
@@ -142,52 +134,6 @@ class ImageCreateDto(object):
             raise ValueError("Invalid value for `dialect`, must not be `None`")  # noqa: E501
 
         self._dialect = dialect
-
-    @property
-    def logo(self):
-        """Gets the logo of this ImageCreateDto.  # noqa: E501
-
-
-        :return: The logo of this ImageCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._logo
-
-    @logo.setter
-    def logo(self, logo):
-        """Sets the logo of this ImageCreateDto.
-
-
-        :param logo: The logo of this ImageCreateDto.  # noqa: E501
-        :type: str
-        """
-        if logo is None:
-            raise ValueError("Invalid value for `logo`, must not be `None`")  # noqa: E501
-
-        self._logo = logo
-
-    @property
-    def local(self):
-        """Gets the local of this ImageCreateDto.  # noqa: E501
-
-
-        :return: The local of this ImageCreateDto.  # noqa: E501
-        :rtype: bool
-        """
-        return self._local
-
-    @local.setter
-    def local(self, local):
-        """Sets the local of this ImageCreateDto.
-
-
-        :param local: The local of this ImageCreateDto.  # noqa: E501
-        :type: bool
-        """
-        if local is None:
-            raise ValueError("Invalid value for `local`, must not be `None`")  # noqa: E501
-
-        self._local = local
 
     @property
     def environment(self):

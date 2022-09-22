@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.AmqpException;
@@ -42,7 +42,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @PostConstruct
-    public void init() throws AmqpException, BrokerVirtualHostCreationException {
+    public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
         final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
         for (Database database : databases) {
@@ -51,8 +51,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createExchange(Database database, Principal principal) throws AmqpException,
-            BrokerVirtualHostCreationException {
+    public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
             channel.exchangeDeclare(database.getExchange(), BuiltinExchangeType.FANOUT, true);
             log.info("Declared exchange {}", database.getExchange());
@@ -60,8 +59,12 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to declare exchange {}", database.getExchange());
             throw new AmqpException("Failed to declare exchange", e);
         }
-        final ExchangeUpdatePermissionsDto permissions = amqpMapper.exchangeToExchangeUpdatePermissionsDto(
-                database.getExchange());
+    }
+
+    @Override
+    public void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException {
+        final List<Database> databases = databaseRepository.findAllByUsername(principal.getName());
+        final GrantVirtualHostPermissionsDto permissions = amqpMapper.databasesToGrantVirtualHostPermissionsDto(databases);
         brokerServiceGateway.grantPermission(principal.getName(), permissions);
     }
 

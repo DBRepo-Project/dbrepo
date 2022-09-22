@@ -1,7 +1,9 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
+import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.BrokerUserCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 
 @Slf4j
@@ -19,11 +22,13 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     private final AmqpConfig amqpConfig;
     private final RestTemplate restTemplate;
+    private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(RestTemplate restTemplate, AmqpConfig amqpConfig) {
+    public BrokerServiceGatewayImpl(RestTemplate restTemplate, AmqpConfig amqpConfig, GatewayConfig gatewayConfig) {
         this.amqpConfig = amqpConfig;
         this.restTemplate = restTemplate;
+        this.gatewayConfig = gatewayConfig;
     }
 
     @Override
@@ -37,6 +42,20 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerUserCreationException("Failed to create user at broker service");
         }
         log.info("Created user at broker service with username {}", username);
+    }
+
+    @Override
+    public void modifyHostPermissions(String username, GrantVirtualHostPermissionsDto data) throws BrokerUserCreationException {
+        /* create user */
+        final URI modifyUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
+        final ResponseEntity<Void> createResponse = restTemplate.exchange(modifyUri, HttpMethod.PUT,
+                new HttpEntity<>(data, getHeaders()), Void.class);
+        if (!createResponse.getStatusCode().equals(HttpStatus.CREATED)) {
+            log.error("Failed to modify user permissions at broker service: {}", createResponse.getStatusCode());
+            throw new BrokerUserCreationException("Failed to modify user permissions at broker service");
+        }
+        log.info("Modified user permissions at broker service for user with username {}", username);
+        log.info("modified user permissions at broker service {}", data);
     }
 
     @Override

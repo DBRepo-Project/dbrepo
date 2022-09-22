@@ -155,6 +155,7 @@ class UserDto(object):
     def username(self):
         """Gets the username of this UserDto.  # noqa: E501
 
+        Only contains lowercase characters  # noqa: E501
 
         :return: The username of this UserDto.  # noqa: E501
         :rtype: str
@@ -165,6 +166,7 @@ class UserDto(object):
     def username(self, username):
         """Sets the username of this UserDto.
 
+        Only contains lowercase characters  # noqa: E501
 
         :param username: The username of this UserDto.  # noqa: E501
         :type: str

@@ -19,7 +19,7 @@ public class LicenseDto {
     private String identifier;
 
     @NotBlank
-    @Schema(name = "https://opensource.org/licenses/MIT")
+    @Schema(example = "https://opensource.org/licenses/MIT")
     private String uri;
 
 }

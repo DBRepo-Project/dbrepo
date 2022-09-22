@@ -110,6 +110,7 @@ class UserBriefDto(object):
     def username(self):
         """Gets the username of this UserBriefDto.  # noqa: E501
 
+        Only contains lowercase characters  # noqa: E501
 
         :return: The username of this UserBriefDto.  # noqa: E501
         :rtype: str
@@ -120,6 +121,7 @@ class UserBriefDto(object):
     def username(self, username):
         """Sets the username of this UserBriefDto.
 
+        Only contains lowercase characters  # noqa: E501
 
         :param username: The username of this UserBriefDto.  # noqa: E501
         :type: str

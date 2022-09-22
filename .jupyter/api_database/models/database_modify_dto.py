@@ -33,7 +33,7 @@ class DatabaseModifyDto(object):
         'publisher': 'str',
         'license': 'LicenseDto',
         'language': 'str',
-        'database_publication_year': 'int',
+        'publication_year': 'int',
         'publication_month': 'int',
         'publication_day': 'int',
         'contact_person': 'str'
@@ -45,20 +45,20 @@ class DatabaseModifyDto(object):
         'publisher': 'publisher',
         'license': 'license',
         'language': 'language',
-        'database_publication_year': 'database publication year',
+        'publication_year': 'publication_year',
         'publication_month': 'publication_month',
         'publication_day': 'publication_day',
         'contact_person': 'contact_person'
     }
 
-    def __init__(self, subjects=None, description=None, publisher=None, license=None, language=None, database_publication_year=None, publication_month=None, publication_day=None, contact_person=None):  # noqa: E501
+    def __init__(self, subjects=None, description=None, publisher=None, license=None, language=None, publication_year=None, publication_month=None, publication_day=None, contact_person=None):  # noqa: E501
         """DatabaseModifyDto - a model defined in Swagger"""  # noqa: E501
         self._subjects = None
         self._description = None
         self._publisher = None
         self._license = None
         self._language = None
-        self._database_publication_year = None
+        self._publication_year = None
         self._publication_month = None
         self._publication_day = None
         self._contact_person = None
@@ -72,7 +72,7 @@ class DatabaseModifyDto(object):
             self.license = license
         if language is not None:
             self.language = language
-        self.database_publication_year = database_publication_year
+        self.publication_year = publication_year
         if publication_month is not None:
             self.publication_month = publication_month
         if publication_day is not None:
@@ -194,32 +194,35 @@ class DatabaseModifyDto(object):
         self._language = language
 
     @property
-    def database_publication_year(self):
-        """Gets the database_publication_year of this DatabaseModifyDto.  # noqa: E501
+    def publication_year(self):
+        """Gets the publication_year of this DatabaseModifyDto.  # noqa: E501
 
+        database publication year  # noqa: E501
 
-        :return: The database_publication_year of this DatabaseModifyDto.  # noqa: E501
+        :return: The publication_year of this DatabaseModifyDto.  # noqa: E501
         :rtype: int
         """
-        return self._database_publication_year
+        return self._publication_year
 
-    @database_publication_year.setter
-    def database_publication_year(self, database_publication_year):
-        """Sets the database_publication_year of this DatabaseModifyDto.
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this DatabaseModifyDto.
 
+        database publication year  # noqa: E501
 
-        :param database_publication_year: The database_publication_year of this DatabaseModifyDto.  # noqa: E501
+        :param publication_year: The publication_year of this DatabaseModifyDto.  # noqa: E501
         :type: int
         """
-        if database_publication_year is None:
-            raise ValueError("Invalid value for `database_publication_year`, must not be `None`")  # noqa: E501
+        if publication_year is None:
+            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
 
-        self._database_publication_year = database_publication_year
+        self._publication_year = publication_year
 
     @property
     def publication_month(self):
         """Gets the publication_month of this DatabaseModifyDto.  # noqa: E501
 
+        database publication month  # noqa: E501
 
         :return: The publication_month of this DatabaseModifyDto.  # noqa: E501
         :rtype: int
@@ -230,6 +233,7 @@ class DatabaseModifyDto(object):
     def publication_month(self, publication_month):
         """Sets the publication_month of this DatabaseModifyDto.
 
+        database publication month  # noqa: E501
 
         :param publication_month: The publication_month of this DatabaseModifyDto.  # noqa: E501
         :type: int
@@ -241,6 +245,7 @@ class DatabaseModifyDto(object):
     def publication_day(self):
         """Gets the publication_day of this DatabaseModifyDto.  # noqa: E501
 
+        database publication day  # noqa: E501
 
         :return: The publication_day of this DatabaseModifyDto.  # noqa: E501
         :rtype: int
@@ -251,6 +256,7 @@ class DatabaseModifyDto(object):
     def publication_day(self, publication_day):
         """Sets the publication_day of this DatabaseModifyDto.
 
+        database publication day  # noqa: E501
 
         :param publication_day: The publication_day of this DatabaseModifyDto.  # noqa: E501
         :type: int

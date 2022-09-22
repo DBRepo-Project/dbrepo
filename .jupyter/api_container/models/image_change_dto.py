@@ -30,7 +30,6 @@ class ImageChangeDto(object):
     swagger_types = {
         'default_port': 'int',
         'environment': 'list[ImageEnvItemDto]',
-        'logo': 'str',
         'dialect': 'str',
         'driver_class': 'str',
         'jdbc_method': 'str'
@@ -39,17 +38,15 @@ class ImageChangeDto(object):
     attribute_map = {
         'default_port': 'defaultPort',
         'environment': 'environment',
-        'logo': 'logo',
         'dialect': 'dialect',
         'driver_class': 'driver_class',
         'jdbc_method': 'jdbc_method'
     }
 
-    def __init__(self, default_port=None, environment=None, logo=None, dialect=None, driver_class=None, jdbc_method=None):  # noqa: E501
+    def __init__(self, default_port=None, environment=None, dialect=None, driver_class=None, jdbc_method=None):  # noqa: E501
         """ImageChangeDto - a model defined in Swagger"""  # noqa: E501
         self._default_port = None
         self._environment = None
-        self._logo = None
         self._dialect = None
         self._driver_class = None
         self._jdbc_method = None
@@ -58,7 +55,6 @@ class ImageChangeDto(object):
             self.default_port = default_port
         if environment is not None:
             self.environment = environment
-        self.logo = logo
         self.dialect = dialect
         self.driver_class = driver_class
         self.jdbc_method = jdbc_method
@@ -104,29 +100,6 @@ class ImageChangeDto(object):
         """
 
         self._environment = environment
-
-    @property
-    def logo(self):
-        """Gets the logo of this ImageChangeDto.  # noqa: E501
-
-
-        :return: The logo of this ImageChangeDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._logo
-
-    @logo.setter
-    def logo(self, logo):
-        """Sets the logo of this ImageChangeDto.
-
-
-        :param logo: The logo of this ImageChangeDto.  # noqa: E501
-        :type: str
-        """
-        if logo is None:
-            raise ValueError("Invalid value for `logo`, must not be `None`")  # noqa: E501
-
-        self._logo = logo
 
     @property
     def dialect(self):

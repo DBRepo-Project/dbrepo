@@ -54,8 +54,10 @@ class UserUpdateDto(object):
         self._titles_before = None
         self._titles_after = None
         self.discriminator = None
-        self.firstname = firstname
-        self.lastname = lastname
+        if firstname is not None:
+            self.firstname = firstname
+        if lastname is not None:
+            self.lastname = lastname
         if affiliation is not None:
             self.affiliation = affiliation
         if orcid is not None:
@@ -83,8 +85,6 @@ class UserUpdateDto(object):
         :param firstname: The firstname of this UserUpdateDto.  # noqa: E501
         :type: str
         """
-        if firstname is None:
-            raise ValueError("Invalid value for `firstname`, must not be `None`")  # noqa: E501
 
         self._firstname = firstname
 
@@ -106,8 +106,6 @@ class UserUpdateDto(object):
         :param lastname: The lastname of this UserUpdateDto.  # noqa: E501
         :type: str
         """
-        if lastname is None:
-            raise ValueError("Invalid value for `lastname`, must not be `None`")  # noqa: E501
 
         self._lastname = lastname
 

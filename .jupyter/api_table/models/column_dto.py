@@ -38,8 +38,6 @@ class ColumnDto(object):
         'is_primary_key': 'bool',
         'column_type': 'str',
         'column_concept': 'ConceptDto',
-        'decimal_digits_before': 'int',
-        'decimal_digits_after': 'int',
         'is_null_allowed': 'bool',
         'check_expression': 'str',
         'foreign_key': 'str',
@@ -57,15 +55,13 @@ class ColumnDto(object):
         'is_primary_key': 'is_primary_key',
         'column_type': 'column_type',
         'column_concept': 'column_concept',
-        'decimal_digits_before': 'decimal_digits_before',
-        'decimal_digits_after': 'decimal_digits_after',
         'is_null_allowed': 'is_null_allowed',
         'check_expression': 'check_expression',
         'foreign_key': 'foreign_key',
         'enum_values': 'enum_values'
     }
 
-    def __init__(self, id=None, name=None, unique=None, references=None, internal_name=None, date_format=None, auto_generated=None, is_primary_key=None, column_type=None, column_concept=None, decimal_digits_before=None, decimal_digits_after=None, is_null_allowed=None, check_expression=None, foreign_key=None, enum_values=None):  # noqa: E501
+    def __init__(self, id=None, name=None, unique=None, references=None, internal_name=None, date_format=None, auto_generated=None, is_primary_key=None, column_type=None, column_concept=None, is_null_allowed=None, check_expression=None, foreign_key=None, enum_values=None):  # noqa: E501
         """ColumnDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
@@ -77,8 +73,6 @@ class ColumnDto(object):
         self._is_primary_key = None
         self._column_type = None
         self._column_concept = None
-        self._decimal_digits_before = None
-        self._decimal_digits_after = None
         self._is_null_allowed = None
         self._check_expression = None
         self._foreign_key = None
@@ -97,10 +91,6 @@ class ColumnDto(object):
         self.column_type = column_type
         if column_concept is not None:
             self.column_concept = column_concept
-        if decimal_digits_before is not None:
-            self.decimal_digits_before = decimal_digits_before
-        if decimal_digits_after is not None:
-            self.decimal_digits_after = decimal_digits_after
         self.is_null_allowed = is_null_allowed
         if check_expression is not None:
             self.check_expression = check_expression
@@ -338,48 +328,6 @@ class ColumnDto(object):
         """
 
         self._column_concept = column_concept
-
-    @property
-    def decimal_digits_before(self):
-        """Gets the decimal_digits_before of this ColumnDto.  # noqa: E501
-
-
-        :return: The decimal_digits_before of this ColumnDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._decimal_digits_before
-
-    @decimal_digits_before.setter
-    def decimal_digits_before(self, decimal_digits_before):
-        """Sets the decimal_digits_before of this ColumnDto.
-
-
-        :param decimal_digits_before: The decimal_digits_before of this ColumnDto.  # noqa: E501
-        :type: int
-        """
-
-        self._decimal_digits_before = decimal_digits_before
-
-    @property
-    def decimal_digits_after(self):
-        """Gets the decimal_digits_after of this ColumnDto.  # noqa: E501
-
-
-        :return: The decimal_digits_after of this ColumnDto.  # noqa: E501
-        :rtype: int
-        """
-        return self._decimal_digits_after
-
-    @decimal_digits_after.setter
-    def decimal_digits_after(self, decimal_digits_after):
-        """Sets the decimal_digits_after of this ColumnDto.
-
-
-        :param decimal_digits_after: The decimal_digits_after of this ColumnDto.  # noqa: E501
-        :type: int
-        """
-
-        self._decimal_digits_after = decimal_digits_after
 
     @property
     def is_null_allowed(self):

@@ -169,7 +169,7 @@ class ContainerDto(object):
         :param state: The state of this ContainerDto.  # noqa: E501
         :type: str
         """
-        allowed_values = ["ContainerStateDto.CREATED", "ContainerStateDto.RESTARTING", "ContainerStateDto.RUNNING", "ContainerStateDto.PAUSED", "ContainerStateDto.EXITED", "ContainerStateDto.DEAD"]  # noqa: E501
+        allowed_values = ["created", "restarting", "running", "paused", "exited", "dead"]  # noqa: E501
         if state not in allowed_values:
             raise ValueError(
                 "Invalid value for `state` ({0}), must be one of {1}"  # noqa: E501

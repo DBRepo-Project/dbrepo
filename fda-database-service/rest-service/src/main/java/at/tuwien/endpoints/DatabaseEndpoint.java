@@ -79,6 +79,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId());
+        messageQueueService.updatePermissions(principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
@@ -141,11 +142,12 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException {
+            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
+            DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);
+        messageQueueService.updatePermissions(principal);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

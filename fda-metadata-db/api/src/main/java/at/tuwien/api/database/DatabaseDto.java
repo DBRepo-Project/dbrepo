@@ -50,7 +50,6 @@ public class DatabaseDto {
 
     private LicenseDto license;
 
-    @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 
