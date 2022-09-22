@@ -332,7 +332,8 @@ export default {
         return {}
       }
       return {
-        headers: { Authorization: `Bearer ${this.token}` }
+        headers: { Authorization: `Bearer ${this.token}` },
+        progress: false
       }
     },
     query_statement () {

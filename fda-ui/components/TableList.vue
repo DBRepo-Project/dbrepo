@@ -26,22 +26,9 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
-                      Table Internal Name
-                    </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.internal_name" />
-                    <v-list-item-content>
-                      {{ tableDetails.internal_name }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
                       Table Description
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.description }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="tableDetails.description" />
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
@@ -245,7 +232,8 @@ export default {
     },
     brokerConfig () {
       return {
-        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) }
+        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
+        progress: false
       }
     },
     createdUTC () {
@@ -284,6 +272,7 @@ export default {
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
     this.loadUser()
+    setInterval(this.pollConsumerStatus, 5000)
   },
   methods: {
     pickUnit (item) {
@@ -384,10 +373,15 @@ export default {
         console.debug('consumers', consumers)
         this.consumers = consumers
       } catch (err) {
-        console.error('Could not find consumers')
-        this.$toast.error('Could not find consumers.')
+        console.error('Could not find consumers', err)
       }
       this.loadingConsumers = false
+    },
+    pollConsumerStatus () {
+      if (this.tableDetails === undefined || this.tableDetails.topic === undefined) {
+        return
+      }
+      this.consumerDetails(this.tableDetails.topic)
     },
     showDeleteTableDialog (id) {
       this.deleteTableId = id
