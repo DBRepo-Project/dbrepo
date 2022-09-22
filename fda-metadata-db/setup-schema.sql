@@ -175,7 +175,6 @@ CREATE TABLE public.mdb_images
     driver_class  character varying(255)      NOT NULL,
     jdbc_method   character varying(255)      NOT NULL,
     compiled      timestamp without time zone,
-    logo          TEXT,
     hash          character varying(255),
     size          bigint,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),

@@ -47,8 +47,8 @@ public interface ImageMapper {
                 .toArray(String[]::new);
     }
 
-    default List<ContainerImageEnvironmentItem> imageEnvironmentItemDtoToEnvironmentItemList(ImageEnvItemDto[] data) {
-        return Arrays.stream(data)
+    default List<ContainerImageEnvironmentItem> imageEnvironmentItemDtoToEnvironmentItemList(List<ImageEnvItemDto> data) {
+        return data.stream()
                 .map(this::imageEnvItemDtoToEnvironmentItem)
                 .collect(Collectors.toList());
     }

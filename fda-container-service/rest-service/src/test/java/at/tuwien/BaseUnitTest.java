@@ -27,7 +27,6 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
     public final static Long IMAGE_1_SIZE = 12000L;
-    public final static String IMAGE_1_LOGO = "AAAA";
     public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
@@ -54,8 +53,7 @@ public abstract class BaseUnitTest {
                     .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
                     .build());
 
-    public final static ImageEnvItemDto[] IMAGE_1_ENV_DTO = new ImageEnvItemDto[]{
-            ImageEnvItemDto.builder()
+    public final static List<ImageEnvItemDto> IMAGE_1_ENV_DTO = List.of(ImageEnvItemDto.builder()
                     .iid(IMAGE_1_ID)
                     .key("MARIADB_USER")
                     .value("mariadb")
@@ -66,7 +64,7 @@ public abstract class BaseUnitTest {
                     .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ImageEnvItemTypeDto.PASSWORD)
-                    .build()};
+                    .build());
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
@@ -81,7 +79,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .logo(IMAGE_1_LOGO)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
@@ -93,7 +90,6 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_2_DRIVER = "org.mysql.jdbc.Driver";
     public final static String IMAGE_2_JDBC = "mysql";
     public final static Long IMAGE_2_SIZE = 12000L;
-    public final static String IMAGE_2_LOGO = "BBBB";
     public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
     public final static List<ContainerImageEnvironmentItem> IMAGE_2_ENV = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_2_ID)
@@ -134,7 +130,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_2_SIZE)
             .environment(IMAGE_2_ENV)
             .defaultPort(IMAGE_2_PORT)
-            .logo(IMAGE_2_LOGO)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;

@@ -637,7 +637,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .logo(IMAGE_1_LOGO)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;

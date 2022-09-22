@@ -7,6 +7,7 @@ import lombok.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class ImageChangeDto {
     @Schema(example = "5432")
     private Integer defaultPort;
 
-    private ImageEnvItemDto[] environment;
+    private List<ImageEnvItemDto> environment;
 
     @NotBlank
     @JsonProperty("driver_class")

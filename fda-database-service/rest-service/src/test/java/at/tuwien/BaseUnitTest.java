@@ -14,7 +14,6 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import org.springframework.test.context.TestPropertySource;
 
-import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
 
@@ -166,7 +165,6 @@ public abstract class BaseUnitTest {
             .created(IMAGE_1_CREATED)
             .defaultPort(IMAGE_1_PORT)
             .compiled(IMAGE_1_UPDATED)
-            .logo(IMAGE_1_LOGO)
             .build();
 
     public final static Container CONTAINER_1 = Container.builder()

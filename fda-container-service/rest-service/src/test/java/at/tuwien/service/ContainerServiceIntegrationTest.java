@@ -104,7 +104,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .size(IMAGE_1_SIZE)
                 .environment(IMAGE_1_ENV)
                 .defaultPort(IMAGE_1_PORT)
-                .logo(IMAGE_1_LOGO)
                 .build());
         imageRepository.save(IMAGE_1);
         log.debug("save container {}", CONTAINER_1);
