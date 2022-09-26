@@ -308,7 +308,6 @@ services:
       - "3000:3000"
     volumes:
       - /tmp:/tmp
-      - /logos:/app/static/logos
     depends_on:
       fda-identifier-service:
         condition: service_healthy

@@ -346,6 +346,5 @@ services:
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
       SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
-      LOGO: ${LOGO}
     logging:
       driver: json-file

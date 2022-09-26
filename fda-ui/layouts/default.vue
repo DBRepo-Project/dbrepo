@@ -33,11 +33,11 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <div v-if="hasLogo">
+      <div>
         <v-img
           contain
-          class="tu-logo"
-          :src="logo" />
+          class="logo"
+          src="/logo.png" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -187,16 +187,6 @@ export default {
       }
       console.debug('env sandbox found', this.$config.sandbox)
       return this.$config.sandbox
-    },
-    hasLogo () {
-      return this.$config.logo !== undefined && this.$config.logo
-    },
-    logo () {
-      if (!this.hasLogo) {
-        return null
-      }
-      console.debug('env logo found', this.$config.logo)
-      return this.$config.logo
     }
   },
   watch: {
@@ -401,11 +391,8 @@ export default {
 .v-menu__content {
   max-width: 988px !important;
 }
-.tu-logo {
+.logo {
   margin: 1em 1em 0;
-}
-.univie-logo {
-  margin: 1em 1em .5em;
 }
 .sl {
   padding-left: 36px;
