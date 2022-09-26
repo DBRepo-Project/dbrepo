@@ -95,6 +95,15 @@ release-latest:
   stage: tag
   needs:
     - build-docker
+    - build-backend-metadata
+    - build-backend-authentication
+    - build-backend-identifier
+    - build-backend-container
+    - build-backend-database
+    - build-backend-discovery
+    - build-backend-gateway
+    - build-backend-query
+    - build-backend-table
   only:
     refs:
       - dev
