@@ -108,6 +108,7 @@ release-latest:
     refs:
       - dev
   script:
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=latest make release
 
 release-version:
@@ -127,6 +128,7 @@ release-version:
     refs:
       - master
   script:
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - make release
 
 
