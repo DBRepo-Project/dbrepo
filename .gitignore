@@ -11,6 +11,7 @@ target/
 
 # Environment
 .env
+.demo
 
 # macOS
 .DS_Store
