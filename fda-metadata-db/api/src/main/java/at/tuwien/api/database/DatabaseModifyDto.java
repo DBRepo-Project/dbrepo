@@ -23,10 +23,10 @@ public class DatabaseModifyDto {
     @Parameter(name = "database subjects", example = "[\"test\"]")
     private List<String> subjects;
 
-    @NotBlank
     @Parameter(name = "database description", example = "Sample")
     private String description;
 
+    @NotBlank
     @Parameter(name = "database publisher", example = "TU Wien")
     private String publisher;
 

@@ -19,6 +19,7 @@ from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
 from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
 from api_units.api.default_api import DefaultApi
+from api_metadata.api.metadata_endpoint_api import MetadataEndpointApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
@@ -30,6 +31,7 @@ data = TableDataEndpointApi()
 identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
 unit = DefaultApi()
+metadata = MetadataEndpointApi()
 
 token = ""  # keep
 
@@ -309,6 +311,39 @@ def send_tuple(exchange, routing_key, username, password, payload):
     return response
 
 
+def oai_identify():
+    response = rq.get("http://localhost:9095/api/oai?verb=Identify")
+    if "persistent" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("identified repository")
+
+
+def oai_list_identifiers():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListIdentifiers")
+    if "pid/1" not in response.text or "pid/2" not in response.text or "pid/3" not in response.text \
+            or "pid/4" not in response.text or "pid/5" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed identifiers")
+
+
+def oai_list_metadata_formats():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListMetadataFormats")
+    if "oai_dc" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed metadata formats")
+
+
+def oai_get_record(record_id, expected):
+    response = rq.get("http://localhost:9095/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=" + str(record_id))
+    if expected not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("retrieved record with id %d" % record_id)
+
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -339,7 +374,7 @@ if __name__ == '__main__':
     cid = create_container().id
     start_container(cid)
     dbid = create_database(cid, False).id
-    update_database(cid, dbid, is_public=False)
+    update_database(cid, dbid)
     tid = create_table(cid, dbid).id
     tname = find_table(cid, dbid, tid).internal_name
     fill_table(cid, dbid, tid)
@@ -419,4 +454,13 @@ if __name__ == '__main__':
     auth_user("test3")
     update_user(uid)
     update_theme(uid)
+    #
+    # OAI-PMH
+    #
+    oai_identify()
+    oai_list_identifiers()
+    oai_list_metadata_formats()
+    oai_get_record(1, "dc:creator>Weise, Martin")
+    oai_get_record(1, "dc:creator>Rauber, Andreas")
+    oai_get_record(6, "code=\"idDoesNotExist\"")
     print("FINISHED")

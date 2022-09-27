@@ -65,9 +65,9 @@ class DatabaseModifyDto(object):
         self.discriminator = None
         if subjects is not None:
             self.subjects = subjects
-        self.description = description
-        if publisher is not None:
-            self.publisher = publisher
+        if description is not None:
+            self.description = description
+        self.publisher = publisher
         if license is not None:
             self.license = license
         if language is not None:
@@ -119,8 +119,6 @@ class DatabaseModifyDto(object):
         :param description: The description of this DatabaseModifyDto.  # noqa: E501
         :type: str
         """
-        if description is None:
-            raise ValueError("Invalid value for `description`, must not be `None`")  # noqa: E501
 
         self._description = description
 
@@ -142,6 +140,8 @@ class DatabaseModifyDto(object):
         :param publisher: The publisher of this DatabaseModifyDto.  # noqa: E501
         :type: str
         """
+        if publisher is None:
+            raise ValueError("Invalid value for `publisher`, must not be `None`")  # noqa: E501
 
         self._publisher = publisher
 

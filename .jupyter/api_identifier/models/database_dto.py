@@ -28,334 +28,307 @@ class DatabaseDto(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'database_id': 'int',
-        'database_name': 'str',
-        'database_exchange': 'str',
-        'database_creator': 'UserBriefDto',
-        'database_subjects': 'list[str]',
-        'database_language': 'str',
-        'database_license': 'LicenseDto',
-        'database_description': 'str',
-        'database_publisher': 'str',
-        'database_contact_person': 'UserDto',
+        'id': 'int',
+        'name': 'str',
+        'exchange': 'str',
+        'creator': 'UserBriefDto',
+        'subjects': 'list[str]',
+        'language': 'str',
+        'license': 'LicenseDto',
+        'description': 'str',
+        'publisher': 'str',
         'tables': 'list[TableBriefDto]',
-        'database_container_image': 'ImageDto',
+        'image': 'ImageDto',
         'container': 'ContainerDto',
-        'database_creation_time': 'datetime',
+        'created': 'datetime',
         'deleted': 'datetime',
-        'database_internal_name': 'str',
-        'database_publication_year': 'int',
-        'database_publication_month': 'int',
-        'database_publication_day': 'int',
-        'database_public': 'bool'
+        'internal_name': 'str',
+        'publication_year': 'int',
+        'publication_month': 'int',
+        'publication_day': 'int',
+        'is_public': 'bool'
     }
 
     attribute_map = {
-        'database_id': 'database id',
-        'database_name': 'database name',
-        'database_exchange': 'database exchange',
-        'database_creator': 'database creator',
-        'database_subjects': 'database subjects',
-        'database_language': 'database language',
-        'database_license': 'database license',
-        'database_description': 'database description',
-        'database_publisher': 'database publisher',
-        'database_contact_person': 'database contact person',
+        'id': 'id',
+        'name': 'name',
+        'exchange': 'exchange',
+        'creator': 'creator',
+        'subjects': 'subjects',
+        'language': 'language',
+        'license': 'license',
+        'description': 'description',
+        'publisher': 'publisher',
         'tables': 'tables',
-        'database_container_image': 'database container image',
+        'image': 'image',
         'container': 'container',
-        'database_creation_time': 'database creation time',
+        'created': 'created',
         'deleted': 'deleted',
-        'database_internal_name': 'database internal name',
-        'database_publication_year': 'database publication year',
-        'database_publication_month': 'database publication month',
-        'database_publication_day': 'database publication day',
-        'database_public': 'database public'
+        'internal_name': 'internal_name',
+        'publication_year': 'publication_year',
+        'publication_month': 'publication_month',
+        'publication_day': 'publication_day',
+        'is_public': 'is_public'
     }
 
-    def __init__(self, database_id=None, database_name=None, database_exchange=None, database_creator=None, database_subjects=None, database_language=None, database_license=None, database_description=None, database_publisher=None, database_contact_person=None, tables=None, database_container_image=None, container=None, database_creation_time=None, deleted=None, database_internal_name=None, database_publication_year=None, database_publication_month=None, database_publication_day=None, database_public=None):  # noqa: E501
+    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication_year=None, publication_month=None, publication_day=None, is_public=None):  # noqa: E501
         """DatabaseDto - a model defined in Swagger"""  # noqa: E501
-        self._database_id = None
-        self._database_name = None
-        self._database_exchange = None
-        self._database_creator = None
-        self._database_subjects = None
-        self._database_language = None
-        self._database_license = None
-        self._database_description = None
-        self._database_publisher = None
-        self._database_contact_person = None
+        self._id = None
+        self._name = None
+        self._exchange = None
+        self._creator = None
+        self._subjects = None
+        self._language = None
+        self._license = None
+        self._description = None
+        self._publisher = None
         self._tables = None
-        self._database_container_image = None
+        self._image = None
         self._container = None
-        self._database_creation_time = None
+        self._created = None
         self._deleted = None
-        self._database_internal_name = None
-        self._database_publication_year = None
-        self._database_publication_month = None
-        self._database_publication_day = None
-        self._database_public = None
+        self._internal_name = None
+        self._publication_year = None
+        self._publication_month = None
+        self._publication_day = None
+        self._is_public = None
         self.discriminator = None
-        self.database_id = database_id
-        self.database_name = database_name
-        self.database_exchange = database_exchange
-        self.database_creator = database_creator
-        if database_subjects is not None:
-            self.database_subjects = database_subjects
-        if database_language is not None:
-            self.database_language = database_language
-        if database_license is not None:
-            self.database_license = database_license
-        self.database_description = database_description
-        if database_publisher is not None:
-            self.database_publisher = database_publisher
-        if database_contact_person is not None:
-            self.database_contact_person = database_contact_person
+        self.id = id
+        self.name = name
+        self.exchange = exchange
+        self.creator = creator
+        if subjects is not None:
+            self.subjects = subjects
+        if language is not None:
+            self.language = language
+        if license is not None:
+            self.license = license
+        if description is not None:
+            self.description = description
+        if publisher is not None:
+            self.publisher = publisher
         if tables is not None:
             self.tables = tables
-        if database_container_image is not None:
-            self.database_container_image = database_container_image
+        if image is not None:
+            self.image = image
         if container is not None:
             self.container = container
-        if database_creation_time is not None:
-            self.database_creation_time = database_creation_time
+        if created is not None:
+            self.created = created
         if deleted is not None:
             self.deleted = deleted
-        self.database_internal_name = database_internal_name
-        if database_publication_year is not None:
-            self.database_publication_year = database_publication_year
-        if database_publication_month is not None:
-            self.database_publication_month = database_publication_month
-        if database_publication_day is not None:
-            self.database_publication_day = database_publication_day
-        if database_public is not None:
-            self.database_public = database_public
+        self.internal_name = internal_name
+        if publication_year is not None:
+            self.publication_year = publication_year
+        if publication_month is not None:
+            self.publication_month = publication_month
+        if publication_day is not None:
+            self.publication_day = publication_day
+        if is_public is not None:
+            self.is_public = is_public
 
     @property
-    def database_id(self):
-        """Gets the database_id of this DatabaseDto.  # noqa: E501
+    def id(self):
+        """Gets the id of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_id of this DatabaseDto.  # noqa: E501
+        :return: The id of this DatabaseDto.  # noqa: E501
         :rtype: int
         """
-        return self._database_id
+        return self._id
 
-    @database_id.setter
-    def database_id(self, database_id):
-        """Sets the database_id of this DatabaseDto.
+    @id.setter
+    def id(self, id):
+        """Sets the id of this DatabaseDto.
 
 
-        :param database_id: The database_id of this DatabaseDto.  # noqa: E501
+        :param id: The id of this DatabaseDto.  # noqa: E501
         :type: int
         """
-        if database_id is None:
-            raise ValueError("Invalid value for `database_id`, must not be `None`")  # noqa: E501
+        if id is None:
+            raise ValueError("Invalid value for `id`, must not be `None`")  # noqa: E501
 
-        self._database_id = database_id
+        self._id = id
 
     @property
-    def database_name(self):
-        """Gets the database_name of this DatabaseDto.  # noqa: E501
+    def name(self):
+        """Gets the name of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_name of this DatabaseDto.  # noqa: E501
+        :return: The name of this DatabaseDto.  # noqa: E501
         :rtype: str
         """
-        return self._database_name
+        return self._name
 
-    @database_name.setter
-    def database_name(self, database_name):
-        """Sets the database_name of this DatabaseDto.
+    @name.setter
+    def name(self, name):
+        """Sets the name of this DatabaseDto.
 
 
-        :param database_name: The database_name of this DatabaseDto.  # noqa: E501
+        :param name: The name of this DatabaseDto.  # noqa: E501
         :type: str
         """
-        if database_name is None:
-            raise ValueError("Invalid value for `database_name`, must not be `None`")  # noqa: E501
+        if name is None:
+            raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
-        self._database_name = database_name
+        self._name = name
 
     @property
-    def database_exchange(self):
-        """Gets the database_exchange of this DatabaseDto.  # noqa: E501
+    def exchange(self):
+        """Gets the exchange of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_exchange of this DatabaseDto.  # noqa: E501
+        :return: The exchange of this DatabaseDto.  # noqa: E501
         :rtype: str
         """
-        return self._database_exchange
+        return self._exchange
 
-    @database_exchange.setter
-    def database_exchange(self, database_exchange):
-        """Sets the database_exchange of this DatabaseDto.
+    @exchange.setter
+    def exchange(self, exchange):
+        """Sets the exchange of this DatabaseDto.
 
 
-        :param database_exchange: The database_exchange of this DatabaseDto.  # noqa: E501
+        :param exchange: The exchange of this DatabaseDto.  # noqa: E501
         :type: str
         """
-        if database_exchange is None:
-            raise ValueError("Invalid value for `database_exchange`, must not be `None`")  # noqa: E501
+        if exchange is None:
+            raise ValueError("Invalid value for `exchange`, must not be `None`")  # noqa: E501
 
-        self._database_exchange = database_exchange
+        self._exchange = exchange
 
     @property
-    def database_creator(self):
-        """Gets the database_creator of this DatabaseDto.  # noqa: E501
+    def creator(self):
+        """Gets the creator of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_creator of this DatabaseDto.  # noqa: E501
+        :return: The creator of this DatabaseDto.  # noqa: E501
         :rtype: UserBriefDto
         """
-        return self._database_creator
+        return self._creator
 
-    @database_creator.setter
-    def database_creator(self, database_creator):
-        """Sets the database_creator of this DatabaseDto.
+    @creator.setter
+    def creator(self, creator):
+        """Sets the creator of this DatabaseDto.
 
 
-        :param database_creator: The database_creator of this DatabaseDto.  # noqa: E501
+        :param creator: The creator of this DatabaseDto.  # noqa: E501
         :type: UserBriefDto
         """
-        if database_creator is None:
-            raise ValueError("Invalid value for `database_creator`, must not be `None`")  # noqa: E501
+        if creator is None:
+            raise ValueError("Invalid value for `creator`, must not be `None`")  # noqa: E501
 
-        self._database_creator = database_creator
+        self._creator = creator
 
     @property
-    def database_subjects(self):
-        """Gets the database_subjects of this DatabaseDto.  # noqa: E501
+    def subjects(self):
+        """Gets the subjects of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_subjects of this DatabaseDto.  # noqa: E501
+        :return: The subjects of this DatabaseDto.  # noqa: E501
         :rtype: list[str]
         """
-        return self._database_subjects
+        return self._subjects
 
-    @database_subjects.setter
-    def database_subjects(self, database_subjects):
-        """Sets the database_subjects of this DatabaseDto.
+    @subjects.setter
+    def subjects(self, subjects):
+        """Sets the subjects of this DatabaseDto.
 
 
-        :param database_subjects: The database_subjects of this DatabaseDto.  # noqa: E501
+        :param subjects: The subjects of this DatabaseDto.  # noqa: E501
         :type: list[str]
         """
 
-        self._database_subjects = database_subjects
+        self._subjects = subjects
 
     @property
-    def database_language(self):
-        """Gets the database_language of this DatabaseDto.  # noqa: E501
+    def language(self):
+        """Gets the language of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_language of this DatabaseDto.  # noqa: E501
+        :return: The language of this DatabaseDto.  # noqa: E501
         :rtype: str
         """
-        return self._database_language
+        return self._language
 
-    @database_language.setter
-    def database_language(self, database_language):
-        """Sets the database_language of this DatabaseDto.
+    @language.setter
+    def language(self, language):
+        """Sets the language of this DatabaseDto.
 
 
-        :param database_language: The database_language of this DatabaseDto.  # noqa: E501
+        :param language: The language of this DatabaseDto.  # noqa: E501
         :type: str
         """
         allowed_values = ["ab", "aa", "af", "ak", "sq", "am", "ar", "an", "hy", "as", "av", "ae", "ay", "az", "bm", "ba", "eu", "be", "bn", "bh", "bi", "bs", "br", "bg", "my", "ca", "km", "ch", "ce", "ny", "zh", "cu", "cv", "kw", "co", "cr", "hr", "cs", "da", "dv", "nl", "dz", "en", "eo", "et", "ee", "fo", "fj", "fi", "fr", "ff", "gd", "gl", "lg", "ka", "de", "ki", "el", "kl", "gn", "gu", "ht", "ha", "he", "hz", "hi", "ho", "hu", "is", "io", "ig", "id", "ia", "ie", "iu", "ik", "ga", "it", "ja", "jv", "kn", "kr", "ks", "kk", "rw", "kv", "kg", "ko", "kj", "ku", "ky", "lo", "la", "lv", "lb", "li", "ln", "lt", "lu", "mk", "mg", "ms", "ml", "mt", "gv", "mi", "mr", "mh", "ro", "mn", "na", "nv", "nd", "ng", "ne", "se", "no", "nb", "nn", "ii", "oc", "oj", "or", "om", "os", "pi", "pa", "ps", "fa", "pl", "pt", "qu", "rm", "rn", "ru", "sm", "sg", "sa", "sc", "sr", "sn", "sd", "si", "sk", "sl", "so", "st", "nr", "es", "su", "sw", "ss", "sv", "tl", "ty", "tg", "ta", "tt", "te", "th", "bo", "ti", "to", "ts", "tn", "tr", "tk", "tw", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "cy", "fy", "wo", "xh", "yi", "yo", "za", "zu"]  # noqa: E501
-        if database_language not in allowed_values:
+        if language not in allowed_values:
             raise ValueError(
-                "Invalid value for `database_language` ({0}), must be one of {1}"  # noqa: E501
-                .format(database_language, allowed_values)
+                "Invalid value for `language` ({0}), must be one of {1}"  # noqa: E501
+                .format(language, allowed_values)
             )
 
-        self._database_language = database_language
+        self._language = language
 
     @property
-    def database_license(self):
-        """Gets the database_license of this DatabaseDto.  # noqa: E501
+    def license(self):
+        """Gets the license of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_license of this DatabaseDto.  # noqa: E501
+        :return: The license of this DatabaseDto.  # noqa: E501
         :rtype: LicenseDto
         """
-        return self._database_license
+        return self._license
 
-    @database_license.setter
-    def database_license(self, database_license):
-        """Sets the database_license of this DatabaseDto.
+    @license.setter
+    def license(self, license):
+        """Sets the license of this DatabaseDto.
 
 
-        :param database_license: The database_license of this DatabaseDto.  # noqa: E501
+        :param license: The license of this DatabaseDto.  # noqa: E501
         :type: LicenseDto
         """
 
-        self._database_license = database_license
+        self._license = license
 
     @property
-    def database_description(self):
-        """Gets the database_description of this DatabaseDto.  # noqa: E501
+    def description(self):
+        """Gets the description of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_description of this DatabaseDto.  # noqa: E501
+        :return: The description of this DatabaseDto.  # noqa: E501
         :rtype: str
         """
-        return self._database_description
+        return self._description
 
-    @database_description.setter
-    def database_description(self, database_description):
-        """Sets the database_description of this DatabaseDto.
-
-
-        :param database_description: The database_description of this DatabaseDto.  # noqa: E501
-        :type: str
-        """
-        if database_description is None:
-            raise ValueError("Invalid value for `database_description`, must not be `None`")  # noqa: E501
-
-        self._database_description = database_description
-
-    @property
-    def database_publisher(self):
-        """Gets the database_publisher of this DatabaseDto.  # noqa: E501
+    @description.setter
+    def description(self, description):
+        """Sets the description of this DatabaseDto.
 
 
-        :return: The database_publisher of this DatabaseDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._database_publisher
-
-    @database_publisher.setter
-    def database_publisher(self, database_publisher):
-        """Sets the database_publisher of this DatabaseDto.
-
-
-        :param database_publisher: The database_publisher of this DatabaseDto.  # noqa: E501
+        :param description: The description of this DatabaseDto.  # noqa: E501
         :type: str
         """
 
-        self._database_publisher = database_publisher
+        self._description = description
 
     @property
-    def database_contact_person(self):
-        """Gets the database_contact_person of this DatabaseDto.  # noqa: E501
+    def publisher(self):
+        """Gets the publisher of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_contact_person of this DatabaseDto.  # noqa: E501
-        :rtype: UserDto
+        :return: The publisher of this DatabaseDto.  # noqa: E501
+        :rtype: str
         """
-        return self._database_contact_person
+        return self._publisher
 
-    @database_contact_person.setter
-    def database_contact_person(self, database_contact_person):
-        """Sets the database_contact_person of this DatabaseDto.
+    @publisher.setter
+    def publisher(self, publisher):
+        """Sets the publisher of this DatabaseDto.
 
 
-        :param database_contact_person: The database_contact_person of this DatabaseDto.  # noqa: E501
-        :type: UserDto
+        :param publisher: The publisher of this DatabaseDto.  # noqa: E501
+        :type: str
         """
 
-        self._database_contact_person = database_contact_person
+        self._publisher = publisher
 
     @property
     def tables(self):
@@ -379,25 +352,25 @@ class DatabaseDto(object):
         self._tables = tables
 
     @property
-    def database_container_image(self):
-        """Gets the database_container_image of this DatabaseDto.  # noqa: E501
+    def image(self):
+        """Gets the image of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_container_image of this DatabaseDto.  # noqa: E501
+        :return: The image of this DatabaseDto.  # noqa: E501
         :rtype: ImageDto
         """
-        return self._database_container_image
+        return self._image
 
-    @database_container_image.setter
-    def database_container_image(self, database_container_image):
-        """Sets the database_container_image of this DatabaseDto.
+    @image.setter
+    def image(self, image):
+        """Sets the image of this DatabaseDto.
 
 
-        :param database_container_image: The database_container_image of this DatabaseDto.  # noqa: E501
+        :param image: The image of this DatabaseDto.  # noqa: E501
         :type: ImageDto
         """
 
-        self._database_container_image = database_container_image
+        self._image = image
 
     @property
     def container(self):
@@ -421,25 +394,25 @@ class DatabaseDto(object):
         self._container = container
 
     @property
-    def database_creation_time(self):
-        """Gets the database_creation_time of this DatabaseDto.  # noqa: E501
+    def created(self):
+        """Gets the created of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_creation_time of this DatabaseDto.  # noqa: E501
+        :return: The created of this DatabaseDto.  # noqa: E501
         :rtype: datetime
         """
-        return self._database_creation_time
+        return self._created
 
-    @database_creation_time.setter
-    def database_creation_time(self, database_creation_time):
-        """Sets the database_creation_time of this DatabaseDto.
+    @created.setter
+    def created(self, created):
+        """Sets the created of this DatabaseDto.
 
 
-        :param database_creation_time: The database_creation_time of this DatabaseDto.  # noqa: E501
+        :param created: The created of this DatabaseDto.  # noqa: E501
         :type: datetime
         """
 
-        self._database_creation_time = database_creation_time
+        self._created = created
 
     @property
     def deleted(self):
@@ -463,111 +436,111 @@ class DatabaseDto(object):
         self._deleted = deleted
 
     @property
-    def database_internal_name(self):
-        """Gets the database_internal_name of this DatabaseDto.  # noqa: E501
+    def internal_name(self):
+        """Gets the internal_name of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_internal_name of this DatabaseDto.  # noqa: E501
+        :return: The internal_name of this DatabaseDto.  # noqa: E501
         :rtype: str
         """
-        return self._database_internal_name
+        return self._internal_name
 
-    @database_internal_name.setter
-    def database_internal_name(self, database_internal_name):
-        """Sets the database_internal_name of this DatabaseDto.
+    @internal_name.setter
+    def internal_name(self, internal_name):
+        """Sets the internal_name of this DatabaseDto.
 
 
-        :param database_internal_name: The database_internal_name of this DatabaseDto.  # noqa: E501
+        :param internal_name: The internal_name of this DatabaseDto.  # noqa: E501
         :type: str
         """
-        if database_internal_name is None:
-            raise ValueError("Invalid value for `database_internal_name`, must not be `None`")  # noqa: E501
+        if internal_name is None:
+            raise ValueError("Invalid value for `internal_name`, must not be `None`")  # noqa: E501
 
-        self._database_internal_name = database_internal_name
+        self._internal_name = internal_name
 
     @property
-    def database_publication_year(self):
-        """Gets the database_publication_year of this DatabaseDto.  # noqa: E501
+    def publication_year(self):
+        """Gets the publication_year of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_publication_year of this DatabaseDto.  # noqa: E501
+        :return: The publication_year of this DatabaseDto.  # noqa: E501
         :rtype: int
         """
-        return self._database_publication_year
+        return self._publication_year
 
-    @database_publication_year.setter
-    def database_publication_year(self, database_publication_year):
-        """Sets the database_publication_year of this DatabaseDto.
+    @publication_year.setter
+    def publication_year(self, publication_year):
+        """Sets the publication_year of this DatabaseDto.
 
 
-        :param database_publication_year: The database_publication_year of this DatabaseDto.  # noqa: E501
+        :param publication_year: The publication_year of this DatabaseDto.  # noqa: E501
         :type: int
         """
 
-        self._database_publication_year = database_publication_year
+        self._publication_year = publication_year
 
     @property
-    def database_publication_month(self):
-        """Gets the database_publication_month of this DatabaseDto.  # noqa: E501
+    def publication_month(self):
+        """Gets the publication_month of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_publication_month of this DatabaseDto.  # noqa: E501
+        :return: The publication_month of this DatabaseDto.  # noqa: E501
         :rtype: int
         """
-        return self._database_publication_month
+        return self._publication_month
 
-    @database_publication_month.setter
-    def database_publication_month(self, database_publication_month):
-        """Sets the database_publication_month of this DatabaseDto.
+    @publication_month.setter
+    def publication_month(self, publication_month):
+        """Sets the publication_month of this DatabaseDto.
 
 
-        :param database_publication_month: The database_publication_month of this DatabaseDto.  # noqa: E501
+        :param publication_month: The publication_month of this DatabaseDto.  # noqa: E501
         :type: int
         """
 
-        self._database_publication_month = database_publication_month
+        self._publication_month = publication_month
 
     @property
-    def database_publication_day(self):
-        """Gets the database_publication_day of this DatabaseDto.  # noqa: E501
+    def publication_day(self):
+        """Gets the publication_day of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_publication_day of this DatabaseDto.  # noqa: E501
+        :return: The publication_day of this DatabaseDto.  # noqa: E501
         :rtype: int
         """
-        return self._database_publication_day
+        return self._publication_day
 
-    @database_publication_day.setter
-    def database_publication_day(self, database_publication_day):
-        """Sets the database_publication_day of this DatabaseDto.
+    @publication_day.setter
+    def publication_day(self, publication_day):
+        """Sets the publication_day of this DatabaseDto.
 
 
-        :param database_publication_day: The database_publication_day of this DatabaseDto.  # noqa: E501
+        :param publication_day: The publication_day of this DatabaseDto.  # noqa: E501
         :type: int
         """
 
-        self._database_publication_day = database_publication_day
+        self._publication_day = publication_day
 
     @property
-    def database_public(self):
-        """Gets the database_public of this DatabaseDto.  # noqa: E501
+    def is_public(self):
+        """Gets the is_public of this DatabaseDto.  # noqa: E501
 
 
-        :return: The database_public of this DatabaseDto.  # noqa: E501
+        :return: The is_public of this DatabaseDto.  # noqa: E501
         :rtype: bool
         """
-        return self._database_public
+        return self._is_public
 
-    @database_public.setter
-    def database_public(self, database_public):
-        """Sets the database_public of this DatabaseDto.
+    @is_public.setter
+    def is_public(self, is_public):
+        """Sets the is_public of this DatabaseDto.
 
 
-        :param database_public: The database_public of this DatabaseDto.  # noqa: E501
+        :param is_public: The is_public of this DatabaseDto.  # noqa: E501
         :type: bool
         """
 
-        self._database_public = database_public
+        self._is_public = is_public
 
     def to_dict(self):
         """Returns the model properties as a dict"""

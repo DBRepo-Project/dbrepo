@@ -27,7 +27,6 @@ from api_container.models.container_change_dto import ContainerChangeDto
 from api_container.models.container_create_request_dto import ContainerCreateRequestDto
 from api_container.models.container_dto import ContainerDto
 from api_container.models.database_dto import DatabaseDto
-from api_container.models.granted_authority_dto import GrantedAuthorityDto
 from api_container.models.image_brief_dto import ImageBriefDto
 from api_container.models.image_change_dto import ImageChangeDto
 from api_container.models.image_create_dto import ImageCreateDto
@@ -37,4 +36,3 @@ from api_container.models.image_env_item_dto import ImageEnvItemDto
 from api_container.models.license_dto import LicenseDto
 from api_container.models.table_brief_dto import TableBriefDto
 from api_container.models.user_brief_dto import UserBriefDto
-from api_container.models.user_dto import UserDto

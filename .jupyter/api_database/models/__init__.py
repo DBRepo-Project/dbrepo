@@ -22,7 +22,6 @@ from api_database.models.database_create_dto import DatabaseCreateDto
 from api_database.models.database_dto import DatabaseDto
 from api_database.models.database_modify_dto import DatabaseModifyDto
 from api_database.models.database_transfer_dto import DatabaseTransferDto
-from api_database.models.granted_authority_dto import GrantedAuthorityDto
 from api_database.models.image_brief_dto import ImageBriefDto
 from api_database.models.image_date_dto import ImageDateDto
 from api_database.models.image_dto import ImageDto
@@ -30,4 +29,3 @@ from api_database.models.image_env_item_dto import ImageEnvItemDto
 from api_database.models.license_dto import LicenseDto
 from api_database.models.table_brief_dto import TableBriefDto
 from api_database.models.user_brief_dto import UserBriefDto
-from api_database.models.user_dto import UserDto
