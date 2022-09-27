@@ -27,6 +27,11 @@ public class GatewayConfig {
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://analyse-service"))
+                .route("metadata-service", r -> r.path("/api/oai/**")
+                        .and()
+                        .method("POST", "GET", "PUT", "DELETE")
+                        .and()
+                        .uri("lb://metadata-service"))
                 .route("identifier-service", r -> r.path("/api/pid/**",
                                 "/api/container/**/database/**/identifier/**")
                         .and()

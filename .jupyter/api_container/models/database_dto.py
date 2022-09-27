@@ -37,7 +37,6 @@ class DatabaseDto(object):
         'license': 'LicenseDto',
         'description': 'str',
         'publisher': 'str',
-        'contact': 'UserDto',
         'tables': 'list[TableBriefDto]',
         'image': 'ImageDto',
         'container': 'ContainerDto',
@@ -45,6 +44,8 @@ class DatabaseDto(object):
         'deleted': 'datetime',
         'internal_name': 'str',
         'publication_year': 'int',
+        'publication_month': 'int',
+        'publication_day': 'int',
         'is_public': 'bool'
     }
 
@@ -58,7 +59,6 @@ class DatabaseDto(object):
         'license': 'license',
         'description': 'description',
         'publisher': 'publisher',
-        'contact': 'contact',
         'tables': 'tables',
         'image': 'image',
         'container': 'container',
@@ -66,10 +66,12 @@ class DatabaseDto(object):
         'deleted': 'deleted',
         'internal_name': 'internal_name',
         'publication_year': 'publication_year',
+        'publication_month': 'publication_month',
+        'publication_day': 'publication_day',
         'is_public': 'is_public'
     }
 
-    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, contact=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication_year=None, is_public=None):  # noqa: E501
+    def __init__(self, id=None, name=None, exchange=None, creator=None, subjects=None, language=None, license=None, description=None, publisher=None, tables=None, image=None, container=None, created=None, deleted=None, internal_name=None, publication_year=None, publication_month=None, publication_day=None, is_public=None):  # noqa: E501
         """DatabaseDto - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._name = None
@@ -80,7 +82,6 @@ class DatabaseDto(object):
         self._license = None
         self._description = None
         self._publisher = None
-        self._contact = None
         self._tables = None
         self._image = None
         self._container = None
@@ -88,6 +89,8 @@ class DatabaseDto(object):
         self._deleted = None
         self._internal_name = None
         self._publication_year = None
+        self._publication_month = None
+        self._publication_day = None
         self._is_public = None
         self.discriminator = None
         self.id = id
@@ -104,8 +107,6 @@ class DatabaseDto(object):
             self.description = description
         if publisher is not None:
             self.publisher = publisher
-        if contact is not None:
-            self.contact = contact
         if tables is not None:
             self.tables = tables
         if image is not None:
@@ -117,7 +118,12 @@ class DatabaseDto(object):
         if deleted is not None:
             self.deleted = deleted
         self.internal_name = internal_name
-        self.publication_year = publication_year
+        if publication_year is not None:
+            self.publication_year = publication_year
+        if publication_month is not None:
+            self.publication_month = publication_month
+        if publication_day is not None:
+            self.publication_day = publication_day
         if is_public is not None:
             self.is_public = is_public
 
@@ -325,27 +331,6 @@ class DatabaseDto(object):
         self._publisher = publisher
 
     @property
-    def contact(self):
-        """Gets the contact of this DatabaseDto.  # noqa: E501
-
-
-        :return: The contact of this DatabaseDto.  # noqa: E501
-        :rtype: UserDto
-        """
-        return self._contact
-
-    @contact.setter
-    def contact(self, contact):
-        """Sets the contact of this DatabaseDto.
-
-
-        :param contact: The contact of this DatabaseDto.  # noqa: E501
-        :type: UserDto
-        """
-
-        self._contact = contact
-
-    @property
     def tables(self):
         """Gets the tables of this DatabaseDto.  # noqa: E501
 
@@ -491,10 +476,50 @@ class DatabaseDto(object):
         :param publication_year: The publication_year of this DatabaseDto.  # noqa: E501
         :type: int
         """
-        if publication_year is None:
-            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
 
         self._publication_year = publication_year
+
+    @property
+    def publication_month(self):
+        """Gets the publication_month of this DatabaseDto.  # noqa: E501
+
+
+        :return: The publication_month of this DatabaseDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_month
+
+    @publication_month.setter
+    def publication_month(self, publication_month):
+        """Sets the publication_month of this DatabaseDto.
+
+
+        :param publication_month: The publication_month of this DatabaseDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_month = publication_month
+
+    @property
+    def publication_day(self):
+        """Gets the publication_day of this DatabaseDto.  # noqa: E501
+
+
+        :return: The publication_day of this DatabaseDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_day
+
+    @publication_day.setter
+    def publication_day(self, publication_day):
+        """Sets the publication_day of this DatabaseDto.
+
+
+        :param publication_day: The publication_day of this DatabaseDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_day = publication_day
 
     @property
     def is_public(self):

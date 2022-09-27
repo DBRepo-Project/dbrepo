@@ -208,6 +208,24 @@ services:
     logging:
       driver: json-file
 
+  fda-metadata-service:
+    restart: on-failure
+    container_name: fda-metadata-service
+    hostname: metadata-service
+    build: ./fda-metadata-service
+    image: fda-metadata-service
+    networks:
+      public:
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "9098:9098"
+    depends_on:
+      fda-metadata-db:
+        condition: service_started
+    logging:
+      driver: json-file
+
   fda-analyse-service:
     restart: on-failure
     container_name: fda-analyse-service

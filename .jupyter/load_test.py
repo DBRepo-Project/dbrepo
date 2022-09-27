@@ -19,6 +19,7 @@ from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
 from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
 from api_units.api.default_api import DefaultApi
+from api_metadata.api.metadata_endpoint_api import MetadataEndpointApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
@@ -30,6 +31,7 @@ data = TableDataEndpointApi()
 identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
 unit = DefaultApi()
+metadata = MetadataEndpointApi()
 
 token = ""  # keep
 
@@ -93,7 +95,6 @@ def start_container(container_id):
 def create_database(container_id, is_public=True):
     response = database.create({
         "name": "Airquality " + str(uuid.uuid1()),
-        "description": "Hourly measurements in Zürich, Switzerland",
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
@@ -106,7 +107,7 @@ def find_database(container_id, database_id):
     return response
 
 
-def update_database(container_id, database_id, is_public=True):
+def update_database(container_id, database_id):
     response = database.update({
         "description": "This dataset includes daily values from 1983 to the current day, divided into annual files. This includes the maximum hourly average and the number of times the hourly average limit value for ozone was exceeded and the daily averages for sulfur dioxide (SO2), carbon monoxide (CO), nitrogen oxide (NOx), nitrogen monoxide (NO), nitrogen dioxide (NO2), particulate matter (PM10 and PM2.5). ) and particle number (PN), provided that they are of sufficient quality. The values of the completed day for the current year are updated every 30 minutes after midnight (UTC+1).",
         "publisher": "Technical University of Vienna",
@@ -115,7 +116,6 @@ def update_database(container_id, database_id, is_public=True):
             "uri": "https://creativecommons.org/publicdomain/zero/1.0/legalcode"
         },
         "language": "en",
-        "is_public": is_public,
         "publication_year": 2022
     }, container_id, database_id)
     print("updated database with id %d" % response.id)
@@ -211,6 +211,7 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
         "qid": query_id,
         "title": "Airquality",
         "description": "Subset used for a scientific article",
+        "publisher": "TU Wien",
         "visibility": visibility,
         "creators": [{
             "name": "Weise, Martin",
@@ -310,6 +311,39 @@ def send_tuple(exchange, routing_key, username, password, payload):
     return response
 
 
+def oai_identify():
+    response = rq.get("http://localhost:9095/api/oai?verb=Identify")
+    if "persistent" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("identified repository")
+
+
+def oai_list_identifiers():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListIdentifiers")
+    if "pid/1" not in response.text or "pid/2" not in response.text or "pid/3" not in response.text \
+            or "pid/4" not in response.text or "pid/5" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed identifiers")
+
+
+def oai_list_metadata_formats():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListMetadataFormats")
+    if "oai_dc" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed metadata formats")
+
+
+def oai_get_record(record_id, expected):
+    response = rq.get("http://localhost:9095/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=" + str(record_id))
+    if expected not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("retrieved record with id %d" % record_id)
+
+
 if __name__ == '__main__':
     #
     # create 1 user and 3 containers (public, private, public)
@@ -340,7 +374,7 @@ if __name__ == '__main__':
     cid = create_container().id
     start_container(cid)
     dbid = create_database(cid, False).id
-    update_database(cid, dbid, is_public=False)
+    update_database(cid, dbid)
     tid = create_table(cid, dbid).id
     tname = find_table(cid, dbid, tid).internal_name
     fill_table(cid, dbid, tid)
@@ -420,4 +454,13 @@ if __name__ == '__main__':
     auth_user("test3")
     update_user(uid)
     update_theme(uid)
+    #
+    # OAI-PMH
+    #
+    oai_identify()
+    oai_list_identifiers()
+    oai_list_metadata_formats()
+    oai_get_record(1, "dc:creator>Weise, Martin")
+    oai_get_record(1, "dc:creator>Rauber, Andreas")
+    oai_get_record(6, "code=\"idDoesNotExist\"")
     print("FINISHED")

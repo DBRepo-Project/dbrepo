@@ -29,24 +29,20 @@ class DatabaseCreateDto(object):
     """
     swagger_types = {
         'name': 'str',
-        'description': 'str',
         'is_public': 'bool'
     }
 
     attribute_map = {
         'name': 'name',
-        'description': 'description',
         'is_public': 'is_public'
     }
 
-    def __init__(self, name=None, description=None, is_public=None):  # noqa: E501
+    def __init__(self, name=None, is_public=None):  # noqa: E501
         """DatabaseCreateDto - a model defined in Swagger"""  # noqa: E501
         self._name = None
-        self._description = None
         self._is_public = None
         self.discriminator = None
         self.name = name
-        self.description = description
         self.is_public = is_public
 
     @property
@@ -71,29 +67,6 @@ class DatabaseCreateDto(object):
             raise ValueError("Invalid value for `name`, must not be `None`")  # noqa: E501
 
         self._name = name
-
-    @property
-    def description(self):
-        """Gets the description of this DatabaseCreateDto.  # noqa: E501
-
-
-        :return: The description of this DatabaseCreateDto.  # noqa: E501
-        :rtype: str
-        """
-        return self._description
-
-    @description.setter
-    def description(self, description):
-        """Sets the description of this DatabaseCreateDto.
-
-
-        :param description: The description of this DatabaseCreateDto.  # noqa: E501
-        :type: str
-        """
-        if description is None:
-            raise ValueError("Invalid value for `description`, must not be `None`")  # noqa: E501
-
-        self._description = description
 
     @property
     def is_public(self):

@@ -19,6 +19,7 @@
         <module>api</module>
         <module>entities</module>
         <module>querystore</module>
+        <module>oai</module>
     </modules>
 
     <properties>

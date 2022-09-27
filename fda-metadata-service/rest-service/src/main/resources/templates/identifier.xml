@@ -1,0 +1,4 @@
+<header>
+    <identifier>[[${identifier}]]</identifier>
+    <datestamp>[[${datestamp}]]</datestamp>
+</header>

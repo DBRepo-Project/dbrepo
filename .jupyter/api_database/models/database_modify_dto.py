@@ -28,72 +28,78 @@ class DatabaseModifyDto(object):
                             and the value is json key in definition.
     """
     swagger_types = {
-        'subject': 'list[str]',
+        'subjects': 'list[str]',
         'description': 'str',
         'publisher': 'str',
         'license': 'LicenseDto',
         'language': 'str',
-        'is_public': 'bool',
-        'publication_year': 'int',
+        'database_publication_year': 'int',
+        'publication_month': 'int',
+        'publication_day': 'int',
         'contact_person': 'str'
     }
 
     attribute_map = {
-        'subject': 'subject',
+        'subjects': 'subjects',
         'description': 'description',
         'publisher': 'publisher',
         'license': 'license',
         'language': 'language',
-        'is_public': 'is_public',
-        'publication_year': 'publication_year',
+        'database_publication_year': 'database publication year',
+        'publication_month': 'publication_month',
+        'publication_day': 'publication_day',
         'contact_person': 'contact_person'
     }
 
-    def __init__(self, subject=None, description=None, publisher=None, license=None, language=None, is_public=None, publication_year=None, contact_person=None):  # noqa: E501
+    def __init__(self, subjects=None, description=None, publisher=None, license=None, language=None, database_publication_year=None, publication_month=None, publication_day=None, contact_person=None):  # noqa: E501
         """DatabaseModifyDto - a model defined in Swagger"""  # noqa: E501
-        self._subject = None
+        self._subjects = None
         self._description = None
         self._publisher = None
         self._license = None
         self._language = None
-        self._is_public = None
-        self._publication_year = None
+        self._database_publication_year = None
+        self._publication_month = None
+        self._publication_day = None
         self._contact_person = None
         self.discriminator = None
-        if subject is not None:
-            self.subject = subject
-        self.description = description
-        if publisher is not None:
-            self.publisher = publisher
+        if subjects is not None:
+            self.subjects = subjects
+        if description is not None:
+            self.description = description
+        self.publisher = publisher
         if license is not None:
             self.license = license
         if language is not None:
             self.language = language
-        self.is_public = is_public
-        self.publication_year = publication_year
+        self.database_publication_year = database_publication_year
+        if publication_month is not None:
+            self.publication_month = publication_month
+        if publication_day is not None:
+            self.publication_day = publication_day
         if contact_person is not None:
             self.contact_person = contact_person
 
     @property
-    def subject(self):
-        """Gets the subject of this DatabaseModifyDto.  # noqa: E501
+    def subjects(self):
+        """Gets the subjects of this DatabaseModifyDto.  # noqa: E501
 
 
-        :return: The subject of this DatabaseModifyDto.  # noqa: E501
+        :return: The subjects of this DatabaseModifyDto.  # noqa: E501
         :rtype: list[str]
         """
-        return self._subject
+        return self._subjects
 
-    @subject.setter
-    def subject(self, subject):
-        """Sets the subject of this DatabaseModifyDto.
+    @subjects.setter
+    def subjects(self, subjects):
+        """Sets the subjects of this DatabaseModifyDto.
 
 
-        :param subject: The subject of this DatabaseModifyDto.  # noqa: E501
+        :param subjects: The subjects of this DatabaseModifyDto.  # noqa: E501
         :type: list[str]
         """
 
-        self._subject = subject
+        self._subjects = subjects
 
     @property
     def description(self):
@@ -113,8 +119,6 @@ class DatabaseModifyDto(object):
         :param description: The description of this DatabaseModifyDto.  # noqa: E501
         :type: str
         """
-        if description is None:
-            raise ValueError("Invalid value for `description`, must not be `None`")  # noqa: E501
 
         self._description = description
 
@@ -136,6 +140,8 @@ class DatabaseModifyDto(object):
         :param publisher: The publisher of this DatabaseModifyDto.  # noqa: E501
         :type: str
         """
+        if publisher is None:
+            raise ValueError("Invalid value for `publisher`, must not be `None`")  # noqa: E501
 
         self._publisher = publisher
 
@@ -188,50 +194,69 @@ class DatabaseModifyDto(object):
         self._language = language
 
     @property
-    def is_public(self):
-        """Gets the is_public of this DatabaseModifyDto.  # noqa: E501
+    def database_publication_year(self):
+        """Gets the database_publication_year of this DatabaseModifyDto.  # noqa: E501
 
 
-        :return: The is_public of this DatabaseModifyDto.  # noqa: E501
-        :rtype: bool
-        """
-        return self._is_public
-
-    @is_public.setter
-    def is_public(self, is_public):
-        """Sets the is_public of this DatabaseModifyDto.
-
-
-        :param is_public: The is_public of this DatabaseModifyDto.  # noqa: E501
-        :type: bool
-        """
-        if is_public is None:
-            raise ValueError("Invalid value for `is_public`, must not be `None`")  # noqa: E501
-
-        self._is_public = is_public
-
-    @property
-    def publication_year(self):
-        """Gets the publication_year of this DatabaseModifyDto.  # noqa: E501
-
-
-        :return: The publication_year of this DatabaseModifyDto.  # noqa: E501
+        :return: The database_publication_year of this DatabaseModifyDto.  # noqa: E501
         :rtype: int
         """
-        return self._publication_year
+        return self._database_publication_year
 
-    @publication_year.setter
-    def publication_year(self, publication_year):
-        """Sets the publication_year of this DatabaseModifyDto.
+    @database_publication_year.setter
+    def database_publication_year(self, database_publication_year):
+        """Sets the database_publication_year of this DatabaseModifyDto.
 
 
-        :param publication_year: The publication_year of this DatabaseModifyDto.  # noqa: E501
+        :param database_publication_year: The database_publication_year of this DatabaseModifyDto.  # noqa: E501
         :type: int
         """
-        if publication_year is None:
-            raise ValueError("Invalid value for `publication_year`, must not be `None`")  # noqa: E501
+        if database_publication_year is None:
+            raise ValueError("Invalid value for `database_publication_year`, must not be `None`")  # noqa: E501
 
-        self._publication_year = publication_year
+        self._database_publication_year = database_publication_year
+
+    @property
+    def publication_month(self):
+        """Gets the publication_month of this DatabaseModifyDto.  # noqa: E501
+
+
+        :return: The publication_month of this DatabaseModifyDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_month
+
+    @publication_month.setter
+    def publication_month(self, publication_month):
+        """Sets the publication_month of this DatabaseModifyDto.
+
+
+        :param publication_month: The publication_month of this DatabaseModifyDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_month = publication_month
+
+    @property
+    def publication_day(self):
+        """Gets the publication_day of this DatabaseModifyDto.  # noqa: E501
+
+
+        :return: The publication_day of this DatabaseModifyDto.  # noqa: E501
+        :rtype: int
+        """
+        return self._publication_day
+
+    @publication_day.setter
+    def publication_day(self, publication_day):
+        """Sets the publication_day of this DatabaseModifyDto.
+
+
+        :param publication_day: The publication_day of this DatabaseModifyDto.  # noqa: E501
+        :type: int
+        """
+
+        self._publication_day = publication_day
 
     @property
     def contact_person(self):

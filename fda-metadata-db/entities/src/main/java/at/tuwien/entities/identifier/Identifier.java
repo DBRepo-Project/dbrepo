@@ -62,6 +62,9 @@ public class Identifier {
     private String description;
 
     @Column(nullable = false)
+    private String publisher;
+
+    @Column(nullable = false)
     private String query;
 
     @Column(nullable = false)
