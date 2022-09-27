@@ -78,6 +78,9 @@ public class IdentifierDto {
     @Schema(example = "10.1038/nphys1170")
     private String doi;
 
+    @Parameter(name = "publisher", example = "TU Wien")
+    private String publisher;
+
     @NotNull
     private UserDto creator;
 

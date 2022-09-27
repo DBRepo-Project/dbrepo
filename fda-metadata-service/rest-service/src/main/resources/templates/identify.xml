@@ -1,0 +1,9 @@
+<Identify>
+    <repositoryName>[[${repositoryName}]]</repositoryName>
+    <baseURL>[[${baseURL}]]</baseURL>
+    <protocolVersion>2.0</protocolVersion>
+    <adminEmail>[[${adminEmail}]]</adminEmail>
+    <earliestDatestamp>[[${earliestDatestamp}]]</earliestDatestamp>
+    <deletedRecord>[[${deletedRecord}]]</deletedRecord>
+    <granularity>[[${granularity}]]</granularity>
+</Identify>

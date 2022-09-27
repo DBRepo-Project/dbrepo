@@ -4,13 +4,14 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="database.name" />
-        <v-card-subtitle>Modify Visibility</v-card-subtitle>
+        <v-card-subtitle>Modify visibility</v-card-subtitle>
         <v-card-text>
           <v-alert
             border="left"
             color="error">
             <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database. Please type the name of the database <strong v-text="database.internal_name" /> in the box below to confirm.
           </v-alert>
+          <p>The database visibility after this operation will be:</p>
           <v-row dense>
             <v-col>
               <v-switch
@@ -40,12 +41,12 @@
           </v-btn>
           <v-btn
             id="database"
-            class="mb-2 mr-2"
+            class="mb-2 ml-3 mr-2"
             :disabled="!valid || loading || !confirmOk"
             color="error"
             type="submit"
             @click="updateDatabase">
-            Update
+            Modify
           </v-btn>
         </v-card-actions>
       </v-card>

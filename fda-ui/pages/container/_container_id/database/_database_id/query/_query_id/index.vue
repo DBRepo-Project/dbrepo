@@ -90,6 +90,12 @@
                 {{ identifier.description }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
+                Publisher
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.publisher }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
                 Creators
               </v-list-item-title>
               <v-list-item-content>
@@ -276,6 +282,7 @@ export default {
         qid: null,
         title: null,
         description: null,
+        publisher: null,
         visibility: null,
         query: null,
         query_normalized: null,

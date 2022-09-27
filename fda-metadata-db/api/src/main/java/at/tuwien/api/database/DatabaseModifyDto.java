@@ -22,11 +22,19 @@ public class DatabaseModifyDto {
 
     private List<String> subjects;
 
+<<<<<<< HEAD
     @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 
     @Schema(example = "TU Wien")
+=======
+    @Parameter(name = "database description", example = "Sample")
+    private String description;
+
+    @NotBlank
+    @Parameter(name = "database publisher", example = "TU Wien")
+>>>>>>> dev
     private String publisher;
 
     @NotNull

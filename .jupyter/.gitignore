@@ -1,2 +1,15 @@
-# Python
-__pycache__
+## Python API
+api_authentication/
+api_container/
+api_database/
+api_table/
+api_units/
+api_query/
+api_identifier/
+api_analyse/
+
+## Cache
+api_authentication/__pycache__/
+api_broker/__pycache__/
+api_units/__pacache__/
+api_metadata/__pycache__/

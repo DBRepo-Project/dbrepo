@@ -20,6 +20,7 @@ from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
 from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
 from api_units.api.default_api import DefaultApi
+from api_metadata.api.metadata_endpoint_api import MetadataEndpointApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
@@ -31,6 +32,7 @@ data = TableDataEndpointApi()
 identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
 unit = DefaultApi()
+metadata = MetadataEndpointApi()
 
 token = ""  # keep
 
@@ -210,6 +212,7 @@ def create_identifier(container_id, database_id, query_id, visibility="everyone"
         "qid": query_id,
         "title": "Airquality",
         "description": "Subset used for a scientific article",
+        "publisher": "TU Wien",
         "visibility": visibility,
         "creators": [{
             "name": "Weise, Martin",
@@ -317,6 +320,39 @@ def send_tuple_fails(exchange, routing_key, username, password, payload):
         print("... access to exchange successfully refused")
         return True
     raise Exception("Tuple successfully sent, should have failed")
+
+
+def oai_identify():
+    response = rq.get("http://localhost:9095/api/oai?verb=Identify")
+    if "persistent" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("identified repository")
+
+
+def oai_list_identifiers():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListIdentifiers")
+    if "pid/1" not in response.text or "pid/2" not in response.text or "pid/3" not in response.text \
+            or "pid/4" not in response.text or "pid/5" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed identifiers")
+
+
+def oai_list_metadata_formats():
+    response = rq.get("http://localhost:9095/api/oai?verb=ListMetadataFormats")
+    if "oai_dc" not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("listed metadata formats")
+
+
+def oai_get_record(record_id, expected):
+    response = rq.get("http://localhost:9095/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=" + str(record_id))
+    if expected not in response.text:
+        print("Invalid response %s" % response.text)
+        raise Exception("Invalid response")
+    print("retrieved record with id %d" % record_id)
 
 
 if __name__ == '__main__':
@@ -431,4 +467,13 @@ if __name__ == '__main__':
     auth_user("test3")
     update_user(uid)
     update_theme(uid)
+    #
+    # OAI-PMH
+    #
+    oai_identify()
+    oai_list_identifiers()
+    oai_list_metadata_formats()
+    oai_get_record(1, "dc:creator>Weise, Martin")
+    oai_get_record(1, "dc:creator>Rauber, Andreas")
+    oai_get_record(6, "code=\"idDoesNotExist\"")
     print("FINISHED")

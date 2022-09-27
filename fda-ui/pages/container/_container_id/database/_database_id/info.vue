@@ -5,6 +5,32 @@
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card flat tile>
+          <v-card-title>Container</v-card-title>
+          <v-card-text>
+            <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_name" />
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Internal Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_internal_name" />
+                  </v-list-item-content>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+        <v-divider />
+        <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
             <v-list dense>
@@ -37,12 +63,6 @@
                   <v-list-item-content v-if="description">
                     <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
                     <span v-if="!loading">{{ description }}</span>
-                  </v-list-item-content>
-                  <v-list-item-title>
-                    Persistent Identifier
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <a :href="`${baseUrl}/container/${database.container.id}/database/${database.id}`" v-text="`${baseUrl}/container/${database.container.id}/database/${database.id}`" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Created
@@ -91,8 +111,7 @@
               </v-list-item>
             </v-list>
             <v-card-actions>
-              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
-              <v-btn v-if="token" class="ml-2" @click="editVisibilityDialog = true">Visibility</v-btn>
+              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Get Database PID</v-btn>
               <v-dialog
                 v-model="editDbDialog"
                 persistent
@@ -107,29 +126,14 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
+        <v-divider />
         <v-card flat tile>
-          <v-card-title>Container</v-card-title>
+          <v-card-title>Modify visibility</v-card-title>
+          <v-card-subtitle>Dangerous operation</v-card-subtitle>
           <v-card-text>
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_name" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Internal Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_internal_name" />
-                  </v-list-item-content>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <v-card-actions>
+              <v-btn v-if="token" color="error" @click="editVisibilityDialog = true">Modify</v-btn>
+            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-tab-item>

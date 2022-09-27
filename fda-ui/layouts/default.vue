@@ -36,12 +36,8 @@
       <div>
         <v-img
           contain
-          class="tu-logo"
-          src="/tu_logo_512.png" />
-        <v-img
-          contain
-          class="univie-logo"
-          src="/univie_logo_512.png" />
+          class="logo"
+          src="/logo.png" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -395,11 +391,8 @@ export default {
 .v-menu__content {
   max-width: 988px !important;
 }
-.tu-logo {
+.logo {
   margin: 1em 1em 0;
-}
-.univie-logo {
-  margin: 1em 1em .5em;
 }
 .sl {
   padding-left: 36px;

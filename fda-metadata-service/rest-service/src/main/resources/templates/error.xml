@@ -1,0 +1,1 @@
+<error th:attr="code=${code}">[[${message}]]</error>
