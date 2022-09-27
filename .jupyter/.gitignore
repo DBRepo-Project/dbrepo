@@ -9,7 +9,4 @@ api_identifier/
 api_analyse/
 
 ## Cache
-api_authentication/__pycache__/
-api_broker/__pycache__/
-api_units/__pacache__/
-api_metadata/__pycache__/
+**/__pycache__/

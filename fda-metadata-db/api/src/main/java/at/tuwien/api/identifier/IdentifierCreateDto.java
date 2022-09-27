@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.jackson.Jacksonized;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -44,7 +43,7 @@ public class IdentifierCreateDto {
     @Schema(example = "12")
     private Integer publicationMonth;
 
-    @Parameter(name = "publisher", example = "TU Wien")
+    @Schema(example = "TU Wien")
     private String publisher;
 
     @NotNull

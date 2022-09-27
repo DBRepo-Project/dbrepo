@@ -54,7 +54,7 @@ public class IdentifierDto {
 
     @NotBlank
     @JsonProperty("query_hash")
-    @Parameter(description = "query hash in sha512")
+    @Schema(description = "query hash in sha512")
     private String queryHash;
 
     @NotNull
@@ -63,7 +63,6 @@ public class IdentifierDto {
 
     @NotBlank
     @JsonProperty("result_hash")
-    @Parameter(name = "result hash in sha512")
     private String resultHash;
 
     @NotNull
@@ -78,7 +77,7 @@ public class IdentifierDto {
     @Schema(example = "10.1038/nphys1170")
     private String doi;
 
-    @Parameter(name = "publisher", example = "TU Wien")
+    @Schema(example = "TU Wien")
     private String publisher;
 
     @NotNull

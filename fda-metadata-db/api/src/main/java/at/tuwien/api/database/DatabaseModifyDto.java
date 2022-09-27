@@ -1,7 +1,6 @@
 package at.tuwien.api.database;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -9,7 +8,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.sql.Date;
 import java.util.List;
 
 @Getter
@@ -22,19 +20,11 @@ public class DatabaseModifyDto {
 
     private List<String> subjects;
 
-<<<<<<< HEAD
-    @NotBlank
-    @Schema(example = "Air Quality in Austria")
+    @Schema(example = "Sample")
     private String description;
 
+    @NotBlank
     @Schema(example = "TU Wien")
-=======
-    @Parameter(name = "database description", example = "Sample")
-    private String description;
-
-    @NotBlank
-    @Parameter(name = "database publisher", example = "TU Wien")
->>>>>>> dev
     private String publisher;
 
     @NotNull
