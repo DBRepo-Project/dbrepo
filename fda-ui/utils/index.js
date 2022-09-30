@@ -29,18 +29,18 @@ function isNonNegativeInteger (str) {
 }
 
 function formatUser (user) {
-  if (user.firstname && user.lastname) {
-    let name = ''
-    if (user.titles_before) {
-      name += user.titles_before + ' '
-    }
-    name += user.firstname + ' ' + user.lastname
-    if (user.titles_after) {
-      name += ' ' + user.titles_after
-    }
-    return name
+  if (user.firstname === undefined || user.lastname === undefined) {
+    return user.username
   }
-  return user.username
+  let name = ''
+  if (user.titles_before) {
+    name += user.titles_before + ' '
+  }
+  name += user.firstname + ' ' + user.lastname
+  if (user.titles_after) {
+    name += ' ' + user.titles_after
+  }
+  return name
 }
 
 function padLeft (str, padString, length) {

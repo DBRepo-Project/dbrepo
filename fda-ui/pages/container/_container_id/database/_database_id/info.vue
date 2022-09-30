@@ -239,7 +239,7 @@ export default {
       return this.database.container.internal_name
     },
     contact () {
-      if (this.database.contact === null) {
+      if (this.database.contact === null || this.database.contact === undefined) {
         return null
       }
       return formatUser(this.database.contact)

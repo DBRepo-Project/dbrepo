@@ -18,6 +18,7 @@ target/
 # IDE
 fda-analyse-service/venv
 .git.bfg-*
+.gitlab/
 
 # Docs
 swagger.json
