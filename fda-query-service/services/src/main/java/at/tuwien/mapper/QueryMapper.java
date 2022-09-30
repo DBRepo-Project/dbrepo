@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
@@ -106,6 +107,22 @@ public interface QueryMapper {
         }
     }
 
+    default PreparedStatement viewCreateDtoToRawCreateViewQuery(Connection connection, ViewCreateDto data)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE VIEW `")
+                .append(nameToInternalName(data.getName()))
+                .append("` AS (")
+                .append(data.getQuery())
+                .append(")");
+        log.trace("mapped raw create view query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
 
     default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("DROP TABLE `")

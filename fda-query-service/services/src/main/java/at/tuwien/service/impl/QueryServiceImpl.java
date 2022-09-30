@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
+import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -8,6 +9,7 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
@@ -40,7 +42,6 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,21 +66,40 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size)
+                                  Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
             TableMalformedException {
         final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
-        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size);
+        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size, sortDirection,
+                sortColumn);
         storeService.update(containerId, databaseId, result, result.getResultNumber(), query);
         return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
-            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            ColumnParseException, DatabaseConnectionException, TableMalformedException, QueryStoreException {
+    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
+                                    SortType sortDirection, String sortColumn) throws QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, QueryMalformedException, ColumnParseException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+        return reExecute(containerId, databaseId, query.getQuery(), query.getId(), query.getExecution(), page, size,
+                sortDirection, sortColumn);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public QueryResultDto reExecute(Long containerId, Long databaseId, View view, Long page, Long size)
+            throws QueryStoreException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
+            ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException {
+        return reExecute(containerId, databaseId, view.getQuery(), view.getId(), null, page, size, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    protected QueryResultDto reExecute(Long containerId, Long databaseId, String query, Long id, Instant timestamp,
+                                       Long page, Long size, SortType sortDirection, String sortColumn) throws
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
+            DatabaseConnectionException, TableMalformedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -98,8 +118,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final QueryResultDto dto;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection,
-                    query.getQuery(), database, query.getExecution(), page, size);
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query,
+                    database, timestamp, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -109,8 +129,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } finally {
             dataSource.close();
         }
-        dto.setId(query.getId());
-        dto.setResultNumber(countQueryResults(containerId, databaseId, query));
+        dto.setId(id);
+        dto.setResultNumber(countQueryResults(containerId, databaseId, query, timestamp));
         return dto;
     }
 
@@ -369,10 +389,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      * @throws JSQLParserException The columns could not be extracted from the query.
      */
     @Transactional(readOnly = true)
-    protected List<TableColumn> parseColumns(Query query, Database database) throws JSQLParserException {
+    protected List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
-        final Statement statement = parserRealSql.parse(new StringReader(query.getQuery()));
+        final Statement statement = parserRealSql.parse(new StringReader(query));
 
         /* check */
         if (!(statement instanceof Select)) {
@@ -454,12 +474,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param query       The query object.
+     * @param timestamp   The query execution.
      * @return The number of tuples this query returns.
      * @throws DatabaseNotFoundException  The user database was not found in the container.
      * @throws ImageNotSupportedException The database image is not supported.
      */
     @Transactional(readOnly = true)
-    protected Long countQueryResults(Long containerId, Long databaseId, Query query)
+    protected Long countQueryResults(Long containerId, Long databaseId, String query, Instant timestamp)
             throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseConnectionException,
             QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
@@ -468,7 +489,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedCountQuery(connection, query.getQuery(), database, query.getExecution());
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedCountQuery(connection, query, database, timestamp);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {

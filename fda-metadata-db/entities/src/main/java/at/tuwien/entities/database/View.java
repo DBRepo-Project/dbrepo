@@ -1,52 +1,72 @@
-package at.tuwien.entities.database.table;
+package at.tuwien.entities.database;
 
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.List;
 
 @Data
-/*@Entity // not yet in metadata db */
+@Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
+@IdClass(ViewKey.class)
+@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_views")
+@SQLDelete(sql = "update mdb_view set deleted = NOW() where id = ?")
+@javax.persistence.Table(name = "mdb_view")
 public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     @GeneratedValue(generator = "view-sequence")
     @GenericGenerator(
             name = "view-sequence",
             strategy = "enhanced-sequence",
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
     )
-    Long id;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Id
+    @EqualsAndHashCode.Include
+    private Long vdbid;
+
+    @Column(nullable = false)
+    private Long createdBy;
+
+    @org.springframework.data.annotation.Transient
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "vdbid", insertable = false, updatable = false)
+    private Database database;
+
+    @org.springframework.data.annotation.Transient
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
     })
     private User creator;
 
-    @ToString.Include
-    @Column(nullable = false)
+    @Column(name = "vname")
     private String name;
 
-    @ToString.Include
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Database> databases;
+    @Column(name = "public")
+    private Boolean isPublic;
+
+    @Column(name = "initialview")
+    private Boolean isInitialView;
+
+    @Column(nullable = false)
+    private String query;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -55,5 +75,8 @@ public class View {
     @Column
     @LastModifiedDate
     private Instant lastModified;
+
+    @Column
+    private Instant deleted;
 
 }

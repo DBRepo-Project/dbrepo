@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
+import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
@@ -45,20 +46,25 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                   @NotNull @Valid @RequestBody ExecuteStatementDto data,
                                                   @RequestParam(value = "page", required = false) Long page,
                                                   @RequestParam(value = "size", required = false) Long size,
-                                                  @NotNull Principal principal)
+                                                  @NotNull Principal principal,
+                                                  @RequestParam(required = false) SortType sortDirection,
+                                                  @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
-            NotAllowedException, DatabaseConnectionException {
+            NotAllowedException, DatabaseConnectionException, SortException, PaginationException {
+        /* check */
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_EXECUTE", principal)) {
             log.error("Missing execute query permission");
             throw new NotAllowedException("Missing execute query permission");
         }
-        /* validation */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Query is empty");
             throw new QueryMalformedException("Query is empty");
         }
-        final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size);
+        validateDataParams(page, size, sortDirection, sortColumn);
+        /* execute */
+        final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size,
+                sortDirection, sortColumn);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -69,18 +75,24 @@ public class QueryEndpoint extends AbstractEndpoint {
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
+                                                    Principal principal,
                                                     @RequestParam(value = "page", required = false) Long page,
                                                     @RequestParam(value = "size", required = false) Long size,
-                                                    Principal principal)
+                                                    @RequestParam(required = false) SortType sortDirection,
+                                                    @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
-            ColumnParseException, NotAllowedException, DatabaseConnectionException {
+            ColumnParseException, NotAllowedException, DatabaseConnectionException, SortException, PaginationException {
+        /* check */
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");
             throw new NotAllowedException("Missing re-execute query permission");
         }
+        validateDataParams(page, size, sortDirection, sortColumn);
+        /* execute */
         final Query query = storeService.findOne(containerId, databaseId, queryId);
-        final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size);
+        final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size,
+                sortDirection, sortColumn);
         result.setId(queryId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);

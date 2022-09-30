@@ -39,6 +39,7 @@ public class GatewayConfig {
                         .and()
                         .uri("lb://identifier-service"))
                 .route("query-service", r -> r.path("/api/container/**/database/**/query/**",
+                                "/api/container/**/database/**/view/**",
                                 "/api/container/**/database/**/table/**/history/**",
                                 "/api/container/**/database/**/table/**/data/**",
                                 "/api/container/**/database/**/table/**/query/**",
