@@ -39,22 +39,16 @@ public class View {
     @EqualsAndHashCode.Include
     private Long vdbid;
 
-    @Column(nullable = false)
-    private Long createdBy;
-
-    @org.springframework.data.annotation.Transient
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "vdbid", insertable = false, updatable = false)
-    private Database database;
-
-    @org.springframework.data.annotation.Transient
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
     })
     private User creator;
+
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "vdbid", insertable = false, updatable = false)
+    private Database database;
 
     @Column(name = "vname")
     private String name;

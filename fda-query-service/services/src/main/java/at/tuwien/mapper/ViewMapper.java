@@ -1,8 +1,11 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.database.View;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
@@ -39,8 +42,27 @@ public interface ViewMapper {
     }
 
     @Mappings({
-            @Mapping(source = "name", target = "name", qualifiedByName = "internalMapping")
+            @Mapping(target = "database.container", ignore = true)
     })
-    View viewCreateDtoToView(ViewCreateDto data);
+    ViewDto viewToViewDto(View data);
+
+    ViewBriefDto viewToViewBriefDto(View data);
+
+    default PreparedStatement viewCreateDtoToRawCreateViewQuery(Connection connection, ViewCreateDto data)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE VIEW `v_")
+                .append(nameToInternalName(data.getName()))
+                .append("` AS (")
+                .append(data.getQuery())
+                .append(")");
+        log.trace("mapped raw create view query [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
 
 }

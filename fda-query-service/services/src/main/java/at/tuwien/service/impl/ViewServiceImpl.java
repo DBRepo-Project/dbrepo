@@ -49,11 +49,13 @@ public class ViewServiceImpl implements ViewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<View> findAll(Long databaseId) {
         return viewRepository.findAllByDatabaseId(databaseId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public View findById(Long databaseId, Long id) throws ViewNotFoundException {
         final Optional<View> optional = viewRepository.findByDatabaseIdAndId(databaseId, id);
         if (optional.isEmpty()) {
@@ -64,7 +66,7 @@ public class ViewServiceImpl implements ViewService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Long count(Long containerId, Long databaseId, Long viewId) throws DatabaseNotFoundException,
             DatabaseConnectionException, TableMalformedException, ViewNotFoundException, QueryMalformedException,
             ImageNotSupportedException, QueryStoreException {
@@ -98,21 +100,23 @@ public class ViewServiceImpl implements ViewService {
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
+            final PreparedStatement preparedStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create view");
-            log.debug("failed to create view: {}", e.getMessage());
+            log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view", e);
         } finally {
             dataSource.close();
         }
         /* save in metadata database */
-        final View entity = viewMapper.viewCreateDtoToView(data);
-        entity.setVdbid(databaseId);
-        entity.setIsInitialView(false);
-        entity.setIsPublic(true);
-        entity.setCreatedBy(user.getId());
+        final View entity = View.builder()
+                .vdbid(databaseId)
+                .name(viewMapper.nameToInternalName(data.getName()))
+                .creator(user)
+                .query(data.getQuery())
+                .isInitialView(false)
+                .isPublic(true)
+                .build();
         final View view = viewRepository.save(entity);
         log.info("Created view with id {}", view.getId());
         log.debug("created view {}", view);
