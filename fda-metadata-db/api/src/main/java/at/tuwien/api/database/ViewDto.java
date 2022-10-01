@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
@@ -29,6 +30,7 @@ public class ViewDto {
     @NotNull
     private DatabaseDto database;
 
+    @NotBlank
     @Schema(example = "Air Quality")
     private String name;
 

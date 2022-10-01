@@ -63,8 +63,8 @@ public class QueryEndpoint extends AbstractEndpoint {
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
-        final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size,
-                sortDirection, sortColumn);
+        final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,
+                principal, page, size, sortDirection, sortColumn);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -81,8 +81,8 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                     @RequestParam(required = false) SortType sortDirection,
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableNotFoundException, QueryMalformedException, ContainerNotFoundException, TableMalformedException,
-            ColumnParseException, NotAllowedException, DatabaseConnectionException, SortException, PaginationException {
+            QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
+            DatabaseConnectionException, SortException, PaginationException {
         /* check */
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");

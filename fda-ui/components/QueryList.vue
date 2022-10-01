@@ -9,6 +9,7 @@
         <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
           <v-expansion-panel-header>
             <pre>{{ item.query }}</pre>
+            <v-icon v-if="item.type === 'view'" title="Query from a view" class="pid-icon">mdi-gauge</v-icon>
             <v-icon v-if="item.identifier" color="primary" title="Query with metadata" class="pid-icon">mdi-lock-clock</v-icon>
             <v-icon v-if="erroneous(item)" color="error" title="Query failed to execute" class="pid-icon">mdi-flash</v-icon>
           </v-expansion-panel-header>
@@ -58,6 +59,12 @@
                       <v-list-item-content>
                         {{ executionUTC }}
                       </v-list-item-content>
+                      <v-list-item-title class="mt-2">
+                        Type
+                      </v-list-item-title>
+                      <v-list-item-content>
+                        {{ queryType }}
+                      </v-list-item-content>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -101,7 +108,8 @@ export default {
         queryHash: null,
         execution: null,
         created: null,
-        columns: []
+        columns: [],
+        type: null
       }
     }
   },
@@ -128,6 +136,9 @@ export default {
     },
     creator () {
       return this.queryDetails.creator
+    },
+    queryType () {
+      return 'Query' + (this.queryDetails.type === 'view' ? ' was executed by a view' : '')
     },
     emptyMessage () {
       if (this.isPublicOrOwner()) {

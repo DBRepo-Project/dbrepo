@@ -98,7 +98,11 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="creator" />
+                    <span v-if="!loading">
+                      {{ creator }} <sup v-if="creatorVerified">
+                        <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+                      </sup>
+                    </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
@@ -255,6 +259,9 @@ export default {
     },
     creator () {
       return formatUser(this.database.creator)
+    },
+    creatorVerified () {
+      return this.database.creator.email_verified
     }
   },
   mounted () {

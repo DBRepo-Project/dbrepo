@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
@@ -48,6 +50,9 @@ public class QueryDto {
     @JsonProperty("query_normalized")
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String queryNormalized;
+
+    @Schema(example = "query")
+    private QueryTypeDto type;
 
     @NotBlank(message = "query hash is required")
     @JsonProperty("query_hash")

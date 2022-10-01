@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.SaveStatementDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
@@ -43,48 +43,40 @@ public interface StoreService {
     /**
      * Inserts a query and metadata to the query store of a given database id
      *
-     * @param databaseId The database id.
-     * @param result     The query.
-     * @param metadata   The metadata.
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param result      The query.
+     * @param metadata    The statement.
+     * @param type        The statement type.
+     * @param execution   The execution time.
      * @return The stored query on success
-     * @throws QueryStoreException        The query store raised some error
-     * @throws DatabaseNotFoundException  The database id was not found in the metadata database
-     * @throws ImageNotSupportedException The image is not supported
-     */
-    Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
-                 Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException;
-
-    /**
-     * Inserts a query and metadata to the query store of a given database id
-     *
-     * @param databaseId The database id.
-     * @param result     The query.
-     * @param metadata   The metadata.
-     * @param execution  The execution time.
-     * @return The stored query on success
-     * @throws QueryStoreException        The query store raised some error
-     * @throws DatabaseNotFoundException  The database id was not found in the metadata database
-     * @throws ImageNotSupportedException The image is not supported
+     * @throws QueryStoreException         The query store raised some error
+     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
+     * @throws ImageNotSupportedException  The image is not supported
+     * @throws ContainerNotFoundException  The container was not found in the metadata database.
+     * @throws UserNotFoundException       The user was not found in the metadata database.
+     * @throws DatabaseConnectionException The database connection to the remote container failed.
+     * @throws TableMalformedException     The table is malformed and the tuple could not be inserted.
      */
     Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                 Principal principal, Instant execution)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException;
+                 QueryTypeDto type, Principal principal, Instant execution) throws QueryStoreException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException,
+            DatabaseConnectionException, TableMalformedException;
 
     /**
+     * Updates a query and metadata to the query store of a given database id
      *
-     * @param containerId
-     * @param databaseId
-     * @param result
-     * @param resultNumber
-     * @param metadata
-     * @return
-     * @throws QueryStoreException
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
-     * @throws ContainerNotFoundException
+     * @param containerId  The container id.
+     * @param databaseId   The database id.
+     * @param result       The query.
+     * @param resultNumber The number of rows in the result
+     * @param metadata     The statement.
+     * @return The updated query, if successful.
+     * @throws QueryStoreException         The query store raised some error
+     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
+     * @throws ImageNotSupportedException  The image is not supported
+     * @throws ContainerNotFoundException  The container was not found in the metadata database.
+     * @throws DatabaseConnectionException The database connection to the remote container failed.
      */
     Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,

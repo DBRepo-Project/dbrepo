@@ -614,26 +614,29 @@ public interface QueryMapper {
             log.debug("query attempts to modify the database [{}]", query_);
             throw new QueryMalformedException("Query attempts to modify the database");
         }
-        final StringBuilder sb = new StringBuilder();
-        if (!query.contains("where")) {
-            /* treat join queries as normal queries */
-            sb.append(query);
-        } else {
-            sb.append(query.split("where")[0]);
+        /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
+        final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("' ");
+        final Pattern pattern = Pattern.compile("from `?[a-zA-Z0-9_-]+`?", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Matcher matcher = pattern.matcher(query_);
+        if (!matcher.find()) {
+            log.error("Failed to find 'from' clause in query");
+            throw new QueryMalformedException("Failed to find from clause");
         }
-        if (query.contains("join")) {
-            /* put timestamp after "join" and each "on" (but before alias) */
-        } else {
-            sb.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")));
-            sb.append("' ");
+        log.debug("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query_);
+        final StringBuilder sb = new StringBuilder("SELECT * FROM (")
+                .append(query_, 0, matcher.end(0));
+        if (!query.contains("join")) {
+            sb.append(versionPart);
         }
-        if (query.contains("where")) {
-            sb.append("where");
-            sb.append(query.split("where")[1]);
-        }
+        sb.append(query, matcher.end(0), query.length())
+                .append(")");
         if (size != null && page != null && size > 0 && page >= 0) {
-            sb.append(" LIMIT " + size + " OFFSET " + (page * size));
+            sb.append(" LIMIT ")
+                    .append(size)
+                    .append(" OFFSET ")
+                    .append(page * size);
         }
         sb.append(";");
         /* replace timestamp for join query */
@@ -646,12 +649,11 @@ public interface QueryMapper {
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
         }
-        log.debug("mapped raw view-only query [{}]", statement);
+        log.trace("mapped raw view-only query [{}]", statement);
         try {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -817,8 +819,8 @@ public interface QueryMapper {
             }
             return data.getLong(1);
         } catch (SQLException e) {
-            log.error("Failed to retrieve number");
-            throw new QueryStoreException("Failed to retrieve number");
+            log.error("Failed to retrieve number: {}", e.getMessage());
+            throw new QueryStoreException("Failed to retrieve number", e);
         }
     }
 

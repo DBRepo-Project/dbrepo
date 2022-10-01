@@ -14,7 +14,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
+import javax.persistence.Column;
 import java.sql.*;
 import java.text.Normalizer;
 import java.time.Instant;
@@ -59,9 +62,26 @@ public interface ViewMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.debug("Failed to prepare statement {}: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement viewCreateDtoToRawInsertViewQuery(Connection connection, Long databaseId, Long userId, ViewCreateDto data) throws QueryStoreException {
+        final String statement = "INSERT INTO `qs_views` (`vdbid`, `created_by`, `name`, `is_public`, `is_initial_view`, `query`, `created`) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING `id`";
+        try {
+            final PreparedStatement ps = connection.prepareStatement(statement);
+            ps.setLong(1, databaseId);
+            ps.setLong(2, userId);
+            ps.setString(3, "v_" + nameToInternalName(data.getName()));
+            ps.setBoolean(4, data.getIsPublic());
+            ps.setBoolean(5, false);
+            ps.setString(6, data.getQuery());
+            ps.setTimestamp(7, Timestamp.from(Instant.now()));
+            return ps;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
 

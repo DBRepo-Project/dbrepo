@@ -20,29 +20,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
-import static at.tuwien.service.impl.HibernateConnector.getDataSource;
-
 @Log4j2
 @Service
-public class ViewServiceImpl implements ViewService {
+public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     private final ViewMapper viewMapper;
-    private final QueryMapper queryMapper;
     private final UserService userService;
     private final ViewRepository viewRepository;
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, UserService userService,
-                           ViewRepository viewRepository, DatabaseService databaseService) {
+    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, ViewRepository viewRepository,
+                           DatabaseService databaseService) {
         this.viewMapper = viewMapper;
-        this.queryMapper = queryMapper;
         this.userService = userService;
         this.viewRepository = viewRepository;
         this.databaseService = databaseService;
@@ -66,29 +60,6 @@ public class ViewServiceImpl implements ViewService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Long count(Long containerId, Long databaseId, Long viewId) throws DatabaseNotFoundException,
-            DatabaseConnectionException, TableMalformedException, ViewNotFoundException, QueryMalformedException,
-            ImageNotSupportedException, QueryStoreException {
-        /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final View view = findById(databaseId, viewId);
-        /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, view.getQuery(), database, Instant.now(), null, null);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToNumber(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to count tuples");
-            throw new TableMalformedException("Failed to count tuples", e);
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
     @Transactional
     public View create(Long containerId, Long databaseId, ViewCreateDto data, Principal principal)
             throws DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException,
@@ -100,11 +71,16 @@ public class ViewServiceImpl implements ViewService {
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
-            preparedStatement.executeUpdate();
+            final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
+            createViewStatement.executeUpdate();
+            final PreparedStatement createEntityStatement = viewMapper.viewCreateDtoToRawInsertViewQuery(connection, databaseId, user.getId(), data);
+            createEntityStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view", e);
+        } catch (QueryStoreException e) {
+            log.error("Failed to insert view: {}", e.getMessage());
+            throw new ViewMalformedException("Failed to insert view", e);
         } finally {
             dataSource.close();
         }

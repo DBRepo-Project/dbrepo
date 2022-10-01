@@ -5,16 +5,14 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
-import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigInteger;
 import java.security.Principal;
 import java.time.Instant;
 
@@ -28,6 +26,7 @@ public interface QueryService {
      * @param containerId   The container id.
      * @param databaseId    The database id.
      * @param statement     The query.
+     * @param type          The query type.
      * @param principal     The current user.
      * @param page          The page number.
      * @param size          The page size.
@@ -41,9 +40,10 @@ public interface QueryService {
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
     QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                           Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException;
+                           QueryTypeDto type, Principal principal, Long page, Long size,
+                           SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
+            ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException;
 
     /**
      * Re-Executes an arbitrary query on the database container. We allow the user to only view the data, therefore the

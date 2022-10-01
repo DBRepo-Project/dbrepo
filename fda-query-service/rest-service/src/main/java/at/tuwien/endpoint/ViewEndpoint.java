@@ -5,6 +5,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -17,7 +18,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -124,15 +124,12 @@ public class ViewEndpoint extends AbstractEndpoint {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final View view = viewService.findById(databaseId, viewId);
-        final Long count = viewService.count(containerId, databaseId, viewId);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("FDA-COUNT", count.toString());
         final ExecuteStatementDto statement = ExecuteStatementDto.builder()
                 .statement(view.getQuery())
                 .build();
-        final QueryResultDto response = queryService.execute(containerId, databaseId, statement, principal, page, size, null, null);
+        final QueryResultDto response = queryService.execute(containerId, databaseId, statement,
+                QueryTypeDto.VIEW, principal, page, size, null, null);
         return ResponseEntity.ok()
-                .headers(headers)
                 .body(response);
     }
 

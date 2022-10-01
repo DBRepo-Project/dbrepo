@@ -15,10 +15,11 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class ViewCreateDto {
 
+    @NotBlank(message = "name is required")
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotNull(message = "query is required")
+    @NotBlank(message = "query is required")
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String query;
 
