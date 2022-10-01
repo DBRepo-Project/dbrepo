@@ -102,7 +102,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), page, size);
+                    database, query.getExecution(), "*", page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -227,7 +227,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
@@ -250,7 +250,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
@@ -471,11 +471,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedCountQuery(connection, query.getQuery(), database, query.getExecution());
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
+                    database, query.getExecution(), "COUNT(*)", null, null);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
