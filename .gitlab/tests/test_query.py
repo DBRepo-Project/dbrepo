@@ -195,14 +195,11 @@ def fill_table(container_id, database_id, table_id):
 
 
 def create_query(container_id, database_id, statement, page=0, size=3):
-    try:
-        response = query.execute({
-            "statement": statement
-        }, container_id, database_id, page=page, size=size)
-        print("executed query with id %d" % response.id)
-        return response
-    except ApiException as e:
-        print(e)
+    response = query.execute({
+        "statement": statement
+    }, container_id, database_id, page=page, size=size)
+    print("executed query with id %d" % response.id)
+    return response
 
 
 def delete_tuple(container_id, database_id, table_id, keys):
@@ -257,7 +254,9 @@ def test_identifiers():
     create_query(cid, dbid, "select `id` from `" + tname + "`")
     create_query(cid, dbid, "select `date` from `" + tname + "`")
     qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
-    create_query(cid, dbid, "select `foo` from `" + tname + "`")
+    create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "` order by `date` asc")
+    create_query(cid, dbid, "select t.`date`, t.location, t.status from `" + tname + "` t group by t.`date` order by t.`date` asc")
+    create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "` group by `date`, `location` asc")
     download_query_data(cid, dbid, qid)
     # container 2 (=private)
     cid = create_container().id
