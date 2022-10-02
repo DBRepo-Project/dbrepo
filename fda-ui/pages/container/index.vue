@@ -12,10 +12,23 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
+    <v-toolbar dense flat>
+      <v-toolbar-items>
+        <span class="mr-4">Filter:</span>
+        <v-checkbox
+          v-model="filterPrivate"
+          label="Private" />
+        <v-checkbox
+          v-if="user.username"
+          v-model="filterMine"
+          class="ml-2"
+          label="Mine" />
+      </v-toolbar-items>
+    </v-toolbar>
     <v-card flat>
       <v-data-table
         :headers="headers"
-        :items="databases"
+        :items="filter(databases)"
         @click:row="loadDatabase">
         <template v-slot:item.visibility="{ item }">
           <v-icon v-if="!item.visibility" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
@@ -42,6 +55,7 @@
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -53,7 +67,12 @@ export default {
       createDbDialog: false,
       databases: [],
       containers: [],
+      filterPrivate: false,
+      filterMine: false,
       searchQuery: null,
+      user: {
+        username: null
+      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
@@ -96,6 +115,7 @@ export default {
     }
   },
   mounted () {
+    this.loadUser()
     this.loadContainers()
       .then(() => this.loadDatabases())
   },
@@ -103,8 +123,15 @@ export default {
     formatCreator (creator) {
       return formatUser(creator)
     },
-    search () {
-      console.debug('search for', this.searchQuery)
+    filter (databases) {
+      let filtered = databases
+      if (this.filterPrivate) {
+        filtered = filtered.filter(d => d.visibility === false)
+      }
+      if (this.token && this.filterMine) {
+        filtered = filtered.filter(d => d.creator.username === this.user.username)
+      }
+      return filtered
     },
     async loadContainers () {
       this.createDbDialog = false
@@ -148,6 +175,12 @@ export default {
     },
     loadDatabase (database) {
       this.$router.push(`/container/${database.container_id}/database/${database.id}`)
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }
