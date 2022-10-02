@@ -214,7 +214,7 @@ def download_query_data(container_id, database_id, query_id):
     return response
 
 def get_history(container_id, database_id, table_id):
-    response = history.get_all(container_id, database_id, table_id)
+    response = history.get_all1(container_id, database_id, table_id)
     print("got table history for table with id %d" % table_id)
     return response
 

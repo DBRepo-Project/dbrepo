@@ -131,7 +131,7 @@
           </v-card-text>
         </v-card>
         <v-divider />
-        <v-card flat tile>
+        <v-card v-if="token" flat tile>
           <v-card-title>Modify visibility</v-card-title>
           <v-card-subtitle>Dangerous operation</v-card-subtitle>
           <v-card-text>

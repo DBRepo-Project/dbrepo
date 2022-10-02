@@ -293,4 +293,4 @@ def test_oai_pmh():
     oai_list_metadata_formats()
     oai_get_record(1, "dc:creator>Weise, Martin")
     oai_get_record(1, "dc:creator>Rauber, Andreas")
-    oai_get_record(6, "code=\"idDoesNotExist\"")
+    oai_get_record(9999, "code=\"idDoesNotExist\"")

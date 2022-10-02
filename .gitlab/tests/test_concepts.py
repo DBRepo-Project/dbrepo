@@ -1,23 +1,14 @@
 #!/bin/env python3
 
 import time
-import os
-import shutil
 import uuid
 import requests as rq
-from pika.exceptions import ChannelClosedByBroker
-from postgres import Postgres
 
-from api_broker import BrokerServiceClient
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
 from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
 from api_table.api.table_endpoint_api import TableEndpointApi
-from api_query.api import TableDataEndpointApi
-from api_query.api.query_endpoint_api import QueryEndpointApi
-from api_identifier.api import IdentifierEndpointApi
-from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
 from api_units.api.default_api import DefaultApi
 
 authentication = AuthenticationEndpointApi()
@@ -25,10 +16,6 @@ user = UserEndpointApi()
 container = ContainerEndpointApi()
 database = ContainerDatabaseEndpointApi()
 table = TableEndpointApi()
-query = QueryEndpointApi()
-data = TableDataEndpointApi()
-identifier = IdentifierEndpointApi()
-persistence = PersistenceEndpointApi()
 unit = DefaultApi()
 
 token = ""  # keep
@@ -44,14 +31,6 @@ def create_user(username):
     return response
 
 
-def update_password(user_id, password):
-    response = user.update_password({
-        "password": password
-    }, user_id)
-    print("updated password for user with id %d" % user_id)
-    return response
-
-
 def auth_user(username):
     response = authentication.authenticate_user1({
         "username": username,
@@ -62,11 +41,7 @@ def auth_user(username):
     container.api_client.default_headers = {"Authorization": "Bearer " + token}
     database.api_client.default_headers = {"Authorization": "Bearer " + token}
     table.api_client.default_headers = {"Authorization": "Bearer " + token}
-    data.api_client.default_headers = {"Authorization": "Bearer " + token}
-    query.api_client.default_headers = {"Authorization": "Bearer " + token}
-    identifier.api_client.default_headers = {"Authorization": "Bearer " + token}
     user.api_client.default_headers = {"Authorization": "Bearer " + token}
-    persistence.api_client.default_headers = {"Authorization": "Bearer " + token}
     return response
 
 
@@ -181,88 +156,6 @@ def find_table(container_id, database_id, table_id):
     return response
 
 
-def fill_table(container_id, database_id, table_id):
-    shutil.copyfile(os.getcwd() + "/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
-    response = data.import_csv({
-        "location": "/tmp/ugz_ogd_air_h1_2021.csv",
-        "separator": ",",
-        "quote": "\"",
-        "skip_lines": 1
-    }, container_id, database_id, table_id)
-    print("filled table with id %d" % table_id)
-    return response
-
-
-def create_query(container_id, database_id, statement, page=0, size=3):
-    try:
-        response = query.execute({
-            "statement": statement
-        }, container_id, database_id, page=page, size=size)
-        print("executed query with id %d" % response.id)
-        return response
-    except api_query.rest.ApiException as e:
-        print(e)
-
-
-def create_identifier(container_id, database_id, query_id, visibility="everyone"):
-    response = identifier.create({
-        "qid": query_id,
-        "title": "Airquality",
-        "description": "Subset used for a scientific article",
-        "publisher": "TU Wien",
-        "visibility": visibility,
-        "creators": [{
-            "name": "Weise, Martin",
-            "affiliation": "TU Wien",
-            "orcid": "0000-0003-4216-302X"
-        }, {
-            "name": "Rauber, Andreas",
-            "affiliation": "TU Wien",
-            "orcid": "0000-0002-9272-6225"
-        }],
-        "publication_day": 2,
-        "publication_month": 8,
-        "publication_year": 2022,
-        "related_identifiers": [{
-            "value": "http://localhost:3000/container/" + str(container_id) + "/database/" + str(database_id),
-            "type": "URL",
-            "relation": "IsCitedBy"
-        }]
-    }, token, container_id, database_id)
-    print("created identifier with id %d" % response.id)
-    return response
-
-
-def delete_tuple(container_id, database_id, table_id, keys):
-    response = data.delete(keys, container_id, database_id, table_id)
-    print("deleted tuples for table with id %d" % table_id)
-    return response
-
-
-def update_user(user_id):
-    response = user.update({
-        "firstname": "Josiah",
-        "lastname": "Carberry",
-        "affiliation": "Wesleyan University",
-        "orcid": "0000-0002-1825-0097",
-        "titles_after": "PhD"
-    }, user_id)
-    print("updated user with id %d" % user_id)
-    return response
-
-
-def update_theme(user_id):
-    response = user.update_theme({
-        "theme_dark": True
-    }, user_id)
-    print("updated theme user with id %d" % user_id)
-
-
-def verify_user(user_id):
-    db = Postgres("dbname=fda user=postgres password=postgres")
-    token = db.one("SELECT ")
-
-
 def find_concept(concept):
     response = rq.get("http://localhost:9095/api/units/uri/" + concept)
     print("found concept for name %s" % concept)
@@ -289,77 +182,13 @@ def assign_concept(database_id, table_id, column_id, uri):
     return response.json()
 
 
-def download_query_data(container_id, database_id, query_id):
-    response = query.export1(container_id, database_id, query_id)
-    print("downloaded query data for query with id %d" % query_id)
-    return response
-
-
-def download_identifier_metadata(container_id, database_id, identifier_id):
-    response = identifier.export(container_id, database_id, identifier_id)
-    print("downloaded identifier metadata for identifier with id %d" % identifier_id)
-    return response
-
-
-def send_tuple(exchange, routing_key, username, password, payload):
-    broker = BrokerServiceClient(exchange=exchange, routing_key=routing_key, host="localhost", username=username,
-                                 password=password)
-    response = broker.send(payload)
-    print("sent tuple to exchange with routing key %s" % routing_key)
-    return response
-
-def send_tuple_fails(exchange, routing_key, username, password, payload):
-    broker = BrokerServiceClient(exchange=exchange, routing_key=routing_key, host="localhost", username=username,
-                                 password=password)
-    try:
-        broker.send(payload)
-    except ChannelClosedByBroker:
-        print("... access to exchange successfully refused")
-        return True
-    raise Exception("Tuple successfully sent, should have failed")
-
-
-def oai_identify():
-    response = rq.get("http://localhost:9095/api/oai?verb=Identify")
-    if "persistent" not in response.text:
-        print("Invalid response %s" % response.text)
-        raise Exception("Invalid response")
-    print("identified repository")
-
-
-def oai_list_identifiers():
-    response = rq.get("http://localhost:9095/api/oai?verb=ListIdentifiers")
-    if "pid/1" not in response.text or "pid/2" not in response.text or "pid/3" not in response.text \
-            or "pid/4" not in response.text or "pid/5" not in response.text:
-        print("Invalid response %s" % response.text)
-        raise Exception("Invalid response")
-    print("listed identifiers")
-
-
-def oai_list_metadata_formats():
-    response = rq.get("http://localhost:9095/api/oai?verb=ListMetadataFormats")
-    if "oai_dc" not in response.text:
-        print("Invalid response %s" % response.text)
-        raise Exception("Invalid response")
-    print("listed metadata formats")
-
-
-def oai_get_record(record_id, expected):
-    response = rq.get("http://localhost:9095/api/oai?verb=GetRecord&metadataPrefix=oai_dc&identifier=" + str(record_id))
-    if expected not in response.text:
-        print("Invalid response %s" % response.text)
-        raise Exception("Invalid response")
-    print("retrieved record with id %d" % record_id)
-
-
-if __name__ == '__main__':
+def test_concepts():
     #
-    # create 1 user and 3 containers (public, private, public)
+    # create 1 user and 1 container
     #
-    uid = create_user("test1").id
-    auth_user("test1")
-    update_password(uid, "test1")
-    update_user(uid)
+    username = str(uuid.uuid1()).replace('-', '')
+    uid = create_user(username).id
+    auth_user(username)
     # container 1
     cid = create_container().id
     start_container(cid)
@@ -370,107 +199,3 @@ if __name__ == '__main__':
     create_concept("time", curi)
     assign_concept(dbid, tid, 2, curi)
     tname = find_table(cid, dbid, tid).internal_name
-    fill_table(cid, dbid, tid)
-    create_query(cid, dbid, "select `id` from `" + tname + "`")
-    create_query(cid, dbid, "select `date` from `" + tname + "`")
-    qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
-    create_query(cid, dbid, "select `foo` from `" + tname + "`")
-    iid = create_identifier(cid, dbid, qid).id
-    download_query_data(cid, dbid, qid)
-    download_identifier_metadata(cid, dbid, iid)
-    # container 2 (=private)
-    cid = create_container().id
-    start_container(cid)
-    dbid = create_database(cid, False).id
-    update_database(cid, dbid)
-    tid = create_table(cid, dbid).id
-    tname = find_table(cid, dbid, tid).internal_name
-    fill_table(cid, dbid, tid)
-    qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
-    create_identifier(cid, dbid, qid, visibility="self")
-    qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
-    create_identifier(cid, dbid, qid)
-    for i in range(5, 10):
-        delete_tuple(cid, dbid, tid, {
-            "keys": {
-                "id": i
-            }
-        })
-        time.sleep(1)
-    delete_tuple(cid, dbid, tid, {
-        "keys": {
-            "location": "Schimmelstrasse"
-        }
-    })
-    # container 3 with 4 tables
-    cid = create_container().id
-    start_container(cid)
-    dbid = create_database(cid).id
-    dbexchange = find_database(cid, dbid).exchange
-    update_database(cid, dbid)
-    create_table(cid, dbid, columns=[])
-    create_table(cid, dbid, columns=[{
-        "name": "primary",
-        "type": "string",
-        "unique": True,
-        "primary_key": True,
-        "null_allowed": False,
-    }])
-    tid = create_table(cid, dbid, columns=[{
-        "name": "primary",
-        "type": "number",
-        "unique": True,
-        "primary_key": True,
-        "null_allowed": False,
-    }]).id
-    ttopic = find_table(cid, dbid, tid).topic
-    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 1})
-    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 2})
-    send_tuple(dbexchange, ttopic, "test1", "test1", {"primary": 3})
-    create_user("other")
-    send_tuple_fails(dbexchange, ttopic, "other", "other", {"primary": 4})
-    create_table(cid, dbid, columns=[{
-        "name": "primary",
-        "type": "date",
-        "unique": True,
-        "primary_key": True,
-        "null_allowed": False,
-    }])
-    #
-    # create 1 user and 1 container and issue queries to own and foreign database
-    #
-    uid = create_user("test2").id
-    auth_user("test2")
-    # container 4
-    cid = create_container().id
-    start_container(cid)
-    dbid = create_database(cid).id
-    update_database(cid, dbid)
-    tid = create_table(cid, dbid).id
-    tname = find_table(cid, dbid, tid).internal_name
-    fill_table(cid, dbid, tid)
-    create_query(cid, dbid, "select `id` from `" + tname + "`")
-    create_query(cid, dbid, "select `date` from `" + tname + "`")
-    qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
-    create_identifier(cid, dbid, qid)
-    # container 1 (foreign container query)
-    tname = find_table(1, 1, 1).internal_name
-    qid = create_query(1, 1, "select `id` from `" + tname + "`").id
-    create_identifier(1, 1, qid)
-    #
-    # create 1 user and modify information
-    #
-    uid = create_user("test3").id
-    auth_user("test3")
-    update_user(uid)
-    update_theme(uid)
-    #
-    # OAI-PMH
-    #
-    oai_identify()
-    oai_list_identifiers()
-    oai_list_metadata_formats()
-    oai_get_record(1, "dc:creator>Weise, Martin")
-    oai_get_record(1, "dc:creator>Rauber, Andreas")
-    oai_get_record(6, "code=\"idDoesNotExist\"")
-    print("FINISHED")
