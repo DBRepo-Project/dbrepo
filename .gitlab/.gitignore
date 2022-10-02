@@ -6,6 +6,14 @@ api_identifier/
 api_query/
 api_table/
 api_units/
+swagger/api-authentication/
+swagger/api-container/
+swagger/api-database/
+swagger/api-identifier/
+swagger/api-query/
+swagger/api-table/
+swagger/api-units/
+swagger/api-*.yaml
 
 ## Python Cache
 **/.pytest_cache/

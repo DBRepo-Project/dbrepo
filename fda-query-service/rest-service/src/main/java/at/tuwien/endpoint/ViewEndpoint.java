@@ -71,7 +71,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     @PostMapping
     @Transactional
     @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ViewDto> create(@NotNull @PathVariable("id") Long containerId,
+    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @Valid @RequestBody ViewCreateDto data,
                                           @NotNull Principal principal) throws DatabaseNotFoundException,
@@ -82,7 +82,7 @@ public class ViewEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing list views permission");
         }
         final Database database = databaseService.find(containerId, databaseId);
-        final ViewDto view = viewMapper.viewToViewDto(viewService.create(containerId, databaseId, data, principal));
+        final ViewBriefDto view = viewMapper.viewToViewBriefDto(viewService.create(containerId, databaseId, data, principal));
         return ResponseEntity.ok(view);
     }
 

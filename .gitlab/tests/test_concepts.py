@@ -7,14 +7,14 @@ import requests as rq
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_database.api.database_endpoint_api import DatabaseEndpointApi
 from api_table.api.table_endpoint_api import TableEndpointApi
 from api_units.api.default_api import DefaultApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
 container = ContainerEndpointApi()
-database = ContainerDatabaseEndpointApi()
+database = DatabaseEndpointApi()
 table = TableEndpointApi()
 unit = DefaultApi()
 

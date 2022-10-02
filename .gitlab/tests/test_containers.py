@@ -6,12 +6,12 @@ import uuid
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_database.api.database_endpoint_api import DatabaseEndpointApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
 container = ContainerEndpointApi()
-database = ContainerDatabaseEndpointApi()
+database = DatabaseEndpointApi()
 
 token = ""  # keep
 

@@ -8,7 +8,7 @@ import uuid
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_database.api.database_endpoint_api import DatabaseEndpointApi
 from api_table.api.table_endpoint_api import TableEndpointApi
 from api_query.api.table_data_endpoint_api import TableDataEndpointApi
 from api_query.api.query_endpoint_api import QueryEndpointApi
@@ -21,7 +21,7 @@ from api_query.rest import ApiException
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
 container = ContainerEndpointApi()
-database = ContainerDatabaseEndpointApi()
+database = DatabaseEndpointApi()
 table = TableEndpointApi()
 query = QueryEndpointApi()
 history = TableHistoryEndpointApi()
@@ -183,7 +183,7 @@ def find_table(container_id, database_id, table_id):
 
 
 def fill_table(container_id, database_id, table_id):
-    shutil.copyfile(os.getcwd() + "/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
+    shutil.copyfile(os.getcwd() + "/tests/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
     response = data.import_csv({
         "location": "/tmp/ugz_ogd_air_h1_2021.csv",
         "separator": ",",
@@ -214,12 +214,6 @@ def delete_tuple(container_id, database_id, table_id, keys):
 def download_query_data(container_id, database_id, query_id):
     response = query.export1(container_id, database_id, query_id)
     print("downloaded query data for query with id %d" % query_id)
-    return response
-
-
-def get_history(container_id, database_id, table_id):
-    response = history.get_all1(container_id, database_id, table_id)
-    print("got table history for table with id %d" % table_id)
     return response
 
 
@@ -265,7 +259,6 @@ def test_identifiers():
     qid = create_query(cid, dbid, "select `date`, `location`, `status` from `" + tname + "`").id
     create_query(cid, dbid, "select `foo` from `" + tname + "`")
     download_query_data(cid, dbid, qid)
-    get_history(cid, dbid, tid)
     # container 2 (=private)
     cid = create_container().id
     start_container(cid)
@@ -291,4 +284,3 @@ def test_identifiers():
             "location": "Schimmelstrasse"
         }
     })
-    get_history(cid, dbid, tid)

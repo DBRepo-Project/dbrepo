@@ -5,13 +5,11 @@ import os
 import shutil
 import uuid
 import requests as rq
-from pika.exceptions import ChannelClosedByBroker
-from postgres import Postgres
 
 from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
 from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
-from api_database.api.container_database_endpoint_api import ContainerDatabaseEndpointApi
+from api_database.api.database_endpoint_api import DatabaseEndpointApi
 from api_query.rest import ApiException
 from api_table.api.table_endpoint_api import TableEndpointApi
 from api_query.api import TableDataEndpointApi
@@ -22,7 +20,7 @@ from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
 container = ContainerEndpointApi()
-database = ContainerDatabaseEndpointApi()
+database = DatabaseEndpointApi()
 table = TableEndpointApi()
 query = QueryEndpointApi()
 data = TableDataEndpointApi()
@@ -180,7 +178,7 @@ def find_table(container_id, database_id, table_id):
 
 
 def fill_table(container_id, database_id, table_id):
-    shutil.copyfile(os.getcwd() + "/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
+    shutil.copyfile(os.getcwd() + "/tests/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
     response = data.import_csv({
         "location": "/tmp/ugz_ogd_air_h1_2021.csv",
         "separator": ",",
