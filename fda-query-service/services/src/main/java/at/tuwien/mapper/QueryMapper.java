@@ -566,7 +566,7 @@ public interface QueryMapper {
         final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
                 .append(mariaDbFormatter.format(timestamp))
                 .append("' ");
-        final Pattern pattern = Pattern.compile("from `?[a-z0-9_]+`?(,? *`?[a-z0-9_]+`)*", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Pattern pattern = Pattern.compile("from `?[a-z0-9-_]+`?(,? *`?[a-z0-9-_]+`)*", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
         final Matcher matcher = pattern.matcher(query_);
         if (!matcher.find()) {
             log.error("Failed to find 'from' clause in query");
@@ -594,10 +594,10 @@ public interface QueryMapper {
         String statement = sb.append(";")
                 .toString();
         if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceFirst("from ([`a-z0-9-_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceAll("join ([`a-z0-9-_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
         }

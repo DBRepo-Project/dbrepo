@@ -1,0 +1,16 @@
+## API
+api_authentication/
+api_container/
+api_database/
+api_identifier/
+api_query/
+api_table/
+api_units/
+
+## Python Cache
+**/.pytest_cache/
+**/__pycache__/
+
+## Environment
+.env
+venv/
