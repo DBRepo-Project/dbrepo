@@ -15,6 +15,7 @@ from api_query.api.query_endpoint_api import QueryEndpointApi
 from api_query.api.table_history_endpoint_api import TableHistoryEndpointApi
 from api_identifier.api.identifier_endpoint_api import IdentifierEndpointApi
 from api_identifier.api.persistence_endpoint_api import PersistenceEndpointApi
+from api_query.api.view_endpoint_api import ViewEndpointApi
 from api_query.rest import ApiException
 
 authentication = AuthenticationEndpointApi()
@@ -27,6 +28,7 @@ history = TableHistoryEndpointApi()
 data = TableDataEndpointApi()
 identifier = IdentifierEndpointApi()
 persistence = PersistenceEndpointApi()
+view = ViewEndpointApi()
 
 token = ""  # keep
 
@@ -65,6 +67,7 @@ def auth_user(username):
     user.api_client.default_headers = {"Authorization": "Bearer " + token}
     persistence.api_client.default_headers = {"Authorization": "Bearer " + token}
     history.api_client.default_headers = {"Authorization": "Bearer " + token}
+    view.api_client.default_headers = {"Authorization": "Bearer " + token}
     return response
 
 
@@ -213,9 +216,32 @@ def download_query_data(container_id, database_id, query_id):
     print("downloaded query data for query with id %d" % query_id)
     return response
 
+
 def get_history(container_id, database_id, table_id):
     response = history.get_all1(container_id, database_id, table_id)
     print("got table history for table with id %d" % table_id)
+    return response
+
+
+def list_views(container_id, database_id):
+    response = view.find_all(container_id, database_id)
+    print("list views for database with id %d" % database_id)
+    return response
+
+
+def create_view(container_id, database_id, table_name):
+    response = view.create({
+        "name": "Air Quality " + str(uuid.uuid1()),
+        "query": "SELECT `date`, `parameter`, `value` FROM `" + table_name + "` WHERE `date` = '2021-10-02T14:00'",
+        "is_public": True
+    }, container_id, database_id)
+    print("created view with id %d" % response.id)
+    return response
+
+
+def data_view(container_id, database_id, view_id):
+    response = view.data(container_id, database_id, view_id)
+    print("retrieved data for view with id %d" % response.id)
     return response
 
 
@@ -250,6 +276,9 @@ def test_identifiers():
     fill_table(cid, dbid, tid)
     qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
     qid = create_query(cid, dbid, "select `id` from `" + tname + "`").id
+    vid = create_view(cid, dbid, tname).id
+    data_view(cid, dbid, vid)
+    list_views(cid, dbid)
     for i in range(5, 10):
         delete_tuple(cid, dbid, tid, {
             "keys": {
