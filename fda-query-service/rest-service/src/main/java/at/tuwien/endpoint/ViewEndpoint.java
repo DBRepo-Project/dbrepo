@@ -10,10 +10,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.IdentifierService;
-import at.tuwien.service.QueryService;
-import at.tuwien.service.ViewService;
+import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -55,13 +52,13 @@ public class ViewEndpoint extends AbstractEndpoint {
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
                                                       Principal principal) throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, UserNotFoundException {
         if (!hasDatabasePermission(containerId, databaseId, "LIST_VIEWS", principal)) {
             log.error("Missing list views permission");
             throw new NotAllowedException("Missing list views permission");
         }
         final Database database = databaseService.find(containerId, databaseId);
-        final List<ViewBriefDto> views = viewService.findAll(databaseId)
+        final List<ViewBriefDto> views = viewService.findAll(databaseId, principal)
                 .stream()
                 .map(viewMapper::viewToViewBriefDto)
                 .collect(Collectors.toList());
@@ -72,9 +69,9 @@ public class ViewEndpoint extends AbstractEndpoint {
     @Transactional
     @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("id") Long containerId,
-                                          @NotNull @PathVariable("databaseId") Long databaseId,
-                                          @NotNull @Valid @RequestBody ViewCreateDto data,
-                                          @NotNull Principal principal) throws DatabaseNotFoundException,
+                                               @NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @Valid @RequestBody ViewCreateDto data,
+                                               @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException,
             UserNotFoundException {
         if (!hasDatabasePermission(containerId, databaseId, "CREATE_VIEW", principal)) {
@@ -93,13 +90,13 @@ public class ViewEndpoint extends AbstractEndpoint {
                                            @NotNull @PathVariable("databaseId") Long databaseId,
                                            @NotNull @PathVariable("viewId") Long viewId,
                                            Principal principal) throws DatabaseNotFoundException,
-            NotAllowedException, ViewNotFoundException {
+            NotAllowedException, ViewNotFoundException, UserNotFoundException {
         if (!hasDatabasePermission(containerId, databaseId, "FIND_VIEW", principal)) {
             log.error("Missing find views permission");
             throw new NotAllowedException("Missing find views permission");
         }
         final Database database = databaseService.find(containerId, databaseId);
-        final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId));
+        final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId, principal));
         return ResponseEntity.ok(view);
     }
 
@@ -123,7 +120,7 @@ public class ViewEndpoint extends AbstractEndpoint {
         validateDataParams(page, size);
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
-        final View view = viewService.findById(databaseId, viewId);
+        final View view = viewService.findById(databaseId, viewId, principal);
         final ExecuteStatementDto statement = ExecuteStatementDto.builder()
                 .statement(view.getQuery())
                 .build();

@@ -5,7 +5,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.jpa.ViewRepository;
 import at.tuwien.service.DatabaseService;
@@ -44,14 +43,22 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<View> findAll(Long databaseId) {
-        return viewRepository.findAllByDatabaseId(databaseId);
+    public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException {
+        if (principal == null) {
+            return viewRepository.findAllPublicByDatabaseId(databaseId);
+        }
+        return viewRepository.findAllPublicOrMineByDatabaseId(databaseId, principal.getName());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public View findById(Long databaseId, Long id) throws ViewNotFoundException {
-        final Optional<View> optional = viewRepository.findByDatabaseIdAndId(databaseId, id);
+    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException, UserNotFoundException {
+        final Optional<View> optional;
+        if (principal == null) {
+            optional = viewRepository.findPublicByDatabaseIdAndId(databaseId, id);
+        } else {
+            optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, principal.getName());
+        }
         if (optional.isEmpty()) {
             log.error("Failed to find view with id {}", id);
             throw new ViewNotFoundException("Failed to find view");

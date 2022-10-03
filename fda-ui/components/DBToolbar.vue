@@ -29,6 +29,9 @@
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
             Subsets
           </v-tab>
+          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/view`">
+            Views
+          </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
