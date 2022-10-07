@@ -370,7 +370,7 @@ services:
       - "80:80"
       - "443:443"
     depends_on:
-      fda-ui:
+      ui:
         condition: service_started
     logging:
       driver: json-file
