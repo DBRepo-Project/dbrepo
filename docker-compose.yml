@@ -337,3 +337,26 @@ services:
         condition: service_healthy
     logging:
       driver: json-file
+
+  fda-ui-proxy:
+    restart: on-failure
+    container_name: ui-proxy
+    hostname: ui-proxy
+    image: nginx:alpine
+    networks:
+      public:
+      core:
+    links:
+      - fda-ui
+    volumes:
+      - ./fda-ui-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./fda-ui-proxy/default/fullchain.pem:/etc/nginx/fullchain.pem:ro
+      - ./fda-ui-proxy/default/privkey.pem:/etc/nginx/privkey.pem:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      fda-ui:
+        condition: service_started
+    logging:
+      driver: json-file

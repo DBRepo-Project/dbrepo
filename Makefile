@@ -11,6 +11,9 @@ config-frontend:
 	./.fda-deployment/fda-ui/install_cert
 	docker-compose -f docker-compose.prod.yml config
 
+config-ssl:
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./fda-ui-proxy/default/privkey.pem -out ./fda-ui-proxy/default/fullchain.pem -subj '/C=AT/ST=Vienna/L=Vienna/O=Technische Universität Wien/OU=Data Science Group/CN=dbrepo.ossdip.at'
+
 config-docker:
 	docker image pull -q mariadb:10.5 || true > /dev/null
 
