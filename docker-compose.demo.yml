@@ -362,8 +362,6 @@ services:
     networks:
       public:
       core:
-    links:
-      - fda-ui
     volumes:
       - ./fda-ui-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
       - /etc/letsencrypt/live/dbrepo.ossdip.at/fullchain.pem:/etc/nginx/fullchain.pem:ro
