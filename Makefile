@@ -28,6 +28,9 @@ build-backend-authentication: build-backend-metadata
 build-backend-identifier: build-backend-metadata
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
 
+build-backend-table: build-backend-metadata
+	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
+
 build-backend-container: build-backend-metadata
 	mvn -f ./fda-container-service/pom.xml clean package -DskipTests
 
@@ -43,24 +46,17 @@ build-backend-gateway: build-backend-metadata
 build-backend-query: build-backend-metadata
 	mvn -f ./fda-query-service/pom.xml clean package -DskipTests
 
-build-backend-table: build-backend-metadata
-	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
-
 build-backend: build-backend-metadata build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway
 
 build-docker:
 	docker-compose build fda-metadata-db
 	docker-compose build --parallel
 
-build-docker-sandbox:
-	docker-compose -f docker-compose.prod.yml build fda-metadata-db
-	docker-compose -f docker-compose.prod.yml build
-
 build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
 	yarn --cwd ./fda-ui run build
 
-tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker
+tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy
 
 tag-analyse:
 	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -73,6 +69,9 @@ tag-metadata-db:
 
 tag-ui:
 	docker tag fda-ui:latest "dbrepo/ui:${TAG}"
+
+tag-ui-proxy:
+	docker tag fda-ui:latest "dbrepo/ui-proxy:${TAG}"
 
 tag-identifier:
 	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
@@ -104,51 +103,7 @@ tag-units:
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
-update: update-identifier update-container update-database update-discovery update-gateway update-query update-table update-analyse update-authentication update-metadata-db update-ui update-units update-broker
-
-update-analyse:
-	docker pull "dbrepo/analyse-service:${TAG}"
-
-update-authentication:
-	docker pull "dbrepo/authentication-service:${TAG}"
-
-update-metadata-db:
-	docker pull "dbrepo/metadata-db:${TAG}"
-
-update-ui:
-	docker pull "dbrepo/ui:${TAG}"
-
-update-identifier:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-update-metadata:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-update-container:
-	docker pull "dbrepo/container-service:${TAG}"
-
-update-database:
-	docker pull "dbrepo/database-service:${TAG}"
-
-update-discovery:
-	docker pull "dbrepo/discovery-service:${TAG}"
-
-update-gateway:
-	docker pull "dbrepo/gateway-service:${TAG}"
-
-update-query:
-	docker pull "dbrepo/query-service:${TAG}"
-
-update-table:
-	docker pull "dbrepo/table-service:${TAG}"
-
-update-units:
-	docker pull "dbrepo/units-service:${TAG}"
-
-update-broker:
-	docker pull "dbrepo/broker-service:${TAG}"
-
-release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker
+release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy
 
 release-analyse:
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -161,6 +116,9 @@ release-metadata-db:
 
 release-ui:
 	docker push "dbrepo/ui:${TAG}"
+
+release-ui-proxy:
+	docker push "dbrepo/ui-proxy:${TAG}"
 
 release-identifier:
 	docker push "dbrepo/identifier-service:${TAG}"
@@ -224,7 +182,6 @@ test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui run test
 
 test: test-backend test-frontend
-
 
 teardown:
 	./.fda-deployment/teardown
