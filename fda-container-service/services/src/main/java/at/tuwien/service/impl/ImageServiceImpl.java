@@ -12,6 +12,7 @@ import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.exception.InternalServerErrorException;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.api.model.PullResponseItem;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,9 @@ import javax.validation.ConstraintViolationException;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -147,6 +150,17 @@ public class ImageServiceImpl implements ImageService {
             throw new ImageNotFoundException("image not found in library", e);
         }
         return imageMapper.inspectImageResponseToContainerImage(response);
+    }
+
+    @Override
+    public boolean exists(String repository, String tag) {
+        final List<Image> images = dockerClient.listImagesCmd()
+                .exec();
+        return images.stream()
+                .filter(i -> Objects.nonNull(i.getRepoTags()))
+                .filter(i -> i.getRepoTags().length > 0)
+                .anyMatch(i -> Arrays.stream(i.getRepoTags())
+                        .anyMatch(t -> t.equals(repository + ":" + tag)));
     }
 
     @Override
