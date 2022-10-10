@@ -2,8 +2,8 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.TokenInvalidException;
-import at.tuwien.repositories.TokenRepository;
+import at.tuwien.exception.SecretInvalidException;
+import at.tuwien.repositories.TimeSecretRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +26,10 @@ public class TokenServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @Autowired
-    private TokenService tokenService;
+    private TimeSecretService tokenService;
 
     @Autowired
-    private TokenRepository tokenRepository;
+    private TimeSecretRepository tokenRepository;
 
     @BeforeEach
     public void beforeEach() {
@@ -37,13 +37,13 @@ public class TokenServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updateVerification_succeeds() throws TokenInvalidException {
+    public void updateVerification_succeeds() throws SecretInvalidException {
 
         /* mock */
 
         /* test */
         tokenService.invalidate(TOKEN_1_TOKEN);
-        assertThrows(TokenInvalidException.class, () -> {
+        assertThrows(SecretInvalidException.class, () -> {
             tokenService.invalidate(TOKEN_1_TOKEN);
         });
     }

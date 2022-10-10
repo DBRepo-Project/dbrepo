@@ -2,7 +2,6 @@ package at.tuwien.entities.user;
 
 import at.tuwien.entities.container.Container;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -79,7 +78,7 @@ public class User {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
-    private List<Token> tokens;
+    private List<TimeSecret> tokens;
 
     @Transient
     @ToString.Exclude

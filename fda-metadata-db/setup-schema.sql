@@ -133,6 +133,20 @@ CREATE SEQUENCE public.mdb_creators_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_time_secrets_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+CREATE SEQUENCE public.mdb_queries_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_tokens_seq
     START WITH 1
     INCREMENT BY 1
@@ -183,9 +197,9 @@ CREATE TABLE public.mdb_images
     UNIQUE (repository, tag)
 );
 
-CREATE TABLE public.mdb_tokens
+CREATE TABLE public.mdb_time_secrets
 (
-    id        bigint                      not null default nextval('mdb_tokens_seq'),
+    id        bigint                      not null default nextval('mdb_time_secrets_seq'),
     uid       bigint                      not null,
     token     character varying(255)      NOT NULL,
     processed boolean                     NOT NULL default false,
@@ -193,6 +207,17 @@ CREATE TABLE public.mdb_tokens
     valid_to  timestamp without time zone NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
+);
+
+CREATE TABLE public.mdb_tokens
+(
+    id         bigint                      not null default nextval('mdb_tokens'),
+    token_hash varchar(255)                NOT NULL,
+    creator    bigint                      not null,
+    created    timestamp without time zone NOT NULL DEFAULT NOW(),
+    deleted    timestamp without time zone,
+    PRIMARY KEY (id),
+    FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE public.mdb_images_date
@@ -564,6 +589,27 @@ CREATE TABLE IF NOT EXISTS mdb_owns
     oDBID   bigint REFERENCES mdb_DATABASES (ID),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
+);
+
+CREATE TABLE IF NOT EXISTS mdb_queries
+(
+    id               bigint                               default nextval('mdb_queries_seq'),
+    cid              bigint                      not null,
+    dbid             bigint                      not null,
+    execution        timestamp without time zone not null,
+    query            TEXT                        not null,
+    query_normalized TEXT                        not null,
+    query_hash       varchar(255)                not null,
+    result_hash      varchar(255),
+    result_number    bigint,
+    creator          bigint                      not null,
+    last_modified    timestamp without time zone,
+    deleted          timestamp without time zone,
+    created          timestamp without time zone NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
+    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
+    FOREIGN KEY (creator) REFERENCES mdb_users (UserID),
+    PRIMARY KEY (id, cid, dbid)
 );
 
 COMMIT;

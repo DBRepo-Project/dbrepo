@@ -1,6 +1,7 @@
 package at.tuwien;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.entities.user.TimeSecret;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import org.springframework.test.context.TestPropertySource;
@@ -59,14 +60,14 @@ public abstract class BaseUnitTest {
     public final static Instant TOKEN_2_VALID_TO = Instant.now()
             .plus(1, ChronoUnit.DAYS);
 
-    public final static Token TOKEN_1 = Token.builder()
+    public final static TimeSecret TOKEN_1 = TimeSecret.builder()
             .id(TOKEN_1_ID)
             .token(TOKEN_1_TOKEN)
             .processed(TOKEN_1_PROCESSED)
             .validTo(TOKEN_1_VALID_TO)
             .build();
 
-    public final static Token TOKEN_2 = Token.builder()
+    public final static TimeSecret TOKEN_2 = TimeSecret.builder()
             .id(TOKEN_2_ID)
             .token(TOKEN_2_TOKEN)
             .processed(TOKEN_2_PROCESSED)
