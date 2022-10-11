@@ -44,7 +44,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
-    public List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException,
+    public List<Query> findAll(Long containerId, Long databaseId, Boolean persisted) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
             TableMalformedException {
         /* find */
@@ -58,7 +58,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* select all */
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection);
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection, persisted);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
@@ -150,6 +150,35 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         } finally {
             dataSource.close();
         }
+    }
+
+    @Override
+    @Transactional
+    public Query persist(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException {
+        /* find */
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        /* persist */
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final Query out;
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawPersistQuery(connection, true, containerId, databaseId, queryId);
+            preparedStatement.executeUpdate();
+            final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, queryId);
+            final ResultSet resultSet = preparedStatement1.executeQuery();
+            out = storeMapper.resultSetToQuery(resultSet, true);
+        } catch (SQLException e) {
+            log.error("Failed to update query");
+            log.debug("failed to update query, reason: {}", e.getMessage());
+            throw new QueryStoreException("Failed to update query", e);
+        } finally {
+            dataSource.close();
+        }
+        return out;
     }
 
     @Override

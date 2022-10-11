@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-card v-if="loading">
-      <v-card-title>PID Not Found</v-card-title>
+    <v-card v-if="!loading">
+      <v-card-title>Not Found</v-card-title>
       <v-card-subtitle>{{ pid }}</v-card-subtitle>
       <v-card-text>
-        <p>This PID cannot be found in the system. Possible reasons are:</p>
+        <p>This persisted identifier (PID) cannot be found in the system. Possible reasons are:</p>
         <ul>
           <li>The PID is incorrect in your source.</li>
           <li>The PID was copied incorrectly.</li>
@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     pid () {
-      return this.$route.params.pid_id
+      return `${location.protocol}//${location.host}/pid/${this.$route.params.pid_id}`
     }
   },
   mounted () {
@@ -38,10 +38,9 @@ export default {
         console.debug('persistent id', res.data)
         this.$router.push(`/container/${res.data.cid}/database/${res.data.dbid}/query/${res.data.qid}`)
       } catch (err) {
-        console.error('Could not load query', err)
-        this.$toast.error('Could not load query')
+        console.error('Could not load persisted identifier', err)
+        this.loading = false
       }
-      this.loading = false
     }
   }
 }

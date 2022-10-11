@@ -39,7 +39,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
             preparedStatement11.executeUpdate();
             final PreparedStatement preparedStatement12 = connection.prepareStatement("CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`");
             preparedStatement12.executeUpdate();
-            final PreparedStatement preparedStatement20 = connection.prepareStatement("CREATE TABLE `qs_queries` (`id` bigint not null primary key default nextval(`qs_queries_seq`), `cid` bigint not null, `created` datetime not null default now(), `created_by` bigint not null, `dbid` bigint not null, `execution` datetime not null, `last_modified` datetime, `query` text not null,  `query_normalized` text not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint)");
+            final PreparedStatement preparedStatement20 = connection.prepareStatement("CREATE TABLE `qs_queries` (`id` bigint not null primary key default nextval(`qs_queries_seq`), `cid` bigint not null, `created` datetime not null default now(), `created_by` bigint not null, `dbid` bigint not null, `execution` datetime not null, `last_modified` datetime, `query` text not null, `query_normalized` text not null, `is_persisted` boolean not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint)");
             preparedStatement20.executeUpdate();
             final PreparedStatement preparedStatement21 = connection.prepareStatement("CREATE TABLE `qs_tables` (`id` bigint not null primary key default nextval(`qs_tables_seq`), `created` datetime not null, `dbid` bigint not null, `last_modified` datetime)");
             preparedStatement21.executeUpdate();

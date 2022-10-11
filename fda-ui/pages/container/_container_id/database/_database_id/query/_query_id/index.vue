@@ -7,8 +7,11 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && !query.is_persisted && is_owner" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
+        </v-btn>
+        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+          <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility" class="mb-1" :disabled="error" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
@@ -267,6 +270,7 @@ export default {
         result_number: null,
         execution: null,
         created: null,
+        is_persisted: null,
         creator: {
           username: null,
           firstname: null,
@@ -276,6 +280,7 @@ export default {
       user: {
         username: null
       },
+      loadingSave: false,
       identifier: {
         id: null,
         dbid: null,
@@ -487,6 +492,19 @@ export default {
         this.error = true
       }
       this.loadingDatabase = false
+    },
+    async save () {
+      this.loadingSave = true
+      try {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
+        console.debug('query', res.data)
+        this.query = res.data
+      } catch (err) {
+        console.error('Failed to save query', err)
+        this.$toast.error('Failed to save query')
+        this.error = true
+      }
+      this.loadingSave = false
     },
     async loadMetadata () {
       if (!this.query.id) {
