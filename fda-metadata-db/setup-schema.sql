@@ -437,17 +437,22 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 CREATE TABLE IF NOT EXISTS mdb_VIEW
 (
     id            bigint                      NOT NULL DEFAULT nextval('mdb_view_seq'),
-    vName         VARCHAR(50),
-    Query         TEXT,
-    Public        BOOLEAN,
+    vcid          bigint                      NOT NULL,
+    vdbid         bigint                      NOT NULL,
+    vName         VARCHAR(255)                NOT NULL,
+    internal_name VARCHAR(255)                NOT NULL,
+    Query         TEXT                        NOT NULL,
+    Public        BOOLEAN                     NOT NULL,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    InitialView   BOOLEAN,
+    InitialView   BOOLEAN                     NOT NULL,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
+    deleted       timestamp without time zone,
     created_by    bigint                      NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
-    PRIMARY KEY (id)
+    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
+    PRIMARY KEY (vdbid, id)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers
@@ -514,9 +519,10 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 
 CREATE TABLE IF NOT EXISTS mdb_views_databases
 (
-    mdb_view_id  bigint REFERENCES mdb_VIEW (id),
+    mdb_view_id  bigint,
     databases_id bigint REFERENCES mdb_DATABASES (id),
     created      timestamp without time zone NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (mdb_view_id, databases_id) REFERENCES mdb_VIEW (id, vdbid),
     PRIMARY KEY (mdb_view_id, databases_id)
 );
 

@@ -17,4 +17,5 @@ public class ExecuteStatementDto {
     @NotBlank(message = "statement is required")
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String statement;
+
 }

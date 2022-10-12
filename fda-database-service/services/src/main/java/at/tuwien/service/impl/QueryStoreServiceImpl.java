@@ -39,15 +39,18 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
             preparedStatement11.executeUpdate();
             final PreparedStatement preparedStatement12 = connection.prepareStatement("CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`");
             preparedStatement12.executeUpdate();
-            final PreparedStatement preparedStatement20 = connection.prepareStatement("CREATE TABLE `qs_queries` (`id` bigint not null primary key default nextval(`qs_queries_seq`), `cid` bigint not null, `created` datetime not null default now(), `created_by` bigint not null, `dbid` bigint not null, `execution` datetime not null, `last_modified` datetime, `query` text not null,  `query_normalized` text not null, `query_hash` varchar(255) not null, `result_hash` varchar(255), `result_number` bigint)");
+            final PreparedStatement preparedStatement13 = connection.prepareStatement("CREATE SEQUENCE IF NOT EXISTS `qs_views_seq`");
+            preparedStatement13.executeUpdate();
+            final PreparedStatement preparedStatement20 = connection.prepareStatement("CREATE TABLE `qs_queries` (`id` bigint not null primary key default nextval(`qs_queries_seq`), `cid` bigint not null, `created` datetime not null default now(), `created_by` bigint not null, `dbid` bigint not null, `execution` datetime not null, `last_modified` datetime, `query` text not null,  `query_normalized` text not null, `query_hash` varchar(255) not null, `type` varchar(10) not null, `result_hash` varchar(255), `result_number` bigint)");
             preparedStatement20.executeUpdate();
             final PreparedStatement preparedStatement21 = connection.prepareStatement("CREATE TABLE `qs_tables` (`id` bigint not null primary key default nextval(`qs_tables_seq`), `created` datetime not null, `dbid` bigint not null, `last_modified` datetime)");
             preparedStatement21.executeUpdate();
             final PreparedStatement preparedStatement22 = connection.prepareStatement("CREATE TABLE `qs_columns` (`id` bigint not null primary key default nextval(`qs_columns_seq`), `created` datetime not null, `dbid` bigint not null, `tid` bigint not null, `last_modified` datetime)");
             preparedStatement22.executeUpdate();
+            final PreparedStatement preparedStatement23 = connection.prepareStatement("CREATE TABLE `qs_views` ( `id` bigint not null primary key default nextval(`qs_views_seq`), `vcid` bigint not null, `vdbid` bigint not null, `created_by` bigint not null, `name` varchar(255) not null, `internal_name` varchar(255) not null, `is_public` boolean not null, `is_initial_view` boolean not null, `query` text not null, `created` datetime not null)");
+            preparedStatement23.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to delete database with id {}", databaseId);
-            log.debug("failed to delete database {}, reason: {}", database, e.getMessage());
+            log.error("Failed to create database {}: {}", database, e.getMessage());
             throw new DatabaseMalformedException("Failed to execute and map time-versioned query", e);
         } finally {
             dataSource.close();

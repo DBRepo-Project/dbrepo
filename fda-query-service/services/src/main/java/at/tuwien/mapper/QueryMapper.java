@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.query.*;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
@@ -105,7 +106,6 @@ public interface QueryMapper {
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
-
 
     default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("DROP TABLE `")
@@ -539,121 +539,70 @@ public interface QueryMapper {
         }
     }
 
-    default PreparedStatement queryToRawTimestampedCountQuery(Connection connection, String query, Database database, Instant timestamp)
-            throws ImageNotSupportedException, QueryMalformedException {
-        /* param check */
+    default PreparedStatement queryToRawTimestampedQuery(Connection connection, String query, Database database,
+                                                         Instant timestamp, String selection, Long page, Long size)
+            throws QueryMalformedException, SQLException, ImageNotSupportedException {
+        final String query_ = query;
+        /* check image */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
         }
-        if (timestamp == null) {
-            throw new IllegalArgumentException("Timestamp must be provided");
-        }
-        query = query.toLowerCase(Locale.ROOT)
-                .split("from")[1];
-        final StringBuilder original = new StringBuilder();
-        original.append("SELECT COUNT(*) AS `total` FROM");
-        if (!query.contains("where")) {
-            /* treat join queries as normal queries */
-            original.append(query);
-        } else {
-            original.append(query.split("where")[0]);
-        }
-        if (query.contains("join")) {
-            /* put timestamp after "join" and each "on" (but before alias) */
-        } else {
-            original.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            original.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")));
-            original.append("' ");
-        }
-        if (query.contains("where")) {
-            original.append("where");
-            original.append(query.split("where")[1]);
-        }
-        original.append(";");
-        /* replace timestamp for join query */
-        String statement = original.toString();
-        if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-        }
-        log.debug("mapped raw view-only query [{}]", statement);
-        try {
-            return connection.prepareStatement(statement);
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
-    default PreparedStatement queryToRawTimestampedQuery(Connection connection,
-                                                         String query, Database database, Instant timestamp, Long page,
-                                                         Long size) throws ImageNotSupportedException,
-            QueryMalformedException {
         /* param check */
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
         if (timestamp == null) {
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
-        query = query.toLowerCase(Locale.ROOT)
-                .trim();
-        if (query.matches(";$")) {
-            /* remove last semicolon */
-            query = query.substring(0, query.length() - 1);
-        }
         /* query check (this is enforced by the db also) */
-        final String query_ = query;
-        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::startsWith)) {
+        if (Stream.of("count").anyMatch(query_::contains)) {
+            log.error("Query contains unsupported operation");
+            log.debug("query contains unsupported operation, one of {}", List.of("COUNT"));
+        }
+        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::contains)) {
             log.error("Query attempts to modify the database");
             log.debug("query attempts to modify the database [{}]", query_);
             throw new QueryMalformedException("Query attempts to modify the database");
         }
-        final StringBuilder sb = new StringBuilder();
-        if (!query.contains("where")) {
-            /* treat join queries as normal queries */
-            sb.append(query);
-        } else {
-            sb.append(query.split("where")[0]);
+        /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
+        final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("' ");
+        final Pattern pattern = Pattern.compile("from `?[a-z0-9-_]+`?(,? *`?[a-z0-9-_]+`)*", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Matcher matcher = pattern.matcher(query_);
+        if (!matcher.find()) {
+            log.error("Failed to find 'from' clause in query");
+            throw new QueryMalformedException("Failed to find from clause");
         }
+        log.debug("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query_);
+        final StringBuilder sb = new StringBuilder("SELECT ")
+                .append(selection)
+                .append(" FROM (")
+                .append(query_, 0, matcher.end());
+        if (!query.contains("join")) {
+            sb.append(versionPart);
+        }
+        sb.append(query, matcher.end(), query.length())
+                .append(") as tbl");
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            sb.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            sb.append(" OFFSET ")
+                    .append(page * size);
+
+        }
+        String statement = sb.append(";")
+                .toString();
         if (query.contains("join")) {
-            /* put timestamp after "join" and each "on" (but before alias) */
-        } else {
-            sb.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")));
-            sb.append("' ");
-        }
-        if (query.contains("where")) {
-            sb.append("where");
-            sb.append(query.split("where")[1]);
-        }
-        if (size != null && page != null && size > 0 && page >= 0) {
-            sb.append(" LIMIT " + size + " OFFSET " + (page * size));
-        }
-        sb.append(";");
-        /* replace timestamp for join query */
-        String statement = sb.toString();
-        if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceFirst("from ([`a-z0-9-_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceAll("join ([`a-z0-9-_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
         }
         log.debug("mapped raw view-only query [{}]", statement);
-        try {
-            return connection.prepareStatement(statement);
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        return connection.prepareStatement(statement);
     }
 
     default PreparedStatement tableToRawFindAllQuery(Connection connection, Table table, Instant timestamp, Long size, Long page)
@@ -817,8 +766,8 @@ public interface QueryMapper {
             }
             return data.getLong(1);
         } catch (SQLException e) {
-            log.error("Failed to retrieve number");
-            throw new QueryStoreException("Failed to retrieve number");
+            log.error("Failed to retrieve number: {}", e.getMessage());
+            throw new QueryStoreException("Failed to retrieve number", e);
         }
     }
 

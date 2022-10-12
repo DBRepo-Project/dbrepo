@@ -29,7 +29,7 @@ services:
 
   fda-metadata-db:
     restart: on-failure
-    container_name: metadata-db
+    container_name: dbrepo-metadata-db
     hostname: metadata-db
     build: ./fda-metadata-db
     image: fda-metadata-db
@@ -44,7 +44,7 @@ services:
 
   fda-discovery-service:
     restart: on-failure
-    container_name: discovery-service
+    container_name: dbrepo-discovery-service
     hostname: discovery-service
     build: ./fda-discovery-service
     image: fda-discovery-service
@@ -59,7 +59,7 @@ services:
 
   fda-gateway-service:
     restart: on-failure
-    container_name: gateway-service
+    container_name: dbrepo-gateway-service
     hostname: gateway-service
     build: ./fda-gateway-service
     image: fda-gateway-service
@@ -77,7 +77,7 @@ services:
 
   fda-database-service:
     restart: on-failure
-    container_name: database-service
+    container_name: dbrepo-database-service
     hostname: database-service
     build: ./fda-database-service
     image: fda-database-service
@@ -102,7 +102,7 @@ services:
 
   fda-container-service:
     restart: on-failure
-    container_name: container-service
+    container_name: dbrepo-container-service
     hostname: container-service
     build: ./fda-container-service
     image: fda-container-service
@@ -122,7 +122,7 @@ services:
 
   fda-authentication-service:
     restart: on-failure
-    container_name: authentication-service
+    container_name: dbrepo-authentication-service
     hostname: authentication-service
     image: fda-authentication-service
     build: ./fda-authentication-service
@@ -144,7 +144,7 @@ services:
 
   fda-query-service:
     restart: on-failure
-    container_name: query-service
+    container_name: dbrepo-query-service
     hostname: query-service
     build: ./fda-query-service
     image: fda-query-service
@@ -167,7 +167,7 @@ services:
 
   fda-table-service:
     restart: on-failure
-    container_name: table-service
+    container_name: dbrepo-table-service
     hostname: table-service
     build: ./fda-table-service
     image: fda-table-service
@@ -196,7 +196,7 @@ services:
 
   fda-identifier-service:
     restart: on-failure
-    container_name: identifier-service
+    container_name: dbrepo-identifier-service
     hostname: identifier-service
     build: ./fda-identifier-service
     image: fda-identifier-service
@@ -216,7 +216,7 @@ services:
 
   fda-metadata-service:
     restart: on-failure
-    container_name: metadata-service
+    container_name: dbrepo-metadata-service
     hostname: metadata-service
     build: ./fda-metadata-service
     image: fda-metadata-service
@@ -234,7 +234,7 @@ services:
 
   fda-analyse-service:
     restart: on-failure
-    container_name: analyse-service
+    container_name: dbrepo-analyse-service
     hostname: analyse-service
     build: ./fda-analyse-service
     image: fda-analyse-service
@@ -257,7 +257,7 @@ services:
 
   fda-units-service:
     restart: on-failure
-    container_name: units-service
+    container_name: dbrepo-units-service
     hostname: units-service
     build: ./fda-units-service
     image: fda-units-service
@@ -278,7 +278,7 @@ services:
 
   fda-broker-service:
     restart: on-failure
-    container_name: broker-service
+    container_name: dbrepo-broker-service
     hostname: broker-service
     build: ./fda-broker-service
     image: fda-broker-service
@@ -299,7 +299,7 @@ services:
 
   fda-search-service:
     restart: always
-    container_name: search-service
+    container_name: dbrepo-search-service
     hostname: search-service
     image: elasticsearch:7.13.4
     command: [ "elasticsearch" ]
@@ -322,7 +322,7 @@ services:
 
   fda-ui:
     restart: on-failure
-    container_name: ui
+    container_name: dbrepo-ui
     hostname: ui
     build: ./fda-ui
     image: fda-ui

@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.SortType;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
@@ -122,29 +123,22 @@ public class TableDataEndpoint extends AbstractEndpoint {
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
+                                                 @NotNull Principal principal,
                                                  @RequestParam(required = false) Instant timestamp,
                                                  @RequestParam(required = false) Long page,
                                                  @RequestParam(required = false) Long size,
-                                                 @NotNull Principal principal)
+                                                 @RequestParam(required = false) SortType sortDirection,
+                                                 @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException {
+            QueryStoreException, NotAllowedException, QueryMalformedException, SortException {
+        /* check */
         if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }
-        if ((page == null && size != null) || (page != null && size == null)) {
-            log.error("Cannot perform pagination with only one of page/size set.");
-            log.debug(
-                    "invalid pagination specification, one of page/size is null, either both should be null or none.");
-            throw new PaginationException("Invalid pagination parameters");
-        }
-        if (page != null && page < 0) {
-            throw new PaginationException("Page number cannot be lower than 0");
-        }
-        if (size != null && size <= 0) {
-            throw new PaginationException("Page number cannot be lower or equal to 0");
-        }
+        validateDataParams(page, size, sortDirection, sortColumn);
+        /* find */
         final Long count = queryService.count(containerId, databaseId, tableId, timestamp);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());

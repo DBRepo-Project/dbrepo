@@ -1,6 +1,5 @@
-package at.tuwien.entities.database.table;
+package at.tuwien.entities.database;
 
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,29 +9,35 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.List;
 
 @Data
-/*@Entity // not yet in metadata db */
+@Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(onlyExplicitlyIncluded = true)
+@IdClass(ViewKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_views")
+@javax.persistence.Table(name = "mdb_view")
 public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
     @GeneratedValue(generator = "view-sequence")
     @GenericGenerator(
             name = "view-sequence",
             strategy = "enhanced-sequence",
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
     )
-    Long id;
+    private Long id;
+
+    @Id
+    @EqualsAndHashCode.Include
+    private Long vcid;
+
+    @Id
+    @EqualsAndHashCode.Include
+    private Long vdbid;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -40,13 +45,25 @@ public class View {
     })
     private User creator;
 
-    @ToString.Include
-    @Column(nullable = false)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "vdbid", insertable = false, updatable = false)
+    private Database database;
+
+    @Column(name = "vname", nullable = false)
     private String name;
 
-    @ToString.Include
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Database> databases;
+    @Column(nullable = false)
+    private String internalName;
+
+    @Column(name = "public", nullable = false)
+    private Boolean isPublic;
+
+    @Column(name = "initialview", nullable = false)
+    private Boolean isInitialView;
+
+    @Column(nullable = false)
+    private String query;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -55,5 +72,8 @@ public class View {
     @Column
     @LastModifiedDate
     private Instant lastModified;
+
+    @Column
+    private Instant deleted;
 
 }

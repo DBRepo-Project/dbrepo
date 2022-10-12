@@ -62,6 +62,9 @@ public class QueryBriefDto {
     @Schema(example = "1")
     private Long resultNumber;
 
+    @Schema(example = "query")
+    private QueryTypeDto type;
+
     @NotNull(message = "created timestamp is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

@@ -56,6 +56,9 @@ build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
 	yarn --cwd ./fda-ui run build
 
+build-clients:
+	bash ./.gitlab/swagger/generate.sh
+
 tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy
 
 tag-analyse:
@@ -180,6 +183,9 @@ test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
 	docker-compose up -d
 	yarn --cwd ./fda-ui run test
+
+test-clients:
+	bash ./.gitlab/test.sh
 
 test: test-backend test-frontend
 

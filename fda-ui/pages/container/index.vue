@@ -12,52 +12,35 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
+    <v-toolbar dense flat>
+      <v-toolbar-items>
+        <span class="mr-4">Filter:</span>
+        <v-checkbox
+          v-model="filterPrivate"
+          label="Private" />
+        <v-checkbox
+          v-if="user.username"
+          v-model="filterMine"
+          class="ml-2"
+          label="Mine" />
+      </v-toolbar-items>
+    </v-toolbar>
     <v-card flat>
-      <v-simple-table>
-        <template v-slot:default>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Engine</th>
-              <th>Creator</th>
-              <th>Visibility</th>
-              <th>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="databases.length === 0" aria-readonly="true">
-              <td colspan="5">
-                <span>(no databases)</span>
-              </td>
-            </tr>
-            <tr
-              v-for="item in databases"
-              :key="item.id"
-              class="database"
-              @click="loadDatabase(item)">
-              <td>
-                <span>{{ item.name }}</span>
-              </td>
-              <td>
-                <span>{{ item.engine }}</span>
-              </td>
-              <td>
-                <span>{{ formatCreator(item.creator) }}</span>
-                <sup>
-                  <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-                </sup>
-              </td>
-              <td>
-                <v-icon v-if="!item.is_public" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
-                <v-icon v-if="item.is_public" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
-              </td>
-              <td>
-                {{ createdUTC(item.created) }}
-              </td>
-            </tr>
-          </tbody>
+      <v-data-table
+        :headers="headers"
+        :items="filter(databases)"
+        @click:row="loadDatabase">
+        <template v-slot:item.visibility="{ item }">
+          <v-icon v-if="!item.visibility" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
+          <v-icon v-if="item.visibility" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
         </template>
-      </v-simple-table>
+        <template v-slot:item.creator="{ item }">
+          <span>{{ formatCreator(item.creator) }}</span>
+          <sup>
+            <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+          </sup>
+        </template>
+      </v-data-table>
       <v-dialog
         v-model="createDbDialog"
         persistent
@@ -72,6 +55,7 @@
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -83,7 +67,12 @@ export default {
       createDbDialog: false,
       databases: [],
       containers: [],
+      filterPrivate: false,
+      filterMine: false,
       searchQuery: null,
+      user: {
+        username: null
+      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
@@ -106,9 +95,27 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    headers () {
+      return [{
+        text: 'Name',
+        align: 'start',
+        value: 'name'
+      }, {
+        text: 'Creator',
+        value: 'creator',
+        sortable: false
+      }, {
+        text: 'Visibility',
+        value: 'visibility'
+      }, {
+        text: 'Created',
+        value: 'created'
+      }]
     }
   },
   mounted () {
+    this.loadUser()
     this.loadContainers()
       .then(() => this.loadDatabases())
   },
@@ -116,8 +123,15 @@ export default {
     formatCreator (creator) {
       return formatUser(creator)
     },
-    search () {
-      console.debug('search for', this.searchQuery)
+    filter (databases) {
+      let filtered = databases
+      if (this.filterPrivate) {
+        filtered = filtered.filter(d => d.visibility === false)
+      }
+      if (this.token && this.filterMine) {
+        filtered = filtered.filter(d => d.creator.username === this.user.username)
+      }
+      return filtered
     },
     async loadContainers () {
       this.createDbDialog = false
@@ -143,6 +157,8 @@ export default {
           const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
           for (const info of res.data) {
             info.container_id = container.id
+            info.visibility = info.is_public
+            info.created = formatTimestampUTCLabel(info.created)
             this.databases.push(info)
           }
         } catch (err) {
@@ -159,12 +175,21 @@ export default {
     },
     loadDatabase (database) {
       this.$router.push(`/container/${database.container_id}/database/${database.id}`)
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }
 </script>
 
 <style>
+  tbody tr {
+    cursor: pointer;
+  }
   .trim {
     max-width: 10em;
     white-space: nowrap;

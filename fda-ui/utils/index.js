@@ -32,6 +32,9 @@ function formatUser (user) {
   if (user.firstname === undefined || user.lastname === undefined) {
     return user.username
   }
+  if (user.firstname === null || user.lastname === null) {
+    return user.username
+  }
   let name = ''
   if (user.titles_before) {
     name += user.titles_before + ' '

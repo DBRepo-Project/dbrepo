@@ -9,6 +9,7 @@
         <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
           <v-expansion-panel-header>
             <pre>{{ item.query }}</pre>
+            <v-icon v-if="item.type === 'view'" title="Query from a view" class="pid-icon">mdi-gauge</v-icon>
             <v-icon v-if="item.identifier" color="primary" title="Query with metadata" class="pid-icon">mdi-lock-clock</v-icon>
             <v-icon v-if="erroneous(item)" color="error" title="Query failed to execute" class="pid-icon">mdi-flash</v-icon>
           </v-expansion-panel-header>
@@ -58,6 +59,12 @@
                       <v-list-item-content>
                         {{ executionUTC }}
                       </v-list-item-content>
+                      <v-list-item-title class="mt-2">
+                        Type
+                      </v-list-item-title>
+                      <v-list-item-content>
+                        {{ queryType }}
+                      </v-list-item-content>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -65,7 +72,7 @@
             </v-row>
             <v-row dense>
               <v-col>
-                <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${item.id}`">
+                <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/${item.id}`">
                   More
                 </v-btn>
               </v-col>
@@ -101,14 +108,12 @@ export default {
         queryHash: null,
         execution: null,
         created: null,
-        columns: []
+        columns: [],
+        type: null
       }
     }
   },
   computed: {
-    databaseId () {
-      return this.$route.params.database_id
-    },
     baseUrl () {
       return location.protocol + '//' + location.host
     },
@@ -128,6 +133,9 @@ export default {
     },
     creator () {
       return this.queryDetails.creator
+    },
+    queryType () {
+      return 'Query' + (this.queryDetails.type === 'view' ? ' was executed by a view' : '')
     },
     emptyMessage () {
       if (this.isPublicOrOwner()) {
@@ -149,7 +157,7 @@ export default {
       console.debug(1, this.database.is_public, 2, this.database.creator.username, 3, this.user.username, 4, this.token)
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
         try {

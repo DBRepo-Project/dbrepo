@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.SaveStatementDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -100,18 +100,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
-                        Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata),
-                principal, null);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                        Principal principal, Instant execution)
+                        QueryTypeDto type, Principal principal, Instant execution)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
         /* find */
@@ -128,6 +118,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 .cid(containerId)
                 .dbid(databaseId)
                 .query(metadata.getStatement())
+                .type(storeMapper.queryTypeDtoToQueryType(type))
                 .queryNormalized(metadata.getStatement())
                 .queryHash(DigestUtils.sha256Hex(metadata.getStatement()))
                 .resultNumber(storeMapper.queryResultDtoToLong(result))
@@ -175,8 +166,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement1.executeQuery();
             out = storeMapper.resultSetToQuery(resultSet, true);
         } catch (SQLException e) {
-            log.error("Failed to update query");
-            log.debug("failed to update query, reason: {}", e.getMessage());
+            log.debug("Failed to update query: {}", e.getMessage());
             throw new QueryStoreException("Failed to update query", e);
         } finally {
             dataSource.close();

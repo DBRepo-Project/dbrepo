@@ -98,7 +98,11 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="creator" />
+                    <span v-if="!loading">
+                      {{ creator }} <sup v-if="creatorVerified">
+                        <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+                      </sup>
+                    </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
@@ -110,7 +114,7 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-card-actions>
+            <v-card-actions v-if="isCreator">
               <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Get Database PID</v-btn>
               <v-dialog
                 v-model="editDbDialog"
@@ -127,7 +131,7 @@
           </v-card-text>
         </v-card>
         <v-divider />
-        <v-card flat tile>
+        <v-card v-if="isCreator" flat tile>
           <v-card-title>Modify visibility</v-card-title>
           <v-card-subtitle>Dangerous operation</v-card-subtitle>
           <v-card-text>
@@ -147,6 +151,7 @@ import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
 import EditVisibility from '@/components/dialogs/EditVisibility'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -159,6 +164,9 @@ export default {
       loading: false,
       editDbDialog: false,
       editVisibilityDialog: false,
+      user: {
+        username: null
+      },
       database: {
         id: null,
         name: null,
@@ -226,6 +234,12 @@ export default {
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
     },
+    isCreator () {
+      if (this.database.creator.username === null || this.user.username === null) {
+        return false
+      }
+      return this.database.creator.username === this.user.username
+    },
     language () {
       return this.database.language
     },
@@ -255,10 +269,14 @@ export default {
     },
     creator () {
       return formatUser(this.database.creator)
+    },
+    creatorVerified () {
+      return this.database.creator.email_verified
     }
   },
   mounted () {
     this.loadDatabase()
+    this.loadUser()
   },
   methods: {
     async loadDatabase () {
@@ -278,6 +296,12 @@ export default {
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

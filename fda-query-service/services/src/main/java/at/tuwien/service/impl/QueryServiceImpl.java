@@ -1,9 +1,11 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
+import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
@@ -40,7 +42,6 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,21 +66,23 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
-            TableMalformedException {
-        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
-        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size);
+                                  QueryTypeDto type, Principal principal, Long page, Long size,
+                                  SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
+            ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+        final Query query = storeService.insert(containerId, databaseId, null, statement, type, principal, Instant.now());
+        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size, sortDirection,
+                sortColumn);
         storeService.update(containerId, databaseId, result, result.getResultNumber(), query);
         return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size)
-            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            ColumnParseException, DatabaseConnectionException, TableMalformedException, QueryStoreException {
+    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
+                                    SortType sortDirection, String sortColumn)
+            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
+            DatabaseConnectionException, TableMalformedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -90,7 +93,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns;
         try {
-            columns = parseColumns(query, database);
+            columns = parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns.");
             throw new ColumnParseException("Failed to map/parse columns", e);
@@ -98,8 +101,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final QueryResultDto dto;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection,
-                    query.getQuery(), database, query.getExecution(), page, size);
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
+                    database, query.getExecution(), "*", page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -224,7 +227,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
@@ -247,7 +250,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
@@ -369,10 +372,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      * @throws JSQLParserException The columns could not be extracted from the query.
      */
     @Transactional(readOnly = true)
-    protected List<TableColumn> parseColumns(Query query, Database database) throws JSQLParserException {
+    protected List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
-        final Statement statement = parserRealSql.parse(new StringReader(query.getQuery()));
+        final Statement statement = parserRealSql.parse(new StringReader(query));
 
         /* check */
         if (!(statement instanceof Select)) {
@@ -468,11 +471,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedCountQuery(connection, query.getQuery(), database, query.getExecution());
+            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
+                    database, query.getExecution(), "COUNT(*)", null, null);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to count tuples");
+            log.error("Failed to count tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to count tuples", e);
         } finally {
             dataSource.close();
