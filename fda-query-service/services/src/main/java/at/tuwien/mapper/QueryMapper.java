@@ -437,7 +437,9 @@ public interface QueryMapper {
                 .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : ", ")
                         .append("`")
                         .append(key)
-                        .append("` = ?"));
+                        .append("` ")
+                        .append(value == null ? "IS" : "=")
+                        .append(" ?"));
         /* debug */
         log.trace("raw delete query: [{}] with data {}", statement, data.getKeys().values());
         /* prepare */
@@ -449,7 +451,7 @@ public interface QueryMapper {
                         .filter(c -> c.getInternalName().equals(entry.getKey()))
                         .findFirst();
                 if (optional.isEmpty()) {
-                    log.error("failed to find column with internal name {} in table {}", entry.getKey(), table);
+                    log.error("Failed to find column with internal name {} in table {}", entry.getKey(), table);
                     throw new QueryMalformedException("Failed to find column");
                 }
                 prepareStatementWithColumnTypeObject(ps, optional.get().getColumnType(), i++, entry.getValue());
