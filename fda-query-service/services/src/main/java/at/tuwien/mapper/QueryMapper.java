@@ -316,7 +316,7 @@ public interface QueryMapper {
         }
         statement.append(" INTO OUTFILE '/tmp/")
                 .append(filename)
-                .append("' CHARACTER SET utf8");
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         statement.append(";");
         try {
             return connection.prepareStatement(statement.toString());
@@ -348,7 +348,7 @@ public interface QueryMapper {
                 .append(query.getQuery().substring(matcher.end(0)))
                 .append(" INTO OUTFILE '/tmp/")
                 .append(filename)
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         log.trace("raw export query: [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());

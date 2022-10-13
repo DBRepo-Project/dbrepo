@@ -69,7 +69,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                 .body(result);
     }
 
-    @PutMapping("/{queryId}")
+    @GetMapping("/{queryId}/data")
     @Transactional(readOnly = true)
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long containerId,

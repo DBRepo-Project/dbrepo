@@ -50,7 +50,6 @@ export default {
         const data = {
           statement: this.parent.sql
         }
-        console.debug('send data', data)
         const page = 0
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
         const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query${this.parent.queryId ? `/${this.parent.queryId}` : ''}?${urlParams}`, data, {
@@ -82,10 +81,7 @@ export default {
       try {
         const page = this.options.page - 1
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/
-${this.$route.params.container_id}/database/${this.$route.params.database_id}/query
-/${this.queryId}
-?${urlParams}`, {}, {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.queryId}/data?${urlParams}`, {
           headers: this.headers
         })
         this.mapResults(res.data)

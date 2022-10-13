@@ -1,3 +1,5 @@
+# Docker compose file for the public demo instance
+
 version: "3.6"
 
 volumes:
@@ -6,8 +8,8 @@ volumes:
   broker-service-data:
 
 networks:
-  public:
-    name: public
+  core:
+    name: core
     driver: bridge
     ipam:
       config:
@@ -18,6 +20,12 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+  core:
+    name: public
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.27.0.0/16
 
 services:
 
@@ -27,7 +35,7 @@ services:
     hostname: metadata-db
     image: dbrepo/metadata-db:1.1
     networks:
-      public:
+      core:
     volumes:
       - metadata-db-data:/var/lib/postgresql/data
     ports:
@@ -45,7 +53,7 @@ services:
     hostname: discovery-service
     image: dbrepo/discovery-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "9090:9090"
     environment:
@@ -61,7 +69,7 @@ services:
     hostname: gateway-service
     image: dbrepo/gateway-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "9095:9095"
     environment:
@@ -81,7 +89,7 @@ services:
     image: dbrepo/database-service:1.1
     networks:
       userdb:
-      public:
+      core:
     ports:
       - "9092:9092"
     environment:
@@ -108,7 +116,7 @@ services:
     hostname: container-service
     image: dbrepo/container-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "9091:9091"
     environment:
@@ -132,7 +140,7 @@ services:
     hostname: authentication-service
     image: dbrepo/authentication-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "9097:9097"
     environment:
@@ -166,7 +174,7 @@ services:
     hostname: query-service
     image: dbrepo/query-service:1.1
     networks:
-      public:
+      core:
       userdb:
     ports:
       - "9093:9093"
@@ -193,7 +201,7 @@ services:
     hostname: table-service
     image: dbrepo/table-service:1.1
     networks:
-      public:
+      core:
       userdb:
     ports:
       - "9094:9094"
@@ -223,7 +231,7 @@ services:
     hostname: identifier-service
     image: dbrepo/identifier-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "9096:9096"
     environment:
@@ -244,7 +252,7 @@ services:
     hostname: analyse-service
     image: dbrepo/analyse-service:1.1
     networks:
-      public:
+      core:
       userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     ports:
@@ -264,7 +272,7 @@ services:
     hostname: units-service
     image: dbrepo/units-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "5010:5010"
     volumes:
@@ -282,7 +290,7 @@ services:
     hostname: broker-service
     image: dbrepo/broker-service:1.1
     networks:
-      public:
+      core:
     ports:
       - "5672:5672"
       - "9098:9098"
@@ -310,7 +318,7 @@ services:
     image: elasticsearch:7.13.4
     command: [ "elasticsearch" ]
     networks:
-      public:
+      core:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -332,9 +340,9 @@ services:
     hostname: ui
     image: dbrepo/ui:1.1
     networks:
-      public:
+      core:
     ports:
-      - "3000:3000"
+      - "80:3000"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /logos:/app/static/logos
