@@ -12,6 +12,9 @@ target/
 # Environment
 .env
 
+# Debug
+debug.txt
+
 # macOS
 .DS_Store
 

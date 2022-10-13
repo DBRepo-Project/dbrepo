@@ -147,6 +147,50 @@ release-units:
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
 
+pull: pull-identifier pull-container pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy
+
+pull-analyse:
+	docker push "dbrepo/analyse-service:${TAG}"
+
+pull-authentication:
+	docker push "dbrepo/authentication-service:${TAG}"
+
+pull-metadata-db:
+	docker push "dbrepo/metadata-db:${TAG}"
+
+pull-ui:
+	docker push "dbrepo/ui:${TAG}"
+
+pull-ui-proxy:
+	docker push "dbrepo/ui-proxy:${TAG}"
+
+pull-identifier:
+	docker push "dbrepo/identifier-service:${TAG}"
+
+pull-container:
+	docker push "dbrepo/container-service:${TAG}"
+
+pull-database:
+	docker push "dbrepo/database-service:${TAG}"
+
+pull-discovery:
+	docker push "dbrepo/discovery-service:${TAG}"
+
+pull-gateway:
+	docker push "dbrepo/gateway-service:${TAG}"
+
+pull-query:
+	docker push "dbrepo/query-service:${TAG}"
+
+pull-table:
+	docker push "dbrepo/table-service:${TAG}"
+
+pull-units:
+	docker push "dbrepo/units-service:${TAG}"
+
+pull-broker:
+	docker push "dbrepo/broker-service:${TAG}"
+
 test-backend: test-backend-auth test-backend-container test-backend-database test-backend-discovery test-backend-gateway test-backend-query test-backend-table
 
 test-backend-auth:
