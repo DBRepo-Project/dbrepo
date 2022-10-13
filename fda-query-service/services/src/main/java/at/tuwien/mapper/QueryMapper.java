@@ -493,9 +493,14 @@ public interface QueryMapper {
                     statement.append(jdx[0] == 0 ? "" : ", ")
                             .append("`")
                             .append(key)
-                            .append("` = '")
-                            .append(value)
-                            .append("'");
+                            .append("` ");
+                    if (value == null) {
+                        statement.append(" IS NULL");
+                    } else {
+                        statement.append(" = '")
+                                .append(value)
+                                .append("'");
+                    }
                     jdx[0]++;
                 });
         statement.append(";");
@@ -504,7 +509,11 @@ public interface QueryMapper {
         try {
             final PreparedStatement ps = connection.prepareStatement(statement.toString());
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                ps.setString(i++, String.valueOf(entry.getValue()));
+                if (entry.getValue() == null) {
+                    ps.setNull(i++, Types.NULL);
+                } else {
+                    ps.setString(i++, String.valueOf(entry.getValue()));
+                }
             }
             return ps;
         } catch (SQLException e) {
