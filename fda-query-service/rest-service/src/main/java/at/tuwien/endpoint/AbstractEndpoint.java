@@ -42,8 +42,12 @@ public abstract class AbstractEndpoint {
         }
         /* view-only operations are allowed on public databases */
         if (database.getIsPublic() && List.of("TABLE_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL",
-                "QUERY_EXECUTE", "LIST_VIEWS", "FIND_VIEW").contains(permissionCode)) {
+                "QUERY_EXECUTE").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
+            return true;
+        }
+        if (!database.getIsPublic() && List.of("LIST_VIEWS", "FIND_VIEW", "DATA_VIEW").contains(permissionCode)) {
+            log.debug("grant permission {} despite database is non-public", permissionCode);
             return true;
         }
         if (principal == null) {

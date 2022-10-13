@@ -97,10 +97,10 @@
               class="mt-2 ml-3" />
           </v-tab-item>
         </v-tabs-items>
-        <v-card-text v-if="queryId && !isView">
+        <v-card-text v-if="queryId || viewId">
           <v-row>
             <v-col>
-              <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
+              <v-btn color="blue-grey white--text" :to="viewLink">
                 View
               </v-btn>
             </v-col>
@@ -128,6 +128,7 @@ export default {
       tables: [],
       tableDetails: null,
       queryId: null,
+      viewId: null,
       valid: false,
       query: {
         sql: ''
@@ -154,11 +155,11 @@ export default {
     columnNames () {
       return this.selectItems && this.selectItems.map(s => s.internal_name)
     },
-    databaseId () {
-      return this.$route.params.database_id
-    },
     tableId () {
       return this.table.id
+    },
+    viewLink () {
+      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? `/view/${this.viewId}` : `/query/${this.queryId}`)
     },
     token () {
       return this.$store.state.token
@@ -227,7 +228,7 @@ export default {
     async loadTables () {
       try {
         this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
         this.tables = res.data
         console.debug('tables', this.tables)
       } catch (err) {
@@ -289,7 +290,7 @@ export default {
       const tableId = this.table.id
       try {
         this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${tableId}`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {

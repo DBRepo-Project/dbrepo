@@ -15,6 +15,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
+import at.tuwien.querystore.QueryType;
 import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -73,7 +74,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Query query = storeService.insert(containerId, databaseId, null, statement, type, principal, Instant.now());
         final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size, sortDirection,
                 sortColumn);
-        storeService.update(containerId, databaseId, result, result.getResultNumber(), query);
+        if (type.equals(QueryTypeDto.QUERY)) {
+            /* view executions are not stored in the query store */
+            storeService.update(containerId, databaseId, result, result.getResultNumber(), query);
+        }
         return result;
     }
 

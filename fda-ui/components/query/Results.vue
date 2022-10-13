@@ -60,6 +60,7 @@ export default {
         this.mapResults(res.data)
         this.loading = false
         this.parent.queryId = res.data.id
+        this.parent.viewId = res.data.id
       } catch (err) {
         console.error('query execute', err)
         this.$toast.error('Could not execute query')

@@ -43,6 +43,9 @@
           </v-row>
           <v-row dense>
             <v-col>
+              <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
+                More
+              </v-btn>
               <v-btn small color="error" @click="deleteView(viewDetails)">
                 Delete
               </v-btn>

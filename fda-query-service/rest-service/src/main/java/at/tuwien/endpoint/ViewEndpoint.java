@@ -132,8 +132,8 @@ public class ViewEndpoint extends AbstractEndpoint {
             ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException {
         /* check */
         if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
-            log.error("Missing find views permission");
-            throw new NotAllowedException("Missing find views permission");
+            log.error("Missing view data in view permission");
+            throw new NotAllowedException("Missing view data in view permission");
         }
         validateDataParams(page, size);
         /* find */
