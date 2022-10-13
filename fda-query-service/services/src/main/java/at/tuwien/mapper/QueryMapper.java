@@ -403,8 +403,7 @@ public interface QueryMapper {
                         .filter(d -> d.getKey().equals(column.getInternalName()))
                         .findFirst();
                 if (tuple.isEmpty()) {
-                    log.error("Failed to map column names");
-                    log.debug("failed to map column names, tuple contains columns names that are not present in the database, tuple column names are {}", data.getData().keySet());
+                    log.error("Failed to map column name {}, available {}", column.getInternalName(), data.getData().keySet());
                     throw new TableMalformedException("Failed to map column names");
                 }
                 prepareStatementWithColumnTypeObject(ps, column.getColumnType(), idx[0]++, tuple.get().getValue());
@@ -450,8 +449,7 @@ public interface QueryMapper {
                         .filter(c -> c.getInternalName().equals(entry.getKey()))
                         .findFirst();
                 if (optional.isEmpty()) {
-                    log.error("Failed to find column");
-                    log.debug("failed to find column with internal name {} in table {}", entry.getKey(), table);
+                    log.error("failed to find column with internal name {} in table {}", entry.getKey(), table);
                     throw new QueryMalformedException("Failed to find column");
                 }
                 prepareStatementWithColumnTypeObject(ps, optional.get().getColumnType(), i++, entry.getValue());
