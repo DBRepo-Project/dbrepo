@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.EXPECTATION_FAILED)
-public class TokenInvalidException extends Exception {
+public class SecretInvalidException extends Exception {
 
-    public TokenInvalidException(String msg) {
+    public SecretInvalidException(String msg) {
         super(msg);
     }
 
-    public TokenInvalidException(String msg, Throwable thr) {
+    public SecretInvalidException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public TokenInvalidException(Throwable thr) {
+    public SecretInvalidException(Throwable thr) {
         super(thr);
     }
 }

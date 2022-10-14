@@ -160,7 +160,7 @@ export default {
       console.debug(1, this.database.is_public, 2, this.database.creator.username, 3, this.user.username, 4, this.token)
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query?persisted=true`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
         try {

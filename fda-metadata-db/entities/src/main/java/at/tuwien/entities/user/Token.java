@@ -1,10 +1,10 @@
 package at.tuwien.entities.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -16,7 +16,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Where(clause = "valid_to >= NOW() and processed = false")
+@SQLDelete(sql = "update mdb_tokens set deleted = NOW() where id = ?")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_tokens")
@@ -33,29 +33,22 @@ public class Token {
     )
     private Long id;
 
-    @Column(nullable = false)
-    private Long uid;
-
-    @ToString.Exclude
     @Column(nullable = false, updatable = false)
+    private Long creator;
+
+    @Transient
+    @ToString.Exclude
+    @Schema(example = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03")
     private String token;
 
-    @Column(nullable = false)
-    private Boolean processed;
-
-    @org.springframework.data.annotation.Transient
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "uid", referencedColumnName = "userid", insertable = false, updatable = false)
-    })
-    private User user;
+    @Column(nullable = false, updatable = false)
+    private String tokenHash;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant created;
 
-    @Column(nullable = false)
-    private Instant validTo;
+    @Column(nullable = false, updatable = false)
+    private Instant deleted;
 
 }

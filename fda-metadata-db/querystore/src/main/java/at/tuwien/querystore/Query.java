@@ -8,6 +8,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.persistence.Column;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -63,6 +64,9 @@ public class Query implements Serializable {
     @javax.persistence.Column(name = "result_number")
     @Schema(example = "1")
     private Long resultNumber;
+
+    @javax.persistence.Column(nullable = false)
+    private Boolean isPersisted;
 
     @javax.persistence.Column(columnDefinition = "enum('QUERY', 'VIEW')")
     @Enumerated(EnumType.STRING)

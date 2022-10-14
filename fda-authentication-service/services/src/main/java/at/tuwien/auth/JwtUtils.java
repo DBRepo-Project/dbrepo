@@ -26,6 +26,14 @@ public class JwtUtils {
     @Value("${jwt.expiration.ms}")
     private Integer expire;
 
+    public String generateDeveloperJwtToken(String username) {
+        final Algorithm algorithm = Algorithm.HMAC512(secret);
+        return JWT.create()
+                .withSubject(username)
+                .withIssuedAt(new Date())
+                .sign(algorithm);
+    }
+
     public String generateJwtToken(Object principal) {
         final UserDetailsDto userPrincipal = (UserDetailsDto) principal;
         final Algorithm algorithm = Algorithm.HMAC512(secret);

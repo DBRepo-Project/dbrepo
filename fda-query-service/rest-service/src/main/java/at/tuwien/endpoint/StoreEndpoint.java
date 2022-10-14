@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,7 @@ public class StoreEndpoint extends AbstractEndpoint {
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
+                                                       @RequestParam(value = "persisted", required = false) Boolean persisted,
                                                        Principal principal)
             throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException,
@@ -56,7 +59,7 @@ public class StoreEndpoint extends AbstractEndpoint {
             log.error("Missing view all queries permission");
             throw new NotAllowedException("Missing view all queries permission");
         }
-        final List<Query> queries = storeService.findAll(containerId, databaseId);
+        final List<Query> queries = storeService.findAll(containerId, databaseId, persisted);
         final List<User> users = userService.findAll();
         final List<QueryBriefDto> out = queries.stream()
                 .map(q -> {
@@ -88,5 +91,31 @@ public class StoreEndpoint extends AbstractEndpoint {
         final User creator = userService.find(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
         return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{queryId}")
+    @Operation(summary = "Persist some query", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("id") Long containerId,
+                                            @NotNull @PathVariable("databaseId") Long databaseId,
+                                            @NotNull @PathVariable("queryId") Long queryId,
+                                            @NotNull Principal principal)
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            NotAllowedException, DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
+            QueryAlreadyPersistedException {
+        if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_PERSIST", principal)) {
+            log.error("Missing query persist permission");
+            throw new NotAllowedException("Missing query persist permission");
+        }
+        final Query check = storeService.findOne(containerId, databaseId, queryId);
+        if (check.getIsPersisted()) {
+            log.error("Failed to persist, is already persisted");
+            throw new QueryAlreadyPersistedException("Failed to persist");
+        }
+        final Query query = storeService.persist(containerId, databaseId, queryId);
+        final QueryDto dto = queryMapper.queryToQueryDto(query);
+        final User creator = userService.find(query.getCreatedBy());
+        dto.setCreator(userMapper.userToUserDto(creator));
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
     }
 }

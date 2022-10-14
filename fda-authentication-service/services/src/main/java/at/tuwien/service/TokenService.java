@@ -1,34 +1,22 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.user.Token;
-import at.tuwien.entities.user.User;
-import at.tuwien.exception.TokenInvalidException;
+import at.tuwien.exception.TokenNotEligableException;
+import at.tuwien.exception.TokenNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
+import org.springframework.stereotype.Service;
 
+import java.security.Principal;
+import java.util.List;
+
+@Service
 public interface TokenService {
 
-    /**
-     * Find token by random string.
-     *
-     * @param token The random string.
-     * @return The token.
-     * @throws TokenInvalidException The token was not found or has expired.
-     */
-    Token find(String token) throws TokenInvalidException;
+    List<Token> findAll(Principal principal) throws UserNotFoundException;
 
-    /**
-     * Create a token with random string.
-     *
-     * @param user The user.
-     * @return The token.
-     */
-    Token create(User user);
+    Token create(Principal principal) throws UserNotFoundException, TokenNotEligableException;
 
-    /**
-     * Invalidate a token for a given user.
-     *
-     * @param token The token.
-     * @return The user, if successful.
-     * @throws TokenInvalidException THe token was not found or has expired.
-     */
-    User invalidate(String token) throws TokenInvalidException;
+    Token findOne(String tokenHash) throws TokenNotFoundException;
+
+    void delete(String tokenHash, Principal principal) throws TokenNotFoundException, UserNotFoundException;
 }

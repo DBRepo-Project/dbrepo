@@ -1,20 +1,21 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.TokenBriefDto;
+import at.tuwien.api.auth.TokenDto;
 import at.tuwien.api.user.*;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.OrcidMalformedException;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -103,5 +104,12 @@ public interface UserMapper {
                 .append(data.getOrcid(), 12, 16)
                 .toString();
     }
+
+    @Mappings({
+            @Mapping(source = "token", target = "token")
+    })
+    TokenDto tokenToTokenDto(Token data);
+
+    TokenBriefDto tokenToTokenBriefDto(Token data);
 
 }

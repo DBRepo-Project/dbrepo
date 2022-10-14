@@ -36,7 +36,7 @@ public interface StoreMapper {
     }
 
     default PreparedStatement queryStoreRawInsertQuery(Connection connection, Query data) throws QueryStoreException {
-        final String statement = "INSERT INTO `qs_queries` (`cid`, `dbid`, `query`, `query_normalized`, `query_hash`, `result_number`, `result_hash`, `execution`, `created`, `created_by`, `type`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING `id`";
+        final String statement = "INSERT INTO `qs_queries` (`cid`, `dbid`, `query`, `query_normalized`, `query_hash`, `result_number`, `result_hash`, `execution`, `created`, `created_by`, `type`, `is_persisted`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING `id`";
         try {
             final PreparedStatement ps = connection.prepareStatement(statement);
             ps.setLong(1, data.getCid());
@@ -58,6 +58,7 @@ public interface StoreMapper {
             ps.setTimestamp(9, Timestamp.from(Instant.now()));
             ps.setLong(10, data.getCreatedBy());
             ps.setString(11, data.getType().toString());
+            ps.setBoolean(12, false);
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
@@ -66,8 +67,11 @@ public interface StoreMapper {
         }
     }
 
-    default PreparedStatement queryStoreRawSelectAllQuery(Connection connection) throws QueryStoreException {
-        final String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type` FROM `qs_queries` ORDER BY `created` DESC";
+    default PreparedStatement queryStoreRawSelectAllQuery(Connection connection, Boolean persisted) throws QueryStoreException {
+        String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type`, `is_persisted` FROM `qs_queries`";
+        if (persisted != null) {
+            statement += " WHERE `is_persisted` = " + persisted;
+        }
         try {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
@@ -78,7 +82,7 @@ public interface StoreMapper {
     }
 
     default PreparedStatement queryStoreRawSelectOneQuery(Connection connection, Long containerId, Long databaseId, Long queryId) throws QueryStoreException {
-        final String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type` FROM `qs_queries` q WHERE q.`cid` = ? AND q.`dbid` = ? AND q.`id` = ?";
+        final String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type`, `is_persisted` FROM `qs_queries` q WHERE q.`cid` = ? AND q.`dbid` = ? AND q.`id` = ?";
         try {
             final PreparedStatement ps = connection.prepareStatement(statement);
             ps.setLong(1, containerId);
@@ -107,6 +111,24 @@ public interface StoreMapper {
             ps.setLong(8, data.getCid());
             ps.setLong(9, data.getDbid());
             ps.setLong(10, data.getId());
+            return ps;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryStoreException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement queryStoreRawPersistQuery(Connection connection, Boolean persisted, Long containerId,
+                                                        Long databaseId, Long queryId) throws QueryStoreException {
+        final String statement = "UPDATE `qs_queries` SET `is_persisted` = ? WHERE `cid` = ? AND `dbid` = ? AND `id` = ?";
+        try {
+            final PreparedStatement ps = connection.prepareStatement(statement);
+            ps.setBoolean(1, persisted);
+            /* where */
+            ps.setLong(2, containerId);
+            ps.setLong(3, databaseId);
+            ps.setLong(4, queryId);
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
@@ -174,6 +196,7 @@ public interface StoreMapper {
                 .resultNumber(data.getLong(11))
                 .type(QueryType.valueOf(data.getString(12)
                         .toUpperCase()))
+                .isPersisted(data.getBoolean(13))
                 .build();
     }
 

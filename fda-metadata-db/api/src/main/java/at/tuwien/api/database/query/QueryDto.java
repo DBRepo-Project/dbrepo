@@ -59,6 +59,11 @@ public class QueryDto {
     @Parameter(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String queryHash;
 
+    @NotNull
+    @JsonProperty("is_persisted")
+    @Parameter(example = "true")
+    private Boolean isPersisted;
+
     @JsonProperty("result_hash")
     @Parameter(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String resultHash;
