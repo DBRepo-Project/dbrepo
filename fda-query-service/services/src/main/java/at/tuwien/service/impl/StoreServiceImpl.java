@@ -62,9 +62,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to find queries");
-            log.debug("failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
-            throw new QueryStoreException("Query not found");
+            log.error("Failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
+            throw new QueryStoreException("Failed to find queries");
         } finally {
             dataSource.close();
         }
@@ -91,7 +90,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             query = storeMapper.resultSetToQuery(resultSet, true);
             return query;
         } catch (SQLException e) {
-            log.error("Query not found with id {}", queryId);
+            log.error("Query not found with id {}, because {}", queryId, e.getMessage());
             throw new QueryNotFoundException("Query not found");
         } finally {
             dataSource.close();
@@ -151,8 +150,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.debug("inserted query {} into the query store of database {}", query, database);
             return query;
         } catch (SQLException e) {
-            log.error("Failed to execute query");
-            log.debug("failed to execute query: {}", e.getMessage());
+            log.error("Failed to execute query: {}", e.getMessage());
             throw new QueryStoreException("Failed to execute query", e);
         } finally {
             dataSource.close();
@@ -211,7 +209,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement1.executeQuery();
             out = storeMapper.resultSetToQuery(resultSet, true);
         } catch (SQLException e) {
-            log.debug("Failed to update query: {}", e.getMessage());
+            log.error("Failed to update query: {}", e.getMessage());
             throw new QueryStoreException("Failed to update query", e);
         } finally {
             dataSource.close();

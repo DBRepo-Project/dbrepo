@@ -99,7 +99,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             columns = parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
-            log.error("Failed to map/parse columns.");
+            log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns", e);
         }
         final QueryResultDto dto;
@@ -110,8 +110,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
-            log.error("Failed to execute and map time-versioned query");
-            log.debug("failed to execute and map time-versioned query: {}", e.getMessage());
+            log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
             throw new TableMalformedException("Failed to execute and map time-versioned query", e);
         } finally {
             dataSource.close();
@@ -139,11 +138,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final ResultSet resultSet = preparedStatement.executeQuery();
             result = queryMapper.queryTableToQueryResultDto(resultSet, table);
         } catch (DateTimeException e) {
-            log.error("Failed to parse date from the one stored in the metadata database");
+            log.error("Failed to parse date from the one stored in the metadata database: {}", e.getMessage());
             throw new TableMalformedException("Could not parse date from format", e);
         } catch (SQLException e) {
-            log.error("Failed to map object");
-            log.debug("failed to map object, reason: {}", e.getMessage());
+            log.error("Failed to map object: {}", e.getMessage());
             throw new TableMalformedException("Failed to map object", e);
         } finally {
             dataSource.close();
@@ -171,8 +169,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException | SQLException e) {
-            log.error("Failed to execute query and/or export file");
-            log.debug("failed to execute query and/or export file: {}", e.getMessage());
+            log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
         } finally {
             dataSource.close();
@@ -202,8 +199,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
             inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
         } catch (IOException | SQLException e) {
-            log.error("Failed to execute query and/or export file");
-            log.debug("failed to execute query and/or export file: {}", e.getMessage());
+            log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
         } finally {
             dataSource.close();
@@ -231,8 +227,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to count tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count tuples", e);
+            log.error("Failed to count raw tuples: {}", e.getMessage());
+            throw new TableMalformedException("Failed to count raw tuples", e);
         } finally {
             dataSource.close();
         }
@@ -254,8 +250,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to count tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count tuples", e);
+            log.error("Failed to update tuples: {}", e.getMessage());
+            throw new TableMalformedException("Failed to update tuples", e);
         } finally {
             dataSource.close();
         }
@@ -272,8 +268,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) {
-            log.error("Failed to parse data");
-            log.debug("failed to parse data, the provided map {} is empty", data.getData());
+            log.error("Failed to parse data, the provided map {} is empty", data.getData());
             throw new TableMalformedException("Failed to parse data");
         }
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
@@ -313,8 +308,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawDeleteQuery(connection, table, data);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to delete tuples");
-            log.debug("failed to delete tuples, reason: {}", e.getMessage());
+            log.error("Failed to delete tuples: {}", e.getMessage());
             throw new TableMalformedException("Failed to delete tuples", e);
         } finally {
             dataSource.close();
