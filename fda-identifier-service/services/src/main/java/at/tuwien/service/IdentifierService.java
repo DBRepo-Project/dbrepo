@@ -18,11 +18,11 @@ public interface IdentifierService {
     /**
      * Finds all identifiers in the metadata database which are not deleted.
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
+     * @param queryId    Optional. The query id.
+     * @param databaseId Optional. The database id.
      * @return List of identifiers
      */
-    List<Identifier> findAll(Long containerId, Long databaseId);
+    List<Identifier> findAll(Long databaseId, Long queryId);
 
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.

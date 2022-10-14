@@ -84,25 +84,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
     }
 
-    @PutMapping("/{databaseId}")
-    @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> update(@NotBlank @PathVariable("id") Long containerId,
-                                              @NotBlank @PathVariable Long databaseId,
-                                              @Valid @RequestBody DatabaseModifyDto modifyDto,
-                                              @NotNull Principal principal)
-            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException, NotAllowedException {
-        if (!hasDatabasePermission(containerId, databaseId, "UPDATE_DATABASE", principal)) {
-            log.error("Missing database update permission");
-            throw new NotAllowedException("Missing database update permission");
-        }
-        final Database database = databaseService.modify(containerId, databaseId, modifyDto);
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(dto);
-    }
-
     @PutMapping("/{databaseId}/transfer")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")

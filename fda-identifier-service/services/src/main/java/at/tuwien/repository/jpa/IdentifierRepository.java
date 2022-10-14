@@ -12,6 +12,8 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
     List<Identifier> findByDatabaseId(Long databaseId);
 
-    Optional<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
+    List<Identifier> findByQueryId(Long queryId);
+
+    List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
 
 }

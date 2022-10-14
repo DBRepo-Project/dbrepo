@@ -1,10 +1,8 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.identifier.*;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.RelatedIdentifier;
-import at.tuwien.entities.identifier.VisibilityType;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.identifier.*;
 import org.mapstruct.Mapper;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,5 +33,14 @@ public interface IdentifierMapper {
 
     @Transactional
     VisibilityType visibilityTypeDtoToVisibilityType(VisibilityTypeDto data);
+
+    IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
+
+    default VisibilityType databaseToVisibilityType(Database data) {
+        if (data.getIsPublic()) {
+            return VisibilityType.EVERYONE;
+        }
+        return VisibilityType.SELF;
+    }
 
 }

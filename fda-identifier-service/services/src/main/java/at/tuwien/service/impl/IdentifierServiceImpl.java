@@ -4,6 +4,7 @@ import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
@@ -57,19 +58,26 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long containerId, Long databaseId) {
-        return identifierRepository.findByDatabaseId(databaseId);
+    public List<Identifier> findAll(Long databaseId, Long queryId) {
+        if (databaseId != null && queryId != null) {
+            return identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+        } else if (databaseId == null && queryId != null) {
+            return identifierRepository.findByQueryId(queryId);
+        } else if (databaseId != null && queryId == null) {
+            return identifierRepository.findByDatabaseId(databaseId);
+        }
+        return identifierRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        final Optional<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+        final List<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (identifier.isEmpty()) {
             log.error("Failed to find identifier with query id {}", queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
-        return identifier.get();
+        return identifier.get(0);
     }
 
     @Override
@@ -90,27 +98,34 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
         }
         /* find */
-        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDbid(), data.getQid());
-        if (optional.isPresent()) {
+        final List<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDbid(), data.getQid());
+        if (!optional.isEmpty()) {
             log.error("Identifier already issued for database {} and query id {}", data.getDbid(), data.getQid());
             log.debug("identifier already exists similar to request {}", data);
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
-        final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
-        log.debug("found query in query service {}", query);
+        /* identifier */
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
         tmp.setContainerId(data.getCid());
         tmp.setDatabaseId(data.getDbid());
-        tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
         tmp.setCreators(List.of());
-        tmp.setQuery(query.getQuery());
-        tmp.setQueryNormalized(query.getQueryNormalized());
-        tmp.setQueryHash(query.getQueryHash());
-        tmp.setExecution(query.getExecution());
-        tmp.setResultNumber(query.getResultNumber());
-        tmp.setResultHash(query.getResultHash());
+        if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
+            final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
+            tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
+            tmp.setQuery(query.getQuery());
+            tmp.setQueryNormalized(query.getQueryNormalized());
+            tmp.setQueryHash(query.getQueryHash());
+            tmp.setExecution(query.getExecution());
+            tmp.setResultNumber(query.getResultNumber());
+            tmp.setResultHash(query.getResultHash());
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE)) {
+            tmp.setVisibility(identifierMapper.databaseToVisibilityType(database));
+        } else {
+            log.error("Failed to map identifier type: {}", data.getType());
+            throw new IdentifierPublishingNotAllowedException("Failed to map identifier type");
+        }
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(tmp);
         entity.setCreators(data.getCreators()
@@ -131,7 +146,6 @@ public class IdentifierServiceImpl implements IdentifierService {
                         relatedIdentifierRepository.save(id);
                     });
         }
-        entity.setQueryNormalized(query.getQueryNormalized());
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.debug("created identifier {}", identifier);
@@ -154,9 +168,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     public ExportResource exportMetadata(Long id) throws IdentifierNotFoundException {
         /* check */
         final Identifier identifier = find(id);
-        final Database database = identifier.getDatabase();
         /* map */
-        final InputStreamResource resource = documentMapper.identifierToInputStreamResource(database, identifier);
+        final InputStreamResource resource = documentMapper.identifierToInputStreamResource(identifier);
         return ExportResource.builder()
                 .filename("metadata.xml")
                 .resource(resource)

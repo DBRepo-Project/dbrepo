@@ -42,28 +42,8 @@ public class DatabaseDto {
     @Schema(example = "weather_australia")
     private String internalName;
 
-    private List<String> subjects;
-
-    @Schema(example = "EN")
-    private LanguageTypeDto language;
-
-    @Schema(example = "MIT2")
-    private LicenseDto license;
-
     @Schema(example = "Weather Australia 2009-2021")
     private String description;
-
-    @Schema(example = "TU Wien")
-    private String publisher;
-
-    @JsonProperty("publication_year")
-    private Integer publicationYear;
-
-    @JsonProperty("publication_month")
-    private Integer publicationMonth;
-
-    @JsonProperty("publication_day")
-    private Integer publicationDay;
 
     private List<TableBriefDto> tables;
 

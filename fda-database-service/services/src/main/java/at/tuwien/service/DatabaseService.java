@@ -1,13 +1,9 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -75,20 +71,6 @@ public interface DatabaseService {
     Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException;
-
-    /**
-     * Updates the database metadata.
-     *
-     * @param id         The container id.
-     * @param databaseId The database id.
-     * @param modifyDto  The metadata.
-     * @return The database.
-     * @throws DatabaseNotFoundException The database was not found.
-     * @throws UserNotFoundException     The contact person was not found.
-     * @throws LicenseNotFoundException  The license was not found in the metadata database.
-     */
-    Database modify(Long id, Long databaseId, DatabaseModifyDto modifyDto)
-            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException;
 
     /**
      * Updates the visibility of the database.

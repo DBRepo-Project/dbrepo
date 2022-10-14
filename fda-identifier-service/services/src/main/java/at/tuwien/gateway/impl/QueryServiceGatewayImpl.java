@@ -50,6 +50,7 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
             log.debug("query not authorized for identifier {}", identifier);
             throw new RemoteUnavailableException("Query not authorized");
         }
+        log.debug("found query {}", response.getBody());
         return response.getBody();
     }
 }

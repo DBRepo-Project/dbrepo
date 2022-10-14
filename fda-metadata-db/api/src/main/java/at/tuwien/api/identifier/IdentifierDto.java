@@ -1,5 +1,7 @@
 package at.tuwien.api.identifier;
 
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,7 +45,6 @@ public class IdentifierDto {
     @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
     private String title;
 
-    @NotBlank
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
@@ -102,6 +103,10 @@ public class IdentifierDto {
     @JsonProperty("publication_year")
     @Schema(example = "2022")
     private Integer publicationYear;
+
+    private LanguageTypeDto language;
+
+    private LicenseDto license;
 
     @NotNull
     private List<CreatorDto> creators;

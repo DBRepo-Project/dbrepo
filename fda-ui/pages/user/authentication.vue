@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="token">
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -20,6 +20,8 @@
               <v-row dense>
                 <v-col cols="5">
                   <v-btn
+                    v-model="user.email"
+                    small
                     :disabled="user.email_verified || error"
                     color="secondary"
                     type="submit"
@@ -47,6 +49,7 @@
               <v-row dense>
                 <v-col cols="5">
                   <v-btn
+                    small
                     color="primary"
                     :disabled="!valid2 || error"
                     type="submit"
@@ -89,6 +92,11 @@ export default {
         password: null
       },
       password2: null
+    }
+  },
+  computed: {
+    token () {
+      return this.$store.state.token
     }
   },
   mounted () {

@@ -25,7 +25,7 @@ public interface DocumentMapper {
 
     Date instantToDate(Instant data);
 
-    default InputStreamResource identifierToInputStreamResource(Database database, Identifier data) {
+    default InputStreamResource identifierToInputStreamResource(Identifier data) {
         final StringBuilder builder = new StringBuilder("<resource ")
                 .append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ")
                 .append("xmlns=\"http://datacite.org/schema/kernel-4\" ")
@@ -55,28 +55,15 @@ public interface DocumentMapper {
                 .append(data.getTitle())
                 .append("</title></titles>")
                 .append("<publisher xml:lang=\"en\">")
-                .append(database.getPublisher())
+                .append(data.getPublisher())
                 .append("</publisher><publicationYear>")
                 .append(data.getPublicationYear())
                 .append("</publicationYear>");
-        if (database.getSubjects().size() > 0) {
-            builder.append("<subjects>");
-            database.getSubjects()
-                    .forEach(subject -> builder.append("<subject xml:lang=\"en\">")
-                            .append(subject)
-                            .append("</subject>"));
-            builder.append("</subjects>");
-        }
         builder.append("<dates><date dateType=\"Issued\">")
                 .append(instantToDate(data.getCreated()))
                 .append("</date><date dateType=\"Available\">")
                 .append(instantToDate(data.getCreated()))
                 .append("</date></dates>");
-        if (database.getLanguage() != null) {
-            builder.append("<language>")
-                    .append(languageToLanguageDto(database.getLanguage()).name())
-                    .append("</language>");
-        }
         builder.append("<resourceType resourceTypeGeneral=\"Dataset\">Dataset</resourceType>");
         if (data.getRelated().size() > 0) {
             builder.append("<relatedIdentifiers>");
@@ -98,14 +85,6 @@ public interface DocumentMapper {
                                 .append("</relatedIdentifier>");
                     });
             builder.append("</relatedIdentifiers>");
-        }
-        if (database.getLicense() != null) {
-            builder.append("<rightsList><rights xml:lang=\"en-US\" schemeURI=\"https://spdx.org/licenses/\" ")
-                    .append("rightsIdentifierScheme=\"SPDX\" rightsIdentifier=\"")
-                    .append(database.getLicense().getIdentifier())
-                    .append("\" rightsURI=\"")
-                    .append(database.getLicense().getUri())
-                    .append("\"/></rightsList>");
         }
         if (data.getDescription() != null) {
             builder.append("<descriptions><description descriptionType=\"Abstract\">")

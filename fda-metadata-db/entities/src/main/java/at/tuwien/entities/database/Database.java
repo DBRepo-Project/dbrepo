@@ -57,12 +57,6 @@ public class Database {
     @Column(nullable = false)
     private String name;
 
-    @ElementCollection
-    @CollectionTable(name = "mdb_databases_subjects", joinColumns = {
-            @JoinColumn(name = "dbid", referencedColumnName = "id")
-    })
-    private List<String> subjects;
-
     @Column(nullable = false)
     private String internalName;
 
@@ -71,18 +65,6 @@ public class Database {
 
     @Column
     private String description;
-
-    @Column
-    private String publisher;
-
-    @Column
-    private Integer publicationYear;
-
-    @Column
-    private Integer publicationMonth;
-
-    @Column
-    private Integer publicationDay;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
@@ -98,16 +80,6 @@ public class Database {
 
     @Column(nullable = false)
     private Boolean isPublic;
-
-    @Column(columnDefinition = "enum('EN', 'DE', 'OTHER')")
-    @Enumerated(EnumType.STRING)
-    private LanguageType language;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "License", referencedColumnName = "identifier")
-    })
-    private License license;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

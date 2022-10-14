@@ -4,14 +4,12 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -62,7 +60,7 @@ public class Identifier {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column
     private String description;
 
     @NotBlank
@@ -73,7 +71,7 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "License", referencedColumnName = "identifier")
     })
@@ -83,22 +81,22 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 
-    @Column(nullable = false)
+    @Column
     private String query;
 
-    @Column(nullable = false)
+    @Column
     private String queryNormalized;
 
-    @Column(nullable = false)
+    @Column
     private String queryHash;
 
-    @Column(nullable = false)
+    @Column
     private String resultHash;
 
-    @Column(nullable = false)
+    @Column
     private Instant execution;
 
-    @Column(nullable = false)
+    @Column
     private Long resultNumber;
 
     @Column(nullable = false)

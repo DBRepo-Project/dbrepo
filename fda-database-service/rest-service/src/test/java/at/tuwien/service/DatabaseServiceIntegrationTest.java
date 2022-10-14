@@ -170,36 +170,4 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
     }
 
-    @Test
-    public void update_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
-            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
-            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException,
-            LicenseNotFoundException, DatabaseNotFoundException {
-
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
-
-        /* test */
-        databaseService.modify(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_UPDATE1);
-    }
-
-    @Test
-    public void update_license_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
-            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
-            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException,
-            LicenseNotFoundException, DatabaseNotFoundException {
-
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
-
-        /* test */
-        databaseService.modify(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_UPDATE1);
-        databaseService.modify(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_UPDATE2);
-        log.trace("");
-    }
-
 }

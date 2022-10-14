@@ -1,7 +1,6 @@
 package at.tuwien;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.entities.container.Container;
@@ -113,19 +112,6 @@ public abstract class BaseUnitTest {
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
-            .build();
-
-    public final static DatabaseModifyDto DATABASE_1_UPDATE1 = DatabaseModifyDto.builder()
-            .description(DATABASE_1_DESCRIPTION)
-            .language(LanguageTypeDto.EN)
-            .build();
-
-    public final static DatabaseModifyDto DATABASE_1_UPDATE2 = DatabaseModifyDto.builder()
-            .description(DATABASE_1_DESCRIPTION)
-            .language(LanguageTypeDto.EN)
-            .license(LICENSE_1_DTO)
-            .publicationYear(DATABASE_1_PUBLICATION_YEAR)
-            .publisher(DATABASE_1_PUBLISHER)
             .build();
 
     public final static Long DATABASE_2_ID = 2L;

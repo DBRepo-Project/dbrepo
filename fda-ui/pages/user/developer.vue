@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="token">
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>

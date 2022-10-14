@@ -43,9 +43,11 @@ public class IdentifierEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Operation(summary = "Find identifiers")
-    public ResponseEntity<List<IdentifierDto>> findAll() {
-        final List<Identifier> identifiers = identifierService.findAll();
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
+    @Operation(summary = "Find identifiers", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<List<IdentifierDto>> findAll(@RequestParam(required = false) Long dbid,
+                                                       @RequestParam(required = false) Long qid) {
+        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         log.info("Found {} identifiers", identifiers.size());
         log.debug("found identifiers {}", identifiers);
         return ResponseEntity.ok(identifiers.stream()

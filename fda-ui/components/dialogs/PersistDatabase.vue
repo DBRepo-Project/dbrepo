@@ -1,8 +1,5 @@
 <template>
-  <div class="d-flex flex-row">
-    <v-btn class="mt-4 ml-4" icon large @click="cancel">
-      <v-icon>mdi-close</v-icon>
-    </v-btn>
+  <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card flat>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
@@ -15,6 +12,18 @@
             color="info">
             Choose an expressive database description for the information stored.
           </v-alert>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="title"
+                v-model="identifier.title"
+                name="title"
+                label="Title *"
+                disabled
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
           <v-row dense>
             <v-col>
               <v-text-field
@@ -33,9 +42,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Description *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
+                label="Description" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -52,7 +59,7 @@
             </v-col>
           </v-row>
           <v-row dense>
-            <v-col cols="3">
+            <v-col cols="4">
               <v-text-field
                 id="publication-day"
                 v-model.number="identifier.publication_day"
@@ -64,7 +71,7 @@
                 min="1"
                 max="31" />
             </v-col>
-            <v-col cols="3">
+            <v-col cols="4">
               <v-text-field
                 id="publication-month"
                 v-model.number="identifier.publication_month"
@@ -76,7 +83,7 @@
                 min="1"
                 max="12" />
             </v-col>
-            <v-col cols="3">
+            <v-col cols="4">
               <v-text-field
                 id="publication-year"
                 v-model.number="identifier.publication_year"
@@ -106,6 +113,7 @@
           <v-row dense>
             <v-col>
               <v-select
+                v-if="false"
                 id="contact"
                 v-model="identifier.contact_person"
                 name="contact"
@@ -120,13 +128,18 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
+            class="mb-2"
+            @click="cancel">
+            Close
+          </v-btn>
+          <v-btn
             id="database"
             class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
             type="submit"
             @click="persist">
-            Update
+            Persist
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -136,7 +149,6 @@
 
 <script>
 import { formatDayUTC, formatMonthUTC, formatUser, formatYearUTC } from '@/utils'
-import _ from 'lodash'
 export default {
   props: {
     database: {
@@ -154,8 +166,8 @@ export default {
       menu: false,
       users: [],
       identifier: {
-        container_id: parseInt(this.$route.params.container_id),
-        database_id: parseInt(this.$route.params.database_id),
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
         title: null,
         publisher: null,
         description: null,
@@ -432,17 +444,8 @@ export default {
   mounted () {
     this.loadLicenses()
     this.loadUsers()
-    this.identifier.description = this.database.description
-    if (this.database.publication_year === null) {
-      this.identifier.publication_year = parseInt(formatYearUTC(Date.now()))
-    } else {
-      this.identifier.publication_year = this.database.publication_year
-    }
-    this.identifier.publication_month = this.database.publication_month
-    this.identifier.publication_day = this.database.publication_day
-    this.identifier.language = this.database.language
-    this.identifier.license = this.database.license
-    this.identifier.contact_person = this.database.contact_person
+    this.identifier.title = this.database.name
+    this.identifier.publication_year = parseInt(new Date().getFullYear())
   },
   methods: {
     printUser (item) {
@@ -485,11 +488,10 @@ export default {
       this.loading = true
       try {
         this.loading = true
-        const dto = _.pick(this.identifier, ['publisher', 'description', 'publication_year', 'publication_month', 'publication_day'])
-        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, dto, this.config)
         const res = await this.$axios.post('/api/identifier', this.identifier, this.config)
-        this.$toast.success('Successfully updated the database.')
         console.debug('persist', res.data)
+        this.$toast.success('Database persisted.')
+        this.$emit('close-dialog', { action: 'persisted', success: true })
       } catch (err) {
         this.error = true
         this.loading = false
@@ -497,15 +499,10 @@ export default {
         console.error('persist failed', err)
         return
       }
-      this.$toast.success('Database persisted.')
-      this.$emit('close', { action: 'persisted' })
       this.loading = false
     }
   }
 }
 </script>
 <style scoped>
-.v-card {
-  min-width: 800px;
-}
 </style>

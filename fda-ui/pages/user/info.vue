@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="token">
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -81,6 +81,7 @@
               <v-row dense>
                 <v-col cols="5">
                   <v-btn
+                    small
                     color="primary"
                     :disabled="!valid1 || error"
                     type="submit"

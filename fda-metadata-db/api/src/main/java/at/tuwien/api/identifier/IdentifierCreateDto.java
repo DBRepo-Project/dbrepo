@@ -1,5 +1,7 @@
 package at.tuwien.api.identifier;
 
+import at.tuwien.api.database.LanguageTypeDto;
+import at.tuwien.api.database.LicenseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -32,7 +34,6 @@ public class IdentifierCreateDto {
     @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
     private String title;
 
-    @NotBlank
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
@@ -53,6 +54,10 @@ public class IdentifierCreateDto {
 
     @Schema(example = "TU Wien")
     private String publisher;
+
+    private LanguageTypeDto language;
+
+    private LicenseDto license;
 
     @NotNull
     @JsonProperty("publication_year")

@@ -4,6 +4,47 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
+        <v-card v-if="hasIdentifier" flat tile>
+          <v-card-title>Identifier</v-card-title>
+          <v-card-text>
+            <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title v-if="publisher" class="mt-2">
+                    Database Publisher
+                  </v-list-item-title>
+                  <v-list-item-content v-if="publisher">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading">{{ publisher }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title v-if="language" class="mt-2">
+                    Language
+                  </v-list-item-title>
+                  <v-list-item-content v-if="language">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="language" />
+                  </v-list-item-content>
+                  <v-list-item-title v-if="publication" class="mt-2">
+                    Publication Date
+                  </v-list-item-title>
+                  <v-list-item-content v-if="publication">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="publication" />
+                  </v-list-item-content>
+                  <v-list-item-title v-if="identifier.license" class="mt-2">
+                    License
+                  </v-list-item-title>
+                  <v-list-item-content v-if="identifier.license">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <a v-if="database.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
+                    <span v-if="!database.license">(none)</span>
+                  </v-list-item-content>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+        <v-divider v-if="hasIdentifier" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -43,13 +84,6 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ database.is_public ? 'Public' : 'Private' }}</span>
                   </v-list-item-content>
-                  <v-list-item-title v-if="publisher" class="mt-2">
-                    Database Publisher
-                  </v-list-item-title>
-                  <v-list-item-content v-if="publisher">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ publisher }}</span>
-                  </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Internal Name
                   </v-list-item-title>
@@ -70,28 +104,6 @@
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="createdUTC" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="language" class="mt-2">
-                    Language
-                  </v-list-item-title>
-                  <v-list-item-content v-if="language">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="language" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="publication" class="mt-2">
-                    Publication Date
-                  </v-list-item-title>
-                  <v-list-item-content v-if="publication">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="publication" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="database.license" class="mt-2">
-                    License
-                  </v-list-item-title>
-                  <v-list-item-content v-if="database.license">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="database.license" target="_blank" :href="database.license.uri">{{ database.license.identifier }}</a>
-                    <span v-if="!database.license">(none)</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Creator
@@ -115,16 +127,23 @@
               </v-list-item>
             </v-list>
             <v-card-actions v-if="isCreator">
-              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Get Database PID</v-btn>
+              <v-btn
+                v-if="!hasIdentifier"
+                small
+                color="primary"
+                @click="editDbDialog = true">
+                Get Database PID
+              </v-btn>
               <v-dialog
+                v-if="!hasIdentifier"
                 v-model="editDbDialog"
                 persistent
-                max-width="640">
-                <EditDB :database="database" @close-dialog="closeDialog" />
+                max-width="860">
+                <PersistDatabase :database="database" @close-dialog="closeDialog" />
               </v-dialog>
               <v-dialog
                 v-model="editVisibilityDialog"
-                max-width="640">
+                max-width="860">
                 <EditVisibility :database="database" @close-dialog="closeDialog" />
               </v-dialog>
             </v-card-actions>
@@ -136,7 +155,12 @@
           <v-card-subtitle>Dangerous operation</v-card-subtitle>
           <v-card-text>
             <v-card-actions>
-              <v-btn v-if="token" color="error" @click="editVisibilityDialog = true">Modify</v-btn>
+              <v-btn
+                small
+                color="error"
+                @click="editVisibilityDialog = true">
+                Modify
+              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
@@ -148,7 +172,7 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar'
-import EditDB from '@/components/dialogs/EditDB'
+import PersistDatabase from '@/components/dialogs/PersistDatabase'
 import EditVisibility from '@/components/dialogs/EditVisibility'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
@@ -157,7 +181,7 @@ export default {
   components: {
     EditVisibility,
     DBToolbar,
-    EditDB
+    PersistDatabase
   },
   data () {
     return {
@@ -167,18 +191,15 @@ export default {
       user: {
         username: null
       },
+      identifier: {
+        id: null
+      },
       database: {
         id: null,
         name: null,
         description: null,
         is_public: null,
-        publisher: null,
         created: null,
-        publication_year: null,
-        publication_month: null,
-        publication_day: null,
-        subject: [],
-        language: null,
         contact: null,
         container: {
           id: null,
@@ -215,10 +236,10 @@ export default {
       return location.protocol + '//' + location.host
     },
     description () {
-      return this.database.description
+      return this.identifier.description
     },
     publisher () {
-      return this.database.publisher
+      return this.identifier.publisher
     },
     token () {
       return this.$store.state.token
@@ -241,7 +262,7 @@ export default {
       return this.database.creator.username === this.user.username
     },
     language () {
-      return this.database.language
+      return this.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -259,12 +280,12 @@ export default {
       return formatUser(this.database.contact)
     },
     publication () {
-      if (this.database.publication_year === null) {
+      if (this.identifier.publication_year === null) {
         return null
-      } else if (this.database.publication_month !== null && this.database.publication_day !== null) {
-        return this.database.publication_year + '-' + this.database.publication_month + '-' + this.database.publication_day
+      } else if (this.identifier.publication_month !== null && this.identifier.publication_day !== null) {
+        return this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day
       } else {
-        return this.database.publication_year
+        return this.identifier.publication_year
       }
     },
     creator () {
@@ -272,11 +293,15 @@ export default {
     },
     creatorVerified () {
       return this.database.creator.email_verified
+    },
+    hasIdentifier () {
+      return this.identifier.id !== null
     }
   },
   mounted () {
     this.loadDatabase()
     this.loadUser()
+    this.loadIdentifier()
   },
   methods: {
     async loadDatabase () {
@@ -287,6 +312,26 @@ export default {
         console.debug('database', res.data)
       } catch (err) {
         this.$toast.error('Could not load database.')
+      }
+      this.loading = false
+    },
+    async loadIdentifier () {
+      this.loading = true
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}`, this.config)
+        let identifiers = res.data
+        identifiers = identifiers.filter(i => i.type === 'database')
+        if (identifiers.length > 0) {
+          this.identifier = identifiers[0]
+          console.debug('identifier', this.identifier)
+        }
+      } catch (err) {
+        this.error = true
+        this.loading = false
+        this.$toast.error('Failed to persist database')
+        console.error('persist failed', err)
+        return
       }
       this.loading = false
     },

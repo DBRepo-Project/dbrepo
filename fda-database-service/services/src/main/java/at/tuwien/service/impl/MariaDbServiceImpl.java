@@ -1,11 +1,9 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
@@ -14,7 +12,6 @@ import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.LicenseService;
 import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -35,19 +32,17 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     private final AmqpMapper amqpMapper;
     private final UserService userService;
-    private final LicenseService licenseService;
     private final DatabaseMapper databaseMapper;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
     private final DatabaseidxRepository databaseidxRepository;
 
     @Autowired
-    public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, LicenseService licenseService,
-                              DatabaseMapper databaseMapper, ContainerService containerService,
-                              DatabaseRepository databaseRepository, DatabaseidxRepository databaseidxRepository) {
+    public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, DatabaseMapper databaseMapper,
+                              ContainerService containerService, DatabaseRepository databaseRepository,
+                              DatabaseidxRepository databaseidxRepository) {
         this.amqpMapper = amqpMapper;
         this.userService = userService;
-        this.licenseService = licenseService;
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
@@ -163,44 +158,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database edb = databaseidxRepository.save(database);
         log.info("Saved database in elastic search with id {}", edb.getId());
         log.debug("saved database in elastic search {}", edb);
-        return dbdb;
-    }
-
-    @Override
-    @Transactional
-    public Database modify(Long containerId, Long databaseId, DatabaseModifyDto modifyDto)
-            throws UserNotFoundException, DatabaseNotFoundException, LicenseNotFoundException {
-        /* check */
-        final Database database = findById(containerId, databaseId);
-        /* map */
-        if (modifyDto.getContactPerson() != null) {
-            database.setContact(userService.findByUsername(modifyDto.getContactPerson()));
-        } else {
-            database.setContact(null);
-        }
-        if (modifyDto.getLicense() != null) {
-            final License license = licenseService.find(modifyDto.getLicense().getIdentifier());
-            log.info("Found license with identifier {}", modifyDto.getLicense().getIdentifier());
-            log.debug("found license {}", license);
-            database.setLicense(license);
-        } else {
-            database.setLicense(null);
-        }
-        database.setLanguage(databaseMapper.languageTypeDtoToLanguageType(modifyDto.getLanguage()));
-        database.setDescription(modifyDto.getDescription());
-        database.setPublicationYear(modifyDto.getPublicationYear());
-        database.setPublicationMonth(modifyDto.getPublicationMonth());
-        database.setPublicationDay(modifyDto.getPublicationDay());
-        database.setSubjects(modifyDto.getSubjects());
-        database.setPublisher(modifyDto.getPublisher());
-        /* update entity in metadata database */
-        final Database dbdb = databaseRepository.save(database);
-        log.info("Updated database with id {}", dbdb.getId());
-        log.debug("updated database {}", dbdb);
-        // save in database_index - elastic search
-        final Database edb = databaseidxRepository.save(database);
-        log.info("Updated database in elastic search with id {}", edb.getId());
-        log.debug("updated database in elastic search {}", edb);
         return dbdb;
     }
 
