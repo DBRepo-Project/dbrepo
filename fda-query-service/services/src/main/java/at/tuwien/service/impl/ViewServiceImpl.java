@@ -52,7 +52,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     @Override
     @Transactional(readOnly = true)
-    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException, UserNotFoundException {
+    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException {
         final Optional<View> optional;
         if (principal == null) {
             optional = viewRepository.findPublicByDatabaseIdAndId(databaseId, id);
@@ -64,6 +64,31 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             throw new ViewNotFoundException("Failed to find view");
         }
         return optional.get();
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long containerId, Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
+            UserNotFoundException, DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, ViewMalformedException {
+        /* find */
+        final View view = findById(databaseId, id, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        /* delete view */
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement createViewStatement = viewMapper.viewToRawDeleteViewQuery(connection, view);
+            createViewStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to delete view: {}", e.getMessage());
+            throw new ViewMalformedException("Failed to delete view", e);
+        } finally {
+            dataSource.close();
+        }
+        /* delete in metadata database */
+        viewRepository.delete(view);
+        log.info("Deleted view with id {}", view.getId());
+        log.debug("deleted view {}", view);
     }
 
     @Override
@@ -80,7 +105,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
             createViewStatement.executeUpdate();
-            final PreparedStatement createEntityStatement = viewMapper.viewCreateDtoToRawInsertViewQuery(connection, databaseId, user.getId(), data);
+            final PreparedStatement createEntityStatement = viewMapper.viewCreateDtoToRawInsertViewQuery(connection, containerId, databaseId, user.getId(), data);
             createEntityStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
@@ -93,8 +118,10 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         }
         /* save in metadata database */
         final View entity = View.builder()
+                .vcid(containerId)
                 .vdbid(databaseId)
-                .name(viewMapper.nameToInternalName(data.getName()))
+                .name(data.getName())
+                .internalName(viewMapper.nameToInternalName(data.getName()))
                 .creator(user)
                 .query(data.getQuery())
                 .isInitialView(false)

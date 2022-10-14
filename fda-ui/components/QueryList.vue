@@ -72,7 +72,7 @@
             </v-row>
             <v-row dense>
               <v-col>
-                <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${item.id}`">
+                <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/${item.id}`">
                   More
                 </v-btn>
               </v-col>
@@ -114,9 +114,6 @@ export default {
     }
   },
   computed: {
-    databaseId () {
-      return this.$route.params.database_id
-    },
     baseUrl () {
       return location.protocol + '//' + location.host
     },
@@ -160,7 +157,7 @@ export default {
       console.debug(1, this.database.is_public, 2, this.database.creator.username, 3, this.user.username, 4, this.token)
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/query?persisted=true`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
         try {

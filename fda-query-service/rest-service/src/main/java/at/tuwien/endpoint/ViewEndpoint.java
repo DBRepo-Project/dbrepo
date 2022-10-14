@@ -100,6 +100,24 @@ public class ViewEndpoint extends AbstractEndpoint {
         return ResponseEntity.ok(view);
     }
 
+    @DeleteMapping("/{viewId}")
+    @Transactional
+    @Operation(summary = "Delete one view", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
+                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                    @NotNull @PathVariable("viewId") Long viewId,
+                                    @NotNull Principal principal) throws DatabaseNotFoundException,
+            NotAllowedException, ViewNotFoundException, UserNotFoundException, DatabaseConnectionException,
+            ViewMalformedException, QueryMalformedException {
+        if (!hasDatabasePermission(containerId, databaseId, "DELETE_VIEW", principal)) {
+            log.error("Missing delete view permission");
+            throw new NotAllowedException("Missing delete view permission");
+        }
+        viewService.delete(containerId, databaseId, viewId, principal);
+        return ResponseEntity.accepted()
+                .build();
+    }
+
     @GetMapping("/{viewId}/data")
     @Transactional(readOnly = true)
     @Operation(summary = "Find view data", security = @SecurityRequirement(name = "bearerAuth"))
@@ -114,8 +132,8 @@ public class ViewEndpoint extends AbstractEndpoint {
             ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException {
         /* check */
         if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
-            log.error("Missing find views permission");
-            throw new NotAllowedException("Missing find views permission");
+            log.error("Missing view data in view permission");
+            throw new NotAllowedException("Missing view data in view permission");
         }
         validateDataParams(page, size);
         /* find */

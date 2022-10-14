@@ -10,7 +10,6 @@ import javax.persistence.Column;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.List;
 
 @Data
 @Entity
@@ -33,6 +32,9 @@ public class View implements Serializable {
     private Long id;
 
     @Column(nullable = false)
+    private Long vcid;
+
+    @Column(nullable = false)
     private Long vdbid;
 
     @Column(nullable = false)
@@ -40,6 +42,9 @@ public class View implements Serializable {
 
     @Column(name = "vname", nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private String internalName;
 
     @Column(name = "public", nullable = false)
     private Boolean isPublic;

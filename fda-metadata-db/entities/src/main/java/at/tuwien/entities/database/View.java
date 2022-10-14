@@ -3,8 +3,6 @@ package at.tuwien.entities.database;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,9 +17,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(ViewKey.class)
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_view set deleted = NOW() where id = ?")
 @javax.persistence.Table(name = "mdb_view")
 public class View {
 
@@ -34,6 +30,10 @@ public class View {
             parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
     )
     private Long id;
+
+    @Id
+    @EqualsAndHashCode.Include
+    private Long vcid;
 
     @Id
     @EqualsAndHashCode.Include
@@ -50,13 +50,16 @@ public class View {
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
     private Database database;
 
-    @Column(name = "vname")
+    @Column(name = "vname", nullable = false)
     private String name;
 
-    @Column(name = "public")
+    @Column(nullable = false)
+    private String internalName;
+
+    @Column(name = "public", nullable = false)
     private Boolean isPublic;
 
-    @Column(name = "initialview")
+    @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
     @Column(nullable = false)

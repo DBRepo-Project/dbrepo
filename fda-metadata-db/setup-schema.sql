@@ -455,8 +455,10 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 CREATE TABLE IF NOT EXISTS mdb_VIEW
 (
     id            bigint                      NOT NULL DEFAULT nextval('mdb_view_seq'),
+    vcid          bigint                      NOT NULL,
     vdbid         bigint                      NOT NULL,
-    vName         VARCHAR(50)                 NOT NULL,
+    vName         VARCHAR(255)                NOT NULL,
+    internal_name VARCHAR(255)                NOT NULL,
     Query         TEXT                        NOT NULL,
     Public        BOOLEAN                     NOT NULL,
     NumCols       INTEGER,

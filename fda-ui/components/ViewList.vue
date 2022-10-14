@@ -9,31 +9,28 @@
     <v-expansion-panels v-if="!loading && views.length > 0" v-model="panel" accordion>
       <v-expansion-panel v-for="(item,i) in views" :key="i" @click="details(item)">
         <v-expansion-panel-header>
-          <pre>{{ item.query }}</pre>
+          {{ item.name }}
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
           <v-row dense>
             <v-col>
               <v-list dense>
                 <v-list-item>
+                  <v-list-item-icon>
+                    <v-icon>mdi-text-short</v-icon>
+                  </v-list-item-icon>
                   <v-list-item-content>
                     <v-list-item-title>
                       View ID
                     </v-list-item-title>
-                    <v-list-item-content v-text="viewDetails.id " />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      View Name
+                    <v-list-item-content v-text="viewDetails.id" />
+                    <v-list-item-title class="mt-2">
+                      View Query
                     </v-list-item-title>
-                    <v-list-item-content v-text="viewDetails.name " />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
+                    <v-list-item-content>
+                      <pre v-text="viewDetails.query" />
+                    </v-list-item-content>
+                    <v-list-item-title class="mt-2">
                       View Visibility
                     </v-list-item-title>
                     <v-list-item-content>
@@ -42,6 +39,16 @@
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
+                More
+              </v-btn>
+              <v-btn small color="error" @click="deleteView(viewDetails)">
+                Delete
+              </v-btn>
             </v-col>
           </v-row>
         </v-expansion-panel-content>
@@ -154,6 +161,18 @@ export default {
         }
         this.loadingDetails = false
       }
+    },
+    async deleteView (view) {
+      try {
+        const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
+        console.debug('deleted view', res.data)
+        this.$toast.success(`Successfully deleted view with id ${view.id}`)
+      } catch (err) {
+        this.$toast.error('Failed to delete view')
+        console.error('Failed to delete view')
+        return
+      }
+      await this.loadViews()
     }
   }
 }

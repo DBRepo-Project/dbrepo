@@ -6,7 +6,7 @@
         (no tables)
       </v-card-text>
     </v-card>
-    <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion>
+    <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion flat>
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
           {{ item.name }}
@@ -74,13 +74,13 @@
           </v-row>
           <v-row v-if="isPublicOrOwner" dense>
             <v-col>
-              <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+              <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
               </v-btn>
-              <v-btn color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
+              <v-btn small color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
                 Create Subset
               </v-btn>
-              <v-btn v-if="canModify" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
+              <v-btn v-if="canModify" small class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
                 Import csv
               </v-btn>
             </v-col>

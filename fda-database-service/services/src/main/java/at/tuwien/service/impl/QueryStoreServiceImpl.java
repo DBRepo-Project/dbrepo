@@ -47,7 +47,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
             preparedStatement21.executeUpdate();
             final PreparedStatement preparedStatement22 = connection.prepareStatement("CREATE TABLE `qs_columns` (`id` bigint not null primary key default nextval(`qs_columns_seq`), `created` datetime not null, `dbid` bigint not null, `tid` bigint not null, `last_modified` datetime)");
             preparedStatement22.executeUpdate();
-            final PreparedStatement preparedStatement23 = connection.prepareStatement("CREATE TABLE `qs_views` ( `id` bigint not null primary key default nextval(`qs_views_seq`), `vdbid` bigint not null, `created_by` bigint not null, `name` varchar(255) not null, `is_public` boolean not null, `is_initial_view` boolean not null, `query` text not null, `created` datetime not null)");
+            final PreparedStatement preparedStatement23 = connection.prepareStatement("CREATE TABLE `qs_views` ( `id` bigint not null primary key default nextval(`qs_views_seq`), `vcid` bigint not null, `vdbid` bigint not null, `created_by` bigint not null, `name` varchar(255) not null, `internal_name` varchar(255) not null, `is_public` boolean not null, `is_initial_view` boolean not null, `query` text not null, `created` datetime not null)");
             preparedStatement23.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to delete database with id {}", databaseId);

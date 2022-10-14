@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -28,6 +29,10 @@ public interface ViewService {
      * @throws ViewNotFoundException The view was not found in the metadata database.
      */
     View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException, UserNotFoundException;
+
+    @Transactional
+    void delete(Long containerId, Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
+            UserNotFoundException, DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, ViewMalformedException;
 
     /**
      * Creates a view in the container with given id and database with id with the given query.

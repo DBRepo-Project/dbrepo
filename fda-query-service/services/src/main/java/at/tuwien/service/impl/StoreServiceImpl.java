@@ -104,6 +104,22 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                         QueryTypeDto type, Principal principal, Instant execution)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+        /* check */
+        if (type.equals(QueryTypeDto.VIEW)) {
+            /* view executions are not stored in the query store */
+            return Query.builder()
+                    .cid(containerId)
+                    .dbid(databaseId)
+                    .query(metadata.getStatement())
+                    .type(storeMapper.queryTypeDtoToQueryType(type))
+                    .queryNormalized(metadata.getStatement())
+                    .queryHash(DigestUtils.sha256Hex(metadata.getStatement()))
+                    .resultNumber(null)
+                    .resultHash(null)
+                    .execution(execution)
+                    .createdBy(null)
+                    .build();
+        }
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -114,7 +130,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         final User creator = userService.findByUsername(principal.getName());
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        final at.tuwien.querystore.Query query = at.tuwien.querystore.Query.builder()
+        final Query query = at.tuwien.querystore.Query.builder()
                 .cid(containerId)
                 .dbid(databaseId)
                 .query(metadata.getStatement())

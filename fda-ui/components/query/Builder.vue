@@ -1,12 +1,17 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>Create Subset</v-toolbar-title>
+      <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="backTo">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn :disabled="!canExecute || !token" color="primary" @click="execute">
+        <v-btn :disabled="!canExecute || !token || !valid" :loading="loadingQuery" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
-          Execute
+          Create
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
@@ -22,79 +27,116 @@
         </v-tab>
       </v-tabs>
     </v-toolbar>
-    <v-card flat>
-      <v-tabs-items v-model="tabs">
-        <v-tab-item>
-          <v-card-text>
-            <v-row>
-              <v-col cols="6">
-                <v-select
-                  v-model="table"
-                  :items="tables"
-                  item-text="name"
-                  :loading="loadingTables"
-                  return-object
-                  label="Table"
-                  @change="loadColumns" />
-              </v-col>
-              <v-col cols="6">
-                <v-select
-                  v-model="select"
-                  item-text="name"
-                  :disabled="!table"
-                  :items="selectItems"
-                  :loading="loadingColumns"
-                  label="Columns"
-                  return-object
-                  multiple
-                  @change="buildQuery" />
-              </v-col>
-            </v-row>
-            <QueryFilters
-              v-if="table"
-              v-model="clauses"
-              :columns="columnNames" />
-            <v-row v-if="query.formatted">
-              <v-col>
-                <v-progress-linear v-if="loadingQuery" color="primary" />
-                <QueryRaw
-                  v-model="query.formatted"
-                  disabled
-                  class="mt-2 ml-3" />
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-tab-item>
-        <v-tab-item>
-          <QueryRaw
-            v-model="rawSQL"
-            class="mt-2 ml-3" />
-        </v-tab-item>
-      </v-tabs-items>
-      <v-card-text v-if="queryId">
-        <v-row>
-          <v-col>
-            <v-btn color="blue-grey white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/${queryId}`">
-              View
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+    <v-form v-model="valid">
+      <v-card flat>
+        <v-tabs-items v-model="tabs">
+          <v-tab-item>
+            <v-card-text>
+              <v-row>
+                <v-col cols="6">
+                  <v-text-field
+                    v-if="isView"
+                    v-model="view.name"
+                    type="text"
+                    label="View name"
+                    :rules="[v => !!v || $t('Required')]"
+                    required />
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="6">
+                  <v-select
+                    v-model="table"
+                    :items="tables"
+                    item-text="name"
+                    :loading="loadingTables"
+                    return-object
+                    label="Table"
+                    :rules="[v => !!v || $t('Required')]"
+                    @change="loadColumns" />
+                </v-col>
+                <v-col cols="6">
+                  <v-select
+                    v-model="select"
+                    item-text="name"
+                    :disabled="!table"
+                    :items="selectItems"
+                    :loading="loadingColumns"
+                    label="Columns"
+                    :rules="[v => !!v || $t('Required')]"
+                    return-object
+                    multiple
+                    @change="buildQuery" />
+                </v-col>
+              </v-row>
+              <QueryFilters
+                v-if="table"
+                v-model="clauses"
+                :columns="columnNames" />
+              <v-row>
+                <v-col>
+                  <v-switch
+                    v-if="isView"
+                    v-model="view.is_public"
+                    :label="`${view.is_public ? 'Public' : 'Private'} view`" />
+                </v-col>
+              </v-row>
+              <v-row v-if="query.formatted" id="query-raw">
+                <v-col>
+                  <QueryRaw
+                    v-model="query.formatted"
+                    disabled
+                    class="mt-2 ml-3" />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-tab-item>
+          <v-tab-item>
+            <QueryRaw
+              v-model="rawSQL"
+              class="mt-2 ml-3" />
+          </v-tab-item>
+        </v-tabs-items>
+        <v-card-text v-if="queryId || viewId">
+          <v-row>
+            <v-col>
+              <v-btn color="blue-grey white--text" :to="viewLink">
+                View
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-form>
     <QueryResults ref="queryResults" v-model="queryId" />
   </div>
 </template>
 
 <script>
 export default {
+  props: {
+    mode: {
+      type: String,
+      default () {
+        return 'query'
+      }
+    }
+  },
   data () {
     return {
       table: null,
       tables: [],
       tableDetails: null,
       queryId: null,
+      viewId: null,
+      valid: false,
       query: {
         sql: ''
+      },
+      view: {
+        is_public: true,
+        name: null,
+        query: null
       },
       loadingTables: false,
       loadingColumns: false,
@@ -113,20 +155,22 @@ export default {
     columnNames () {
       return this.selectItems && this.selectItems.map(s => s.internal_name)
     },
-    databaseId () {
-      return this.$route.params.database_id
-    },
     tableId () {
       return this.table.id
+    },
+    viewLink () {
+      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? `/view/${this.viewId}` : `/query/${this.queryId}`)
     },
     token () {
       return this.$store.state.token
     },
-    headers () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     },
     sql () {
       if (this.tabs === 0) {
@@ -146,6 +190,15 @@ export default {
         // raw sql
         return this.sql.length
       }
+    },
+    backTo () {
+      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
+    },
+    isView () {
+      return this.mode === 'view'
+    },
+    title () {
+      return this.isView ? 'Create View' : 'Create Subset'
     }
   },
   watch: {
@@ -175,9 +228,7 @@ export default {
     async loadTables () {
       try {
         this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, {
-          headers: this.headers
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
         this.tables = res.data
         console.debug('tables', this.tables)
       } catch (err) {
@@ -199,8 +250,20 @@ export default {
         console.warn('Failed to find table with id', tid)
       }
     },
-    execute () {
-      this.$refs.queryResults.executeFirstTime(this)
+    async execute () {
+      if (this.isView) {
+        this.loadingQuery = true
+        try {
+          this.view.query = this.query.sql
+          const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
+          console.debug('view', res.data)
+        } catch (err) {
+          console.error('Failed to create view', err)
+          return
+        }
+        this.loadingQuery = false
+      }
+      await this.$refs.queryResults.executeFirstTime(this)
     },
     async buildQuery () {
       if (!this.table) {
@@ -227,9 +290,7 @@ export default {
       const tableId = this.table.id
       try {
         this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${tableId}`, {
-          headers: this.headers
-        })
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
@@ -248,5 +309,16 @@ main.scss file from vuetify, because it paints it red */
   background: #fdf6e3;
   color: #657b83;
 }
+#query-raw {
+}
 
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

@@ -9,5 +9,7 @@ public class ViewKey implements Serializable {
 
     private Long id;
 
+    private Long vcid;
+
     private Long vdbid;
 }

@@ -12,17 +12,20 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="is_owner && canAdd" color="primary" class="mr-2" @click="addTuple">
+        <v-btn v-if="is_owner && canAdd" class="mr-2 mb-1" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1" @click="editTupleDialog = true">
+        <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1 black--text" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="is_owner && canDelete" color="error" class="mb-1" @click="deleteItems">
+        <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="token" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary" class=" mb-1" @click="deleteItems">
+        <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-wrench</v-icon> Create Subset
+        </v-btn>
+        <v-btn v-if="token" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
+          <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
         <v-btn v-if="is_owner" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
