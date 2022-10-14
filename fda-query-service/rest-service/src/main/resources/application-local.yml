@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    url: jdbc:postgresql://localhost:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -19,7 +19,7 @@ spring:
   application:
     name: query-service
   rabbitmq:
-    host: broker-service
+    host: localhost
     username: fda
     password: fda
   cloud:
@@ -37,8 +37,8 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: query-service
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  ready.path: /ready
+  gateway.endpoint: http://localhost:9095
+  ready.path: ./ready
   consumers: 2

@@ -434,7 +434,7 @@ public interface QueryMapper {
                 .append("` WHERE ");
         final int[] idx = new int[]{0};
         data.getKeys()
-                .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : ", ")
+                .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : " AND ")
                         .append("`")
                         .append(key)
                         .append("` ")
@@ -890,6 +890,7 @@ public interface QueryMapper {
             case STRING:
                 log.trace("prepare statement idx {} string {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.VARCHAR);
                     break;
                 }
@@ -898,6 +899,7 @@ public interface QueryMapper {
             case DATE:
                 log.trace("prepare statement idx {} date {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DATE);
                     break;
                 }
@@ -906,6 +908,7 @@ public interface QueryMapper {
             case NUMBER:
                 log.trace("prepare statement idx {} number {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BIGINT);
                     break;
                 }
@@ -914,6 +917,7 @@ public interface QueryMapper {
             case DECIMAL:
                 log.trace("prepare statement idx {} decimal {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DECIMAL);
                     break;
                 }
@@ -922,6 +926,7 @@ public interface QueryMapper {
             case BOOLEAN:
                 log.trace("prepare statement idx {} boolean {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BOOLEAN);
                     break;
                 }
@@ -930,6 +935,7 @@ public interface QueryMapper {
             case TIMESTAMP:
                 log.trace("prepare statement idx {} timestamp {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIMESTAMP);
                     break;
                 }
