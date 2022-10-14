@@ -525,6 +525,21 @@ public interface QueryMapper {
         }
     }
 
+    default String tableColumnsToSelection(List<TableColumn> data) {
+        final StringBuilder selection = new StringBuilder();
+        final int[] idx = {0};
+        data.forEach(column -> selection.append(idx[0]++ == 0 ? "" : ", ")
+                .append("`")
+                .append(column.getInternalName())
+                .append("`"));
+        log.trace("mapped selection [{}] from table columns {}", selection, data);
+        return selection.toString();
+    }
+
+    default String tableColumnsToCountSelection(List<TableColumn> data) {
+        return "COUNT(" + tableColumnsToSelection(data) + ")";
+    }
+
     default PreparedStatement tableToRawCountAllQuery(Connection connection, Table table, Instant timestamp) throws ImageNotSupportedException, QueryMalformedException {
         /* check image */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {

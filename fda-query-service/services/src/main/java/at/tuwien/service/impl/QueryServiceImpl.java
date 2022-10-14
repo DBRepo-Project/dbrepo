@@ -105,8 +105,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final QueryResultDto dto;
         try {
             final Connection connection = dataSource.getConnection();
+            final String selection = queryMapper.tableColumnsToSelection(columns);
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), "*", page, size);
+                    database, query.getExecution(), selection, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {

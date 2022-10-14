@@ -1,7 +1,7 @@
 <template>
   <div class="mb-5">
     <div v-if="!value.length" class="text-center">
-      <v-btn @click="addFirst">Add filter</v-btn>
+      <v-btn :disabled="disabled" @click="addFirst">Add filter</v-btn>
     </div>
     <div v-for="(clause, idx) in value" :key="idx">
       <v-row v-if="clause.type === 'and'" class="connector pt-2" dense>
@@ -22,20 +22,52 @@
         <v-col>
           <v-row dense>
             <v-col>
-              <v-select v-model="clause.params[0]" hide-details :items="columns" />
+              <v-select
+                v-model="clause.params[0]"
+                :disabled="disabled"
+                hide-details
+                :items="columns" />
             </v-col>
             <v-col cols="2">
-              <v-autocomplete v-model="clause.params[1]" auto-select-first hide-details :items="operators" />
+              <v-autocomplete
+                v-model="clause.params[1]"
+                :disabled="disabled"
+                auto-select-first
+                hide-details
+                :items="operators" />
             </v-col>
             <v-col>
-              <v-text-field v-model="clause.params[2]" hide-details />
+              <v-text-field
+                v-model="clause.params[2]"
+                :disabled="disabled"
+                hide-details />
             </v-col>
           </v-row>
         </v-col>
         <v-col class="acitons" cols="3">
-          <v-btn :disabled="!canAdd(idx)" class="mr-1" depressed tile @click="addAnd">AND</v-btn>
-          <v-btn :disabled="!canAdd(idx)" class="mr-1" depressed tile @click="addOr">OR</v-btn>
-          <v-btn depressed tile @click="remove(idx)"><v-icon>mdi-delete</v-icon></v-btn>
+          <v-btn
+            :disabled="!canAdd(idx) || disabled"
+            class="mr-1"
+            depressed
+            tile
+            @click="addAnd">
+            AND
+          </v-btn>
+          <v-btn
+            :disabled="!canAdd(idx) || disabled"
+            class="mr-1"
+            depressed
+            tile
+            @click="addOr">
+            OR
+          </v-btn>
+          <v-btn
+            :disabled="disabled"
+            depressed
+            tile
+            @click="remove(idx)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
         </v-col>
       </v-row>
     </div>
@@ -49,8 +81,18 @@ export default {
   components: {
   },
   props: {
-    columns: { type: Array, default: () => [] },
-    value: { type: Array, default: () => [] }
+    columns: {
+      type: Array,
+      default: () => []
+    },
+    value: {
+      type: Array,
+      default: () => []
+    },
+    disabled: {
+      type: Boolean,
+      default: () => false
+    }
   },
   data () {
     return {

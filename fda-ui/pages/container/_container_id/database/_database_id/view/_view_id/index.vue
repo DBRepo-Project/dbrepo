@@ -14,28 +14,69 @@
         <v-list dense>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="view_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
+              <v-icon :color="view.database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Database Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
+                <span v-if="!loadingView && view.database.is_public">Public</span>
+                <span v-if="!loadingView && !view.database.is_public">Private</span>
+              </v-list-item-content>
+              <v-list-item-title v-if="view.database.name" class="mt-2">
+                Database Name
+              </v-list-item-title>
+              <v-list-item-content v-if="view.database.name">
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
+                <span v-if="!loadingView">{{ view.database.name }}</span>
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-text-short</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Query Statement
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-large" />
+                <pre v-if="!loadingView">{{ view.query }}</pre>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                View Creator
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
+                <span v-if="!loadingView">
+                  {{ creator }} <sup>
+                    <v-icon v-if="view.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                  </sup>
+                </span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                View Creation
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
+                <span v-if="!loadingView">{{ executionUTC }}</span>
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon :color="view.is_public ? 'success' : 'error'">mdi-view-carousel-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 View Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-                <span v-if="!loadingView && view_visibility">Public</span>
-                <span v-if="!loadingView && !view_visibility">Private</span>
-              </v-list-item-content>
-              <v-list-item-title>
-                View Query
-              </v-list-item-title>
-              <v-list-item-content>
-                <pre v-text="view.query" />
-              </v-list-item-content>
-              <v-list-item-title>
-                View Query Hash
-              </v-list-item-title>
-              <v-list-item-content>
-                <pre>sha256:{{ view.query_hash }}</pre>
+                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-xsmall" />
+                <span v-if="!loadingView">{{ view.is_public ? 'Public' : 'Private' }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -53,6 +94,7 @@
 </template>
 <script>
 import { decodeJwt } from 'jose'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   data () {
@@ -69,6 +111,11 @@ export default {
         query_hash: null,
         is_public: null,
         name: null,
+        created: null,
+        database: {
+          is_public: null,
+          name: null
+        },
         creator: {
           username: null,
           firstname: null,
@@ -102,13 +149,16 @@ export default {
       return this.view.is_public
     },
     creator () {
-      if (this.query.creator.username === null) {
+      if (this.view.creator.username === null) {
         return null
       }
-      if (this.query.creator.firstname === null || this.query.creator.lastname === null) {
-        return this.query.creator.username
+      if (this.view.creator.firstname === null || this.view.creator.lastname === null) {
+        return this.view.creator.username
       }
-      return this.query.creator.firstname + ' ' + this.query.creator.lastname
+      return this.view.creator.firstname + ' ' + this.view.creator.lastname
+    },
+    executionUTC () {
+      return formatTimestampUTCLabel(this.view.created)
     }
   },
   mounted () {
@@ -124,8 +174,8 @@ export default {
         this.view = res.data
       } catch (err) {
         if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('Could not load query', err)
-          this.$toast.error('Could not load query')
+          console.error('Could not load view', err)
+          this.$toast.error('Could not load view')
         }
         this.error = true
       }

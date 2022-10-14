@@ -125,7 +125,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .creator(user)
                 .query(data.getQuery())
                 .isInitialView(false)
-                .isPublic(true)
+                .isPublic(data.getIsPublic())
                 .build();
         final View view = viewRepository.save(entity);
         log.info("Created view with id {}", view.getId());

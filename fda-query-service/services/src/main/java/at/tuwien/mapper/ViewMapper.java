@@ -49,6 +49,9 @@ public interface ViewMapper {
     })
     ViewDto viewToViewDto(View data);
 
+    @Mappings({
+            @Mapping(target = "createdBy", source="creator.id")
+    })
     ViewBriefDto viewToViewBriefDto(View data);
 
     default PreparedStatement viewToRawDeleteViewQuery(Connection connection, View view) throws QueryMalformedException {

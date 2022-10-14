@@ -46,8 +46,8 @@ public abstract class AbstractEndpoint {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
         }
-        if (!database.getIsPublic() && List.of("LIST_VIEWS", "FIND_VIEW", "DATA_VIEW").contains(permissionCode)) {
-            log.debug("grant permission {} despite database is non-public", permissionCode);
+        if (List.of("LIST_VIEWS", "FIND_VIEW", "DATA_VIEW").contains(permissionCode)) {
+            log.debug("grant permission {} because it is allowed on public/private databases", permissionCode);
             return true;
         }
         if (principal == null) {

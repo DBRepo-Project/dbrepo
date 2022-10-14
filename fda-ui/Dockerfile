@@ -40,4 +40,4 @@ ENV SANDBOX=false
 ENV SHARED_FILESYSTEM=/tmp
 ENV VERSION=1.1
 
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT [ "yarn", "start" ]

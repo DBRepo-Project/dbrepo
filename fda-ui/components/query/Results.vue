@@ -45,6 +45,10 @@ export default {
   methods: {
     async executeFirstTime (parent) {
       this.parent = parent
+      if (this.parent.queryId) {
+        console.warn('query is already executed once with id', this.parent.queryId)
+        return
+      }
       this.loading = true
       try {
         const data = {
@@ -52,15 +56,14 @@ export default {
         }
         const page = 0
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query${this.parent.queryId ? `/${this.parent.queryId}` : ''}?${urlParams}`, data, {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`, data, {
           headers: this.headers
         })
-        console.debug('query result', res)
+        console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
         this.loading = false
         this.parent.queryId = res.data.id
-        this.parent.viewId = res.data.id
       } catch (err) {
         console.error('query execute', err)
         this.$toast.error('Could not execute query')

@@ -272,7 +272,7 @@ export default {
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
     this.loadUser()
-    setInterval(this.pollConsumerStatus, 5000)
+    this.pollConsumerStatus()
   },
   methods: {
     pickUnit (item) {

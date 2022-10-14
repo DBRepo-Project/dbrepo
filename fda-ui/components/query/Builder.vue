@@ -9,7 +9,7 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn :disabled="!canExecute || !token || !valid" :loading="loadingQuery" color="primary" @click="execute">
+        <v-btn :disabled="!canExecute || !token || !valid || isExecuted" :loading="loadingQuery" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
           Create
         </v-btn>
@@ -37,6 +37,7 @@
                   <v-text-field
                     v-if="isView"
                     v-model="view.name"
+                    :disabled="isExecuted"
                     type="text"
                     label="View name"
                     :rules="[v => !!v || $t('Required')]"
@@ -47,6 +48,7 @@
                 <v-col cols="6">
                   <v-select
                     v-model="table"
+                    :disabled="isExecuted"
                     :items="tables"
                     item-text="name"
                     :loading="loadingTables"
@@ -59,7 +61,7 @@
                   <v-select
                     v-model="select"
                     item-text="name"
-                    :disabled="!table"
+                    :disabled="!table || isExecuted"
                     :items="selectItems"
                     :loading="loadingColumns"
                     label="Columns"
@@ -72,6 +74,7 @@
               <QueryFilters
                 v-if="table"
                 v-model="clauses"
+                :disabled="isExecuted"
                 :columns="columnNames" />
               <v-row>
                 <v-col>
@@ -97,7 +100,7 @@
               class="mt-2 ml-3" />
           </v-tab-item>
         </v-tabs-items>
-        <v-card-text v-if="queryId || viewId">
+        <v-card-text v-if="isExecuted">
           <v-row>
             <v-col>
               <v-btn color="blue-grey white--text" :to="viewLink">
@@ -199,6 +202,9 @@ export default {
     },
     title () {
       return this.isView ? 'Create View' : 'Create Subset'
+    },
+    isExecuted () {
+      return this.viewId !== null || this.queryId !== null
     }
   },
   watch: {
@@ -257,6 +263,7 @@ export default {
           this.view.query = this.query.sql
           const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
           console.debug('view', res.data)
+          this.viewId = res.data.id
         } catch (err) {
           console.error('Failed to create view', err)
           return

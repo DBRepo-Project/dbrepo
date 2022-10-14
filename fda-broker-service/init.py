@@ -1,6 +1,8 @@
 from py_eureka_client import eureka_client
+import py_eureka_client.logger as logger
 from time import sleep
 
+logger.set_level("ERROR")
 print("Registering at discovery service ...")
 
 
@@ -10,9 +12,7 @@ def register(first=False):
                        instance_host="broker-service",
                        instance_port=15672)
     if first:
-        print("Service was registered at Eureka server for the first time")
-    else:
-        print("Service was updated after 60s heartbeat")
+        print("Service was registered at Eureka server")
 
 
 if __name__ == "__main__":

@@ -46,7 +46,7 @@
               <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
                 More
               </v-btn>
-              <v-btn small color="error" @click="deleteView(viewDetails)">
+              <v-btn v-if="canDelete" small color="error" @click="deleteView(viewDetails)">
                 Delete
               </v-btn>
             </v-col>
@@ -70,6 +70,7 @@ export default {
       panel: null,
       views: [],
       user: {
+        id: null,
         username: null
       },
       database: {
@@ -85,7 +86,8 @@ export default {
         internal_name: null,
         description: null,
         created: null,
-        is_public: true
+        is_public: null,
+        created_by: null
       }
     }
   },
@@ -112,6 +114,10 @@ export default {
     },
     viewVisibility () {
       return this.viewDetails.is_public ? 'Public' : 'Private'
+    },
+    canDelete () {
+      console.debug(this.viewDetails.created_by, '=?=', this.user.id)
+      return this.viewDetails.created_by === this.user.id
     }
   },
   mounted () {
@@ -119,18 +125,26 @@ export default {
     this.loadUser()
   },
   methods: {
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.user = res.data
+        console.debug('user', this.views)
+      } catch (err) {
+        console.error('Failed to load user', err)
+      }
     },
     async loadViews () {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
         this.views = res.data
-        console.debug('views', this.view)
+        console.debug('views', this.views)
       } catch (err) {
         console.error('Failed to load views', err)
       }
@@ -167,12 +181,11 @@ export default {
         const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
         console.debug('deleted view', res.data)
         this.$toast.success(`Successfully deleted view with id ${view.id}`)
+        await this.loadViews()
       } catch (err) {
         this.$toast.error('Failed to delete view')
         console.error('Failed to delete view')
-        return
       }
-      await this.loadViews()
     }
   }
 }
