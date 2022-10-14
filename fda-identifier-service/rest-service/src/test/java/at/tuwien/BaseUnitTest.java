@@ -122,7 +122,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .logo(IMAGE_1_LOGO)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;
@@ -198,8 +197,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
-            .containerId(QUERY_1_CONTAINER_ID)
-            .databaseId(QUERY_1_DATABASE_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .queryNormalized(QUERY_1_STATEMENT)
             .resultNumber(QUERY_1_RESULT_NUMBER)
@@ -223,8 +222,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
-            .containerId(QUERY_2_CONTAINER_ID)
-            .databaseId(QUERY_2_DATABASE_ID)
+            .cid(QUERY_2_CONTAINER_ID)
+            .dbid(QUERY_2_DATABASE_ID)
             .query(QUERY_2_STATEMENT)
             .queryNormalized(QUERY_2_STATEMENT)
             .resultNumber(QUERY_2_RESULT_NUMBER)
@@ -401,7 +400,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
-            .queryId(IDENTIFIER_1_QUERY_ID)
+            .qid(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
@@ -421,7 +420,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
-            .queryId(IDENTIFIER_2_QUERY_ID)
+            .qid(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)

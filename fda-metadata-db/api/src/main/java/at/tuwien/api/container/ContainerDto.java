@@ -7,6 +7,7 @@ import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -23,40 +24,37 @@ import java.util.List;
 public class ContainerDto {
 
     @NotNull
-    @Parameter(name = "id", example = "1")
     private Long id;
 
     @NotNull
-    @Parameter(name = "container hash", example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
+    @Schema(example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
     private String hash;
 
     @NotBlank
-    @Parameter(name = "container name", example = "Weather World")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Parameter(name = "container internal name", example = "weather-world")
+    @Schema(example = "air-quality")
     private String internalName;
 
-    @Parameter(name = "state", example = "RUNNING")
+    @Schema(example = "running")
     private ContainerStateDto state;
 
     @ToString.Exclude
-    @Parameter(name = "databases")
+    @Schema
     private List<DatabaseDto> databases;
 
     @JsonProperty("ip_address")
     private String ipAddress;
 
-    @Parameter(name = "container image")
     private ImageBriefDto image;
 
-    @Parameter(name = "container port")
     private Integer port;
 
     @NotNull
-    @Parameter(name = "start time", example = "2021-03-12T15:26:21.678396092Z")
+    @Schema(example = "2021-03-12T15:26:21.678396092Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 

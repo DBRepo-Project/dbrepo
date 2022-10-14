@@ -1,6 +1,6 @@
 package at.tuwien.api.database.query;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -17,14 +17,12 @@ import java.util.Map;
 public class QueryResultDto {
 
     @NotNull(message = "result set is required")
-    @Parameter(name = "query result")
     private List<Map<String, Object>> result;
 
     @NotNull(message = "query id is required")
-    @Parameter(name = "query id")
     private Long id;
 
-    @Parameter(name = "result number")
+    @Schema(example = "1")
     private Long resultNumber;
 
 }

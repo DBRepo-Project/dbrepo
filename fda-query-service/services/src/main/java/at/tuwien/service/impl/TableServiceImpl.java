@@ -41,9 +41,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             TableNotFoundException {
         final Optional<Table> table = tableRepository.find(containerId, databaseId, tableId);
         if (table.isEmpty()) {
-            log.error("Failed to find table with id {} of database with id {} in metadata database", tableId,
-                    databaseId);
-            throw new TableNotFoundException("Failed to find table in metadata database");
+            log.error("Failed to find table with id {} in container with id {} and database with id {}", tableId, containerId, databaseId);
+            throw new TableNotFoundException("Failed to find table");
         }
         return table.get();
     }
@@ -71,7 +70,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultListToTableHistoryDto(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to map table history");
+            log.error("Failed to map table history: {}", e.getMessage());
             throw new QueryStoreException("Failed to map table history", e);
         } finally {
             dataSource.close();

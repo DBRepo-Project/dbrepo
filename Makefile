@@ -11,6 +11,9 @@ config-frontend:
 	./.fda-deployment/fda-ui/install_cert
 	docker-compose -f docker-compose.prod.yml config
 
+config-ssl:
+	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./fda-ui-proxy/default/privkey.pem -out ./fda-ui-proxy/default/fullchain.pem -subj '/C=AT/ST=Vienna/L=Vienna/O=Technische Universität Wien/OU=Data Science Group/CN=dbrepo.ossdip.at'
+
 config-docker:
 	docker image pull -q mariadb:10.5 || true > /dev/null
 
@@ -24,6 +27,9 @@ build-backend-authentication: build-backend-metadata
 
 build-backend-identifier: build-backend-metadata
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
+
+build-backend-table: build-backend-metadata
+	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
 
 build-backend-container: build-backend-metadata
 	mvn -f ./fda-container-service/pom.xml clean package -DskipTests
@@ -40,24 +46,20 @@ build-backend-gateway: build-backend-metadata
 build-backend-query: build-backend-metadata
 	mvn -f ./fda-query-service/pom.xml clean package -DskipTests
 
-build-backend-table: build-backend-metadata
-	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
-
 build-backend: build-backend-metadata build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway
 
 build-docker:
 	docker-compose build fda-metadata-db
 	docker-compose build --parallel
 
-build-docker-sandbox:
-	docker-compose -f docker-compose.prod.yml build fda-metadata-db
-	docker-compose -f docker-compose.prod.yml build
-
 build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
 	yarn --cwd ./fda-ui run build
 
-tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker
+build-clients:
+	bash ./.gitlab/swagger/generate.sh
+
+tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy
 
 tag-analyse:
 	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -70,6 +72,9 @@ tag-metadata-db:
 
 tag-ui:
 	docker tag fda-ui:latest "dbrepo/ui:${TAG}"
+
+tag-ui-proxy:
+	docker tag fda-ui:latest "dbrepo/ui-proxy:${TAG}"
 
 tag-identifier:
 	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
@@ -101,51 +106,7 @@ tag-units:
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
-update: update-identifier update-container update-database update-discovery update-gateway update-query update-table update-analyse update-authentication update-metadata-db update-ui update-units update-broker
-
-update-analyse:
-	docker pull "dbrepo/analyse-service:${TAG}"
-
-update-authentication:
-	docker pull "dbrepo/authentication-service:${TAG}"
-
-update-metadata-db:
-	docker pull "dbrepo/metadata-db:${TAG}"
-
-update-ui:
-	docker pull "dbrepo/ui:${TAG}"
-
-update-identifier:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-update-metadata:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-update-container:
-	docker pull "dbrepo/container-service:${TAG}"
-
-update-database:
-	docker pull "dbrepo/database-service:${TAG}"
-
-update-discovery:
-	docker pull "dbrepo/discovery-service:${TAG}"
-
-update-gateway:
-	docker pull "dbrepo/gateway-service:${TAG}"
-
-update-query:
-	docker pull "dbrepo/query-service:${TAG}"
-
-update-table:
-	docker pull "dbrepo/table-service:${TAG}"
-
-update-units:
-	docker pull "dbrepo/units-service:${TAG}"
-
-update-broker:
-	docker pull "dbrepo/broker-service:${TAG}"
-
-release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker
+release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy
 
 release-analyse:
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -158,6 +119,9 @@ release-metadata-db:
 
 release-ui:
 	docker push "dbrepo/ui:${TAG}"
+
+release-ui-proxy:
+	docker push "dbrepo/ui-proxy:${TAG}"
 
 release-identifier:
 	docker push "dbrepo/identifier-service:${TAG}"
@@ -185,6 +149,50 @@ release-units:
 
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
+
+pull: pull-identifier pull-container pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy
+
+pull-analyse:
+	docker pull "dbrepo/analyse-service:${TAG}"
+
+pull-authentication:
+	docker pull "dbrepo/authentication-service:${TAG}"
+
+pull-metadata-db:
+	docker pull "dbrepo/metadata-db:${TAG}"
+
+pull-ui:
+	docker pull "dbrepo/ui:${TAG}"
+
+pull-ui-proxy:
+	docker pull "dbrepo/ui-proxy:${TAG}"
+
+pull-identifier:
+	docker pull "dbrepo/identifier-service:${TAG}"
+
+pull-container:
+	docker pull "dbrepo/container-service:${TAG}"
+
+pull-database:
+	docker pull "dbrepo/database-service:${TAG}"
+
+pull-discovery:
+	docker pull "dbrepo/discovery-service:${TAG}"
+
+pull-gateway:
+	docker pull "dbrepo/gateway-service:${TAG}"
+
+pull-query:
+	docker pull "dbrepo/query-service:${TAG}"
+
+pull-table:
+	docker pull "dbrepo/table-service:${TAG}"
+
+pull-units:
+	docker pull "dbrepo/units-service:${TAG}"
+
+pull-broker:
+	docker pull "dbrepo/broker-service:${TAG}"
 
 test-backend: test-backend-auth test-backend-container test-backend-database test-backend-discovery test-backend-gateway test-backend-query test-backend-table
 
@@ -220,8 +228,10 @@ test-frontend: clean build-frontend
 	docker-compose up -d
 	yarn --cwd ./fda-ui run test
 
-test: test-backend test-frontend
+test-clients:
+	bash ./.gitlab/test.sh
 
+test: test-backend test-frontend
 
 teardown:
 	./.fda-deployment/teardown

@@ -33,6 +33,9 @@ public class IdentifierBriefDto {
     @Schema(name = "query id", example = "1")
     private Long queryId;
 
+    @NotNull
+    private IdentifierTypeDto type;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 

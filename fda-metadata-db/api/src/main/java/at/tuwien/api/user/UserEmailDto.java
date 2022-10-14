@@ -1,6 +1,6 @@
 package at.tuwien.api.user;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.Email;
@@ -16,7 +16,7 @@ public class UserEmailDto {
 
     @NotNull
     @Email
-    @Parameter(name = "user email")
+    @Schema(example = "jcarberry@brown.edu")
     private String email;
 
 }

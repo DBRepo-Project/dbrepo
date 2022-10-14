@@ -127,7 +127,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_queryNotExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .queryId(IDENTIFIER_2_QUERY_ID)
+                .qid(IDENTIFIER_2_QUERY_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)
@@ -151,7 +151,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_identifierAlreadyExists_fails() throws QueryNotFoundException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .queryId(IDENTIFIER_1_QUERY_ID)
+                .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_2_DESCRIPTION)
                 .title(IDENTIFIER_2_TITLE)
                 .doi(IDENTIFIER_2_DOI)

@@ -47,11 +47,11 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID))
+        when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true))
                 .thenReturn(List.of(QUERY_1));
 
         /* test */
-        final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
+        final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());

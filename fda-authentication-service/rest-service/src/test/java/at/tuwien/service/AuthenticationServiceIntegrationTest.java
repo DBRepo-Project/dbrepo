@@ -4,7 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.User;
-import at.tuwien.repositories.TokenRepository;
+import at.tuwien.repositories.TimeSecretRepository;
 import at.tuwien.repositories.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
-    private TokenRepository tokenRepository;
+    private TimeSecretRepository tokenRepository;
 
     @BeforeEach
     public void beforeEach() {

@@ -7,6 +7,7 @@ ENV PORT_APP=5010
 ENV FLASK_ENV=production
 ENV HOSTNAME=units-service
 ENV EUREKA_SERVER=http://discovery-service:9090/eureka/
+ENV READY_FILE=/ready
 
 WORKDIR /app
 
@@ -14,13 +15,16 @@ COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt > /dev/null
 
+COPY ./service_ready /usr/bin
+RUN chmod +x /usr/bin/service_ready
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
+
+EXPOSE $PORT_APP
+
 COPY ./us-yml/*.yml ./
 COPY ./onto/*.ttl ./onto/
 COPY ./*.py ./
-COPY ./service_ready ./
 
-RUN chmod +x ./service_ready
-
-EXPOSE $PORT_APP
 ENTRYPOINT [ "python", "./pywsgi.py" ]
 CMD ["flask", "run"]

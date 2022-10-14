@@ -1,25 +1,28 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.user.UserForgotDto;
-import at.tuwien.config.SecurityConfig;
+import at.tuwien.api.auth.TokenBriefDto;
+import at.tuwien.api.auth.TokenDto;
+import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.user.Token;
-import at.tuwien.entities.user.User;
-import at.tuwien.exception.*;
-import at.tuwien.service.MailService;
+import at.tuwien.exception.TokenNotEligableException;
+import at.tuwien.exception.TokenNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.TokenService;
-import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.context.Context;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
@@ -28,47 +31,59 @@ import javax.validation.constraints.NotNull;
 @RequestMapping("/api/user/token")
 public class TokenEndpoint {
 
-    private final UserService userService;
-    private final MailService mailService;
+    private final UserMapper userMapper;
     private final TokenService tokenService;
-    private final SecurityConfig securityConfig;
+    private final AuthenticationConfig authenticationConfig;
 
     @Autowired
-    public TokenEndpoint(UserService userService, MailService mailService, TokenService tokenService,
-                         SecurityConfig securityConfig) {
-        this.userService = userService;
-        this.mailService = mailService;
+    public TokenEndpoint(UserMapper userMapper, TokenService tokenService, AuthenticationConfig authenticationConfig) {
+        this.userMapper = userMapper;
         this.tokenService = tokenService;
-        this.securityConfig = securityConfig;
+        this.authenticationConfig = authenticationConfig;
     }
 
     @GetMapping
-    @Transactional
-    @Operation(summary = "verify user email")
-    public void verifyEmail(@RequestParam String token,
-                            HttpServletResponse httpServletResponse) throws TokenInvalidException {
-        tokenService.invalidate(token);
-        httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?email_verified");
-        httpServletResponse.setStatus(302);
+    @Transactional(readOnly = true)
+    @Operation(summary = "Lists developer tokens for user", security = @SecurityRequirement(name = "bearerAuth"))
+    public List<TokenBriefDto> listAll(@NotNull Principal principal) throws UserNotFoundException {
+        final List<Token> tokens = tokenService.findAll(principal);
+        final List<TokenBriefDto> dtos = tokens.stream()
+                .map(userMapper::tokenToTokenBriefDto)
+                .collect(Collectors.toList());
+        log.info("Found {} tokens", dtos.size());
+        log.debug("found tokens {}", dtos);
+        return dtos;
     }
 
-    @PostMapping("/resend")
+    @PostMapping
     @Transactional
-    @Operation(summary = "resend user token")
-    public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
-            throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {
-        final User user = userService.findByUsernameOrEmail(data.getUsername(), data.getEmail());
-        if (user.getEmailVerified()) {
-            log.warn("User already has a verified email address");
-            throw new UserEmailAlreadyVerifiedException("User e-mail already verified");
+    @Operation(summary = "Create developer token", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<TokenDto> create(@NotNull Principal principal) throws UserNotFoundException, TokenNotEligableException {
+        /* check */
+        final List<Token> tokens = tokenService.findAll(principal)
+                .stream()
+                .filter(t -> Objects.isNull(t.getDeleted()))
+                .collect(Collectors.toList());
+        if (tokens.size() >= authenticationConfig.getTokenCount()) {
+            log.error("Failed to create token, already exceeded maximum quota of {}", authenticationConfig.getTokenCount());
+            throw new TokenNotEligableException("Failed to create token");
         }
-        final Token token = tokenService.create(user);
-        final Context context = new Context();
-        context.setVariable("username", user.getUsername());
-        context.setVariable("token", token.getToken());
-        mailService.send(user, "E-Mail Verification", "token-mail.txt", context);
-        return ResponseEntity.status(HttpStatus.OK)
-                .build();
+        /* create */
+        final Token token = tokenService.create(principal);
+        final TokenDto dto = userMapper.tokenToTokenDto(token);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto);
+    }
+
+    @DeleteMapping("/{hash}")
+    @Transactional
+    @Operation(summary = "Delete developer token", security = @SecurityRequirement(name = "bearerAuth"))
+    public void delete(@NotNull @PathVariable("hash") String hash,
+                       @NotNull Principal principal) throws TokenNotFoundException, UserNotFoundException {
+        final Token token = tokenService.findOne(hash);
+        tokenService.delete(token.getTokenHash(), principal);
+        log.info("Deleted token with id {}", token.getId());
+        log.debug("deleted token {}", token);
     }
 
 }

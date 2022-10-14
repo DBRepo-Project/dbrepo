@@ -1,6 +1,6 @@
 package at.tuwien.api.amqp;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -13,15 +13,15 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class GrantVirtualHostPermissionsDto {
     @NotNull
-    @Parameter(name = "configure permission", example = ".*")
+    @Schema(example = ".*")
     private String configure;
 
     @NotNull
-    @Parameter(name = "write permission", example = ".*")
+    @Schema(example = ".*")
     private String write;
 
     @NotNull
-    @Parameter(name = "read permission", example = ".*")
+    @Schema(example = ".*")
     private String read;
 
 }

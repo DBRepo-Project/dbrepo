@@ -12,13 +12,8 @@ import java.util.Optional;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.container.id = :containerId and (d.isPublic = true or (d.isPublic = " +
-            "false and d.creator.username = :username))")
-    List<Database> findAllByPublicAndContainerIdOrMine(@Param("containerId") Long containerId,
-                                             @Param("username") String username);
-
-    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true")
-    List<Database> findAllByPublicAndContainerId(@Param("containerId") Long containerId);
+    @Query("select d from Database d where d.creator.username = :username")
+    List<Database> findAllByUsername(@Param("username") String username);
 
     @Query("select d from Database d where d.container.id = :containerId")
     List<Database> findAll(@Param("containerId") Long containerId);

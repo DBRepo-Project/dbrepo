@@ -11,5 +11,4 @@ public interface AuthenticationServiceGateway {
      * @return User details on success
      */
     UserDetails validate(String token);
-
 }

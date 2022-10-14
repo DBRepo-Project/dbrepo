@@ -139,6 +139,13 @@ CREATE SEQUENCE public.mdb_creators_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE public.mdb_time_secrets_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE SEQUENCE public.mdb_tokens_seq
     START WITH 1
     INCREMENT BY 1
@@ -181,7 +188,6 @@ CREATE TABLE public.mdb_images
     driver_class  character varying(255)      NOT NULL,
     jdbc_method   character varying(255)      NOT NULL,
     compiled      timestamp without time zone,
-    logo          TEXT,
     hash          character varying(255),
     size          bigint,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
@@ -190,9 +196,9 @@ CREATE TABLE public.mdb_images
     UNIQUE (repository, tag)
 );
 
-CREATE TABLE public.mdb_tokens
+CREATE TABLE public.mdb_time_secrets
 (
-    id        bigint                      not null default nextval('mdb_tokens_seq'),
+    id        bigint                      not null default nextval('mdb_time_secrets_seq'),
     uid       bigint                      not null,
     token     character varying(255)      NOT NULL,
     processed boolean                     NOT NULL default false,
@@ -200,6 +206,17 @@ CREATE TABLE public.mdb_tokens
     valid_to  timestamp without time zone NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
+);
+
+CREATE TABLE public.mdb_tokens
+(
+    id         bigint                      not null default nextval('mdb_tokens'),
+    token_hash varchar(255)                NOT NULL,
+    creator    bigint                      not null,
+    created    timestamp without time zone NOT NULL DEFAULT NOW(),
+    deleted    timestamp without time zone,
+    PRIMARY KEY (id),
+    FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE public.mdb_images_date
@@ -444,17 +461,22 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 CREATE TABLE IF NOT EXISTS mdb_VIEW
 (
     id            bigint                      NOT NULL DEFAULT nextval('mdb_view_seq'),
-    vName         VARCHAR(50),
-    Query         TEXT,
-    Public        BOOLEAN,
+    vcid          bigint                      NOT NULL,
+    vdbid         bigint                      NOT NULL,
+    vName         VARCHAR(255)                NOT NULL,
+    internal_name VARCHAR(255)                NOT NULL,
+    Query         TEXT                        NOT NULL,
+    Public        BOOLEAN                     NOT NULL,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    InitialView   BOOLEAN,
+    InitialView   BOOLEAN                     NOT NULL,
     created       timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified timestamp without time zone,
+    deleted       timestamp without time zone,
     created_by    bigint                      NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_USERS (UserID),
-    PRIMARY KEY (id)
+    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
+    PRIMARY KEY (vdbid, id)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers
@@ -462,7 +484,8 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     id                bigint                               DEFAULT nextval('mdb_identifiers_seq'),
     cid               bigint                      NOT NULL,
     dbid              bigint                      NOT NULL,
-    qid               bigint                      NOT NULL,
+    qid               bigint,
+    publisher         VARCHAR(255)                NOT NULL,
     title             VARCHAR(255)                NOT NULL,
     publisher         VARCHAR(255)                NOT NULL,
     description       TEXT                        NOT NULL,
@@ -522,9 +545,10 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 
 CREATE TABLE IF NOT EXISTS mdb_views_databases
 (
-    mdb_view_id  bigint REFERENCES mdb_VIEW (id),
+    mdb_view_id  bigint,
     databases_id bigint REFERENCES mdb_DATABASES (id),
     created      timestamp without time zone NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (mdb_view_id, databases_id) REFERENCES mdb_VIEW (id, vdbid),
     PRIMARY KEY (mdb_view_id, databases_id)
 );
 

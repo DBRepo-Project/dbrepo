@@ -6,7 +6,6 @@ import at.tuwien.config.AmqpConfig;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.BrokerUserCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.mapper.UserMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +20,12 @@ import java.nio.charset.Charset;
 @Service
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
-    private final UserMapper userMapper;
     private final AmqpConfig amqpConfig;
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(UserMapper userMapper, RestTemplate restTemplate, AmqpConfig amqpConfig,
-                                    GatewayConfig gatewayConfig) {
-        this.userMapper = userMapper;
+    public BrokerServiceGatewayImpl(RestTemplate restTemplate, AmqpConfig amqpConfig, GatewayConfig gatewayConfig) {
         this.amqpConfig = amqpConfig;
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
@@ -49,18 +45,17 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     }
 
     @Override
-    public void grantUserHost(String username) throws BrokerUserCreationException {
-        /* grant */
-        final URI grantUrl = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
-        final GrantVirtualHostPermissionsDto grantDto = userMapper.signupRequestDtoToGrantComponentDto();
-        final ResponseEntity<Void> grantResponse = restTemplate.exchange(grantUrl, HttpMethod.PUT,
-                new HttpEntity<>(grantDto, getHeaders()), Void.class);
-        if (!grantResponse.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to grant permissions at queue service: {}", grantResponse.getStatusCode());
-            throw new BrokerUserCreationException("Failed to grant permissions at queue service");
+    public void modifyHostPermissions(String username, GrantVirtualHostPermissionsDto data) throws BrokerUserCreationException {
+        /* create user */
+        final URI modifyUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
+        final ResponseEntity<Void> createResponse = restTemplate.exchange(modifyUri, HttpMethod.PUT,
+                new HttpEntity<>(data, getHeaders()), Void.class);
+        if (!createResponse.getStatusCode().equals(HttpStatus.CREATED)) {
+            log.error("Failed to modify user permissions at broker service: {}", createResponse.getStatusCode());
+            throw new BrokerUserCreationException("Failed to modify user permissions at broker service");
         }
-        log.info("Granted user permissions at queue service for username {}", username);
-        log.debug("granted user permissions at queue service {}", grantDto);
+        log.info("Modified user permissions at broker service for user with username {}", username);
+        log.info("modified user permissions at broker service {}", data);
     }
 
     @Override

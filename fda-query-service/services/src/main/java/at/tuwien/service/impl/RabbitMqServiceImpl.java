@@ -73,16 +73,13 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                         log.debug("received tuple data {}", data);
                         queryService.insert(containerId, databaseId, tableId, data);
                     } catch (IOException e) {
-                        log.error("Failed to parse for table with id {}", tableId);
-                        log.debug("Failed to parse for table {} because {}", tableId, e.getMessage());
+                        log.error("Failed to parse for table with id {}, because {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (HttpClientErrorException.Unauthorized e) {
-                        log.error("Failed to authenticate for table with id {}", tableId);
-                        log.debug("Failed to authenticate for table {} because {}", tableId, e.getMessage());
+                        log.error("Failed to authenticate for table with id {}, because {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (HttpClientErrorException.BadRequest e) {
-                        log.error("Failed to insert for table with id {}", tableId);
-                        log.debug("Failed to insert for table {} because {}", tableId, e.getMessage());
+                        log.error("Failed to insert for table with id {}, because {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (TableNotFoundException e) {
                         log.error("Failed to find table with id {}", tableId);
@@ -107,7 +104,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.info("Declared consumer for table topic {}", routingKey);
             log.debug("declared consumer for table topic {} with tag {}", routingKey, consumerTag);
         } catch (IOException e) {
-            log.error("Failed to create consumer for table with id {}", tableId);
+            log.error("Failed to create consumer for table with id {}, because", tableId, e.getMessage());
             throw new AmqpException("Failed to create consumer", e);
         } catch (Exception e) {
             log.error("Failed unknown: {}", e.getMessage());

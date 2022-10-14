@@ -84,23 +84,23 @@ public class IdentifierServiceImpl implements IdentifierService {
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException {
         /* check */
-        final Database database = databaseService.find(data.getContainerId(), data.getDatabaseId());
+        final Database database = databaseService.find(data.getCid(), data.getDbid());
         if (database.getIsPublic() && !data.getVisibility().equals(VisibilityTypeDto.EVERYONE)) {
             log.error("Identifier cannot restrict the result set");
             throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
         }
         /* find */
-        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDatabaseId(), data.getQueryId());
+        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDbid(), data.getQid());
         if (optional.isPresent()) {
-            log.error("Identifier already issued for database {} and query id {}", data.getDatabaseId(), data.getQueryId());
+            log.error("Identifier already issued for database {} and query id {}", data.getDbid(), data.getQid());
             log.debug("identifier already exists similar to request {}", data);
             throw new IdentifierAlreadyExistsException("Identifier exists");
         }
-        final QueryDto query = queryServiceGateway.find(data.getContainerId(), data.getDatabaseId(), data, authorization);
+        final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
         log.debug("found query in query service {}", query);
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
-        tmp.setContainerId(data.getContainerId());
-        tmp.setDatabaseId(data.getDatabaseId());
+        tmp.setContainerId(data.getCid());
+        tmp.setDatabaseId(data.getDbid());
         tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);

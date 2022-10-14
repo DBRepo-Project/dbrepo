@@ -1,10 +1,9 @@
 package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -17,6 +16,6 @@ public class UserThemeSetDto {
 
     @NotNull
     @JsonProperty("theme_dark")
-    @Parameter(name = "theme dark")
+    @Schema(example = "true")
     private Boolean themeDark;
 }

@@ -26,6 +26,9 @@ public class AmqpConfig {
     @Value("${spring.rabbitmq.password}")
     private String amqpPassword;
 
+    @Value("${fda.consumers}")
+    private Integer amqpConsumers;
+
     @Bean
     public Channel getChannel() throws IOException, TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();

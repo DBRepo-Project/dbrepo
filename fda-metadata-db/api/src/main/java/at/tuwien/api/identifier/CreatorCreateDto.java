@@ -1,6 +1,6 @@
 package at.tuwien.api.identifier;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -17,13 +17,13 @@ import javax.validation.constraints.NotBlank;
 public class CreatorCreateDto {
 
     @NotBlank
-    @Parameter(name = "name", example = "Mustermann, Maximilian")
+    @Schema(example = "Carberry, Josiah")
     private String name;
 
-    @Parameter(name = "affiliation", example = "TU Wien")
+    @Schema(example = "Wesleyan University")
     private String affiliation;
 
-    @Parameter(name = "orcid", example = "ORCID")
+    @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
 }

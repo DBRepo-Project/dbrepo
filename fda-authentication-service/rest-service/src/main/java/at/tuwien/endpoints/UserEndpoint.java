@@ -3,7 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.config.SecurityConfig;
-import at.tuwien.entities.user.Token;
+import at.tuwien.entities.user.TimeSecret;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RoleNotFoundException;
 import at.tuwien.exception.UserEmailExistsException;
@@ -13,7 +13,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.MailService;
 import at.tuwien.service.QueueService;
-import at.tuwien.service.TokenService;
+import at.tuwien.service.TimeSecretService;
 import at.tuwien.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -42,13 +42,13 @@ public class UserEndpoint {
     private final UserMapper userMapper;
     private final UserService userService;
     private final MailService mailService;
-    private final TokenService tokenService;
+    private final TimeSecretService tokenService;
     private final QueueService queueService;
     private final SecurityConfig securityConfig;
 
     @Autowired
     public UserEndpoint(UserMapper userMapper, UserService userService, MailService mailService,
-                        TokenService tokenService, QueueService queueService, SecurityConfig securityConfig) {
+                        TimeSecretService tokenService, QueueService queueService, SecurityConfig securityConfig) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.mailService = mailService;
@@ -79,7 +79,7 @@ public class UserEndpoint {
             OrcidMalformedException {
         final User user = userService.create(data);
         queueService.createUser(user.getUsername(), data);
-        final Token token = tokenService.create(user);
+        final TimeSecret token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         context.setVariable("token", token.getToken());
@@ -94,7 +94,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, OrcidMalformedException {
         final User user = userService.forgot(data);
-        final Token token = tokenService.create(user);
+        final TimeSecret token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         context.setVariable("token", token.getToken());
@@ -108,7 +108,7 @@ public class UserEndpoint {
     @Operation(summary = "Reset user information")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
                       @NotNull HttpServletResponse httpServletResponse)
-            throws UserEmailFailedException, TokenInvalidException, UserNotFoundException, BrokerUserCreationException {
+            throws UserEmailFailedException, SecretInvalidException, UserNotFoundException, BrokerUserCreationException {
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);

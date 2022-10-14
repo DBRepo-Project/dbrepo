@@ -40,7 +40,7 @@ public class AuthenticationEndpoint {
     }
 
     @PostMapping
-    @Operation(summary = "Create token")
+    @Operation(summary = "Create authentication token")
     public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data)
             throws UserNotFoundException, UserEmailNotVerifiedException {
         final JwtResponseDto response = authenticationService.authenticate(data);
@@ -50,7 +50,7 @@ public class AuthenticationEndpoint {
 
     @PutMapping
     @Transactional(readOnly = true)
-    @Operation(summary = "Validate token", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Validate authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException, OrcidMalformedException {
         final UserDto user = userMapper.userToUserDto(userService.findByUsername(principal.getName()));
         return ResponseEntity.accepted()
@@ -58,7 +58,7 @@ public class AuthenticationEndpoint {
     }
 
     @PostMapping("/renew")
-    @Operation(summary = "Renew token", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Renew authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
         final JwtResponseDto response = authenticationService.renew(principal);
         return ResponseEntity.ok()

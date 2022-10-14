@@ -1,22 +1,21 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.JwtResponseDto;
-import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.TokenBriefDto;
+import at.tuwien.api.auth.TokenDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.OrcidMalformedException;
 import org.mapstruct.Mapper;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.Principal;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -28,10 +27,6 @@ public interface UserMapper {
     User signupRequestDtoToUser(SignupRequestDto data);
 
     UserDetailsDto userToUserDetailsDto(User data);
-
-    CreateUserDto signupRequestDtoToCreateUserDto(SignupRequestDto data);
-
-    LoginRequestDto createUserDtoToLoginRequestDto(CreateUserDto data);
 
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
@@ -84,12 +79,6 @@ public interface UserMapper {
                 .build();
     }
 
-    default GrantedAuthorityDto grantedAuthorityToGrantedAuthority(GrantedAuthority data) {
-        return GrantedAuthorityDto.builder()
-                .authority(data.getAuthority())
-                .build();
-    }
-
     default String userUpdateDtoToCompressedOrcid(UserUpdateDto data) {
         if (data.getOrcid() == null) {
             return null;
@@ -116,27 +105,11 @@ public interface UserMapper {
                 .toString();
     }
 
-    default GrantVirtualHostPermissionsDto signupRequestDtoToGrantComponentDto() {
-        return GrantVirtualHostPermissionsDto.builder()
-                .configure(".*")
-                .write(".*")
-                .read(".*")
-                .build();
-    }
+    @Mappings({
+            @Mapping(source = "token", target = "token")
+    })
+    TokenDto tokenToTokenDto(Token data);
 
-    @Transactional(readOnly = true)
-    default UserDto userDetailsToUserDto(UserDetails data, Principal principal) {
-        final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) principal;
-        final UserDto user = UserDto.builder()
-                .username(data.getUsername())
-                .password(data.getPassword())
-                .authorities(token.getAuthorities()
-                        .stream()
-                        .map(this::grantedAuthorityToGrantedAuthority)
-                        .collect(Collectors.toList()))
-                .build();
-        log.debug("mapped user and principal {}", user);
-        return user;
-    }
+    TokenBriefDto tokenToTokenBriefDto(Token data);
 
 }

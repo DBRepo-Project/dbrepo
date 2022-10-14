@@ -1,11 +1,8 @@
 package at.tuwien.api.identifier;
 
-import at.tuwien.api.database.LanguageTypeDto;
-import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -39,87 +36,74 @@ public class IdentifierDto {
     @Schema(name = "query id", example = "1")
     private Long queryId;
 
+    @NotNull
+    private IdentifierTypeDto type;
+
     @NotBlank
-    @Schema(name = "query title", example = "Select all weather events for 2012")
+    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
     private String title;
 
     @NotBlank
-    @Schema(name = "query description", example = "Returns a list of measurements for the year 2012")
+    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
     @NotBlank
-    @Schema(name = "query")
+    @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String query;
 
     @NotBlank
-    @Schema(name = "publisher")
-    private String publisher;
-
-    @Parameter(name = "database license")
-    private LicenseDto license;
-
-    @Parameter(name = "database language", example = "EN")
-    private LanguageTypeDto language;
-
-    @NotBlank
     @JsonProperty("query_normalized")
-    @Schema(name = "query normalized")
+    @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String queryNormalized;
 
     @JsonProperty("related")
-    @Schema(name = "related identifiers")
     private List<RelatedIdentifierDto> related;
 
     @NotBlank
     @JsonProperty("query_hash")
-    @Schema(name = "query hash in sha512")
+    @Schema(description = "query hash in sha512")
     private String queryHash;
 
     @NotNull
-    @Schema(name = "query execution time")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
     @NotBlank
     @JsonProperty("result_hash")
-    @Schema(name = "result hash in sha512")
     private String resultHash;
 
     @NotNull
     @JsonProperty("result_number")
-    @Schema(name = "query result number")
+    @Schema(example = "1")
     private Long resultNumber;
 
     @NotNull
-    @Schema(name = "query result visibility")
+    @Schema(example = "everyone")
     private VisibilityTypeDto visibility;
 
-    @NotNull
-    @Schema(name = "identifier type")
-    private IdentifierTypeDto type;
-
-    @Schema(name = "doi", example = "Digital Object Identifier")
+    @Schema(example = "10.1038/nphys1170")
     private String doi;
 
+    @Schema(example = "TU Wien")
+    private String publisher;
+
     @NotNull
-    @Schema(name = "database creator")
     private UserDto creator;
 
     @JsonProperty("publication_day")
-    @Schema(name = "publication day")
+    @Schema(example = "15")
     private Integer publicationDay;
 
     @JsonProperty("publication_month")
-    @Schema(name = "publication month")
+    @Schema(example = "12")
     private Integer publicationMonth;
 
     @NotNull
     @JsonProperty("publication_year")
-    @Schema(name = "publication year")
+    @Schema(example = "2022")
     private Integer publicationYear;
 
     @NotNull
-    @Schema(name = "creators")
     private List<CreatorDto> creators;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

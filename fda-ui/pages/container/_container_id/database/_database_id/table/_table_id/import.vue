@@ -174,7 +174,7 @@ export default {
     }
   },
   mounted () {
-    this.info()
+    this.loadTableMetadata()
   },
   methods: {
     isNonNegativeInteger,
@@ -185,11 +185,10 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    async info () {
+    async loadTableMetadata () {
       this.loading = true
-      const infoUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`
       try {
-        const res = await this.$axios.get(infoUrl)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`, this.config)
         console.debug('got table', res.data)
         this.table = res.data
       } catch (err) {

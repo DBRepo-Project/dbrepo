@@ -1,10 +1,13 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.SortType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.exception.PaginationException;
+import at.tuwien.exception.SortException;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +41,13 @@ public abstract class AbstractEndpoint {
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of("TABLE_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_EXECUTE").contains(permissionCode)) {
+        if (database.getIsPublic() && List.of("TABLE_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL",
+                "QUERY_EXECUTE").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
+            return true;
+        }
+        if (List.of("LIST_VIEWS", "FIND_VIEW", "DATA_VIEW").contains(permissionCode)) {
+            log.debug("grant permission {} because it is allowed on public/private databases", permissionCode);
             return true;
         }
         if (principal == null) {
@@ -62,8 +70,36 @@ public abstract class AbstractEndpoint {
         return false;
     }
 
+    protected void validateDataParams(Long page, Long size) throws PaginationException {
+        if ((page == null && size != null) || (page != null && size == null)) {
+            log.error("Failed to validate page and/or size number");
+            log.debug("failed to validate page and/or size number, either both are present or none");
+            throw new PaginationException("Failed to validate page and/or size number");
+        }
+        if (page != null && page < 0) {
+            log.error("Failed to validate page number");
+            log.debug("failed to validate page number, is lower than zero");
+            throw new PaginationException("Failed to validate page number");
+        }
+        if (size != null && size <= 0) {
+            log.error("Failed to validate size number");
+            log.debug("failed to validate size number, is lower or equal than zero");
+            throw new PaginationException("Failed to validate size number");
+        }
+    }
+
+    protected void validateDataParams(Long page, Long size, SortType sortDirection, String sortColumn)
+            throws PaginationException, SortException {
+        validateDataParams(page, size);
+        if ((sortDirection == null && sortColumn != null) || (sortDirection != null && sortColumn == null)) {
+            log.error("Failed to validate sort direction and/or sort column");
+            log.debug("failed to validate sort direction and/or sort column, either both are present or none");
+            throw new SortException("Failed to validate sort direction and/or sort column");
+        }
+    }
+
     protected Boolean hasQueuePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
-                                            Principal principal) {
+                                         Principal principal) {
         final Database database;
         try {
             database = databaseService.find(containerId, databaseId);

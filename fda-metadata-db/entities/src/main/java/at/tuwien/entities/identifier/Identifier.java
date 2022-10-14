@@ -50,7 +50,7 @@ public class Identifier {
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
-    @Column(name = "qid", nullable = false)
+    @Column(name = "qid")
     private Long queryId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

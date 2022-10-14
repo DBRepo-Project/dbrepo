@@ -1,6 +1,7 @@
 package at.tuwien.listener.impl;
 
 import at.tuwien.api.amqp.ConsumerDto;
+import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -19,13 +20,15 @@ import java.util.List;
 @Service
 public class RabbitMqListenerImpl implements MessageQueueListener {
 
+    private final AmqpConfig amqpConfig;
     private final TableService tableService;
     private final MessageQueueService messageQueueService;
     private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
-    public RabbitMqListenerImpl(TableService tableService, MessageQueueService messageQueueService,
-                                BrokerServiceGateway brokerServiceGateway) {
+    public RabbitMqListenerImpl(AmqpConfig amqpConfig, TableService tableService,
+                                MessageQueueService messageQueueService, BrokerServiceGateway brokerServiceGateway) {
+        this.amqpConfig = amqpConfig;
         this.tableService = tableService;
         this.messageQueueService = messageQueueService;
         this.brokerServiceGateway = brokerServiceGateway;
@@ -37,10 +40,13 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         final List<Table> tables = tableService.findAll();
         final List<ConsumerDto> consumers = brokerServiceGateway.findAllConsumers();
         for (Table table : tables) {
-            if (consumers.stream().anyMatch(c -> c.getQueue().getName().equals(table.getTopic()))) {
-                log.trace("table {} already has a consumer, skip.", table);
+            final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getTopic())).count();
+            if (consumerCount >= amqpConfig.getAmqpConsumers()) {
+                log.trace("table {} already has {}/{} consumers, skip.", table, consumerCount, amqpConfig.getAmqpConsumers());
                 continue;
             }
+            log.info("Table with id {} needs {} more consumers", table.getId(), amqpConfig.getAmqpConsumers() - consumerCount);
+            log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount, amqpConfig.getAmqpConsumers());
             messageQueueService.createConsumer(table.getTopic(), table.getDatabase().getContainer().getId(),
                     table.getDatabase().getId(), table.getId());
         }

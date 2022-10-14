@@ -3,23 +3,26 @@
     <v-toolbar flat>
       <v-toolbar-title>
         <v-skeleton-loader v-if="loadingIdentifier" type="text" class="skeleton-small" />
-        <span v-if="!loadingIdentifier">{{ title }}</span>
+        <span v-if="!loadingIdentifier">{{ identifier.title }}</span>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !hasIdentifier() && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && !query.is_persisted && is_owner" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
+        </v-btn>
+        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+          <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility" class="mb-1" :disabled="error" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
-          v-if="hasIdentifier()"
+          v-if="identifier.id"
           :disabled="error"
           color="secondary"
           class="ml-2"
           :loading="metadataLoading"
-          @click.stop="downloadMetadata">
+          @click.stop="metadata">
           <v-icon left>mdi-code-tags</v-icon> Metadata .xml
         </v-btn>
       </v-toolbar-title>
@@ -66,7 +69,7 @@
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="hasIdentifier()">
+          <v-list-item v-if="identifier.id">
             <v-list-item-icon>
               <v-icon>mdi-lock-clock</v-icon>
             </v-list-item-icon>
@@ -75,25 +78,31 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <a :href="`${baseUrl}/pid/${pid}`">{{ baseUrl }}/pid/{{ pid }}</a>
+                <a :href="`${baseUrl}/pid/${identifier.id}`">{{ baseUrl }}/pid/{{ identifier.id }}</a>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
               </v-list-item-title>
               <v-list-item-content>
-                {{ title }}
+                {{ identifier.title }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Description
               </v-list-item-title>
               <v-list-item-content>
-                {{ description }}
+                {{ identifier.description }}
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Publisher
+              </v-list-item-title>
+              <v-list-item-content>
+                {{ identifier.publisher }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Creators
               </v-list-item-title>
               <v-list-item-content>
-                <span v-for="(person_or_org, i) in creators" :key="`c-${i}`" class="mt-1">
+                <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
                   <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
                   {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
                 </span>
@@ -104,11 +113,11 @@
               <v-list-item-content>
                 {{ publication }}
               </v-list-item-content>
-              <v-list-item-title v-if="query.identifier.related.length > 0" class="mt-2">
+              <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
                 Related Identifiers
               </v-list-item-title>
-              <v-list-item-content v-if="query.identifier.related.length > 0">
-                <div v-for="(rel, i) in query.identifier.related" :key="`r-${i}`">
+              <v-list-item-content v-if="identifier.related.length > 0">
+                <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
                   <span v-if="rel.type === 'DOI'">
                     {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
                     <span v-if="rel.relation">({{ rel.relation }})</span>
@@ -226,8 +235,8 @@
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="persistQueryDialog"
-      fullscreen
-      transition="fade">
+      persistent
+      max-width="860">
       <PersistQuery @close="closeDialog" />
     </v-dialog>
   </div>
@@ -261,15 +270,36 @@ export default {
         result_number: null,
         execution: null,
         created: null,
+        is_persisted: null,
         creator: {
           username: null,
           firstname: null,
           lastname: null
-        },
-        identifier: null
+        }
       },
       user: {
         username: null
+      },
+      loadingSave: false,
+      identifier: {
+        id: null,
+        dbid: null,
+        qid: null,
+        title: null,
+        description: null,
+        publisher: null,
+        visibility: null,
+        query: null,
+        query_normalized: null,
+        query_hash: null,
+        result_number: null,
+        execution: null,
+        publication_year: null,
+        publication_month: null,
+        publication_day: null,
+        related: [],
+        doi: null,
+        creators: []
       },
       database: {
         id: null,
@@ -314,23 +344,12 @@ export default {
         return {}
       }
       return {
-        headers: { Authorization: `Bearer ${this.token}` }
+        headers: { Authorization: `Bearer ${this.token}` },
+        progress: false
       }
     },
-    pid () {
-      return this.hasIdentifier() ? this.query.identifier.id : null
-    },
-    title () {
-      return this.hasIdentifier() ? this.query.identifier.title : null
-    },
-    description () {
-      return this.hasIdentifier() ? this.query.identifier.description : null
-    },
-    creators () {
-      return this.hasIdentifier() ? this.query.identifier.creators : []
-    },
     query_statement () {
-      return this.query.query ? this.query.query : this.query.identifier.query
+      return this.query.query ? this.query.query : this.identifier.query
     },
     publisher () {
       if (this.database.publisher === null) {
@@ -357,7 +376,7 @@ export default {
       if (this.query.creator.username === this.username) {
         return true
       }
-      return this.query.identifier.visibility === 'everyone'
+      return this.identifier.visibility === 'everyone'
     },
     result_visibility_icon () {
       if (this.erroneous) {
@@ -366,28 +385,28 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      return this.query.identifier.visibility === 'everyone'
+      return this.identifier.visibility === 'everyone'
     },
     publication () {
-      if (this.query.identifier.publication_year && !this.query.identifier.publication_month && !this.query.identifier.publication_day) {
-        return this.query.identifier.publication_year
-      } else if (this.query.identifier.publication_year && this.query.identifier.publication_month && this.query.identifier.publication_day) {
-        return formatDateUTC(this.query.identifier.publication_year + '-' + this.query.identifier.publication_month + '-' + this.query.identifier.publication_day)
+      if (this.identifier.publication_year && !this.identifier.publication_month && !this.identifier.publication_day) {
+        return this.identifier.publication_year
+      } else if (this.identifier.publication_year && this.identifier.publication_month && this.identifier.publication_day) {
+        return formatDateUTC(this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day)
       } else {
         return null
       }
     },
     query_hash () {
-      return 'sha256:' + (this.hasIdentifier() ? this.query.identifier.query_hash : this.query.query_hash)
+      return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
     },
     result_number () {
-      return this.hasIdentifier() ? this.query.identifier.result_number : this.query.result_number
+      return this.identifier.id ? this.identifier.result_number : this.query.result_number
     },
     result_hash () {
-      return 'sha256:' + (this.hasIdentifier() ? this.query.identifier.result_hash : this.query.result_hash)
+      return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     executionUTC () {
-      return this.hasIdentifier() ? formatTimestampUTCLabel(this.query.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
+      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
     },
     creator () {
       if (this.query.creator.username === null) {
@@ -398,6 +417,9 @@ export default {
       }
       return this.query.creator.firstname + ' ' + this.query.creator.lastname
     },
+    creators () {
+      return this.identifier.id ? this.identifier.creators : null
+    },
     erroneous () {
       return !this.query.result_hash
     }
@@ -406,12 +428,14 @@ export default {
     this.loadUser()
     this.loadDatabase()
       .then(() => this.loadQuery())
+      .then(() => this.loadMetadata())
   },
   methods: {
-    async downloadMetadata () {
+    async metadata () {
       this.metadataLoading = true
       try {
-        const res = await this.$axios.get(`/api/identifier/${this.query.identifier.id}`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, this.config)
+        console.debug('identifier result', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -469,16 +493,44 @@ export default {
       }
       this.loadingDatabase = false
     },
+    async save () {
+      this.loadingSave = true
+      try {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
+        console.debug('query', res.data)
+        this.query = res.data
+      } catch (err) {
+        console.error('Failed to save query', err)
+        this.$toast.error('Failed to save query')
+        this.error = true
+      }
+      this.loadingSave = false
+    },
+    async loadMetadata () {
+      if (!this.query.id) {
+        return
+      }
+      this.loadingIdentifier = true
+      try {
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
+        this.identifier = res.data[0]
+        console.debug('identifier', res.data[0])
+      } catch (err) {
+        if (err.response.status !== 404) {
+          this.error = true
+          console.error('Could not load identifier', err)
+          this.$toast.error('Could not load identifier')
+        }
+      }
+      this.loadingIdentifier = false
+    },
     openDialog () {
       this.persistQueryDialog = true
-    },
-    hasIdentifier () {
-      return this.query.identifier != null
     },
     closeDialog (event) {
       this.persistQueryDialog = false
       if (event.action === 'persisted') {
-        this.loadQuery()
+        this.loadMetadata()
       }
     },
     loadUser () {
@@ -509,11 +561,5 @@ pre {
 }
 .skeleton-xsmall .v-skeleton-loader__text {
   width: 50px;
-}
-.theme--light .v-dialog--fullscreen {
-  background: white;
-}
-.theme--dark .v-dialog--fullscreen {
-  background: #1E1E1E;
 }
 </style>

@@ -8,8 +8,8 @@ volumes:
   broker-service-data:
 
 networks:
-  public:
-    name: public
+  core:
+    name: core
     driver: bridge
     ipam:
       config:
@@ -20,6 +20,12 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+  public:
+    name: public
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.27.0.0/16
 
 services:
 
@@ -29,7 +35,7 @@ services:
     hostname: metadata-db
     image: dbrepo/metadata-db
     networks:
-      public:
+      core:
     volumes:
       - metadata-db-data:/var/lib/postgresql/data
     ports:
@@ -47,7 +53,7 @@ services:
     hostname: discovery-service
     image: dbrepo/discovery-service
     networks:
-      public:
+      core:
     ports:
       - "9090:9090"
     environment:
@@ -63,7 +69,7 @@ services:
     hostname: gateway-service
     image: dbrepo/gateway-service
     networks:
-      public:
+      core:
     ports:
       - "9095:9095"
     environment:
@@ -83,7 +89,7 @@ services:
     image: dbrepo/database-service
     networks:
       userdb:
-      public:
+      core:
     ports:
       - "9092:9092"
     environment:
@@ -110,7 +116,7 @@ services:
     hostname: container-service
     image: dbrepo/container-service
     networks:
-      public:
+      core:
     ports:
       - "9091:9091"
     environment:
@@ -134,7 +140,7 @@ services:
     hostname: authentication-service
     image: dbrepo/authentication-service
     networks:
-      public:
+      core:
     ports:
       - "9097:9097"
     environment:
@@ -168,7 +174,7 @@ services:
     hostname: query-service
     image: dbrepo/query-service
     networks:
-      public:
+      core:
       userdb:
     ports:
       - "9093:9093"
@@ -178,6 +184,7 @@ services:
       METADATA_PASSWORD: ${METADATA_PASSWORD}
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
+      BROKER_CONSUMERS: ${BROKER_CONSUMERS}
     volumes:
       - /tmp:/tmp
     depends_on:
@@ -194,7 +201,7 @@ services:
     hostname: table-service
     image: dbrepo/table-service
     networks:
-      public:
+      core:
       userdb:
     ports:
       - "9094:9094"
@@ -224,7 +231,7 @@ services:
     hostname: identifier-service
     image: dbrepo/identifier-service
     networks:
-      public:
+      core:
     ports:
       - "9096:9096"
     environment:
@@ -245,7 +252,7 @@ services:
     hostname: analyse-service
     image: dbrepo/analyse-service
     networks:
-      public:
+      core:
       userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
     ports:
@@ -265,7 +272,7 @@ services:
     hostname: units-service
     image: dbrepo/units-service
     networks:
-      public:
+      core:
     ports:
       - "5010:5010"
     volumes:
@@ -283,7 +290,7 @@ services:
     hostname: broker-service
     image: dbrepo/broker-service
     networks:
-      public:
+      core:
     ports:
       - "5672:5672"
       - "9098:9098"
@@ -311,7 +318,7 @@ services:
     image: elasticsearch:7.13.4
     command: [ "elasticsearch" ]
     networks:
-      public:
+      core:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -333,19 +340,37 @@ services:
     hostname: ui
     image: dbrepo/ui
     networks:
-      public:
-    ports:
-      - "443:3000"
+      core:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
+      - /logos:/app/static/logos
     depends_on:
       identifier-service:
         condition: service_healthy
       database-service:
         condition: service_healthy
     environment:
-      KEY: "${UI_KEY}"
-      CERT: "${UI_CERT}"
       SANDBOX: 1
+    logging:
+      driver: json-file
+
+  fda-ui-proxy:
+    restart: on-failure
+    container_name: ui-proxy
+    hostname: ui-proxy
+    image: nginx:alpine
+    networks:
+      public:
+      core:
+    volumes:
+      - ./fda-ui-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt/live/dbrepo.ossdip.at/fullchain.pem:/etc/nginx/fullchain.pem:ro
+      - /etc/letsencrypt/live/dbrepo.ossdip.at/privkey.pem:/etc/nginx/privkey.pem:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      ui:
+        condition: service_started
     logging:
       driver: json-file

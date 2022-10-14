@@ -8,27 +8,17 @@ if (process.env.SANDBOX) {
   console.info('[FDA] Running in sandbox environment')
 }
 
-let serv = {
-  https: {
-    key: process.env.KEY,
-    cert: process.env.CERT
-  }
-}
-if (!process.env.KEY || !process.env.CERT) {
-  serv = {
-    port: 3000,
-    host: '0.0.0.0',
-    timing: false
-  }
-}
-
 export default {
   target: 'server',
   ssr: false,
 
   telemetry: false,
 
-  server: serv,
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+    timing: false
+  },
 
   head: {
     titleTemplate: '%s - Database Repository (Sandbox)',
@@ -115,7 +105,8 @@ export default {
           info: colors.amber.lighten4,
           code: colors.grey.lighten4,
           warning: colors.amber.base,
-          error: colors.red.lighten2,
+          error: colors.red.base,
+          banner: colors.red.lighten2,
           success: colors.teal.base
         },
         dark: {

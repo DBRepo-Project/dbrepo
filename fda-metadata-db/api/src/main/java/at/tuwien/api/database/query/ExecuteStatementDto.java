@@ -1,6 +1,6 @@
 package at.tuwien.api.database.query;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 public class ExecuteStatementDto {
 
     @NotBlank(message = "statement is required")
-    @Parameter(name = "sql query")
+    @Schema(example = "SELECT `id` FROM `air_quality`")
     private String statement;
+
 }

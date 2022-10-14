@@ -1,6 +1,6 @@
 package at.tuwien.api.amqp;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,13 +14,11 @@ import javax.validation.constraints.NotNull;
 public class CreateVirtualHostDto {
 
     @NotNull
-    @Parameter(name = "virtual host name")
+    @Schema(example = "air")
     private String name;
 
-    @Parameter(name = "virtual host description")
     private String description;
 
-    @Parameter(name = "virtual host tags")
     private String tags;
 
 }

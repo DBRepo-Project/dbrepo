@@ -61,6 +61,15 @@ public interface ImageService {
     void delete(Long id) throws ImageNotFoundException, PersistenceException;
 
     /**
+     * Checks if an image exists locally.
+     *
+     * @param repository The image name.
+     * @param tag        The image tag.
+     * @return True if the image exists, false otherwise.
+     */
+    boolean exists(String repository, String tag);
+
+    /**
      * Pulls a container image by given repository and tag.
      *
      * @param repository The repository.

@@ -7,6 +7,7 @@ before_script:
 variables:
   HOSTALIASES: ./hosts
   DOCKER_TLS_CERTDIR: /certs
+  TAG: ${TAG:-latest}
 
 cache:
   paths: 
@@ -17,6 +18,7 @@ image: "docker/compose:latest"
 
 stages:
   - build
+  - tag
 
 build-backend-metadata:
   stage: build
@@ -88,4 +90,45 @@ build-frontend:
   stage: build
   script:
     - make build-frontend
+
+release-latest:
+  stage: tag
+  needs:
+    - build-docker
+    - build-backend-metadata
+    - build-backend-authentication
+    - build-backend-identifier
+    - build-backend-container
+    - build-backend-database
+    - build-backend-discovery
+    - build-backend-gateway
+    - build-backend-query
+    - build-backend-table
+  only:
+    refs:
+      - dev
+  script:
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - TAG=latest make release
+
+release-version:
+  stage: tag
+  needs:
+    - build-docker
+    - build-backend-metadata
+    - build-backend-authentication
+    - build-backend-identifier
+    - build-backend-container
+    - build-backend-database
+    - build-backend-discovery
+    - build-backend-gateway
+    - build-backend-query
+    - build-backend-table
+  only:
+    refs:
+      - master
+  script:
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - make release
+
 

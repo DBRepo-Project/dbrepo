@@ -6,6 +6,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.BrokerUserCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.service.QueueService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class QueueServiceImpl implements QueueService {
 
+    private final AmqpMapper amqpMapper;
     private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
-    public QueueServiceImpl(BrokerServiceGateway brokerServiceGateway) {
+    public QueueServiceImpl(AmqpMapper amqpMapper, BrokerServiceGateway brokerServiceGateway) {
+        this.amqpMapper = amqpMapper;
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
@@ -29,7 +32,7 @@ public class QueueServiceImpl implements QueueService {
                 .tags("")
                 .build();
         brokerServiceGateway.createUser(username, userDto);
-        brokerServiceGateway.grantUserHost(username);
+        brokerServiceGateway.modifyHostPermissions(username, amqpMapper.defaultVirtualHostUserPermissions());
     }
 
     @Override

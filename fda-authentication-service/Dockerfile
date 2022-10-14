@@ -28,6 +28,7 @@ ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV WEBSITE=http://example.com
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV TOKEN_MAX=5
 ENV MAIL_FROM="Database Repository <noreply@example.com>"
 ENV MAIL_REPLY_TO="Somebody <somebody@example.com>"
 ENV MAIL_VERIFY=false

@@ -59,7 +59,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_2_JDBC)
                 .defaultPort(IMAGE_2_PORT)
                 .environment(IMAGE_1_ENV_DTO)
-                .logo(IMAGE_2_LOGO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -86,7 +85,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_1_JDBC)
                 .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
-                .logo(IMAGE_1_LOGO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -106,7 +104,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_1_JDBC)
                 .dialect(IMAGE_1_DIALECT)
                 .environment(IMAGE_1_ENV_DTO)
-                .logo(IMAGE_1_LOGO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

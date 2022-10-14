@@ -1,11 +1,6 @@
-#!/usr/local/bin/python
-import socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-result = sock.connect_ex(('127.0.0.1', 5000))
-if result == 0:
-   print("Port is open")
-   exit(0)
-else:
-   print("Port is not open")
-   exit(1)
-sock.close()
+#!/bin/bash
+if [ -f "${READY_FILE}" ]; then
+  echo "service is ready and accepting connections"
+  exit 0
+fi
+exit 1

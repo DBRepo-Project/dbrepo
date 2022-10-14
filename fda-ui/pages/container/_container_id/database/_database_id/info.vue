@@ -5,6 +5,32 @@
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card flat tile>
+          <v-card-title>Container</v-card-title>
+          <v-card-text>
+            <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_name" />
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Internal Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_internal_name" />
+                  </v-list-item-content>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+        <v-divider />
+        <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
             <v-list dense>
@@ -37,12 +63,6 @@
                   <v-list-item-content v-if="description">
                     <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
                     <span v-if="!loading">{{ description }}</span>
-                  </v-list-item-content>
-                  <v-list-item-title>
-                    Persistent Identifier
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <a :href="`${baseUrl}/container/${database.container.id}/database/${database.id}`" v-text="`${baseUrl}/container/${database.container.id}/database/${database.id}`" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Created
@@ -78,7 +98,11 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="creator" />
+                    <span v-if="!loading">
+                      {{ creator }} <sup v-if="creatorVerified">
+                        <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+                      </sup>
+                    </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
@@ -90,13 +114,12 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-card-actions>
-              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Metadata</v-btn>
-              <v-btn v-if="token" class="ml-3" @click="editVisibilityDialog = true">Visibility</v-btn>
+            <v-card-actions v-if="isCreator">
+              <v-btn v-if="token" color="secondary" @click="editDbDialog = true">Get Database PID</v-btn>
               <v-dialog
                 v-model="editDbDialog"
-                fullscreen
-                transition="fade">
+                persistent
+                max-width="640">
                 <EditDB :database="database" @close-dialog="closeDialog" />
               </v-dialog>
               <v-dialog
@@ -107,29 +130,14 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-card flat tile>
-          <v-card-title>Container</v-card-title>
+        <v-divider />
+        <v-card v-if="isCreator" flat tile>
+          <v-card-title>Modify visibility</v-card-title>
+          <v-card-subtitle>Dangerous operation</v-card-subtitle>
           <v-card-text>
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_name" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Internal Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_internal_name" />
-                  </v-list-item-content>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <v-card-actions>
+              <v-btn v-if="token" color="error" @click="editVisibilityDialog = true">Modify</v-btn>
+            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -143,6 +151,7 @@ import DBToolbar from '@/components/DBToolbar'
 import EditDB from '@/components/dialogs/EditDB'
 import EditVisibility from '@/components/dialogs/EditVisibility'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -155,6 +164,9 @@ export default {
       loading: false,
       editDbDialog: false,
       editVisibilityDialog: false,
+      user: {
+        username: null
+      },
       database: {
         id: null,
         name: null,
@@ -222,6 +234,12 @@ export default {
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
     },
+    isCreator () {
+      if (this.database.creator.username === null || this.user.username === null) {
+        return false
+      }
+      return this.database.creator.username === this.user.username
+    },
     language () {
       return this.database.language
     },
@@ -235,7 +253,7 @@ export default {
       return this.database.container.internal_name
     },
     contact () {
-      if (this.database.contact === null) {
+      if (this.database.contact === null || this.database.contact === undefined) {
         return null
       }
       return formatUser(this.database.contact)
@@ -251,10 +269,14 @@ export default {
     },
     creator () {
       return formatUser(this.database.creator)
+    },
+    creatorVerified () {
+      return this.database.creator.email_verified
     }
   },
   mounted () {
     this.loadDatabase()
+    this.loadUser()
   },
   methods: {
     async loadDatabase () {
@@ -274,6 +296,12 @@ export default {
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }
@@ -281,11 +309,5 @@ export default {
 <style>
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
-}
-.theme--light .v-dialog--fullscreen {
-  background: white;
-}
-.theme--dark .v-dialog--fullscreen {
-  background: #1E1E1E;
 }
 </style>

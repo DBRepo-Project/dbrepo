@@ -1,8 +1,12 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
@@ -23,13 +27,18 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
     private final Channel channel;
     private final AmqpConfig amqpConfig;
+    private final AmqpMapper amqpMapper;
     private final DatabaseRepository databaseRepository;
+    private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, DatabaseRepository databaseRepository) {
+    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
+                               DatabaseRepository databaseRepository, BrokerServiceGateway brokerServiceGateway) {
         this.channel = channel;
         this.amqpConfig = amqpConfig;
+        this.amqpMapper = amqpMapper;
         this.databaseRepository = databaseRepository;
+        this.brokerServiceGateway = brokerServiceGateway;
     }
 
     @PostConstruct
@@ -50,6 +59,13 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to declare exchange {}", database.getExchange());
             throw new AmqpException("Failed to declare exchange", e);
         }
+    }
+
+    @Override
+    public void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException {
+        final List<Database> databases = databaseRepository.findAllByUsername(principal.getName());
+        final GrantVirtualHostPermissionsDto permissions = amqpMapper.databasesToGrantVirtualHostPermissionsDto(databases);
+        brokerServiceGateway.grantPermission(principal.getName(), permissions);
     }
 
     @Override

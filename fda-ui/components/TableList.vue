@@ -6,7 +6,7 @@
         (no tables)
       </v-card-text>
     </v-card>
-    <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion>
+    <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion flat>
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
           {{ item.name }}
@@ -26,22 +26,9 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
-                      Table Internal Name
-                    </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.internal_name" />
-                    <v-list-item-content>
-                      {{ tableDetails.internal_name }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
                       Table Description
                     </v-list-item-title>
-                    <v-list-item-content>
-                      {{ tableDetails.description }}
-                    </v-list-item-content>
+                    <v-list-item-content v-text="tableDetails.description" />
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item>
@@ -87,13 +74,13 @@
           </v-row>
           <v-row v-if="isPublicOrOwner" dense>
             <v-col>
-              <v-btn color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+              <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
               </v-btn>
-              <v-btn color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
+              <v-btn small color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
                 Create Subset
               </v-btn>
-              <v-btn v-if="canModify" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
+              <v-btn v-if="canModify" small class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
                 Import csv
               </v-btn>
             </v-col>
@@ -245,7 +232,8 @@ export default {
     },
     brokerConfig () {
       return {
-        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) }
+        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
+        progress: false
       }
     },
     createdUTC () {
@@ -284,6 +272,7 @@ export default {
     this.$root.$on('table-create', this.refresh)
     this.loadDatabase()
     this.loadUser()
+    this.pollConsumerStatus()
   },
   methods: {
     pickUnit (item) {
@@ -384,10 +373,15 @@ export default {
         console.debug('consumers', consumers)
         this.consumers = consumers
       } catch (err) {
-        console.error('Could not find consumers')
-        this.$toast.error('Could not find consumers.')
+        console.error('Could not find consumers', err)
       }
       this.loadingConsumers = false
+    },
+    pollConsumerStatus () {
+      if (this.tableDetails === undefined || this.tableDetails.topic === undefined) {
+        return
+      }
+      this.consumerDetails(this.tableDetails.topic)
     },
     showDeleteTableDialog (id) {
       this.deleteTableId = id

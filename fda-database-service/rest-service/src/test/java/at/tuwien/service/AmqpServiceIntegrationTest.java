@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -108,7 +109,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createExchange_succeeds() throws AmqpException, IOException {
+    public void createExchange_succeeds() throws AmqpException, IOException, BrokerVirtualHostCreationException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */

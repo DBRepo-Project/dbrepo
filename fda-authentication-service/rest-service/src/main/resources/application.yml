@@ -49,6 +49,7 @@ fda:
   ready.path: /ready
   website: "${WEBSITE}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  token.max: "${TOKEN_MAX}"
   mail:
     prefix: /
     from: "${MAIL_FROM}"

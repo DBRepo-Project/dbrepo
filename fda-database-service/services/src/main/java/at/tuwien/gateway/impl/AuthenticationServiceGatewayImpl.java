@@ -4,6 +4,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -19,7 +20,8 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
     private final RestTemplate restTemplate;
 
     @Autowired
-    public AuthenticationServiceGatewayImpl(UserMapper userMapper, RestTemplate restTemplate) {
+    public AuthenticationServiceGatewayImpl(UserMapper userMapper,
+                                            @Qualifier("authenticationRestTemplate") RestTemplate restTemplate) {
         this.userMapper = userMapper;
         this.restTemplate = restTemplate;
     }
@@ -29,7 +31,7 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
         final ResponseEntity<UserDto> response = restTemplate.exchange("/api/auth", HttpMethod.PUT,
-                new HttpEntity<>("", headers), UserDto.class);
+                new HttpEntity<>(null, headers), UserDto.class);
         return userMapper.userDtoToUserDetailsDto(response.getBody());
     }
 

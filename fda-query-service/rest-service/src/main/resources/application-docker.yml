@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    url: jdbc:postgresql://metadata-db:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -41,3 +41,4 @@ eureka:
 fda:
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   ready.path: /ready
+  consumers: 2

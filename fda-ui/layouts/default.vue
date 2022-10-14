@@ -36,12 +36,8 @@
       <div>
         <v-img
           contain
-          class="tu-logo"
-          src="/tu_logo_512.png" />
-        <v-img
-          contain
-          class="univie-logo"
-          src="/univie_logo_512.png" />
+          class="logo"
+          src="/logo.png" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -130,7 +126,7 @@
         flat
         tile
         width="100%"
-        class="error text-center">
+        class="banner text-center">
         <v-card-text class="black--text">
           This is a <strong>TEST</strong> environment, do not use production/confidential data! — <a href="//github.com/fair-data-austria/dbrepo/issues/new" class="black--text">Report a bug</a>
         </v-card-text>
@@ -395,11 +391,8 @@ export default {
 .v-menu__content {
   max-width: 988px !important;
 }
-.tu-logo {
+.logo {
   margin: 1em 1em 0;
-}
-.univie-logo {
-  margin: 1em 1em .5em;
 }
 .sl {
   padding-left: 36px;

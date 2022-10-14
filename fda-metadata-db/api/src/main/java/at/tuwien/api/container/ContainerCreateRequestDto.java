@@ -1,6 +1,6 @@
 package at.tuwien.api.container;
 
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -14,15 +14,15 @@ import javax.validation.constraints.NotBlank;
 public class ContainerCreateRequestDto {
 
     @NotBlank
-    @Parameter(name = "name", example = "Weather World")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
-    @Parameter(name = "repository", example = "postgres")
+    @Schema(example = "mariadb")
     private String repository;
 
     @NotBlank
-    @Parameter(name = "tag", example = "latest")
-    private String tag = "latest";
+    @Schema(example = "10.5")
+    private String tag;
 
 }

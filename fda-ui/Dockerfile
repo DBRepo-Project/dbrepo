@@ -30,6 +30,8 @@ COPY ./utils ./utils
 
 RUN yarn build > /dev/null
 
+EXPOSE 3000
+
 ENV API=http://gateway-service:9095
 ENV SEARCH=http://search-service:9200
 ENV BROKER_USERNAME=fda
@@ -38,4 +40,4 @@ ENV SANDBOX=false
 ENV SHARED_FILESYSTEM=/tmp
 ENV VERSION=1.1
 
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT [ "yarn", "start" ]

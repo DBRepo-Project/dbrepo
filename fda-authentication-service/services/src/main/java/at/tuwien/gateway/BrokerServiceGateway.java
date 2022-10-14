@@ -2,12 +2,8 @@ package at.tuwien.gateway;
 
 
 import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.user.UserModifyPasswordDto;
-import at.tuwien.api.user.UserPasswordDto;
-import at.tuwien.exception.AuthenticationInvalidException;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.exception.BrokerUserCreationException;
-import at.tuwien.exception.UserEmailNotVerifiedException;
-import at.tuwien.exception.UserNotFoundException;
 
 
 public interface BrokerServiceGateway {
@@ -22,12 +18,13 @@ public interface BrokerServiceGateway {
     void createUser(String username, CreateUserDto data) throws BrokerUserCreationException;
 
     /**
-     * Grants all permissions on a virtual host
+     * Modified host permissions
      *
      * @param username The user name.
-     * @throws BrokerUserCreationException The broker did not grant permissions for a user.
+     * @param data     The user data.
+     * @throws BrokerUserCreationException The broker did not modify the user.
      */
-    void grantUserHost(String username) throws BrokerUserCreationException;
+    void modifyHostPermissions(String username, GrantVirtualHostPermissionsDto data) throws BrokerUserCreationException;
 
     /**
      * Modify a user password for a user at the Queue Service

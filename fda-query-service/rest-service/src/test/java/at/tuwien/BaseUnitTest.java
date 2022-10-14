@@ -637,7 +637,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .logo(IMAGE_1_LOGO)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;
@@ -731,8 +730,8 @@ public abstract class BaseUnitTest {
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
-            .containerId(QUERY_1_CONTAINER_ID)
-            .databaseId(QUERY_1_DATABASE_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
@@ -741,8 +740,8 @@ public abstract class BaseUnitTest {
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
-            .containerId(QUERY_1_CONTAINER_ID)
-            .databaseId(QUERY_1_DATABASE_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)

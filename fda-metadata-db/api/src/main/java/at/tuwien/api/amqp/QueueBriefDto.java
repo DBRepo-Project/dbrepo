@@ -1,6 +1,7 @@
 package at.tuwien.api.amqp;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,11 +15,11 @@ import javax.validation.constraints.NotNull;
 public class QueueBriefDto {
 
     @NotNull
-    @Parameter(name = "queue vhost")
+    @Schema(example = "%2F")
     private String vhost;
 
     @NotNull
-    @Parameter(name = "queue name")
+    @Schema(example = "air")
     private String name;
 
 }

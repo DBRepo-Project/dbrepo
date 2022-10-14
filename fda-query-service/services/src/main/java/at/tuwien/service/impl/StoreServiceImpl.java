@@ -2,16 +2,13 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.SaveStatementDto;
-import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
@@ -26,7 +23,6 @@ import java.security.Principal;
 import java.sql.*;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 
 @Log4j2
 @Service
@@ -36,24 +32,19 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     private final StoreMapper storeMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
-    private final IdentifierMapper identifierMapper;
-    private final IdentifierRepository identifierRepository;
 
     @Autowired
     public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, UserService userService,
-                            DatabaseService databaseService, IdentifierMapper identifierMapper,
-                            IdentifierRepository identifierRepository) {
+                            DatabaseService databaseService) {
         this.queryMapper = queryMapper;
         this.storeMapper = storeMapper;
         this.userService = userService;
         this.databaseService = databaseService;
-        this.identifierMapper = identifierMapper;
-        this.identifierRepository = identifierRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Query> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException,
+    public List<Query> findAll(Long containerId, Long databaseId, Boolean persisted) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
             TableMalformedException {
         /* find */
@@ -65,27 +56,18 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* select all */
-        final List<Query> queries;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection);
-            queries = storeMapper.resultSetToQueryList(preparedStatement.executeQuery());
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection, persisted);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to find queries");
-            log.debug("failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
-            throw new QueryStoreException("Query not found");
+            log.error("Failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
+            throw new QueryStoreException("Failed to find queries");
         } finally {
             dataSource.close();
         }
-        /* find all identifiers */
-        final List<Identifier> identifiers = identifierRepository.findAll();
-        queries.forEach(q -> {
-            final Optional<Identifier> optional = identifiers.stream()
-                    .filter(i -> i.getQueryId().equals(q.getId()))
-                    .findFirst();
-            optional.ifPresent(i -> q.setIdentifier(identifierMapper.identifierToIdentifierDto(i)));
-        });
-        return queries;
+
     }
 
     @Override
@@ -106,39 +88,37 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             query = storeMapper.resultSetToQuery(resultSet, true);
+            return query;
         } catch (SQLException e) {
-            log.error("Query not found with id {}", queryId);
+            log.error("Query not found with id {}, because {}", queryId, e.getMessage());
             throw new QueryNotFoundException("Query not found");
         } finally {
             dataSource.close();
         }
-        /* find identifier */
-        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
-        if (optional.isPresent()) {
-            final Identifier identifier = optional.get();
-            log.info("Found identifier with id {} for query with id {}", identifier.getId(), identifier.getQueryId());
-            log.debug("found identifier {} for query {}", identifier, query);
-            query.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
-        }
-        return query;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, SaveStatementDto metadata,
-                        Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        return insert(containerId, databaseId, result, queryMapper.saveStatementDtoToExecuteStatementDto(metadata),
-                principal, null);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                        Principal principal, Instant execution)
+                        QueryTypeDto type, Principal principal, Instant execution)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+        /* check */
+        if (type.equals(QueryTypeDto.VIEW)) {
+            /* view executions are not stored in the query store */
+            return Query.builder()
+                    .cid(containerId)
+                    .dbid(databaseId)
+                    .query(metadata.getStatement())
+                    .type(storeMapper.queryTypeDtoToQueryType(type))
+                    .queryNormalized(metadata.getStatement())
+                    .queryHash(DigestUtils.sha256Hex(metadata.getStatement()))
+                    .resultNumber(null)
+                    .resultHash(null)
+                    .execution(execution)
+                    .createdBy(null)
+                    .build();
+        }
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -149,10 +129,11 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         final User creator = userService.findByUsername(principal.getName());
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        final at.tuwien.querystore.Query query = at.tuwien.querystore.Query.builder()
-                .containerId(containerId)
-                .databaseId(databaseId)
+        final Query query = at.tuwien.querystore.Query.builder()
+                .cid(containerId)
+                .dbid(databaseId)
                 .query(metadata.getStatement())
+                .type(storeMapper.queryTypeDtoToQueryType(type))
                 .queryNormalized(metadata.getStatement())
                 .queryHash(DigestUtils.sha256Hex(metadata.getStatement()))
                 .resultNumber(storeMapper.queryResultDtoToLong(result))
@@ -169,12 +150,40 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.debug("inserted query {} into the query store of database {}", query, database);
             return query;
         } catch (SQLException e) {
-            log.error("Failed to execute query");
-            log.debug("failed to execute query: {}", e.getMessage());
+            log.error("Failed to execute query: {}", e.getMessage());
             throw new QueryStoreException("Failed to execute query", e);
         } finally {
             dataSource.close();
         }
+    }
+
+    @Override
+    @Transactional
+    public Query persist(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException {
+        /* find */
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        /* persist */
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final Query out;
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawPersistQuery(connection, true, containerId, databaseId, queryId);
+            preparedStatement.executeUpdate();
+            final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, containerId, databaseId, queryId);
+            final ResultSet resultSet = preparedStatement1.executeQuery();
+            out = storeMapper.resultSetToQuery(resultSet, true);
+        } catch (SQLException e) {
+            log.error("Failed to update query");
+            log.debug("failed to update query, reason: {}", e.getMessage());
+            throw new QueryStoreException("Failed to update query", e);
+        } finally {
+            dataSource.close();
+        }
+        return out;
     }
 
     @Override
@@ -200,8 +209,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement1.executeQuery();
             out = storeMapper.resultSetToQuery(resultSet, true);
         } catch (SQLException e) {
-            log.error("Failed to update query");
-            log.debug("failed to update query, reason: {}", e.getMessage());
+            log.error("Failed to update query: {}", e.getMessage());
             throw new QueryStoreException("Failed to update query", e);
         } finally {
             dataSource.close();

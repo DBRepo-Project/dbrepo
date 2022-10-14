@@ -100,7 +100,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -117,7 +117,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -173,7 +173,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -316,12 +316,12 @@ public interface QueryMapper {
         }
         statement.append(" INTO OUTFILE '/tmp/")
                 .append(filename)
-                .append("' CHARACTER SET utf8");
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         statement.append(";");
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -348,12 +348,12 @@ public interface QueryMapper {
                 .append(query.getQuery().substring(matcher.end(0)))
                 .append(" INTO OUTFILE '/tmp/")
                 .append(filename)
-                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',';");
+                .append("' CHARACTER SET utf8 FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"';");
         log.trace("raw export query: [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -403,15 +403,14 @@ public interface QueryMapper {
                         .filter(d -> d.getKey().equals(column.getInternalName()))
                         .findFirst();
                 if (tuple.isEmpty()) {
-                    log.error("Failed to map column names");
-                    log.debug("failed to map column names, tuple contains columns names that are not present in the database, tuple column names are {}", data.getData().keySet());
+                    log.error("Failed to map column name {}, available {}", column.getInternalName(), data.getData().keySet());
                     throw new TableMalformedException("Failed to map column names");
                 }
                 prepareStatementWithColumnTypeObject(ps, column.getColumnType(), idx[0]++, tuple.get().getValue());
             }
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -435,10 +434,12 @@ public interface QueryMapper {
                 .append("` WHERE ");
         final int[] idx = new int[]{0};
         data.getKeys()
-                .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : ", ")
+                .forEach((key, value) -> statement.append(idx[0]++ == 0 ? "" : " AND ")
                         .append("`")
                         .append(key)
-                        .append("` = ?"));
+                        .append("` ")
+                        .append(value == null ? "IS" : "=")
+                        .append(" ?"));
         /* debug */
         log.trace("raw delete query: [{}] with data {}", statement, data.getKeys().values());
         /* prepare */
@@ -450,15 +451,14 @@ public interface QueryMapper {
                         .filter(c -> c.getInternalName().equals(entry.getKey()))
                         .findFirst();
                 if (optional.isEmpty()) {
-                    log.error("Failed to find column");
-                    log.debug("failed to find column with internal name {} in table {}", entry.getKey(), table);
+                    log.error("Failed to find column with internal name {} in table {}", entry.getKey(), table);
                     throw new QueryMalformedException("Failed to find column");
                 }
                 prepareStatementWithColumnTypeObject(ps, optional.get().getColumnType(), i++, entry.getValue());
             }
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -495,9 +495,14 @@ public interface QueryMapper {
                     statement.append(jdx[0] == 0 ? "" : ", ")
                             .append("`")
                             .append(key)
-                            .append("` = '")
-                            .append(value)
-                            .append("'");
+                            .append("` ");
+                    if (value == null) {
+                        statement.append(" IS NULL");
+                    } else {
+                        statement.append(" = '")
+                                .append(value)
+                                .append("'");
+                    }
                     jdx[0]++;
                 });
         statement.append(";");
@@ -506,14 +511,33 @@ public interface QueryMapper {
         try {
             final PreparedStatement ps = connection.prepareStatement(statement.toString());
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                ps.setString(i++, String.valueOf(entry.getValue()));
+                if (entry.getValue() == null) {
+                    ps.setNull(i++, Types.NULL);
+                } else {
+                    ps.setString(i++, String.valueOf(entry.getValue()));
+                }
             }
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
+    }
+
+    default String tableColumnsToSelection(List<TableColumn> data) {
+        final StringBuilder selection = new StringBuilder();
+        final int[] idx = {0};
+        data.forEach(column -> selection.append(idx[0]++ == 0 ? "" : ", ")
+                .append("`")
+                .append(column.getInternalName())
+                .append("`"));
+        log.trace("mapped selection [{}] from table columns {}", selection, data);
+        return selection.toString();
+    }
+
+    default String tableColumnsToCountSelection(List<TableColumn> data) {
+        return "COUNT(" + tableColumnsToSelection(data) + ")";
     }
 
     default PreparedStatement tableToRawCountAllQuery(Connection connection, Table table, Instant timestamp) throws ImageNotSupportedException, QueryMalformedException {
@@ -533,66 +557,15 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
 
-    default PreparedStatement queryToRawTimestampedCountQuery(Connection connection, String query, Database database, Instant timestamp)
-            throws ImageNotSupportedException, QueryMalformedException {
-        /* param check */
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
-        if (timestamp == null) {
-            throw new IllegalArgumentException("Timestamp must be provided");
-        }
-        query = query.toLowerCase(Locale.ROOT)
-                .split("from")[1];
-        final StringBuilder original = new StringBuilder();
-        original.append("SELECT COUNT(*) AS `total` FROM");
-        if (!query.contains("where")) {
-            /* treat join queries as normal queries */
-            original.append(query);
-        } else {
-            original.append(query.split("where")[0]);
-        }
-        if (query.contains("join")) {
-            /* put timestamp after "join" and each "on" (but before alias) */
-        } else {
-            original.append("FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            original.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")));
-            original.append("' ");
-        }
-        if (query.contains("where")) {
-            original.append("where");
-            original.append(query.split("where")[1]);
-        }
-        original.append(";");
-        /* replace timestamp for join query */
-        String statement = original.toString();
-        if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-        }
-        log.debug("mapped raw view-only query [{}]", statement);
-        try {
-            return connection.prepareStatement(statement);
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
-    default PreparedStatement queryToRawTimestampedQuery(Connection connection,
-                                                         String query, Database database, Instant timestamp, Long page,
-                                                         Long size) throws ImageNotSupportedException,
+    default PreparedStatement queryToRawTimestampedQuery(Connection connection, String query, Database database,
+                                                         Instant timestamp, String selection, Long page, Long size)
+            throws ImageNotSupportedException,
             QueryMalformedException {
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -609,40 +582,51 @@ public interface QueryMapper {
         }
         /* query check (this is enforced by the db also) */
         final String query_ = query;
-        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::startsWith)) {
+        if (Stream.of("count").anyMatch(query_::contains)) {
+            log.error("Query contains unsupported operation");
+            log.debug("query contains unsupported operation, one of {}", List.of("COUNT"));
+        }
+        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::contains)) {
             log.error("Query attempts to modify the database");
             log.debug("query attempts to modify the database [{}]", query_);
             throw new QueryMalformedException("Query attempts to modify the database");
         }
-        final StringBuilder sb = new StringBuilder();
-        if (!query.contains("where")) {
-            /* treat join queries as normal queries */
-            sb.append(query);
-        } else {
-            sb.append(query.split("where")[0]);
+        /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
+        final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
+                .append(mariaDbFormatter.format(timestamp))
+                .append("' ");
+        final Pattern pattern = Pattern.compile("from `?[a-z0-9-_]+`?(,? *`?[a-z0-9-_]+`)*", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
+        final Matcher matcher = pattern.matcher(query_);
+        if (!matcher.find()) {
+            log.error("Failed to find 'from' clause in query");
+            throw new QueryMalformedException("Failed to find from clause");
         }
+        log.debug("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query_);
+        final StringBuilder sb = new StringBuilder("SELECT ")
+                .append(selection)
+                .append(" FROM (")
+                .append(query_, 0, matcher.end());
+        if (!query.contains("join")) {
+            sb.append(versionPart);
+        }
+        sb.append(query, matcher.end(), query.length())
+                .append(") as tbl");
+        if (size != null && page != null) {
+            log.trace("pagination size/limit of {}", size);
+            sb.append(" LIMIT ")
+                    .append(size);
+            log.trace("pagination page/offset of {}", page);
+            sb.append(" OFFSET ")
+                    .append(page * size);
+
+        }
+        String statement = sb.append(";")
+                .toString();
         if (query.contains("join")) {
-            /* put timestamp after "join" and each "on" (but before alias) */
-        } else {
-            sb.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '");
-            sb.append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")));
-            sb.append("' ");
-        }
-        if (query.contains("where")) {
-            sb.append("where");
-            sb.append(query.split("where")[1]);
-        }
-        if (size != null && page != null && size > 0 && page >= 0) {
-            sb.append(" LIMIT " + size + " OFFSET " + (page * size));
-        }
-        sb.append(";");
-        /* replace timestamp for join query */
-        String statement = sb.toString();
-        if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceFirst("from ([`a-z0-9-_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
+            statement = statement.replaceAll("join ([`a-z0-9-_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
         }
@@ -650,7 +634,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -694,7 +678,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -730,7 +714,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -817,8 +801,8 @@ public interface QueryMapper {
             }
             return data.getLong(1);
         } catch (SQLException e) {
-            log.error("Failed to retrieve number");
-            throw new QueryStoreException("Failed to retrieve number");
+            log.error("Failed to retrieve number: {}", e.getMessage());
+            throw new QueryStoreException("Failed to retrieve number", e);
         }
     }
 
@@ -870,7 +854,7 @@ public interface QueryMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
+            log.error("Failed to prepare statement: {}", e.getMessage());
             log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
@@ -882,6 +866,7 @@ public interface QueryMapper {
             case STRING:
                 log.trace("prepare statement idx {} string {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.VARCHAR);
                     break;
                 }
@@ -890,6 +875,7 @@ public interface QueryMapper {
             case DATE:
                 log.trace("prepare statement idx {} date {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DATE);
                     break;
                 }
@@ -898,6 +884,7 @@ public interface QueryMapper {
             case NUMBER:
                 log.trace("prepare statement idx {} number {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BIGINT);
                     break;
                 }
@@ -906,6 +893,7 @@ public interface QueryMapper {
             case DECIMAL:
                 log.trace("prepare statement idx {} decimal {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.DECIMAL);
                     break;
                 }
@@ -914,6 +902,7 @@ public interface QueryMapper {
             case BOOLEAN:
                 log.trace("prepare statement idx {} boolean {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BOOLEAN);
                     break;
                 }
@@ -922,6 +911,7 @@ public interface QueryMapper {
             case TIMESTAMP:
                 log.trace("prepare statement idx {} timestamp {}", idx, value);
                 if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.TIMESTAMP);
                     break;
                 }

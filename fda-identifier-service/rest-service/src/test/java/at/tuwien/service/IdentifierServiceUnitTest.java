@@ -106,7 +106,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .queryId(IDENTIFIER_1_QUERY_ID)
+                .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
                 .doi(IDENTIFIER_1_DOI)

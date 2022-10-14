@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.columns;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -16,21 +17,20 @@ import javax.validation.constraints.NotNull;
 public class ColumnBriefDto {
 
     @NotNull(message = "id is required")
-    @Parameter(name = "id", example = "1", required = true)
     private Long id;
 
     @NotBlank(message = "name is required")
-    @Parameter(name = "name", example = "Date", required = true)
+    @Schema(example = "date")
     private String name;
 
     @NotBlank(message = "internal name is required")
     @JsonProperty("internal_name")
-    @Parameter(name = "internal name", example = "mdb_date", required = true)
+    @Schema(example = "mdb_date")
     private String internalName;
 
     @NotNull
     @JsonProperty("column_type")
-    @Parameter(name = "type", required = true)
+    @Schema(example = "date")
     private ColumnTypeDto columnType;
 
 }

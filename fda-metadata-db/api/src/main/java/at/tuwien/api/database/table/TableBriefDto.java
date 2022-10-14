@@ -2,7 +2,7 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -17,20 +17,18 @@ import javax.validation.constraints.NotNull;
 public class TableBriefDto {
 
     @NotNull(message = "id is required")
-    @Parameter(name = "table id", example = "1")
     private Long id;
 
     @NotBlank(message = "name is required")
-    @Parameter(name = "table name", example = "Weather Australia")
+    @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank(message = "internal name is required")
     @JsonProperty("internal_name")
-    @Parameter(name = "table internal name", example = "weather_australia")
+    @Schema(example = "air_quality")
     private String internalName;
 
     @NotNull(message = "creator is required")
-    @Parameter(name = "table creator")
     private UserBriefDto creator;
 
 }

@@ -1,6 +1,5 @@
 package at.tuwien.api.user;
 
-import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
@@ -14,7 +13,6 @@ import javax.validation.constraints.NotNull;
 public class UserPasswordDto {
 
     @NotNull
-    @Parameter(name = "user password")
     private String password;
 
 }

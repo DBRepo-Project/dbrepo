@@ -23,12 +23,11 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId);
         if (database.isEmpty()) {
-            log.error("Failed to find database");
-            log.debug("failed to find database with container id {} and database id {}", containerId, databaseId);
+            log.error("Failed to find database with container id {} and database id {}", containerId, databaseId);
             throw new DatabaseNotFoundException("Failed to find database");
         }
         return database.get();
