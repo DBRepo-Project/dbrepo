@@ -26,9 +26,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Query Description *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
+                label="Subset Description" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -105,8 +103,8 @@
                 label="ORCID" />
             </v-col>
             <v-col cols="1" class="mt-5">
-              <v-btn v-if="i !== 0" color="error" icon x-small @click="deleteCreator(i)">
-                <v-icon>mdi-delete</v-icon>
+              <v-btn icon x-small @click="deleteCreator(i)">
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </v-col>
           </v-row>
@@ -262,6 +260,8 @@ export default {
         { value: 'Obsoletes' }
       ],
       identifier: {
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
@@ -270,6 +270,7 @@ export default {
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),
         visibility: 'everyone',
+        type: 'subset',
         doi: null,
         creators: [],
         related_identifiers: []
@@ -350,7 +351,7 @@ export default {
       this.loading = true
       let res
       try {
-        res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier`, this.identifier, {
+        res = await this.$axios.post('/api/identifier', this.identifier, {
           headers: this.headers
         })
         console.debug('persist', res.data)

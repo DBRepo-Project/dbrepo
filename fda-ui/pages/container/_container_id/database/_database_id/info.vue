@@ -11,6 +11,13 @@
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title v-if="publisher" class="mt-2">
+                    Persistent Identifier
+                  </v-list-item-title>
+                  <v-list-item-content v-if="publisher">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <a v-if="!loading" :href="pid">{{ pid }}</a>
+                  </v-list-item-content>
+                  <v-list-item-title v-if="publisher" class="mt-2">
                     Database Publisher
                   </v-list-item-title>
                   <v-list-item-content v-if="publisher">
@@ -36,8 +43,8 @@
                   </v-list-item-title>
                   <v-list-item-content v-if="identifier.license">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="database.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
-                    <span v-if="!database.license">(none)</span>
+                    <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
+                    <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
@@ -192,7 +199,11 @@ export default {
         username: null
       },
       identifier: {
-        id: null
+        id: null,
+        license: {
+          identifier: null,
+          uri: null
+        }
       },
       database: {
         id: null,
@@ -251,6 +262,9 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    pid () {
+      return `${this.baseUrl}/pid/${this.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -337,7 +351,7 @@ export default {
     },
     closeDialog (event) {
       if (event.success) {
-        this.loadDatabase()
+        this.loadIdentifier()
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false

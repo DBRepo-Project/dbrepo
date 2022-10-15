@@ -512,9 +512,15 @@ export default {
       }
       this.loadingIdentifier = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier?qid=${this.$route.params.query_id}`, this.config)
-        this.identifier = res.data[0]
-        console.debug('identifier', res.data[0])
+        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}&qid=${this.$route.params.query_id}`, this.config)
+        if (res.data.length === 1) {
+          this.identifier = res.data[0]
+          console.debug('identifier', res.data[0])
+        } else if (res.data.length > 1) {
+          this.error = true
+          console.error('Could not load identifier, more than one result', res.data)
+          this.$toast.error('Could not load identifier')
+        }
       } catch (err) {
         if (err.response.status !== 404) {
           this.error = true

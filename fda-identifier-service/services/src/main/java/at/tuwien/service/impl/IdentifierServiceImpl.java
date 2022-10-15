@@ -115,6 +115,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
             tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
             tmp.setQuery(query.getQuery());
+            tmp.setQueryId(query.getId());
             tmp.setQueryNormalized(query.getQueryNormalized());
             tmp.setQueryHash(query.getQueryHash());
             tmp.setExecution(query.getExecution());

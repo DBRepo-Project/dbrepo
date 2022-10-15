@@ -80,6 +80,13 @@ export default {
 
   proxy: {
     '/api': process.env.API || 'http://localhost:9095',
+    '/pid': {
+      target: process.env.API + '/api' || 'http://localhost:9095/api',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/pid': '/pid'
+      }
+    },
     '/search': {
       target: process.env.SEARCH || 'http://localhost:9200',
       changeOrigin: true,
