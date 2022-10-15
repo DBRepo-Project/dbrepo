@@ -265,7 +265,6 @@ export default {
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
-      this.$toast.warning('Login has expired, you have been logged-out')
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
@@ -367,6 +366,7 @@ export default {
         const { status } = err.response
         if (status === 401) {
           console.error('Token expired', err)
+          this.$toast.warning('Login has expired')
           this.logout()
         } else {
           console.error('user data', err)
