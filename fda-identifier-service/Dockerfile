@@ -26,6 +26,7 @@ ENV METADATA_DB=fda
 ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV WEBSITE=http://localhost:3000
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

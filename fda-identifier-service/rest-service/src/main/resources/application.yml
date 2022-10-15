@@ -34,3 +34,4 @@ eureka:
 fda:
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  website: "${WEBSITE}"

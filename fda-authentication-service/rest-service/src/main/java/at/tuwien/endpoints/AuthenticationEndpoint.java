@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.OrcidMalformedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
@@ -52,9 +53,13 @@ public class AuthenticationEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Validate authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException, OrcidMalformedException {
-        final UserDto user = userMapper.userToUserDto(userService.findByUsername(principal.getName()));
+        log.trace("authenticate user with principal name {}", principal.getName());
+        final User user = userService.findByUsername(principal.getName());
+        log.trace("authentication for principal name {} retrieved user {}", principal.getName(), user);
+        final UserDto dto = userMapper.userToUserDto(user);
+        log.trace("mapped user to dto {}", dto);
         return ResponseEntity.accepted()
-                .body(user);
+                .body(dto);
     }
 
     @PostMapping("/renew")

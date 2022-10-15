@@ -147,6 +147,7 @@ export default {
     this.loadUser()
     this.loadDatabase()
       .then(() => this.loadQueries())
+      .then(() => this.loadIdentifiers())
   },
   methods: {
     async loadQueries () {
@@ -159,7 +160,27 @@ export default {
         this.queries = res.data
         console.debug('queries', this.queries)
       } catch (err) {
-        this.$toast.error('Could not list queries.')
+        this.$toast.error('Could not list queries')
+      }
+      this.loading = false
+    },
+    async loadIdentifiers () {
+      if (!this.isPublicOrOwner()) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}`, this.config)
+        const identifiers = res.data.filter(i => i.type === 'subset')
+        this.queries.forEach((query) => {
+          const id = identifiers.filter(i => i.container_id === query.cid && i.database_id === query.dbid && i.query_id === query.id)
+          if (id.length === 1) {
+            query.identifier = id[0]
+          }
+        })
+        console.debug('identifiers', identifiers)
+      } catch (err) {
+        this.$toast.error('Could not list identifiers')
       }
       this.loading = false
     },

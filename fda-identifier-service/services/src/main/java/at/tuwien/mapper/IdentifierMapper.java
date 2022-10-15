@@ -36,6 +36,16 @@ public interface IdentifierMapper {
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
+    default String identifierToLocationUrl(String baseUrl, Identifier data) {
+        if (data.getType().equals(IdentifierType.SUBSET)) {
+            return baseUrl + "/container/" + data.getContainerId() + "/database/" + data.getDatabaseId() + "/query/" + data.getQueryId();
+        } else if (data.getType().equals(IdentifierType.DATABASE)) {
+            return baseUrl + "/container/" + data.getContainerId() + "/database/" + data.getDatabaseId();
+        } else {
+            return null;
+        }
+    }
+
     default VisibilityType databaseToVisibilityType(Database data) {
         if (data.getIsPublic()) {
             return VisibilityType.EVERYONE;

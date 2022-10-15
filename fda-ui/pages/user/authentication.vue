@@ -10,7 +10,7 @@
               <v-row dense>
                 <v-col cols="5">
                   <v-text-field
-                    v-model="user.email"
+                    v-model="email"
                     :disabled="user.email_verified || error"
                     :rules="[v => !!v || $t('Required')]"
                     required
@@ -75,6 +75,7 @@ export default {
       valid1: false,
       valid2: false,
       error: false,
+      email: null,
       user: {
         id: null,
         email: null,
@@ -97,6 +98,14 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -111,7 +120,7 @@ export default {
       }
       try {
         this.loading = true
-        const res = await this.$axios.put('/api/auth/', {}, this.config)
+        const res = await this.$axios.put('/api/auth', {}, this.config)
         this.user = res.data
         console.debug('user', this.user)
         this.error = false
@@ -126,7 +135,7 @@ export default {
       try {
         this.loading = true
         const res = await this.$axios.post('/api/user/token/resend', {
-          email: this.user.email
+          email: this.email
         }, this.config)
         console.debug('resend', res.data)
         this.error = false
