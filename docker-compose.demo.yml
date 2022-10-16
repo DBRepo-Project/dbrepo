@@ -354,10 +354,10 @@ services:
     logging:
       driver: json-file
 
-  fda-ui-proxy:
+  ui-proxy:
     restart: on-failure
-    container_name: ui-proxy
-    hostname: ui-proxy
+    container_name: dbrepo-ui-proxy
+    hostname: dbrepo-ui-proxy
     image: nginx:alpine
     networks:
       public:
