@@ -38,13 +38,13 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="publication" />
                   </v-list-item-content>
-                  <v-list-item-title v-if="identifier.license" class="mt-2">
+                  <v-list-item-title v-if="database.identifier.license" class="mt-2">
                     License
                   </v-list-item-title>
-                  <v-list-item-content v-if="identifier.license">
+                  <v-list-item-content v-if="database.identifier.license">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
-                    <span v-if="!identifier.license">(none)</span>
+                    <a v-if="database.identifier.license" target="_blank" :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                    <span v-if="!database.identifier.license">(none)</span>
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
@@ -198,13 +198,6 @@ export default {
       user: {
         username: null
       },
-      identifier: {
-        id: null,
-        license: {
-          identifier: null,
-          uri: null
-        }
-      },
       database: {
         id: null,
         name: null,
@@ -212,6 +205,13 @@ export default {
         is_public: null,
         created: null,
         contact: null,
+        identifier: {
+          id: null,
+          license: {
+            identifier: null,
+            uri: null
+          }
+        },
         container: {
           id: null,
           name: null,
@@ -247,10 +247,16 @@ export default {
       return location.protocol + '//' + location.host
     },
     description () {
-      return this.identifier.description
+      if (!this.hasIdentifier) {
+        return ''
+      }
+      return this.database.identifier.description
     },
     publisher () {
-      return this.identifier.publisher
+      if (!this.hasIdentifier) {
+        return ''
+      }
+      return this.database.identifier.publisher
     },
     token () {
       return this.$store.state.token
@@ -264,7 +270,7 @@ export default {
       }
     },
     pid () {
-      return `${this.baseUrl}/pid/${this.identifier.id}`
+      return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -276,7 +282,7 @@ export default {
       return this.database.creator.username === this.user.username
     },
     language () {
-      return this.identifier.language
+      return this.database.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -294,12 +300,12 @@ export default {
       return formatUser(this.database.contact)
     },
     publication () {
-      if (this.identifier.publication_year === null) {
+      if (this.database.identifier.publication_year === null) {
         return null
-      } else if (this.identifier.publication_month !== null && this.identifier.publication_day !== null) {
-        return this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day
+      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
+        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
       } else {
-        return this.identifier.publication_year
+        return this.database.identifier.publication_year
       }
     },
     creator () {
@@ -309,13 +315,15 @@ export default {
       return this.database.creator.email_verified
     },
     hasIdentifier () {
-      return this.identifier.id !== null
+      if (this.database.identifier === null) {
+        return false
+      }
+      return this.database.identifier.id !== null
     }
   },
   mounted () {
     this.loadDatabase()
     this.loadUser()
-    this.loadIdentifier()
   },
   methods: {
     async loadDatabase () {
@@ -329,29 +337,9 @@ export default {
       }
       this.loading = false
     },
-    async loadIdentifier () {
-      this.loading = true
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}`, this.config)
-        let identifiers = res.data
-        identifiers = identifiers.filter(i => i.type === 'database')
-        if (identifiers.length > 0) {
-          this.identifier = identifiers[0]
-          console.debug('identifier', this.identifier)
-        }
-      } catch (err) {
-        this.error = true
-        this.loading = false
-        this.$toast.error('Failed to persist database')
-        console.error('persist failed', err)
-        return
-      }
-      this.loading = false
-    },
     closeDialog (event) {
       if (event.success) {
-        this.loadIdentifier()
+        this.loadDatabase()
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false

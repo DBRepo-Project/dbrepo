@@ -3,6 +3,7 @@ package at.tuwien.api.database;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -36,6 +37,8 @@ public class DatabaseDto {
 
     @NotNull
     private UserBriefDto creator;
+
+    private IdentifierDto identifier;
 
     @NotBlank
     @JsonProperty("internal_name")

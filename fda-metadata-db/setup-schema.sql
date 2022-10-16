@@ -8,8 +8,6 @@ CREATE
 CREATE
     TYPE accesstype AS ENUM ('R', 'W');
 CREATE
-    TYPE identifier_type AS ENUM ('DATABASE', 'SUBSET');
-CREATE
     TYPE image_environment_type AS ENUM ('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD');
 CREATE
     TYPE role_type AS ENUM ('ROLE_RESEARCHER', 'ROLE_DEVELOPER', 'ROLE_DATA_STEWARD');
@@ -21,10 +19,6 @@ CREATE
 CREATE
     CAST
     (character varying AS role_type)
-    WITH INOUT AS ASSIGNMENT;
-CREATE
-    CAST
-    (character varying AS identifier_type)
     WITH INOUT AS ASSIGNMENT;
 
 CREATE SEQUENCE public.mdb_images_environment_item_seq
@@ -484,7 +478,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     publication_year  INTEGER                     NOT NULL,
     publication_month INTEGER,
     publication_day   INTEGER,
-    identifier_type   identifier_type             NOT NULL,
+    identifier_type   varchar(50)                 NOT NULL,
     query             TEXT,
     query_normalized  TEXT,
     query_hash        VARCHAR(255),

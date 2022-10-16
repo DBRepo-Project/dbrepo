@@ -2,12 +2,12 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.service.ContainerService;
-import at.tuwien.service.MessageQueueService;
-import at.tuwien.service.QueryStoreService;
-import at.tuwien.service.UserService;
+import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -24,6 +24,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -35,16 +36,21 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     private final DatabaseMapper databaseMapper;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
+    private final IdentifierService identifierService;
+    private final IdentifierMapper identifierMapper;
     private final MessageQueueService messageQueueService;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
                             MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            IdentifierService identifierService, IdentifierMapper identifierMapper,
                             MessageQueueService messageQueueService) {
         super(databaseService, containerService);
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
+        this.identifierService = identifierService;
+        this.identifierMapper = identifierMapper;
         this.messageQueueService = messageQueueService;
     }
 
@@ -52,10 +58,18 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "List databases")
     public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId) {
+        final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
                 .map(databaseMapper::databaseToDatabaseBriefDto)
                 .collect(Collectors.toList());
+        databases.forEach(db -> {
+            final Optional<Identifier> id = identifiers.stream()
+                    .filter(i -> i.getContainerId().equals(containerId) && i.getDatabaseId().equals(containerId) &&
+                            i.getType().equals(IdentifierType.DATABASE))
+                    .findFirst();
+            id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
+        });
         log.info("Found {} databases", databases.size());
         log.debug("found databases {}", databases);
         return ResponseEntity.ok(databases);
@@ -111,6 +125,12 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throws DatabaseNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        try {
+            final Identifier identifier = identifierService.find(containerId, databaseId, IdentifierType.DATABASE);
+            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
+        } catch (IdentifierNotFoundException e) {
+            // ignore
+        }
         log.info("Found database with id {}", database.getId());
         log.debug("found database {}", database);
         return ResponseEntity.ok(dto);

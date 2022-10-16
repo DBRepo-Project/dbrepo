@@ -1,10 +1,10 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -29,6 +29,8 @@ public class DatabaseBriefDto {
 
     @Schema(example = "Air Quality in Austria")
     private String description;
+
+    private IdentifierBriefDto identifier;
 
     @JsonProperty("is_public")
     @Schema(example = "true")

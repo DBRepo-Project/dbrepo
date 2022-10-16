@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
