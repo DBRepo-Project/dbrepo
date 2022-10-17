@@ -15,7 +15,6 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.querystore.QueryType;
 import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -183,7 +182,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
+    public ExportResource findOne(Long containerId, Long databaseId, Long queryId, Boolean download)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
             QueryNotFoundException, QueryMalformedException, DatabaseConnectionException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
@@ -192,6 +191,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Query query = storeService.findOne(containerId, databaseId, queryId);
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        if (!download) {
+            /* just output the filename */
+            return ExportResource.builder()
+                    .filename(filename)
+                    .build();
+        }
         /* read file */
         final InputStream inputStream;
         try {
@@ -205,9 +210,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } finally {
             dataSource.close();
         }
-        final InputStreamResource resource = new InputStreamResource(inputStream);
         return ExportResource.builder()
-                .resource(resource)
+                .resource(new InputStreamResource(inputStream))
                 .filename(filename)
                 .build();
     }

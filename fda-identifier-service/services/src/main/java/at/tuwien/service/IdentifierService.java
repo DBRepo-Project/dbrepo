@@ -6,6 +6,7 @@ import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,6 +73,9 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
     ExportResource exportMetadata(Long id) throws IdentifierNotFoundException;
+
+    InputStreamResource exportResource(Long identifierId)
+            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.

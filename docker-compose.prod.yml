@@ -185,6 +185,7 @@ services:
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
       BROKER_CONSUMERS: ${BROKER_CONSUMERS}
+      SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
@@ -244,6 +245,8 @@ services:
         condition: service_healthy
       authentication-service:
         condition: service_healthy
+    volumes:
+      - ${SHARED_FILESYSTEM}:/tmp
     logging:
       driver: json-file
 

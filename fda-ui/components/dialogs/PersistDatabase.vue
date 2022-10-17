@@ -169,7 +169,7 @@ export default {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
         title: null,
-        publisher: null,
+        publisher: 'TU Wien',
         description: null,
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),

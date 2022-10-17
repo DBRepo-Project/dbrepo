@@ -1,9 +1,11 @@
 package at.tuwien.gateway;
 
+import at.tuwien.api.database.query.ExportDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,4 +24,7 @@ public interface QueryServiceGateway {
      */
     QueryDto find(Long containerId, Long databaseId, IdentifierCreateDto identifier, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException;
+
+    ExportDto export(Long containerId, Long databaseId, Long queryId) throws RemoteUnavailableException,
+            QueryNotFoundException;
 }

@@ -1,16 +1,14 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
+import at.tuwien.api.database.query.ExportDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.RelatedIdentifier;
-import at.tuwien.entities.identifier.VisibilityType;
+import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -22,10 +20,13 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -175,6 +176,32 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .filename("metadata.xml")
                 .resource(resource)
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InputStreamResource exportResource(Long identifierId)
+            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
+            IdentifierRequestException {
+        /* check */
+        final Identifier identifier = find(identifierId);
+        if (identifier.getType().equals(IdentifierType.DATABASE)) {
+            log.error("Failed to find identifier with id {} as it refers to a database and not a query", identifierId);
+            log.debug("failed to find identifier {}", identifier);
+            throw new IdentifierNotFoundException("Failed to find identifier");
+        }
+        /* export */
+        final ExportDto export = queryServiceGateway.export(identifier.getContainerId(),
+                identifier.getDatabaseId(), identifier.getQueryId());
+        final InputStreamResource resource;
+        try {
+            resource = new InputStreamResource(FileUtils.openInputStream(new File("/tmp/" + export.getLocation())));
+        } catch (IOException e) {
+            log.error("Failed to open export file: {}", e.getMessage());
+            throw new IdentifierRequestException("Failed to open export file", e);
+        }
+        log.debug("found resource {}", resource.getFilename());
+        return resource;
     }
 
     @Override

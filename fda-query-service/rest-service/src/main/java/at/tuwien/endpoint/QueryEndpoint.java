@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,8 +29,7 @@ public class QueryEndpoint extends AbstractEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public QueryEndpoint(QueryService queryService, StoreService storeService,
-                         DatabaseService databaseService,
+    public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
                          IdentifierService identifierService) {
         super(databaseService, identifierService);
         this.queryService = queryService;
@@ -101,10 +99,11 @@ public class QueryEndpoint extends AbstractEndpoint {
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
     @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
-                                                      @NotNull @PathVariable("databaseId") Long databaseId,
-                                                      @NotNull @PathVariable("queryId") Long queryId,
-                                                      Principal principal)
+    public ResponseEntity<?> export(@NotNull @PathVariable("id") Long containerId,
+                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                    @NotNull @PathVariable("queryId") Long queryId,
+                                    @RequestParam(value = "download", required = false) String download,
+                                    Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
             QueryMalformedException, DatabaseConnectionException {
@@ -113,12 +112,19 @@ public class QueryEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing export query permission");
         }
         storeService.findOne(containerId, databaseId, queryId);
-        final HttpHeaders headers = new HttpHeaders();
-        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
-        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+        if (download != null) {
+            final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, true);
+            final HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(resource.getResource());
+        }
+        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, false);
         return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource.getResource());
+                .body(ExportDto.builder()
+                        .location(resource.getFilename())
+                        .build());
     }
 
 }

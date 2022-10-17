@@ -3,6 +3,9 @@ package at.tuwien.endpoints;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.exception.IdentifierRequestException;
+import at.tuwien.exception.QueryNotFoundException;
+import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,7 +40,8 @@ public class PersistenceEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
-                                  @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException {
+                                  @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
         log.debug("found persistent identifier {}", identifier);
@@ -46,6 +50,9 @@ public class PersistenceEndpoint {
             if (accept.equals("application/json")) {
                 log.trace("accept header matches json");
                 return ResponseEntity.ok(identifierMapper.identifierToIdentifierDto(identifier));
+            } else if (accept.equals("text/csv")) {
+                log.trace("accept header matches csv");
+                return ResponseEntity.ok(identifierService.exportResource(pid));
             }
         }
         log.trace("no accept header present, serving http redirect");

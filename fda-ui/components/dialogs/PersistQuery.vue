@@ -265,7 +265,7 @@ export default {
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
-        publisher: null,
+        publisher: 'TU Wien',
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),

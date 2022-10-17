@@ -185,8 +185,9 @@ services:
       BROKER_USERNAME: ${BROKER_USERNAME}
       BROKER_PASSWORD: ${BROKER_PASSWORD}
       BROKER_CONSUMERS: ${BROKER_CONSUMERS}
+      SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
     volumes:
-      - /tmp:/tmp
+      - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
       table-service:
         condition: service_healthy
@@ -239,6 +240,8 @@ services:
       METADATA_USERNAME: ${METADATA_USERNAME}
       METADATA_PASSWORD: ${METADATA_PASSWORD}
       WEBSITE: ${WEBSITE}
+    volumes:
+      - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
       query-service:
         condition: service_healthy
