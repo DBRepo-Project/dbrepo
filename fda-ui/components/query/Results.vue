@@ -79,6 +79,10 @@ export default {
       }))
     },
     async execute () {
+      if (this.viewId < 1 && this.queryId < 1) {
+        /* query builder */
+        return
+      }
       this.loading = true
       try {
         const page = this.options.page - 1

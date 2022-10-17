@@ -127,7 +127,7 @@ export default {
   },
   data () {
     return {
-      table: null,
+      table: {},
       tables: [],
       tableDetails: null,
       queryId: null,
@@ -294,10 +294,12 @@ export default {
       this.loadingQuery = false
     },
     async loadColumns () {
-      const tableId = this.table.id
+      if (!this.tableId) {
+        return
+      }
       try {
         this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${tableId}`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.tableId}`, this.config)
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
