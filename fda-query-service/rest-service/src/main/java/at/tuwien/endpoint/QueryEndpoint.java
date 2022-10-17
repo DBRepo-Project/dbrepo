@@ -116,11 +116,15 @@ public class QueryEndpoint extends AbstractEndpoint {
             final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, true);
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
+            log.info("Exported data for container with id {} and database id {} and query id {} as stream",
+                    containerId, databaseId, queryId);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(resource.getResource());
         }
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, false);
+        log.info("Exported data for container with id {} and database id {} and query id {} as at path {}",
+                containerId, databaseId, queryId, "/tmp" + resource.getFilename());
         return ResponseEntity.ok()
                 .body(ExportDto.builder()
                         .location(resource.getFilename())

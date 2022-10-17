@@ -4,7 +4,6 @@ volumes:
   metadata-db-data:
   search-service-data:
   broker-service-data:
-  shared-data:
 
 networks:
   public:
@@ -157,7 +156,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     volumes:
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
     depends_on:
       fda-table-service:
         condition: service_healthy
@@ -184,7 +183,7 @@ services:
       - "9094:9094"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
     depends_on:
       fda-authentication-service:
         condition: service_healthy
@@ -208,7 +207,7 @@ services:
     ports:
       - "9096:9096"
     volumes:
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
     depends_on:
       fda-query-service:
         condition: service_healthy
@@ -250,7 +249,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       fda-discovery-service:
@@ -271,7 +270,7 @@ services:
     ports:
       - "5010:5010"
     volumes:
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       fda-discovery-service:
@@ -334,7 +333,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - "shared-data:/tmp"
+      - "/tmp:/tmp"
     depends_on:
       fda-identifier-service:
         condition: service_healthy
