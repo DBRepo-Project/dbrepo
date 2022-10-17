@@ -2,6 +2,11 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="backTo">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         <v-skeleton-loader v-if="loadingIdentifier" type="text" class="skeleton-small" />
         <span v-if="!loadingIdentifier">{{ identifier.title }}</span>
       </v-toolbar-title>
@@ -366,6 +371,9 @@ export default {
     is_owner () {
       return this.token && this.query.creator.username === this.user.username
     },
+    backTo () {
+      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
+    },
     result_visibility () {
       if (this.erroneous) {
         return false
@@ -567,5 +575,14 @@ pre {
 }
 .skeleton-xsmall .v-skeleton-loader__text {
   width: 50px;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
 }
 </style>

@@ -11,7 +11,7 @@
             <v-text-field
               v-if="attr.column_type === 'number'"
               v-model.number="tuple[attr.internal_name]"
-              :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
+              :disabled="(!edit && attr.auto_generated)"
               class="mb-2"
               :hint="hint(attr)"
               persistent-hint
@@ -146,7 +146,7 @@ export default {
         return 'Value is auto-generated'
       }
       if (this.edit && attr.is_primary_key) {
-        return 'Primary key not editable'
+        return 'Required (Primary Key)'
       }
       if (!attr.is_null_allowed) {
         return 'Required'

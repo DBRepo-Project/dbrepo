@@ -110,12 +110,7 @@ export default {
   },
   methods: {
     cancel () {
-      this.$parent.$parent.$parent.$parent.pickVersionDialog = false
-    },
-    sleep (ms) {
-      return new Promise((resolve) => {
-        setTimeout(resolve, ms)
-      })
+      this.$emit('close', { success: false })
     },
     handle (point, event) {
       if (event.length !== 1 || event[0].index === undefined) {

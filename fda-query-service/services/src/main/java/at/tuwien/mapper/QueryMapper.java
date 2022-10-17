@@ -707,9 +707,9 @@ public interface QueryMapper {
         final StringBuilder statement = new StringBuilder("SELECT")
                 .append(" IF(`deleted_at` IS NULL, `inserted_at`, `deleted_at`) as `timestamp`")
                 .append(", IF(`deleted_at` IS NULL, 'INSERT', 'DELETE') as `event`")
-                .append(", COUNT(`inserted_at`) as `total` FROM `hs_")
+                .append(", `total` FROM `hs_")
                 .append(data.getInternalName())
-                .append("` GROUP BY `inserted_at`, `deleted_at` ORDER BY `timestamp` ASC;");
+                .append("`;");
         log.trace("mapped find all from history view query [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());

@@ -4,7 +4,6 @@ import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -26,7 +25,6 @@ import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface TableMapper {
@@ -293,7 +291,7 @@ public interface TableMapper {
     default PreparedStatement tableToCreateHistoryViewRawQuery(Connection connection, Table data) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("CREATE VIEW `hs_")
                 .append(data.getInternalName())
-                .append("` AS SELECT ");
+                .append("` AS SELECT * FROM (SELECT ");
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()
@@ -302,9 +300,9 @@ public interface TableMapper {
                         .append("`")
                         .append(c.getInternalName())
                         .append("`"));
-        statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at FROM `")
+        statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
                 .append(data.getInternalName())
-                .append("` FOR SYSTEM_TIME ALL ORDER BY deleted_at ASC LIMIT 100");
+                .append("` FOR SYSTEM_TIME ALL GROUP BY inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
         log.trace("created history view query [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());

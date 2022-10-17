@@ -42,12 +42,13 @@
         <v-btn class="mr-2" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download csv
         </v-btn>
-        <v-btn @click="pick()">
+        <v-btn @click="pick">
           <v-icon left>mdi-update</v-icon> Pick
         </v-btn>
         <v-dialog
           v-model="pickVersionDialog"
-          max-width="640">
+          max-width="640"
+          @close="closeVersion">
           <TimeTravel ref="timeTravel" @close="pickVersion" />
         </v-dialog>
       </v-toolbar-title>
@@ -228,7 +229,14 @@ export default {
       this.editTupleDialog = true
     },
     pick () {
+      if (this.$refs.timeTravel !== undefined) {
+        /* when the component was loaded once, this method refreshes the content */
+        this.$refs.timeTravel.loadHistory()
+      }
       this.pickVersionDialog = true
+    },
+    closeVersion () {
+      this.pickVersionDialog = false
     },
     pickVersion (event) {
       const date = new Date(event.time)

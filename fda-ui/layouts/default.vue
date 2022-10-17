@@ -271,38 +271,10 @@ export default {
     async queryDatabases (v) {
       this.loadingSearch = true
       try {
-        const res = await this.$axios.get(`/search/databaseindex/_search?q=isPublic:true%20AND%20*${v}*&_source_includes=id,name,description,exchange&terminate_after=10`)
-        console.info('search databases results', res.data.hits.total.value)
-        console.debug('search databases results', res.data.hits.hits)
-        const databases = res.data.hits.hits.map(h => h._source)
-        databases.forEach(d => this.searchResults.push(d))
-      } catch (err) {
-        console.error('Failed to load search results', err)
-      }
-      this.loadingSearch = false
-    },
-    async queryTables (v) {
-      this.loadingSearch = true
-      try {
-        const res = await this.$axios.get(`/search/tableindex/_search?q=*${v}*&_source_includes=id,tdbid,name,description,topic&terminate_after=10`)
-        console.info('search tables results', res.data.hits.total.value)
-        console.debug('search tables results', res.data.hits.hits)
-        const tables = res.data.hits.hits.map(h => h._source)
-        tables.forEach(t => this.searchResults.push(t))
-      } catch (err) {
-        console.error('Failed to load search results', err)
-      }
-      this.loadingSearch = false
-    },
-    async queryColumns (v) {
-      this.loadingSearch = true
-      try {
-        const res = await this.$axios.get(`/search/columnindex/_search?q=*${v}*&_source_includes=id,cdbid,tid,name,columnType&terminate_after=10`)
-        console.info('search column results', res.data.hits.total.value)
-        console.debug('search column results', res.data.hits.hits)
-        const dbpubids = this.databases.filter(d => d.is_public).map(d => d.id)
-        const columns = res.data.hits.hits.map(h => h._source).filter(c => dbpubids.includes(c.cdbid))
-        columns.forEach(c => this.searchResults.push(c))
+        const res = await this.$axios.get(`/search/databaseindex,tableindex,columnindex/_search?q=${v}*&terminate_after=50`)
+        console.info('search results', res.data.hits.total.value)
+        console.debug('search results', res.data.hits.hits)
+        this.searchResults = res.data.hits.hits.map(h => h._source)
       } catch (err) {
         console.error('Failed to load search results', err)
       }
