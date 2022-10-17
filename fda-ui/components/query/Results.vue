@@ -11,7 +11,8 @@
 <script>
 export default {
   props: {
-    queryId: { type: Number, default: () => 0 }
+    queryId: { type: Number, default: () => 0 },
+    viewId: { type: Number, default: () => 0 }
   },
   data () {
     return {
@@ -78,14 +79,12 @@ export default {
       }))
     },
     async execute () {
-      if (this.queryId === 0) {
-        return
-      }
       this.loading = true
       try {
         const page = this.options.page - 1
         const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.queryId}/data?${urlParams}`, {
+        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.viewId > 0 ? `/view/${this.viewId}` : `/query/${this.queryId}`) + `/data?${urlParams}`
+        const res = await this.$axios.get(url, {
           headers: this.headers
         })
         this.mapResults(res.data)

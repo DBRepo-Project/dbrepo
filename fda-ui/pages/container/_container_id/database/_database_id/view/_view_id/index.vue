@@ -87,7 +87,7 @@
       id="query-results"
       ref="queryResults"
       v-model="view.id"
-      :query-id="view.id"
+      :view-id="view.id"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
