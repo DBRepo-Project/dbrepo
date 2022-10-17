@@ -1,17 +1,13 @@
 package at.tuwien.auth;
 
-import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.user.UserDto;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -26,22 +22,17 @@ public class JwtUtils {
     @Value("${jwt.expiration.ms}")
     private Integer expire;
 
-    public String generateDeveloperJwtToken(String username) {
+    public String generateJwtToken(String username, Instant expire) {
         final Algorithm algorithm = Algorithm.HMAC512(secret);
         return JWT.create()
                 .withSubject(username)
                 .withIssuedAt(new Date())
+                .withExpiresAt(Date.from(expire))
                 .sign(algorithm);
     }
 
-    public String generateJwtToken(Object principal) {
-        final UserDetailsDto userPrincipal = (UserDetailsDto) principal;
-        final Algorithm algorithm = Algorithm.HMAC512(secret);
-        return JWT.create()
-                .withSubject(userPrincipal.getUsername())
-                .withIssuedAt(new Date())
-                .withExpiresAt(Date.from(Instant.now().plus(expire, ChronoUnit.MILLIS)))
-                .sign(algorithm);
+    public String generateJwtToken(String username) {
+        return generateJwtToken(username, Instant.now().plus(expire, ChronoUnit.MILLIS));
     }
 
     public String getUserNameFromJwtToken(String token) {

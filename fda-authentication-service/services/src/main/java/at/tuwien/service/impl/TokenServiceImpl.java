@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,12 +51,14 @@ public class TokenServiceImpl implements TokenService {
             log.error("User is not researcher");
             throw new TokenNotEligableException("User is not researcher");
         }
-        final String token = jwtUtils.generateDeveloperJwtToken(principal.getName());
+        final Instant expires = Instant.now().plus(365, ChronoUnit.DAYS);
+        final String token = jwtUtils.generateJwtToken(principal.getName(), expires);
         final String tokenHash = DigestUtils.sha256Hex(token);
         /* save */
         final Token tmp = Token.builder()
                 .tokenHash(tokenHash)
                 .creator(user.getId())
+                .expires(expires)
                 .build();
         final Token entity = tokenRepository.save(tmp);
         entity.setToken(token);

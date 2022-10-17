@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserModifyPasswordDto;
+import at.tuwien.exception.TokenRevokedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,8 @@ public interface AuthenticationService {
      * @throws UserNotFoundException         The user was not found by username.
      */
     JwtResponseDto authenticate(LoginRequestDto data) throws UserEmailNotVerifiedException, UserNotFoundException;
+
+    void verifyToken(String authorization) throws TokenRevokedException;
 
     /**
      * Authenticate a user with username and a reset token as credentials.

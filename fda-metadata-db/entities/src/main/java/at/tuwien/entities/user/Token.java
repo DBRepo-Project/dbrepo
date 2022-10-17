@@ -49,6 +49,12 @@ public class Token {
     private Instant created;
 
     @Column(nullable = false, updatable = false)
+    private Instant expires;
+
+    @Column(nullable = false, updatable = false)
+    private Instant lastUsed;
+
+    @Column(nullable = false, updatable = false)
     private Instant deleted;
 
 }

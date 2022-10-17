@@ -5,6 +5,7 @@ import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.OrcidMalformedException;
+import at.tuwien.exception.TokenRevokedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
@@ -14,11 +15,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.security.Principal;
 
 @Log4j2
@@ -50,14 +53,17 @@ public class AuthenticationEndpoint {
     }
 
     @PutMapping
-    @Transactional(readOnly = true)
+    @Transactional
     @Operation(summary = "Validate authentication token", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<UserDto> authenticateUser(Principal principal) throws UserNotFoundException, OrcidMalformedException {
+    public ResponseEntity<UserDto> authenticateUser(@NotNull Principal principal,
+                                                    @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization)
+            throws UserNotFoundException, OrcidMalformedException, TokenRevokedException {
         log.trace("authenticate user with principal name {}", principal.getName());
         final User user = userService.findByUsername(principal.getName());
         log.trace("authentication for principal name {} retrieved user {}", principal.getName(), user);
         final UserDto dto = userMapper.userToUserDto(user);
         log.trace("mapped user to dto {}", dto);
+        authenticationService.verifyToken(authorization);
         return ResponseEntity.accepted()
                 .body(dto);
     }

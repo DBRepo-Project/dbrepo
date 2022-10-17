@@ -106,7 +106,8 @@ public interface UserMapper {
     }
 
     @Mappings({
-            @Mapping(source = "token", target = "token")
+            @Mapping(source = "token", target = "token"),
+            @Mapping(source = "expires", target = "expires")
     })
     TokenDto tokenToTokenDto(Token data);
 

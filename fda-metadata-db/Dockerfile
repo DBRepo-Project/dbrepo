@@ -18,7 +18,7 @@ RUN mvn -q clean package -DskipTests > /dev/null
 RUN mvn -q clean install > /dev/null
 
 ###### SECOND STAGE ######
-FROM postgres:latest as runtime
+FROM postgres:14 as runtime
 
 ENV POSTGRES_DB=fda
 ENV POSTGRES_USER=postgres

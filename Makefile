@@ -114,7 +114,7 @@ release-analyse:
 release-authentication:
 	docker push "dbrepo/authentication-service:${TAG}"
 
-release-metadata-db:
+release-metadata-db: build-docker tag-metadata-db
 	docker push "dbrepo/metadata-db:${TAG}"
 
 release-ui:

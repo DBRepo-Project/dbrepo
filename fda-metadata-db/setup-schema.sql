@@ -208,6 +208,8 @@ CREATE TABLE public.mdb_tokens
     token_hash varchar(255)                NOT NULL,
     creator    bigint                      not null,
     created    timestamp without time zone NOT NULL DEFAULT NOW(),
+    expires    timestamp without time zone NOT NULL,
+    last_used  timestamp without time zone,
     deleted    timestamp without time zone,
     PRIMARY KEY (id),
     FOREIGN KEY (creator) REFERENCES mdb_users (UserID)

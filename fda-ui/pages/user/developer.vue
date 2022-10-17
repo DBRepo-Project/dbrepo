@@ -10,7 +10,8 @@
             <v-list-item v-for="(item, i) in tokens" :key="i" three-line>
               <v-list-item-content>
                 <v-list-item-title>sha256:{{ item.token_hash }}</v-list-item-title>
-                <v-list-item-subtitle v-if="!item.token">Created on {{ formatCreationTimestamp(item.created) }}, valid until: indeterminate</v-list-item-subtitle>
+                <v-list-item-subtitle v-if="!item.token">
+                  Created on {{ format(item.created) }}, Valid until: {{ format(item.expires) }}</v-list-item-subtitle>
                 <v-list-item-subtitle v-if="item.token">
                   <v-text-field
                     v-model="item.token"
@@ -70,7 +71,7 @@ export default {
       item.copied = true
       navigator.clipboard.writeText(item.token)
     },
-    formatCreationTimestamp (timestamp) {
+    format (timestamp) {
       return formatTimestamp(timestamp)
     },
     async loadTokens () {

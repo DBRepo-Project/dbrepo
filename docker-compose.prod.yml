@@ -238,6 +238,7 @@ services:
       METADATA_DB: ${METADATA_DB}
       METADATA_USERNAME: ${METADATA_USERNAME}
       METADATA_PASSWORD: ${METADATA_PASSWORD}
+      WEBSITE: ${WEBSITE}
     depends_on:
       query-service:
         condition: service_healthy
