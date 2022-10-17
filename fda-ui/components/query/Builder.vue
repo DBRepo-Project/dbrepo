@@ -29,21 +29,23 @@
     </v-toolbar>
     <v-form v-model="valid">
       <v-card flat>
-        <v-tabs-items v-model="tabs">
-          <v-tab-item>
-            <v-card-text>
-              <v-row>
-                <v-col cols="6">
-                  <v-text-field
-                    v-if="isView"
-                    v-model="view.name"
-                    :disabled="isExecuted"
-                    type="text"
-                    label="View name"
-                    :rules="[v => !!v || $t('Required')]"
-                    required />
-                </v-col>
-              </v-row>
+        <v-card-text>
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-if="isView"
+                v-model="view.name"
+                :disabled="isExecuted"
+                type="text"
+                label="View name"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-tabs-items v-model="tabs">
+            <v-tab-item>
               <v-row>
                 <v-col cols="6">
                   <v-select
@@ -86,20 +88,25 @@
               </v-row>
               <v-row v-if="query.formatted" id="query-raw">
                 <v-col>
+                  <span class="subtitle-1">Generated SQL-Query:</span>
                   <QueryRaw
                     v-model="query.formatted"
                     disabled
                     class="mt-2 ml-3" />
                 </v-col>
               </v-row>
-            </v-card-text>
-          </v-tab-item>
-          <v-tab-item>
-            <QueryRaw
-              v-model="rawSQL"
-              class="mt-2 ml-3" />
-          </v-tab-item>
-        </v-tabs-items>
+            </v-tab-item>
+            <v-tab-item>
+              <v-row>
+                <v-col>
+                  <QueryRaw
+                    v-model="rawSQL"
+                    class="mt-2 ml-3" />
+                </v-col>
+              </v-row>
+            </v-tab-item>
+          </v-tabs-items>
+        </v-card-text>
         <v-card-text v-if="isExecuted">
           <v-row>
             <v-col>
