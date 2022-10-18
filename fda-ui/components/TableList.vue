@@ -77,7 +77,7 @@
               <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
               </v-btn>
-              <v-btn small color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
+              <v-btn v-if="canModify" small color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
                 Create Subset
               </v-btn>
               <v-btn v-if="canModify" small class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
@@ -114,15 +114,18 @@
                 <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
               </template>
               <template v-slot:item.column_concept="{ item }">
-                <v-btn v-if="!item.column_concept" small @click="pickUnit(item)">Assign</v-btn>
+                <v-btn v-if="canModify && !item.column_concept" small @click="pickUnit(item)">Assign</v-btn>
                 <v-btn
-                  v-if="item.column_concept"
+                  v-if="canModify && item.column_concept"
                   :title="item.column_concept.uri"
                   color="secondary"
                   small
                   @click="pickUnit(item)">
                   {{ item.column_concept.name }}
                 </v-btn>
+                <a v-if="!canModify && item.column_concept" :href="item.column_concept.uri" target="_blank">
+                  {{ item.column_concept.name }}
+                </a>
               </template>
             </v-data-table>
           </v-row>
@@ -261,7 +264,7 @@ export default {
       return this.consumers.filter(c => c.active).length
     },
     canModify () {
-      if (!this.user.username) {
+      if (!this.token || !this.user.username) {
         /* not yet loaded */
         return false
       }

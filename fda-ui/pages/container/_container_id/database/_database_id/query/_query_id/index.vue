@@ -18,12 +18,11 @@
         <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility" class="mb-1" :disabled="error" :loading="downloadLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" class="mb-1" :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
           v-if="identifier.id"
-          :disabled="error"
           color="secondary"
           class="ml-2"
           :loading="metadataLoading"
@@ -442,7 +441,7 @@ export default {
     async metadata () {
       this.metadataLoading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/identifier/${this.identifier.id}`, this.config)
+        const res = await this.$axios.get(`/api/identifier/${this.identifier.id}`, this.config)
         console.debug('identifier result', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
