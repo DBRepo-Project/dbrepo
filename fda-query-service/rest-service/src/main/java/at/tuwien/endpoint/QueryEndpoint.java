@@ -112,8 +112,8 @@ public class QueryEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing export query permission");
         }
         storeService.findOne(containerId, databaseId, queryId);
+        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
         if (download != null) {
-            final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, true);
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
             log.info("Exported data for container with id {} and database id {} and query id {} as stream",
@@ -122,9 +122,8 @@ public class QueryEndpoint extends AbstractEndpoint {
                     .headers(headers)
                     .body(resource.getResource());
         }
-        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, false);
         log.info("Exported data for container with id {} and database id {} and query id {} as at path {}",
-                containerId, databaseId, queryId, "/tmp" + resource.getFilename());
+                containerId, databaseId, queryId, "/tmp/" + resource.getFilename());
         return ResponseEntity.ok()
                 .body(ExportDto.builder()
                         .location(resource.getFilename())

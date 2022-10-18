@@ -130,7 +130,7 @@ public interface QueryService {
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryNotFoundException     THe query was not found in the query store.
      */
-    ExportResource findOne(Long containerId, Long databaseId, Long queryId, Boolean download)
+    ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
             ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException, DatabaseConnectionException;
 

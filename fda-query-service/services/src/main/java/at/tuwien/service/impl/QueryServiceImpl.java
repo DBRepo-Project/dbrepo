@@ -182,7 +182,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource findOne(Long containerId, Long databaseId, Long queryId, Boolean download)
+    public ExportResource findOne(Long containerId, Long databaseId, Long queryId)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
             QueryNotFoundException, QueryMalformedException, DatabaseConnectionException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
@@ -191,12 +191,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Query query = storeService.findOne(containerId, databaseId, queryId);
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        if (!download) {
-            /* just output the filename */
-            return ExportResource.builder()
-                    .filename(filename)
-                    .build();
-        }
         /* read file */
         final InputStream inputStream;
         try {

@@ -85,7 +85,7 @@ public class ContainerServiceImpl implements ContainerService {
         log.info("Configured container binds");
         final HostConfig hostConfig = this.hostConfig
                 .withNetworkMode("userdb")
-                .withBinds(Bind.parse("shared-data:/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"))
+                .withBinds(Bind.parse(dockerConfig.getMountPath() + ":/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
         log.debug("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
