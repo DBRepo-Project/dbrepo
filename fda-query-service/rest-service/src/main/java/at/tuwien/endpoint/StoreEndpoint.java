@@ -51,25 +51,27 @@ public class StoreEndpoint extends AbstractEndpoint {
     public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        @RequestParam(value = "persisted", required = false) Boolean persisted,
-                                                       Principal principal)
-            throws QueryStoreException,
+                                                       Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException,
             DatabaseConnectionException, TableMalformedException {
+        log.debug("endpoint list queries, containerId={}, databaseId={}, persisted={}, principal={}", containerId,
+                databaseId, persisted, principal);
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_VIEW_ALL", principal)) {
             log.error("Missing view all queries permission");
             throw new NotAllowedException("Missing view all queries permission");
         }
         final List<Query> queries = storeService.findAll(containerId, databaseId, persisted);
         final List<User> users = userService.findAll();
-        final List<QueryBriefDto> out = queries.stream()
+        final List<QueryBriefDto> dto = queries.stream()
                 .map(q -> {
-                    final QueryBriefDto dto = queryMapper.queryToQueryBriefDto(q);
+                    final QueryBriefDto brief = queryMapper.queryToQueryBriefDto(q);
                     final Optional<User> optional = users.stream().filter(u -> u.getId().equals(q.getCreatedBy())).findFirst();
-                    optional.ifPresent(user -> dto.setCreator(userMapper.userToUserDto(user)));
-                    return dto;
+                    optional.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
+                    return brief;
                 })
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(out);
+        log.trace("find queries resulted in queries {}", dto);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{queryId}")
@@ -82,6 +84,8 @@ public class StoreEndpoint extends AbstractEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
             DatabaseConnectionException {
+        log.debug("endpoint find query, containerId={}, databaseId={}, queryId={}, principal={}", containerId, databaseId,
+                queryId, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_VIEW", principal)) {
             log.error("Missing view query permission");
             throw new NotAllowedException("Missing view query permission");
@@ -90,6 +94,7 @@ public class StoreEndpoint extends AbstractEndpoint {
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.find(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
+        log.trace("find query resulted in query {}", dto);
         return ResponseEntity.ok(dto);
     }
 
@@ -102,6 +107,8 @@ public class StoreEndpoint extends AbstractEndpoint {
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             NotAllowedException, DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
             QueryAlreadyPersistedException {
+        log.debug("endpoint persist query, container, containerId={}, databaseId={}, queryId={}, principal={}",
+                containerId, databaseId, queryId, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_PERSIST", principal)) {
             log.error("Missing query persist permission");
             throw new NotAllowedException("Missing query persist permission");
@@ -115,6 +122,7 @@ public class StoreEndpoint extends AbstractEndpoint {
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.find(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
+        log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
     }

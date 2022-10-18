@@ -32,7 +32,9 @@ public interface StoreMapper {
         if (data == null) {
             return null;
         }
-        return DigestUtils.sha256Hex(data.getResult().toString());
+        final String hash = DigestUtils.sha256Hex(data.getResult().toString());
+        log.trace("mapped query result {} to hash {}", data, hash);
+        return hash;
     }
 
     default PreparedStatement queryStoreRawInsertQuery(Connection connection, Query data) throws QueryStoreException {
@@ -59,10 +61,10 @@ public interface StoreMapper {
             ps.setLong(10, data.getCreatedBy());
             ps.setString(11, data.getType().toString());
             ps.setBoolean(12, false);
+            log.trace("mapped insert query {} to prepared statement {}", statement, ps);
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -73,10 +75,11 @@ public interface StoreMapper {
             statement += " WHERE `is_persisted` = " + persisted;
         }
         try {
-            return connection.prepareStatement(statement);
+            final PreparedStatement pstmt = connection.prepareStatement(statement);
+            log.trace("mapped select all query {} to prepared statement {}", statement, pstmt);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -84,14 +87,14 @@ public interface StoreMapper {
     default PreparedStatement queryStoreRawSelectOneQuery(Connection connection, Long containerId, Long databaseId, Long queryId) throws QueryStoreException {
         final String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type`, `is_persisted` FROM `qs_queries` q WHERE q.`cid` = ? AND q.`dbid` = ? AND q.`id` = ?";
         try {
-            final PreparedStatement ps = connection.prepareStatement(statement);
-            ps.setLong(1, containerId);
-            ps.setLong(2, databaseId);
-            ps.setLong(3, queryId);
-            return ps;
+            final PreparedStatement pstmt = connection.prepareStatement(statement);
+            pstmt.setLong(1, containerId);
+            pstmt.setLong(2, databaseId);
+            pstmt.setLong(3, queryId);
+            log.trace("mapped select one query {} to prepared statement {}", statement, pstmt);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -111,10 +114,10 @@ public interface StoreMapper {
             ps.setLong(8, data.getCid());
             ps.setLong(9, data.getDbid());
             ps.setLong(10, data.getId());
+            log.trace("mapped update query {} to prepared statement {}", statement, ps);
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -129,10 +132,10 @@ public interface StoreMapper {
             ps.setLong(2, containerId);
             ps.setLong(3, databaseId);
             ps.setLong(4, queryId);
+            log.trace("mapped persist query {} to prepared statement {}", statement, ps);
             return ps;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }
@@ -144,9 +147,10 @@ public interface StoreMapper {
                 list.add(resultSetToQuery(data));
             }
         } catch (SQLException e) {
-            log.error("Failed to map queries");
+            log.error("Failed to map queries: {}", e.getMessage());
             throw new TableMalformedException("Failed to map queries", e);
         }
+        log.trace("mapped result set {} to query list {}", data, list);
         return list;
     }
 
@@ -178,7 +182,7 @@ public interface StoreMapper {
         if (next && !data.next()) {
             throw new SQLException("Tuple does not exist");
         }
-        return Query.builder()
+        final Query dto = Query.builder()
                 .id(data.getLong(1))
                 .cid(data.getLong(2))
                 .created(data.getTimestamp(3)
@@ -198,6 +202,8 @@ public interface StoreMapper {
                         .toUpperCase()))
                 .isPersisted(data.getBoolean(13))
                 .build();
+        log.trace("mapped result set {} to query {}", data, dto);
+        return dto;
     }
 
 }

@@ -50,19 +50,22 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
             NotAllowedException, DatabaseConnectionException, SortException, PaginationException {
+        log.debug("endpoint execute query, containerId={}, databaseId={}, data={}, page={}, size={}, principal={}, sortDirection={}, sortColumn={}",
+                containerId, databaseId, data, page, size, principal, sortDirection, sortColumn);
         /* check */
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_EXECUTE", principal)) {
             log.error("Missing execute query permission");
             throw new NotAllowedException("Missing execute query permission");
         }
         if (data.getStatement() == null || data.getStatement().isBlank()) {
-            log.error("Query is empty");
-            throw new QueryMalformedException("Query is empty");
+            log.error("Failed to execute query: is empty");
+            throw new QueryMalformedException("Failed to execute query");
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,
                 principal, page, size, sortDirection, sortColumn);
+        log.trace("execute query resulted in result {}", result);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -81,6 +84,8 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
             DatabaseConnectionException, SortException, PaginationException {
+        log.debug("endpoint re-execute query, containerId={}, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
+                containerId, databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         /* check */
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");
@@ -92,6 +97,7 @@ public class QueryEndpoint extends AbstractEndpoint {
         final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size,
                 sortDirection, sortColumn);
         result.setId(queryId);
+        log.trace("re-execute query resulted in result {}", result);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
     }
@@ -107,27 +113,30 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
             QueryMalformedException, DatabaseConnectionException {
+        log.trace("endpoint export query, containerId={}, databaseId={}, queryId={}, download={}, principal={}",
+                containerId, databaseId, queryId, download, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");
             throw new NotAllowedException("Missing export query permission");
         }
-        storeService.findOne(containerId, databaseId, queryId);
+        log.trace("checking if query exists in the query store");
+        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        log.trace("querystore returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
         if (download != null) {
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-            log.info("Exported data for container with id {} and database id {} and query id {} as stream",
-                    containerId, databaseId, queryId);
+            log.trace("export query resulted in resource {}", resource);
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(resource.getResource());
         }
-        log.info("Exported data for container with id {} and database id {} and query id {} as at path {}",
-                containerId, databaseId, queryId, "/tmp/" + resource.getFilename());
+        final ExportDto dto = ExportDto.builder()
+                .location(resource.getFilename())
+                .build();
+        log.trace("export query resulted in export file {}", dto);
         return ResponseEntity.ok()
-                .body(ExportDto.builder()
-                        .location(resource.getFilename())
-                        .build());
+                .body(dto);
     }
 
 }

@@ -11,11 +11,15 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserMapper.class);
+
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
     UserDto userToUserDto(User data);
 
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
-        return new SimpleGrantedAuthority(data.getAuthority());
+        final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
+        log.trace("mapped granted authority {} to granted authority {}", data, authority);
+        return authority;
     }
 }

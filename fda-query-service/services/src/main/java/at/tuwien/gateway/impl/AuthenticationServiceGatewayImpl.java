@@ -31,7 +31,7 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);
         final ResponseEntity<UserDto> response = restTemplate.exchange("/api/auth", HttpMethod.PUT,
-                new HttpEntity<>("", headers), UserDto.class);
+                new HttpEntity<>(null, headers), UserDto.class);
         return userMapper.userDtoToUserDetailsDto(response.getBody());
     }
 

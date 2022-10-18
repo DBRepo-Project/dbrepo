@@ -34,7 +34,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 30000)
     @Transactional(readOnly = true)
     public void updateConsumers() throws AmqpException {
         final List<Table> tables = tableService.findAll();
@@ -42,10 +42,9 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         for (Table table : tables) {
             final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getTopic())).count();
             if (consumerCount >= amqpConfig.getAmqpConsumers()) {
-                log.trace("table {} already has {}/{} consumers, skip.", table, consumerCount, amqpConfig.getAmqpConsumers());
+                log.trace("listener table with name {} already has {} consumers (max. {})", table.getName(), consumerCount, amqpConfig.getAmqpConsumers());
                 continue;
             }
-            log.info("Table with id {} needs {} more consumers", table.getId(), amqpConfig.getAmqpConsumers() - consumerCount);
             log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount, amqpConfig.getAmqpConsumers());
             messageQueueService.createConsumer(table.getTopic(), table.getDatabase().getContainer().getId(),
                     table.getDatabase().getId(), table.getId());

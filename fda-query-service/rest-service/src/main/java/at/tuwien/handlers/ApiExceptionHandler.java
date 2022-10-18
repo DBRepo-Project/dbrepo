@@ -15,13 +15,35 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ExceptionHandler(AmqpException.class)
+    public ResponseEntity<ApiErrorDto> handle(AmqpException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_ACCEPTABLE)
+                .message(e.getLocalizedMessage())
+                .code("error.query.amqp")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(ColumnParseException.class)
+    public ResponseEntity<ApiErrorDto> handle(ColumnParseException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.EXPECTATION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.query.columnparse")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ContainerNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.container.notfound")
+                .code("error.query.containernotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -32,7 +54,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .message(e.getLocalizedMessage())
-                .code("error.database.connection")
+                .code("error.query.databaseconnection")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -43,7 +65,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.database.notfound")
+                .code("error.query.databasenotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -54,7 +76,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
-                .code("error.file.store")
+                .code("error.query.filestore")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(IdentifierNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.query.identifiernotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -65,7 +98,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
-                .code("error.database.image")
+                .code("error.query.imagenotsupported")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.query.permission")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -77,6 +121,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
                 .code("error.query.pagination")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(QueryAlreadyPersistedException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueryAlreadyPersistedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.query.alreadypersisted")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -109,29 +164,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
-                .code("error.querystore.exists")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.LOCKED)
-    @ExceptionHandler(TableMalformedException.class)
-    public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.LOCKED)
-                .message(e.getLocalizedMessage())
-                .code("error.table.malformed")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(TableNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.table.notfound")
+                .code("error.query.storeexists")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -148,12 +181,56 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.LOCKED)
+    @ExceptionHandler(TableMalformedException.class)
+    public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.LOCKED)
+                .message(e.getLocalizedMessage())
+                .code("error.query.tablemalformed")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(TableNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.query.tablenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(TupleDeleteException.class)
+    public ResponseEntity<ApiErrorDto> handle(TupleDeleteException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.query.tupledelete")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.query.usernotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.LOCKED)
     @ExceptionHandler(ViewMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.LOCKED)
                 .message(e.getLocalizedMessage())
-                .code("error.view.malformed")
+                .code("error.query.viewmalformed")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -164,7 +241,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.view.notfound")
+                .code("error.query.viewnotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

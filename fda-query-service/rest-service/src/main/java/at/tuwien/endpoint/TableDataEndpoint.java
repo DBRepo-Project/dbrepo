@@ -47,6 +47,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
+        log.debug("endpoint insert data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
@@ -66,6 +68,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
+        log.debug("endpoint update data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
         if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
@@ -86,6 +90,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException {
+        log.debug("endpoint delete data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
         if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
@@ -106,12 +112,12 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
             QueryMalformedException {
+        log.debug("endpoint insert data from csv, containerId={}, databaseId={}, tableId={}, data={}, principal={}",
+                containerId, databaseId, tableId, data, principal);
         if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
-        log.info("Insert data into database with id {}", databaseId);
-        log.debug("insert data from location {} into database with id {}", data, databaseId);
         queryService.insert(containerId, databaseId, tableId, data);
         return ResponseEntity.accepted()
                 .build();
@@ -132,6 +138,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException, QueryMalformedException, SortException {
+        log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
+                containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
         if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
@@ -140,9 +148,11 @@ public class TableDataEndpoint extends AbstractEndpoint {
         validateDataParams(page, size, sortDirection, sortColumn);
         /* find */
         final Long count = queryService.count(containerId, databaseId, tableId, timestamp);
+        log.debug("find table data has produced {} tuples", count);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());
         final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size);
+        log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(response);

@@ -29,6 +29,9 @@ public class AmqpConfig {
     @Value("${fda.consumers}")
     private Integer amqpConsumers;
 
+    @Value("${fda.refresh}")
+    private Integer amqpSchedule;
+
     @Bean
     public Channel getChannel() throws IOException, TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();
