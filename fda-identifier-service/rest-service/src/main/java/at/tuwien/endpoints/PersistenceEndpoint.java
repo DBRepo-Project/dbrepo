@@ -42,9 +42,10 @@ public class PersistenceEndpoint {
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
             QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+        log.debug("find identifier endpoint, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
-        log.debug("found persistent identifier {}", identifier);
+        log.trace("found persistent identifier {}", identifier);
         if (accept != null) {
             log.trace("accept header present: {}", accept);
             if (accept.equals("application/json")) {

@@ -46,12 +46,14 @@ public class IdentifierEndpoint {
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> findAll(@RequestParam(required = false) Long dbid,
                                                        @RequestParam(required = false) Long qid) {
+        log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
-        log.info("Found {} identifiers", identifiers.size());
-        log.debug("found identifiers {}", identifiers);
-        return ResponseEntity.ok(identifiers.stream()
+        final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+        log.info("Find identifiers resulted in {} identifiers", identifiers.size());
+        log.trace("endpoint find identifiers, list={}", dto);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{id}")
@@ -59,6 +61,7 @@ public class IdentifierEndpoint {
     @Operation(summary = "Export some identifier metadata")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id)
             throws IdentifierNotFoundException {
+        log.debug("endpoint export identifier, id={}", id);
         final HttpHeaders headers = new HttpHeaders();
         final ExportResource resource = identifierService.exportMetadata(id);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
@@ -76,16 +79,15 @@ public class IdentifierEndpoint {
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException {
+        log.debug("endpoint create identifier, data={}, authorization={}, principal={}", data, authorization, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
-            log.error("Identifier of type subset need to have a qid present.");
+            log.error("Identifier of type subset need to have a qid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
         } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQid() != null) {
-            log.error("Identifier of type database must not have a qid present.");
+            log.error("Identifier of type database must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final Identifier identifier = identifierService.create(data, principal, authorization);
-        log.info("Created identifier with id {}", identifier.getId());
-        log.debug("created identifier {}", identifier);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
@@ -96,6 +98,7 @@ public class IdentifierEndpoint {
     public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
             throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
+        log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.update(id, data);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
