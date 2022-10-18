@@ -51,6 +51,7 @@ public class ImageEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find all images")
     public ResponseEntity<List<ImageBriefDto>> findAll() {
+        log.debug("endpoint find all images");
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -69,9 +70,12 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            Principal principal) throws ImageNotFoundException,
             ImageAlreadyExistsException, DockerClientException, UserNotFoundException {
+        log.debug("endpoint create image, data={}, principal={}", data, principal);
         final ContainerImage image = imageService.create(data, principal);
+        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        log.trace("create image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(imageMapper.containerImageToImageDto(image));
+                .body(dto);
     }
 
     @GetMapping("/{id}")
@@ -82,9 +86,12 @@ public class ImageEndpoint {
     })
     @Operation(summary = "Find some image")
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id) throws ImageNotFoundException {
+        log.debug("endpoint find image, id={}", id);
         final ContainerImage image = imageService.find(id);
+        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        log.trace("find image resulted in image {}", dto);
         return ResponseEntity.ok()
-                .body(imageMapper.containerImageToImageDto(image));
+                .body(dto);
     }
 
     @PutMapping("/{id}")
@@ -95,10 +102,14 @@ public class ImageEndpoint {
     })
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id, @RequestBody @Valid ImageChangeDto changeDto)
+    public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id,
+                                           @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
+        log.debug("endpoint update image, id={}, changeDto={}", id, changeDto);
+        final ImageDto dto = imageMapper.containerImageToImageDto(imageService.update(id, changeDto));
+        log.trace("update image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(imageMapper.containerImageToImageDto(imageService.update(id, changeDto)));
+                .body(dto);
     }
 
     @DeleteMapping("/{id}")
@@ -112,6 +123,7 @@ public class ImageEndpoint {
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ImageNotFoundException,
             PersistenceException {
+        log.debug("endpoint delete image, id={}", id);
         imageService.delete(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .build();

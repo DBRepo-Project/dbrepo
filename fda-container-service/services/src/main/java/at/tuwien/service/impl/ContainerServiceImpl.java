@@ -79,18 +79,19 @@ public class ContainerServiceImpl implements ContainerService {
         final CreateVolumeResponse response = dockerClient.createVolumeCmd()
                 .withName(container.getInternalName())
                 .exec();
-        log.info("Created volume {}", response.getName());
-        log.debug("created volume {} with mapping /var/lib/mysql", response.getName());
+        log.info("Created volume {} with mapping /var/lib/mysql", response.getName());
+        log.trace("created volume {}", response);
         /* create host mapping */
-        log.info("Configured container binds");
         final HostConfig hostConfig = this.hostConfig
-                .withNetworkMode("userdb")
+                .withNetworkMode(dockerConfig.getUserNetwork())
                 .withBinds(Bind.parse(dockerConfig.getMountPath() + ":/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"))
                 .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
-        log.debug("host config {}", hostConfig);
+        log.debug("container has network {}, volume bind {}, volume bind {} and port bind {}",
+                dockerConfig.getUserNetwork(), dockerConfig.getMountPath() + ":/tmp",
+                response.getName() + ":/var/lib/mysql", availableTcpPort + ":" + image.get().getDefaultPort());
+        log.trace("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
         container.setCreator(user);
-        log.trace("will create host config {} and container {}", hostConfig, container);
         /* create the container */
         final CreateContainerResponse response1;
         try {
@@ -102,18 +103,17 @@ public class ContainerServiceImpl implements ContainerService {
                     .withHostConfig(hostConfig)
                     .exec();
         } catch (ConflictException e) {
-            log.error("Conflicting names {}", createDto.getName());
+            log.error("Conflicting names {}, reason: {}", createDto.getName(), e.getMessage());
             throw new ContainerAlreadyExistsException("Unexpected behavior", e);
         } catch (NotFoundException e) {
             log.error("The image {}:{} not available on the container service", createDto.getRepository(),
                     createDto.getTag());
-            log.debug("payload was {}", createDto);
             throw new DockerClientException("Image not available", e);
         }
         container.setHash(response1.getId());
         container = containerRepository.save(container);
         log.info("Created container {}", container.getId());
-        log.debug("created container {}", container);
+        log.trace("created container {}", container);
         return container;
     }
 
@@ -124,14 +124,14 @@ public class ContainerServiceImpl implements ContainerService {
         try {
             dockerClient.stopContainerCmd(container.getHash()).exec();
         } catch (NotFoundException e) {
-            log.error("docker client failed {}", e.getMessage());
-            throw new DockerClientException("docker client failed", e);
+            log.error("Failed to stop container: {}", e.getMessage());
+            throw new DockerClientException("Failed to stop container", e);
         } catch (NotModifiedException e) {
-            log.warn("container already stopped {}", e.getMessage());
-            throw new DockerClientException("container already stopped", e);
+            log.warn("Failed to stop container: {}", e.getMessage());
+            throw new DockerClientException("Failed to stop container", e);
         }
         log.info("Stopped container with id {}", containerId);
-        log.debug("stopped container {}", container);
+        log.trace("stopped container {}", container);
         return container;
     }
 
@@ -143,18 +143,18 @@ public class ContainerServiceImpl implements ContainerService {
         try {
             dockerClient.removeContainerCmd(container.getHash()).exec();
         } catch (NotFoundException e) {
-            log.error("docker client failed {}", e.getMessage());
-            throw new DockerClientException("docker client failed", e);
+            log.error("Failed to remove container: {}", e.getMessage());
+            throw new DockerClientException("Failed to remove container", e);
         } catch (NotModifiedException e) {
-            log.warn("container already removed {}", e.getMessage());
-            throw new DockerClientException("container already removed", e);
+            log.warn("Failed to remove container: {}", e.getMessage());
+            throw new DockerClientException("Failed to remove container", e);
         } catch (ConflictException e) {
-            log.error("Could not remove container: {}", e.getMessage());
-            throw new ContainerStillRunningException("docker client failed", e);
+            log.error("Failed to remove container: {}", e.getMessage());
+            throw new ContainerStillRunningException("Failed to remove container", e);
         }
         containerRepository.deleteById(containerId);
         log.info("Removed container with id {}", containerId);
-        log.debug("removed container {}", container);
+        log.trace("removed container {}", container);
     }
 
     @Override
@@ -179,16 +179,19 @@ public class ContainerServiceImpl implements ContainerService {
                     .withSize(true)
                     .exec();
         } catch (NotFoundException e) {
-            log.error("Docker client failed {}", e.getMessage());
-            throw new DockerClientException("docker client failed", e);
+            log.error("Failed to find container: {}", e.getMessage());
+            throw new DockerClientException("Failed to find container", e);
         }
-        if (response.getState() == null || response.getState().getRunning() == null) {
-            log.error("Docker state empty");
-            log.debug("docker state empty {}", response);
-            throw new DockerClientException("Docker state empty");
+        if (response.getState() == null) {
+            log.error("Failed to retrieve container state: is null");
+            throw new DockerClientException("Failed to retrieve container state");
+        } else if (response.getState().getRunning() == null) {
+            log.error("Failed to retrieve container running state: is null");
+            throw new DockerClientException("Failed to retrieve container running state");
         }
         if (!response.getState().getRunning()) {
-            throw new ContainerNotRunningException("container is not running");
+            log.error("Failed to inspect container state: container is not running");
+            throw new ContainerNotRunningException("Failed to inspect container state");
         }
         /* now we only support one network */
         response.getNetworkSettings()
@@ -198,7 +201,7 @@ public class ContainerServiceImpl implements ContainerService {
                     container.setIpAddress(network.getIpAddress());
                 });
         log.info("Inspect container with id {}", id);
-        log.debug("inspect container {}", container);
+        log.trace("inspect container {}", container);
         return container;
     }
 
@@ -207,7 +210,7 @@ public class ContainerServiceImpl implements ContainerService {
     public List<Container> getAll() {
         final List<Container> containers = containerRepository.findAll();
         log.info("Found {} containers", containers.size());
-        log.debug("found containers {}", containers);
+        log.trace("found containers {}", containers);
         return containers;
     }
 
@@ -219,14 +222,14 @@ public class ContainerServiceImpl implements ContainerService {
             dockerClient.startContainerCmd(container.getHash())
                     .exec();
         } catch (NotFoundException e) {
-            log.error("docker client failed {}", e.getMessage());
-            throw new DockerClientException("docker client failed", e);
+            log.error("Failed to start container: {}", e.getMessage());
+            throw new DockerClientException("Failed to start container", e);
         } catch (NotModifiedException e) {
-            log.warn("container already started {}", e.getMessage());
-            throw new DockerClientException("container already started", e);
+            log.warn("Failed to start container: {}", e.getMessage());
+            throw new DockerClientException("Failed to start container", e);
         }
         log.info("Started container with id {}", containerId);
-        log.debug("started container {}", container);
+        log.trace("started container {}", container);
         return container;
     }
 

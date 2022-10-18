@@ -32,6 +32,7 @@ eureka:
   instance.hostname: container-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
+  network: userdb
   mount.path: /tmp
   ready.path: ./ready
   gateway.endpoint: http://localhost:9095

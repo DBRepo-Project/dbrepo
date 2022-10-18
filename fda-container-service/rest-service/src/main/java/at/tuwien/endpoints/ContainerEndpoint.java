@@ -42,6 +42,7 @@ public class ContainerEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find all containers")
     public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal) {
+        log.debug("endpoint find all containers, principal={}", principal);
         final List<Container> containers = containerService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -57,10 +58,12 @@ public class ContainerEndpoint {
                                                     Principal principal)
             throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException,
             UserNotFoundException {
+        log.debug("endpoint create container, data={}, principal={}", data, principal);
         final Container container = containerService.create(data, principal);
-        final ContainerBriefDto response = containerMapper.containerToDatabaseContainerBriefDto(container);
+        final ContainerBriefDto dto = containerMapper.containerToDatabaseContainerBriefDto(container);
+        log.trace("create container resulted in container {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(response);
+                .body(dto);
     }
 
     @GetMapping("/{id}")
@@ -68,9 +71,12 @@ public class ContainerEndpoint {
     @Operation(summary = "Find some container")
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId) throws DockerClientException,
             ContainerNotFoundException, ContainerNotRunningException {
+        log.debug("endpoint find container, id={}", containerId);
         final Container container = containerService.inspect(containerId);
+        final ContainerDto dto = containerMapper.containerToContainerDto(container);
+        log.trace("find container resulted in container {}", dto);
         return ResponseEntity.ok()
-                .body(containerMapper.containerToContainerDto(container));
+                .body(dto);
     }
 
     @PutMapping("/{id}")
@@ -80,14 +86,19 @@ public class ContainerEndpoint {
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
                                                     @Valid @RequestBody ContainerChangeDto changeDto)
             throws ContainerNotFoundException, DockerClientException {
+        log.debug("endpoint modify container, containerId={}, changeDto={}", containerId, changeDto);
         final Container container;
         if (changeDto.getAction().equals(ContainerActionTypeDto.START)) {
+            log.trace("request attempts to start the container");
             container = containerService.start(containerId);
         } else {
+            log.trace("request attempts to stop the container");
             container = containerService.stop(containerId);
         }
+        final ContainerBriefDto dto = containerMapper.containerToDatabaseContainerBriefDto(container);
+        log.trace("modify container resulted in container {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(containerMapper.containerToDatabaseContainerBriefDto(container));
+                .body(dto);
     }
 
     @DeleteMapping("/{id}")
@@ -96,6 +107,7 @@ public class ContainerEndpoint {
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId) throws ContainerNotFoundException,
             DockerClientException, ContainerStillRunningException {
+        log.debug("endpoint delete container, containerId={}", containerId);
         containerService.remove(containerId);
         return ResponseEntity.status(HttpStatus.OK)
                 .build();

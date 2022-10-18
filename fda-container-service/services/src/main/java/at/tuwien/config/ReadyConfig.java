@@ -32,11 +32,15 @@ public class ReadyConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws IOException, ImageNotFoundException {
         if (!imageService.exists(imageRepository, imageTag)) {
+            log.debug("image {}:{} is not present on the host", imageRepository, imageTag);
+            log.debug("pulling image {}:{}", imageRepository, imageTag);
             imageService.pull(imageRepository, imageTag);
         } else {
-            log.debug("image {}:{} found locally, skip pull", imageRepository, imageTag);
+            log.debug("image {}:{} is present on the host", imageRepository, imageTag);
+            log.debug("skip pulling image {}:{}", imageRepository, imageTag);
         }
         Files.touch(new File(readyPath));
+        log.info("Service is ready");
     }
 
 }
