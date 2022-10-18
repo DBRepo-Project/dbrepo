@@ -1,7 +1,6 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.entities.database.License;
 import at.tuwien.mapper.LicenseMapper;
 import at.tuwien.service.LicenseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,11 +33,13 @@ public class LicenseEndpoint {
     @GetMapping("/license")
     @Transactional(readOnly = true)
     @Operation(summary = "Get all licenses")
-    public ResponseEntity<List<LicenseDto>> delete(@NotBlank @PathVariable("id") Long containerId) {
+    public ResponseEntity<List<LicenseDto>> list(@NotBlank @PathVariable("id") Long containerId) {
+        log.debug("endpoint list licenses, containerId={}", containerId);
         final List<LicenseDto> licenses = licenseService.findAll()
                 .stream()
                 .map(licenseMapper::licenseToLicenseDto)
                 .collect(Collectors.toList());
+        log.trace("list licenses resulted in licenses {}", licenses);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(licenses);
     }

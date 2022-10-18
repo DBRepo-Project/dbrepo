@@ -58,6 +58,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "List databases")
     public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId) {
+        log.debug("endpoint list databases, containerId={}", containerId);
         final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
@@ -70,8 +71,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .findFirst();
             id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
         });
-        log.info("Found {} databases", databases.size());
-        log.debug("found databases {}", databases);
+        log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
     }
 
@@ -86,6 +86,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
             QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException {
+        log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
+                principal);
         if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {
             log.error("Missing database create permission");
             throw new NotAllowedException("Missing database create permission");
@@ -94,8 +96,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId());
         messageQueueService.updatePermissions(principal);
+        final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
+        log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseToDatabaseBriefDto(database));
+                .body(dto);
     }
 
     @PutMapping("/{databaseId}/transfer")
@@ -107,12 +111,15 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
+        log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
+                databaseId, transferDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "TRANSFER_DATABASE", principal)) {
             log.error("Missing database update permission");
             throw new NotAllowedException("Missing database update permission");
         }
         final Database database = databaseService.transfer(containerId, databaseId, transferDto);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        log.trace("update database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
     }
@@ -123,6 +130,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId)
             throws DatabaseNotFoundException {
+        log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         try {
@@ -131,8 +139,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         } catch (IdentifierNotFoundException e) {
             // ignore
         }
-        log.info("Found database with id {}", database.getId());
-        log.debug("found database {}", database);
+        log.trace("find database resulted in database {}", database);
         return ResponseEntity.ok(dto);
     }
 
@@ -145,6 +152,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException {
+        log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
+                principal);
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);

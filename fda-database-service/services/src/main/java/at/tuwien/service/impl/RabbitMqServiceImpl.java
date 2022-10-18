@@ -65,6 +65,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     public void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException {
         final List<Database> databases = databaseRepository.findAllByUsername(principal.getName());
         final GrantVirtualHostPermissionsDto permissions = amqpMapper.databasesToGrantVirtualHostPermissionsDto(databases);
+        log.trace("mapped permissions {}", permissions);
         brokerServiceGateway.grantPermission(principal.getName(), permissions);
     }
 
