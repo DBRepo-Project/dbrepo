@@ -129,6 +129,6 @@ release-version:
       - master
   script:
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - make release
+    - TAG=1.1 make release
 
 
