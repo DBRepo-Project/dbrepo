@@ -10,6 +10,7 @@ import at.tuwien.service.TableService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.jacoco.core.internal.flow.IProbeIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,14 +50,18 @@ public class TableEndpoint extends AbstractEndpoint {
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        Principal principal)
             throws DatabaseNotFoundException {
+        log.debug("endpoint list tables, containerId={}, databaseId={}, principal={}", containerId, databaseId,
+                principal);
         if (!hasDatabasePermission(containerId, databaseId, "TABLES_VIEW", principal)) {
             log.error("Missing table view permission");
             throw new NotAllowedException("Missing table view permission");
         }
-        return ResponseEntity.ok(tableService.findAll(containerId, databaseId, principal)
+        final List<TableBriefDto> dto = tableService.findAll(containerId, databaseId, principal)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+        log.trace("list tables resulted in tables {}", dto);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
@@ -65,18 +70,21 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
-                                                @NotNull Principal principal,
-                                                @NotNull @RequestHeader(name = "Authorization") String authorization)
+                                                @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException {
+        log.debug("endpoint create table, containerId={}, databaseId={}, createDto={}, principal={}", containerId,
+                databaseId, createDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
             log.error("Missing table create permission");
             throw new NotAllowedException("Missing table create permission");
         }
         final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
+        final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
+        log.trace("create table resulted in table {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(tableMapper.tableToTableBriefDto(table));
+                .body(dto);
     }
 
 
@@ -88,15 +96,16 @@ public class TableEndpoint extends AbstractEndpoint {
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
+        log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
+                databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_INFO", principal)) {
             log.error("Missing table view permission");
             throw new NotAllowedException("Missing table view permission");
         }
         final Table table = tableService.findById(containerId, databaseId, tableId, principal);
-        log.info("Found table with id {}", tableId);
-        log.debug("found table {}", table);
-        final TableDto tableDto = tableMapper.tableToTableDto(table);
-        return ResponseEntity.ok(tableDto);
+        final TableDto dto = tableMapper.tableToTableDto(table);
+        log.trace("find table resulted in table {}", dto);
+        return ResponseEntity.ok(dto);
     }
 
     @PutMapping("/{tableId}")
@@ -106,11 +115,15 @@ public class TableEndpoint extends AbstractEndpoint {
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId,
                                                 @NotNull Principal principal) {
+        log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
+                databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
             log.error("Missing table update permission");
             throw new NotAllowedException("Missing table update permission");
         }
-        return ResponseEntity.unprocessableEntity().body(new TableBriefDto());
+        log.trace("update table resulted in table {}", "");
+        return ResponseEntity.unprocessableEntity()
+                .build();
     }
 
     @DeleteMapping("/{tableId}")
@@ -120,10 +133,11 @@ public class TableEndpoint extends AbstractEndpoint {
     public void delete(@NotNull @PathVariable("id") Long containerId,
                        @NotNull @PathVariable("databaseId") Long databaseId,
                        @NotNull @PathVariable("tableId") Long tableId,
-                       @NotNull Principal principal,
-                       @NotNull @RequestHeader(name = "Authorization") String authorization)
+                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
+        log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
+                databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {
             log.error("Missing table delete permission");
             throw new NotAllowedException("Missing table delete permission");

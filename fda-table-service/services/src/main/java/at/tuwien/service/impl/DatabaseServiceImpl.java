@@ -26,12 +26,14 @@ public class DatabaseServiceImpl implements DatabaseService {
     public Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException {
         final Optional<Database> database;
         if (principal == null) {
+            log.trace("principal is null, find public database");
             database = databaseRepository.findPublic(containerId, databaseId);
         } else {
+            log.trace("principal is not null, find public database or mine");
             database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
         }
         if (database.isEmpty()) {
-            log.error("Failed to find database with id {}", databaseId);
+            log.error("Failed to find database");
             throw new DatabaseNotFoundException("could not find database with this id");
         }
         return database.get();
