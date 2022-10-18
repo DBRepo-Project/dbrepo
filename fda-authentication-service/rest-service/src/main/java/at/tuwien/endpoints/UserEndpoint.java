@@ -61,12 +61,13 @@ public class UserEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "List users")
     public ResponseEntity<List<UserBriefDto>> list() {
+        log.debug("endpoint list users");
         final List<UserBriefDto> users = userService.findAll()
                 .stream()
                 .map(userMapper::userToUserBriefDto)
                 .collect(Collectors.toList());
         log.info("Found {} users", users.size());
-        log.debug("found users {}", users);
+        log.trace("found users {}", users);
         return ResponseEntity.ok(users);
     }
 
@@ -74,9 +75,9 @@ public class UserEndpoint {
     @Transactional
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws UserEmailExistsException,
-            UserNameExistsException, RoleNotFoundException, UserEmailFailedException, BrokerUserCreationException,
-            OrcidMalformedException {
+            throws UserEmailExistsException, UserNameExistsException, RoleNotFoundException, UserEmailFailedException,
+            BrokerUserCreationException, OrcidMalformedException {
+        log.debug("endpoint create user, data={}", data);
         final User user = userService.create(data);
         queueService.createUser(user.getUsername(), data);
         final TimeSecret token = tokenService.create(user);
@@ -84,8 +85,10 @@ public class UserEndpoint {
         context.setVariable("username", user.getUsername());
         context.setVariable("token", token.getToken());
         mailService.send(user, "Account Creation", "welcome-mail.txt", context);
+        final UserDto dto = userMapper.userToUserDto(user);
+        log.trace("create user resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.userToUserDto(user));
+                .body(dto);
     }
 
     @PutMapping
@@ -93,22 +96,26 @@ public class UserEndpoint {
     @Operation(summary = "Forgot user information")
     public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, OrcidMalformedException {
+        log.debug("endpoint forgot user information, data={}", data);
         final User user = userService.forgot(data);
         final TimeSecret token = tokenService.create(user);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         context.setVariable("token", token.getToken());
         mailService.send(user, "Account Information", "forgot-mail.txt", context);
+        final UserDto dto = userMapper.userToUserDto(user);
+        log.trace("forgot user information resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(userMapper.userToUserDto(user));
+                .body(dto);
     }
 
     @PutMapping("/reset")
     @Transactional
     @Operation(summary = "Reset user information")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
-                      @NotNull HttpServletResponse httpServletResponse)
-            throws UserEmailFailedException, SecretInvalidException, UserNotFoundException, BrokerUserCreationException {
+                      @NotNull HttpServletResponse httpServletResponse) throws UserEmailFailedException,
+            SecretInvalidException, UserNotFoundException, BrokerUserCreationException {
+        log.debug("endpoint reset user information, data={}", data);
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);
@@ -117,6 +124,7 @@ public class UserEndpoint {
         context.setVariable("username", user.getUsername());
         mailService.send(user, "Password Reset Successful!", "reset-mail.txt", context);
         httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?password_reset");
+        log.debug("redirect user to website {}", securityConfig.getWebsite() + "/login?password_reset");
         httpServletResponse.setStatus(302);
     }
 
@@ -126,9 +134,12 @@ public class UserEndpoint {
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
             OrcidMalformedException {
+        log.debug("endpoint find user, id={}", id);
         final User entity = userService.find(id);
+        final UserDto dto = userMapper.userToUserDto(entity);
+        log.trace("find user resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.OK)
-                .body(userMapper.userToUserDto(entity));
+                .body(dto);
     }
 
     @PutMapping("/{id}")
@@ -138,9 +149,12 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> update(@NotNull @PathVariable("id") Long id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data)
             throws UserNotFoundException, OrcidMalformedException {
+        log.debug("endpoint update user, id={}, data={}", id, data);
         final User entity = userService.update(id, data);
+        final UserDto dto = userMapper.userToUserDto(entity);
+        log.trace("update user resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(userMapper.userToUserDto(entity));
+                .body(dto);
     }
 
     @PutMapping("/{id}/roles")
@@ -150,9 +164,12 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> updateRoles(@NotNull @PathVariable("id") Long id,
                                                @NotNull @Valid @RequestBody UserRolesDto data)
             throws UserNotFoundException, RoleNotFoundException, RoleUniqueException, OrcidMalformedException {
+        log.debug("endpoint update user roles, id={}, data={}", id, data);
         final User entity = userService.updateRoles(id, data);
+        final UserDto dto = userMapper.userToUserDto(entity);
+        log.trace("update user roles resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(userMapper.userToUserDto(entity));
+                .body(dto);
     }
 
     @PutMapping("/{id}/theme")
@@ -160,7 +177,9 @@ public class UserEndpoint {
     @PreAuthorize("hasPermission(#id, 'UPDATE_THEME')")
     @Operation(summary = "Update user theme", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> updateTheme(@NotNull @PathVariable("id") Long id,
-                                            @NotNull @Valid @RequestBody UserThemeSetDto data) throws UserNotFoundException {
+                                            @NotNull @Valid @RequestBody UserThemeSetDto data)
+            throws UserNotFoundException {
+        log.debug("endpoint update user theme, id={}, data={}", id, data);
         userService.updateTheme(id, data);
         return ResponseEntity.accepted()
                 .build();
@@ -173,10 +192,13 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @Valid @RequestBody UserPasswordDto data)
             throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException {
+        log.debug("endpoint update user password, id={}, data={}", id, data);
         final User entity = userService.updatePassword(id, data);
         queueService.modifyUserPassword(entity, data);
+        final UserDto dto = userMapper.userToUserDto(entity);
+        log.trace("update user password resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(userMapper.userToUserDto(entity));
+                .body(dto);
     }
 
     @PutMapping("/{id}/email")
@@ -186,9 +208,12 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> updateEmail(@NotNull @PathVariable("id") Long id,
                                                @NotNull @Valid @RequestBody UserEmailDto data)
             throws UserNotFoundException, OrcidMalformedException {
+        log.debug("endpoint update user email, id={}, data={}", id, data);
         final User entity = userService.updateEmail(id, data);
+        final UserDto dto = userMapper.userToUserDto(entity);
+        log.trace("update user email resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(userMapper.userToUserDto(entity));
+                .body(dto);
     }
 
 }

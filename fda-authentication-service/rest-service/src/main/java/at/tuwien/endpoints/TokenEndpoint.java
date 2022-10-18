@@ -46,24 +46,29 @@ public class TokenEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Lists developer tokens for user", security = @SecurityRequirement(name = "bearerAuth"))
     public List<TokenBriefDto> listAll(@NotNull Principal principal) throws UserNotFoundException {
+        log.debug("endpoint list developer tokens, principal={}", principal);
         final List<Token> tokens = tokenService.findAll(principal);
+        log.trace("found all tokens {}", tokens);
         final List<TokenBriefDto> dtos = tokens.stream()
                 .map(userMapper::tokenToTokenBriefDto)
                 .collect(Collectors.toList());
         log.info("Found {} tokens", dtos.size());
-        log.debug("found tokens {}", dtos);
+        log.trace("found tokens {}", dtos);
         return dtos;
     }
 
     @PostMapping
     @Transactional
     @Operation(summary = "Create developer token", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<TokenDto> create(@NotNull Principal principal) throws UserNotFoundException, TokenNotEligableException {
+    public ResponseEntity<TokenDto> create(@NotNull Principal principal) throws UserNotFoundException,
+            TokenNotEligableException {
+        log.debug("endpoint create developer token, principal={}", principal);
         /* check */
         final List<Token> tokens = tokenService.findAll(principal)
                 .stream()
                 .filter(t -> Objects.isNull(t.getDeleted()))
                 .collect(Collectors.toList());
+        log.trace("found all tokens {}", tokens);
         if (tokens.size() >= authenticationConfig.getTokenCount()) {
             log.error("Failed to create token, already exceeded maximum quota of {}", authenticationConfig.getTokenCount());
             throw new TokenNotEligableException("Failed to create token");
@@ -71,6 +76,7 @@ public class TokenEndpoint {
         /* create */
         final Token token = tokenService.create(principal);
         final TokenDto dto = userMapper.tokenToTokenDto(token);
+        log.trace("created developer token and resulting in {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
@@ -80,10 +86,10 @@ public class TokenEndpoint {
     @Operation(summary = "Delete developer token", security = @SecurityRequirement(name = "bearerAuth"))
     public void delete(@NotNull @PathVariable("hash") String hash,
                        @NotNull Principal principal) throws TokenNotFoundException, UserNotFoundException {
+        log.debug("endpoint delete developer token, hash={}, principal={}", hash, principal);
         final Token token = tokenService.findOne(hash);
+        log.trace("found token {}", token);
         tokenService.delete(token.getTokenHash(), principal);
-        log.info("Deleted token with id {}", token.getId());
-        log.debug("deleted token {}", token);
     }
 
 }

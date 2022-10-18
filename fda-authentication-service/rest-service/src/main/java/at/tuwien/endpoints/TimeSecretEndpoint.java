@@ -47,8 +47,10 @@ public class TimeSecretEndpoint {
     @Operation(summary = "verify user email")
     public void verifyEmail(@RequestParam String token,
                             HttpServletResponse httpServletResponse) throws SecretInvalidException {
+        log.debug("endpoint verify user email, token={}", token);
         tokenService.invalidate(token);
         httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?email_verified");
+        log.debug("redirect user to website {}", securityConfig.getWebsite() + "/login?email_verified");
         httpServletResponse.setStatus(302);
     }
 
@@ -57,10 +59,12 @@ public class TimeSecretEndpoint {
     @Operation(summary = "resend user token")
     public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {
+        log.debug("endpoint resend user token, data={}", data);
         final User user = userService.findByUsernameOrEmail(data.getUsername(), data.getEmail());
         if (user.getEmailVerified()) {
-            log.warn("User already has a verified email address");
-            throw new UserEmailAlreadyVerifiedException("User e-mail already verified");
+            log.error("Failed to resend user token for email {}, already verified", user.getEmail());
+            log.trace("failed to resend user token for user {}", user);
+            throw new UserEmailAlreadyVerifiedException("Failed to resend user token, email already verified");
         }
         final TimeSecret token = tokenService.create(user);
         final Context context = new Context();

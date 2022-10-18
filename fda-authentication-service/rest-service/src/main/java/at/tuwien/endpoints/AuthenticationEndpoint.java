@@ -47,6 +47,7 @@ public class AuthenticationEndpoint {
     @Operation(summary = "Create authentication token")
     public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data)
             throws UserNotFoundException, UserEmailNotVerifiedException {
+        log.debug("endpoint create authentication token, data={}", data);
         final JwtResponseDto response = authenticationService.authenticate(data);
         return ResponseEntity.accepted()
                 .body(response);
@@ -58,7 +59,7 @@ public class AuthenticationEndpoint {
     public ResponseEntity<UserDto> authenticateUser(@NotNull Principal principal,
                                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization)
             throws UserNotFoundException, OrcidMalformedException, TokenRevokedException {
-        log.trace("authenticate user with principal name {}", principal.getName());
+        log.debug("endpoint validate authentication token, principal={}, authorization={}", principal, authorization);
         final User user = userService.findByUsername(principal.getName());
         log.trace("authentication for principal name {} retrieved user {}", principal.getName(), user);
         final UserDto dto = userMapper.userToUserDto(user);
@@ -71,6 +72,7 @@ public class AuthenticationEndpoint {
     @PostMapping("/renew")
     @Operation(summary = "Renew authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
+        log.debug("endpoint renew authentication token, principal={}", principal);
         final JwtResponseDto response = authenticationService.renew(principal);
         return ResponseEntity.ok()
                 .body(response);
