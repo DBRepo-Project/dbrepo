@@ -9,6 +9,7 @@ import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -56,8 +57,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "database.list", description = "Time needed to list the databases")
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId) {
+    public ResponseEntity<List<DatabaseBriefDto>> list(@NotBlank @PathVariable("id") Long containerId) {
         log.debug("endpoint list databases, containerId={}", containerId);
         final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
@@ -77,6 +79,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "database.create", description = "Time needed to create a database")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
@@ -104,6 +107,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{databaseId}/transfer")
     @Transactional
+    @Timed(value = "database.transfer", description = "Time needed to transfer a database visibility")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotBlank @PathVariable("id") Long containerId,
@@ -126,6 +130,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
+    @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId)
@@ -145,7 +150,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{databaseId}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
+    @Timed(value = "database.delete", description = "Time needed to delete a database")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,

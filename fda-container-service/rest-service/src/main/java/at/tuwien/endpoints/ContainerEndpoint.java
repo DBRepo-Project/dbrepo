@@ -5,6 +5,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ContainerMapper;
 import at.tuwien.service.impl.ContainerServiceImpl;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -81,6 +82,7 @@ public class ContainerEndpoint {
 
     @PutMapping("/{id}")
     @Transactional
+    @Timed(value = "container.modify", description = "Time needed to modify the container state")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
@@ -103,7 +105,8 @@ public class ContainerEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') and hasPermission(#containerId, 'DELETE_CONTAINER')")
+    @Timed(value = "container.delete", description = "Time needed to delete the container")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER') and hasPermission(#containerId, 'DELETE_CONTAINER')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId) throws ContainerNotFoundException,
             DockerClientException, ContainerStillRunningException {
