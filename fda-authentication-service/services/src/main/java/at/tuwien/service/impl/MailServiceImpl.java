@@ -42,6 +42,8 @@ public class MailServiceImpl implements MailService {
             /* local instance, not the deployment instance */
             return;
         }
+        log.trace("add default website variable website={} to context", mailConfig.getWebsite());
+        context.setVariable("website", mailConfig.getWebsite());
         final SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setSubject(subject);
