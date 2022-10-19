@@ -20,6 +20,7 @@ spring:
     name: identifier-service
   cloud:
     loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9096
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"

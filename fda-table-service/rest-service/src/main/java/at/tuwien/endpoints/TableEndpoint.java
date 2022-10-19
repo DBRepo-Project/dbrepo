@@ -7,6 +7,7 @@ import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -45,8 +46,9 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "table.list", description = "Time needed to list the tables")
     @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<TableBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
+    public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        Principal principal)
             throws DatabaseNotFoundException {
@@ -66,6 +68,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "table.create", description = "Time needed to create a table")
     @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
@@ -90,6 +93,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
+    @Timed(value = "table.find", description = "Time needed to find a table")
     @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
@@ -110,6 +114,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{tableId}")
     @Transactional
+    @Timed(value = "table.update", description = "Time needed to update a table")
     @Operation(summary = "Update a table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
@@ -128,6 +133,7 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{tableId}")
     @Transactional
+    @Timed(value = "table.delete", description = "Time needed to delete a table")
     @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ResponseStatus(HttpStatus.OK)
     public void delete(@NotNull @PathVariable("id") Long containerId,

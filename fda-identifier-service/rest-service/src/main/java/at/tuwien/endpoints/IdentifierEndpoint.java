@@ -8,6 +8,7 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -43,8 +44,9 @@ public class IdentifierEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
-    public ResponseEntity<List<IdentifierDto>> findAll(@RequestParam(required = false) Long dbid,
+    public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                        @RequestParam(required = false) Long qid) {
         log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
@@ -58,6 +60,7 @@ public class IdentifierEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
+    @Timed(value = "identifier.export", description = "Time needed to export an identifier")
     @Operation(summary = "Export some identifier metadata")
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id)
             throws IdentifierNotFoundException {
@@ -72,6 +75,7 @@ public class IdentifierEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "identifier.create", description = "Time needed to create an identifier")
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
@@ -93,6 +97,8 @@ public class IdentifierEndpoint {
     }
 
     @PutMapping("/{id}")
+    @Transactional
+    @Timed(value = "identifier.update", description = "Time needed to update an identifier")
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
@@ -105,6 +111,8 @@ public class IdentifierEndpoint {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
+    @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @Valid @RequestParam("id") Long id)

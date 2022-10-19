@@ -8,6 +8,7 @@ import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,7 @@ public class PersistenceEndpoint {
 
     @GetMapping("/{pid}")
     @Transactional(readOnly = true)
+    @Timed(value = "pid.find", description = "Time needed to find a persisted identifier")
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
