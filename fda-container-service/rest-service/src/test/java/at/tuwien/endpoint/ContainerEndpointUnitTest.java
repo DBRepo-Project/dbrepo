@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.*;
+import at.tuwien.auth.PermissionEvaluatorImpl;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.exception.*;
@@ -43,6 +44,9 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private ImageRepository imageRepository;
 
+    @MockBean
+    private PermissionEvaluatorImpl permissionEvaluator;
+
     @Autowired
     private ContainerEndpoint containerEndpoint;
 
@@ -59,6 +63,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void create_succeeds() throws ImageNotFoundException, DockerClientException, UserNotFoundException, ContainerAlreadyExistsException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
@@ -166,6 +171,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void modify_start_succeeds() throws DockerClientException, ContainerNotFoundException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(ContainerActionTypeDto.START)
@@ -180,6 +186,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void modify_stop_succeeds() throws DockerClientException, ContainerNotFoundException, ContainerStillRunningException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(ContainerActionTypeDto.STOP)
@@ -194,6 +201,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void modify_startDocker_fails() throws DockerClientException, ContainerNotFoundException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(ContainerActionTypeDto.START)
@@ -208,6 +216,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void modify_stopDocker_fails() throws DockerClientException, ContainerNotFoundException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(ContainerActionTypeDto.STOP)
@@ -222,6 +231,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void modify_stopNoContainer_fails() throws DockerClientException, ContainerNotFoundException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(ContainerActionTypeDto.STOP)
@@ -236,10 +246,15 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void delete_noContainer_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
         doThrow(new ContainerNotFoundException("no container"))
                 .when(containerService)
                 .remove(CONTAINER_1_ID);
+
+        doReturn(true)
+                .when(permissionEvaluator)
+                .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -248,10 +263,15 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void delete_success() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
         doNothing()
                 .when(containerService)
                 .remove(CONTAINER_1_ID);
+
+        doReturn(true)
+                .when(permissionEvaluator)
+                .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
 
         /* test */
         final ResponseEntity<?> response = containerEndpoint.delete(CONTAINER_1_ID);
@@ -259,10 +279,15 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void delete_docker_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
         doThrow(new DockerClientException("docker failed"))
                 .when(containerService)
                 .remove(CONTAINER_1_ID);
+
+        doReturn(true)
+                .when(permissionEvaluator)
+                .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
 
         /* test */
         assertThrows(DockerClientException.class, () -> {
@@ -271,10 +296,15 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "RESEARCHER")
     public void delete_dockerStillRunning_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
         doThrow(new ContainerStillRunningException("container running"))
                 .when(containerService)
                 .remove(CONTAINER_1_ID);
+
+        doReturn(true)
+                .when(permissionEvaluator)
+                .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
 
         /* test */
         assertThrows(ContainerStillRunningException.class, () -> {

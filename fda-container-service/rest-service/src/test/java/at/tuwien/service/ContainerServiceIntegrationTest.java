@@ -30,6 +30,7 @@ import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -39,6 +40,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private UserService userService;
 
     @Autowired
     private ContainerServiceImpl containerService;
@@ -151,6 +155,11 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        doReturn(null)
+                .when(userService)
+                .findByUsername(USER_1_USERNAME);
+
         /* test */
         final Container container = containerService.create(request, principal);
         assertEquals(CONTAINER_1_NAME, container.getName());
@@ -168,10 +177,13 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
+        doReturn(null)
+                .when(userService)
+                .findByUsername(USER_1_USERNAME);
         containerService.create(request, principal);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyExistsException.class, () -> {
             containerService.create(request, principal);
         });
     }

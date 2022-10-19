@@ -6,10 +6,12 @@ import com.github.dockerjava.api.model.NetworkSettings;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.TestPropertySource;
 
 import java.lang.reflect.Field;
 import java.util.Map;
 
+@TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseMappingTest {
 
     @Configuration
