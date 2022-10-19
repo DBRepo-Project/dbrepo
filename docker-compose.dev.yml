@@ -393,3 +393,17 @@ services:
         condition: service_started
     logging:
       driver: json-file
+
+  tuw-prometheus:
+    image: prom/prometheus:v2.39.1
+    restart: on-failure
+    container_name: tuw-prometheus
+    hostname: tuw-prometheus
+    networks:
+      tuw-public:
+    env_file:
+      - .env
+    ports:
+      - "4200:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
