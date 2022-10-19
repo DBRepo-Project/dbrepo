@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -38,6 +39,7 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @PutMapping
     @Transactional(readOnly = true)
+    @Timed(value = "query.execute", description = "Time needed to execute a query")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -72,6 +74,7 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}/data")
     @Transactional(readOnly = true)
+    @Timed(value = "query.reexecute", description = "Time needed to re-execute a query")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
@@ -104,6 +107,7 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
+    @Timed(value = "query.export", description = "Time needed to export query data")
     @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> export(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull @PathVariable("databaseId") Long databaseId,

@@ -11,6 +11,7 @@ import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.service.*;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -48,6 +49,7 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "view.list", description = "Time needed to list all views in a database")
     @Operation(summary = "Find all views", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,
@@ -71,6 +73,7 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "view.create", description = "Time needed to create a view")
     @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                @NotNull @PathVariable("databaseId") Long databaseId,
@@ -93,6 +96,7 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
+    @Timed(value = "view.find", description = "Time needed to find a view")
     @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewDto> findAll(@NotNull @PathVariable("id") Long containerId,
                                            @NotNull @PathVariable("databaseId") Long databaseId,
@@ -114,6 +118,7 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{viewId}")
     @Transactional
+    @Timed(value = "view.delete", description = "Time needed to delete a view")
     @Operation(summary = "Delete one view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull @PathVariable("databaseId") Long databaseId,
@@ -134,6 +139,7 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{viewId}/data")
     @Transactional(readOnly = true)
+    @Timed(value = "view.data", description = "Time needed to retrieve data from a view")
     @Operation(summary = "Find view data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("id") Long containerId,
                                                @NotNull @PathVariable("databaseId") Long databaseId,

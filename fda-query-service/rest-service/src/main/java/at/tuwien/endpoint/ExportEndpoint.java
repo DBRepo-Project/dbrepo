@@ -5,6 +5,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.QueryService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -36,6 +37,7 @@ public class ExportEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "table.export", description = "Time needed to export table data")
     @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
                                                       @NotNull @PathVariable("databaseId") Long databaseId,

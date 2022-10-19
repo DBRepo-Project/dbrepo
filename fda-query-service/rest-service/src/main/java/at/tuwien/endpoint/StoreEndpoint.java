@@ -9,6 +9,7 @@ import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.*;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -47,6 +48,7 @@ public class StoreEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "store.list", description = "Time needed to list queries from the query store")
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -76,6 +78,7 @@ public class StoreEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
+    @Timed(value = "store.find", description = "Time needed to find a query from the query store")
     @Operation(summary = "Find some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long containerId,
                                          @NotNull @PathVariable("databaseId") Long databaseId,
@@ -99,6 +102,7 @@ public class StoreEndpoint extends AbstractEndpoint {
     }
 
     @PutMapping("/{queryId}")
+    @Timed(value = "store.persist", description = "Time needed to persist a query in the query store")
     @Operation(summary = "Persist some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("id") Long containerId,
                                             @NotNull @PathVariable("databaseId") Long databaseId,
