@@ -20,7 +20,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.identifier.dbnotfound")
+                .code("error.identifier.databasenotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -70,12 +70,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(IdentifierPublishingNotAllowedException.class)
+    @ExceptionHandler(IdentifierRequestException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierRequestException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
-                .code("error.identifier.type")
+                .code("error.identifier.requestinvalid")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -103,7 +103,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(RemoteUnavailableException.class)
+    @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
