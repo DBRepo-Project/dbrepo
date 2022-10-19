@@ -406,4 +406,4 @@ services:
     ports:
       - "4200:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./fda-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
