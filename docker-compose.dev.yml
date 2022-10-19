@@ -375,8 +375,8 @@ services:
 
   ui-proxy:
     restart: on-failure
-    container_name: dbrepo-ui-proxy
-    hostname: dbrepo-ui-proxy
+    container_name: ui-proxy
+    hostname: ui-proxy
     image: nginx:alpine
     networks:
       public:
@@ -394,13 +394,14 @@ services:
     logging:
       driver: json-file
 
-  tuw-prometheus:
+  prometheus:
     image: prom/prometheus:v2.39.1
     restart: on-failure
     container_name: tuw-prometheus
-    hostname: tuw-prometheus
+    hostname: prometheus
     networks:
       public:
+      core:
     env_file:
       - .env
     ports:
