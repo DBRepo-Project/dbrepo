@@ -9,6 +9,7 @@ import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import org.thymeleaf.context.Context;
 import java.time.Instant;
 import java.util.List;
 
+@Log4j2
 @Service
 public class MetadataServiceImpl implements MetadataService {
 
@@ -54,6 +56,7 @@ public class MetadataServiceImpl implements MetadataService {
     public String listIdentifiers(OaiListIdentifiersParameters parameters) {
         final StringBuilder builder = new StringBuilder("<ListIdentifiers>");
         final List<Identifier> identifiers = identifierService.findAll();
+        log.debug("found {} identifiers", identifiers.size());
         identifiers.forEach(identifier -> {
             final Context context = new Context();
             context.setVariable("identifier", metadataConfig.getPidBase() + identifier.getId());
@@ -98,13 +101,15 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("code", type.getErrorCode());
         context.setVariable("message", type.getErrorText());
         final String body = templateEngine.process("error.xml", context);
+        log.trace("mapped error {}", type);
         return parseResponse(body);
     }
 
     private String requestUrl() {
         final ServletUriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentRequestUri();
         builder.scheme("https");
-        return builder.build().toUriString();
+        return builder.build()
+                .toUriString();
     }
 
     private String parseResponse(String body) {

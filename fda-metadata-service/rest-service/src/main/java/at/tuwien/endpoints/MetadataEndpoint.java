@@ -22,49 +22,58 @@ import org.springframework.web.bind.annotation.*;
 public class MetadataEndpoint extends AbstractEndpoint {
 
     private final MetadataService metadataService;
-    private final IdentifierService identifierService;
 
     @Autowired
-    public MetadataEndpoint(MetadataService metadataService, IdentifierService identifierService) {
+    public MetadataEndpoint(MetadataService metadataService) {
         this.metadataService = metadataService;
-        this.identifierService = identifierService;
     }
 
     @GetMapping(produces = "text/xml;charset=UTF-8")
     @Operation(summary = "Identify the repository")
     public ResponseEntity<?> identify() {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(metadataService.error(OaiErrorType.BAD_VERB));
+        log.debug("endpoint identify repository");
+        return identifyAlt();
     }
 
     @GetMapping(params = "verb=Identify", produces = "text/xml;charset=UTF-8")
     @Operation(summary = "Identify the repository")
     @Parameter(name = "verb", example = "Identify")
     public ResponseEntity<?> identifyAlt() {
-        return ResponseEntity.ok(metadataService.identify());
+        log.debug("endpoint identify repository, verb=Identify");
+        final String xml = metadataService.identify();
+        log.trace("identify repository resulted in xml {}", xml);
+        return ResponseEntity.ok(xml);
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
     @Operation(summary = "List the identifiers")
     @Parameter(name = "verb", example = "ListIdentifiers")
-    public ResponseEntity<?> listRecords(OaiListIdentifiersParameters parameters) {
-        return ResponseEntity.ok(metadataService.listIdentifiers(parameters));
+    public ResponseEntity<?> listIdentifiers(OaiListIdentifiersParameters parameters) {
+        log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
+        final String xml = metadataService.listIdentifiers(parameters);
+        log.trace("list identifiers resulted in xml {}", xml);
+        return ResponseEntity.ok(xml);
     }
 
     @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
     @Operation(summary = "Get the record")
     @Parameter(name = "verb", example = "GetRecord")
     public ResponseEntity<?> getRecord(OaiRecordParameters parameters) {
+        log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
         if (!parameters.getMetadataPrefix().equals("oai_dc")) {
+            log.trace("metadataPrefix matches oai_dc, failed to serve this format");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
         }
         if (parameters.getIdentifier() == null || !NumberUtils.isCreatable(parameters.getIdentifier())) {
+            log.trace("identifier is null or not a number");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         }
         try {
-            return ResponseEntity.ok(metadataService.getRecord(parameters));
+            final String xml = metadataService.getRecord(parameters);
+            log.trace("get record resulted in xml {}", xml);
+            return ResponseEntity.ok(xml);
         } catch (IdentifierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST));
@@ -75,7 +84,10 @@ public class MetadataEndpoint extends AbstractEndpoint {
     @Operation(summary = "List the metadata formats")
     @Parameter(name = "verb", example = "ListMetadataFormats")
     public ResponseEntity<?> listMetadataFormats() {
-        return ResponseEntity.ok(metadataService.listMetadataFormats());
+        log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
+        final String xml = metadataService.listMetadataFormats();
+        log.trace("list metadata formats resulted in xml {}", xml);
+        return ResponseEntity.ok(xml);
     }
 
 }

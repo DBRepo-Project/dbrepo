@@ -70,6 +70,12 @@
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
             <artifactId>fda-metadata-db-entites</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
