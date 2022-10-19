@@ -33,7 +33,8 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db
+    image: fda-metadata-db
+    build: ./fda-metadata-db
     networks:
       core:
     volumes:
@@ -51,7 +52,8 @@ services:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
-    image: dbrepo/discovery-service
+    image: fda-discovery-service
+    build: ./fda-discovery-service
     networks:
       core:
     ports:
@@ -67,7 +69,8 @@ services:
     restart: on-failure
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: dbrepo/gateway-service
+    image: fda-gateway-service
+    build: ./fda-gateway-service
     networks:
       core:
     ports:
@@ -86,7 +89,8 @@ services:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service
+    image: fda-database-service
+    build: ./fda-database-service
     networks:
       userdb:
       core:
@@ -114,7 +118,8 @@ services:
     restart: on-failure
     container_name: dbrepo-container-service
     hostname: container-service
-    image: dbrepo/container-service
+    image: fda-container-service
+    build: ./fda-container-service
     networks:
       core:
     ports:
@@ -138,7 +143,8 @@ services:
     restart: on-failure
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service
+    image: fda-authentication-service
+    build: ./fda-authentication-service
     networks:
       core:
     ports:
@@ -172,7 +178,8 @@ services:
     restart: on-failure
     container_name: dbrepo-query-service
     hostname: query-service
-    image: dbrepo/query-service
+    image: fda-query-service
+    build: ./fda-query-service
     networks:
       core:
       userdb:
@@ -200,7 +207,8 @@ services:
     restart: on-failure
     container_name: dbrepo-table-service
     hostname: table-service
-    image: dbrepo/table-service
+    image: fda-table-service
+    build: ./fda-table-service
     networks:
       core:
       userdb:
@@ -230,7 +238,8 @@ services:
     restart: on-failure
     container_name: dbrepo-identifier-service
     hostname: identifier-service
-    image: dbrepo/identifier-service
+    image: fda-identifier-service
+    build: ./fda-identifier-service
     networks:
       core:
     ports:
@@ -254,7 +263,8 @@ services:
     restart: on-failure
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service
+    image: fda-analyse-service
+    build: ./fda-analyse-service
     networks:
       core:
       userdb:
@@ -274,7 +284,8 @@ services:
     restart: on-failure
     container_name: dbrepo-units-service
     hostname: units-service
-    image: dbrepo/units-service
+    image: fda-units-service
+    build: ./fda-units-service
     networks:
       core:
     ports:
@@ -292,7 +303,8 @@ services:
     restart: on-failure
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service
+    image: fda-broker-service
+    build: ./fda-broker-service
     networks:
       core:
     ports:
@@ -342,7 +354,8 @@ services:
     restart: on-failure
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui
+    image: fda-ui
+    build: ./fda-ui
     networks:
       core:
     volumes:
