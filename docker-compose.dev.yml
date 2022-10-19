@@ -8,6 +8,7 @@ volumes:
   metadata-db-data:
   search-service-data:
   broker-service-data:
+  prometheus-data:
 
 networks:
   core:
@@ -407,4 +408,5 @@ services:
     ports:
       - "4200:9090"
     volumes:
+      - prometheus-data:/etc/prometheus
       - ./fda-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml

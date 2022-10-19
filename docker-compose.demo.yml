@@ -8,6 +8,7 @@ volumes:
   metadata-db-data:
   search-service-data:
   broker-service-data:
+  prometheus-data:
 
 networks:
   core:
@@ -380,3 +381,19 @@ services:
         condition: service_started
     logging:
       driver: json-file
+
+  prometheus:
+    image: prom/prometheus:v2.39.1
+    restart: on-failure
+    container_name: tuw-prometheus
+    hostname: prometheus
+    networks:
+      public:
+      core:
+    env_file:
+      - .env
+    ports:
+      - "4200:9090"
+    volumes:
+      - prometheus-data:/etc/prometheus
+      - ./fda-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
