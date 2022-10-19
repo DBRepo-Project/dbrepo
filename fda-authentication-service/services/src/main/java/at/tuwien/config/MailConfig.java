@@ -32,7 +32,7 @@ public class MailConfig {
     private Boolean mailVerify;
 
     @Value("${fda.website}")
-    private Boolean website;
+    private String website;
 
     @Bean
     public SpringTemplateEngine springTemplateEngine() {
