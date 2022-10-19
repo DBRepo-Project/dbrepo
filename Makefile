@@ -9,7 +9,7 @@ config-backend:
 
 config-frontend:
 	./.fda-deployment/fda-ui/install_cert
-	docker-compose -f docker-compose.prod.yml config
+	docker compose -f docker-compose.prod.yml config
 
 config-ssl:
 	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./fda-ui-proxy/default/privkey.pem -out ./fda-ui-proxy/default/fullchain.pem -subj '/C=AT/ST=Vienna/L=Vienna/O=Technische Universität Wien/OU=Data Science Group/CN=dbrepo.ossdip.at'
@@ -49,8 +49,8 @@ build-backend-query: build-backend-metadata
 build-backend: build-backend-metadata build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway
 
 build-docker:
-	docker-compose build fda-metadata-db
-	docker-compose build --parallel
+	docker compose build fda-metadata-db
+	docker compose build --parallel
 
 build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
@@ -225,7 +225,7 @@ coverage-frontend: clean build-frontend
 
 test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
-	docker-compose up -d
+	docker compose up -d
 	yarn --cwd ./fda-ui run test
 
 test-clients:

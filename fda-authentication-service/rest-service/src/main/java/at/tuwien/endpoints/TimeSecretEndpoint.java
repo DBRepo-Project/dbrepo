@@ -8,6 +8,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.MailService;
 import at.tuwien.service.TimeSecretService;
 import at.tuwien.service.UserService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,7 @@ public class TimeSecretEndpoint {
 
     @GetMapping
     @Transactional
+    @Timed(value = "email.verify", description = "Time needed to verify the user email")
     @Operation(summary = "verify user email")
     public void verifyEmail(@RequestParam String token,
                             HttpServletResponse httpServletResponse) throws SecretInvalidException {
@@ -56,6 +58,7 @@ public class TimeSecretEndpoint {
 
     @PostMapping("/resend")
     @Transactional
+    @Timed(value = "email.resend", description = "Time needed to re-send the user email verification")
     @Operation(summary = "resend user token")
     public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {

@@ -9,6 +9,7 @@ import at.tuwien.exception.TokenNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.TokenService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -44,6 +45,7 @@ public class TokenEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "token.list", description = "Time needed to list the developer tokens")
     @Operation(summary = "Lists developer tokens for user", security = @SecurityRequirement(name = "bearerAuth"))
     public List<TokenBriefDto> listAll(@NotNull Principal principal) throws UserNotFoundException {
         log.debug("endpoint list developer tokens, principal={}", principal);
@@ -59,6 +61,7 @@ public class TokenEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "token.create", description = "Time needed to create a developer token")
     @Operation(summary = "Create developer token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TokenDto> create(@NotNull Principal principal) throws UserNotFoundException,
             TokenNotEligableException {
@@ -83,6 +86,7 @@ public class TokenEndpoint {
 
     @DeleteMapping("/{hash}")
     @Transactional
+    @Timed(value = "token.delete", description = "Time needed to delete the developer tokens")
     @Operation(summary = "Delete developer token", security = @SecurityRequirement(name = "bearerAuth"))
     public void delete(@NotNull @PathVariable("hash") String hash,
                        @NotNull Principal principal) throws TokenNotFoundException, UserNotFoundException {

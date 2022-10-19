@@ -11,6 +11,7 @@ import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.UserService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -44,6 +45,7 @@ public class AuthenticationEndpoint {
     }
 
     @PostMapping
+    @Timed(value = "auth.create", description = "Time needed to create an authentication token")
     @Operation(summary = "Create authentication token")
     public ResponseEntity<JwtResponseDto> authenticateUser(@Valid @RequestBody LoginRequestDto data)
             throws UserNotFoundException, UserEmailNotVerifiedException {
@@ -55,6 +57,7 @@ public class AuthenticationEndpoint {
 
     @PutMapping
     @Transactional
+    @Timed(value = "auth.validate", description = "Time needed to validate an authentication token")
     @Operation(summary = "Validate authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> authenticateUser(@NotNull Principal principal,
                                                     @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization)
@@ -70,6 +73,7 @@ public class AuthenticationEndpoint {
     }
 
     @PostMapping("/renew")
+    @Timed(value = "auth.renew", description = "Time needed to renew an authentication token")
     @Operation(summary = "Renew authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
         log.debug("endpoint renew authentication token, principal={}", principal);

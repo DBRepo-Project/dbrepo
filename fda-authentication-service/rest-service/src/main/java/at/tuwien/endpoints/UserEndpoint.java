@@ -15,6 +15,7 @@ import at.tuwien.service.MailService;
 import at.tuwien.service.QueueService;
 import at.tuwien.service.TimeSecretService;
 import at.tuwien.service.UserService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -59,6 +60,7 @@ public class UserEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "user.list", description = "Time needed to list the users")
     @Operation(summary = "List users")
     public ResponseEntity<List<UserBriefDto>> list() {
         log.debug("endpoint list users");
@@ -73,6 +75,7 @@ public class UserEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "user.create", description = "Time needed to create a user")
     @Operation(summary = "Create user")
     public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserEmailExistsException, UserNameExistsException, RoleNotFoundException, UserEmailFailedException,
@@ -93,6 +96,7 @@ public class UserEndpoint {
 
     @PutMapping
     @Transactional
+    @Timed(value = "user.forgot", description = "Time needed to reset a user information")
     @Operation(summary = "Forgot user information")
     public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, OrcidMalformedException {
@@ -111,6 +115,7 @@ public class UserEndpoint {
 
     @PutMapping("/reset")
     @Transactional
+    @Timed(value = "user.reset", description = "Time needed to reset a user information")
     @Operation(summary = "Reset user information")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
                       @NotNull HttpServletResponse httpServletResponse) throws UserEmailFailedException,
@@ -130,6 +135,7 @@ public class UserEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
+    @Timed(value = "user.find", description = "Time needed to find a user")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'READ_USER')")
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
@@ -144,6 +150,7 @@ public class UserEndpoint {
 
     @PutMapping("/{id}")
     @Transactional
+    @Timed(value = "user.update", description = "Time needed to update a user")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_USER')")
     @Operation(summary = "Update user", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> update(@NotNull @PathVariable("id") Long id,
@@ -159,6 +166,7 @@ public class UserEndpoint {
 
     @PutMapping("/{id}/roles")
     @Transactional
+    @Timed(value = "user.roles", description = "Time needed to update a user role")
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Update user roles", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateRoles(@NotNull @PathVariable("id") Long id,
@@ -174,6 +182,7 @@ public class UserEndpoint {
 
     @PutMapping("/{id}/theme")
     @Transactional
+    @Timed(value = "user.theme", description = "Time needed to update a user theme")
     @PreAuthorize("hasPermission(#id, 'UPDATE_THEME')")
     @Operation(summary = "Update user theme", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> updateTheme(@NotNull @PathVariable("id") Long id,
@@ -187,6 +196,7 @@ public class UserEndpoint {
 
     @PutMapping("/{id}/password")
     @Transactional
+    @Timed(value = "user.password", description = "Time needed to update a user password")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_PASSWORD')")
     @Operation(summary = "Update user password", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
@@ -203,6 +213,7 @@ public class UserEndpoint {
 
     @PutMapping("/{id}/email")
     @Transactional
+    @Timed(value = "user.email", description = "Time needed to update a user email")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_EMAIL')")
     @Operation(summary = "Update user email", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> updateEmail(@NotNull @PathVariable("id") Long id,

@@ -6,6 +6,7 @@ import at.tuwien.OaiRecordParameters;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +30,7 @@ public class MetadataEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(produces = "text/xml;charset=UTF-8")
+    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
     @Operation(summary = "Identify the repository")
     public ResponseEntity<?> identify() {
         log.debug("endpoint identify repository");
@@ -36,6 +38,7 @@ public class MetadataEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(params = "verb=Identify", produces = "text/xml;charset=UTF-8")
+    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
     @Operation(summary = "Identify the repository")
     @Parameter(name = "verb", example = "Identify")
     public ResponseEntity<?> identifyAlt() {
@@ -46,6 +49,7 @@ public class MetadataEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
+    @Timed(value = "identifiers.list", description = "Time needed to list the identifiers")
     @Operation(summary = "List the identifiers")
     @Parameter(name = "verb", example = "ListIdentifiers")
     public ResponseEntity<?> listIdentifiers(OaiListIdentifiersParameters parameters) {
@@ -56,6 +60,7 @@ public class MetadataEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
+    @Timed(value = "record.find", description = "Time needed to find a record")
     @Operation(summary = "Get the record")
     @Parameter(name = "verb", example = "GetRecord")
     public ResponseEntity<?> getRecord(OaiRecordParameters parameters) {
@@ -81,6 +86,7 @@ public class MetadataEndpoint extends AbstractEndpoint {
     }
 
     @GetMapping(params = "verb=ListMetadataFormats", produces = "text/xml;charset=UTF-8")
+    @Timed(value = "formats.list", description = "Time needed to list the metadata formats")
     @Operation(summary = "List the metadata formats")
     @Parameter(name = "verb", example = "ListMetadataFormats")
     public ResponseEntity<?> listMetadataFormats() {
