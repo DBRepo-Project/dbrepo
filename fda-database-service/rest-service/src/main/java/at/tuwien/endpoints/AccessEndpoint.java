@@ -52,8 +52,8 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Missing give access permission");
             throw new NotAllowedException("Missing give access permission");
         }
-        if (accessService.hasAccess(databaseId, principal.getName())) {
-            log.error("Failed to give access to user with username {}, already has access", principal.getName());
+        if (accessService.hasAccess(databaseId, accessDto.getUsername())) {
+            log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
             throw new NotAllowedException("Failed to give access to user");
         }
         accessService.giveAccess(containerId, databaseId, accessDto);
@@ -77,8 +77,8 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Missing modify access permission");
             throw new NotAllowedException("Missing modify access permission");
         }
-        if (!accessService.hasAccess(databaseId, principal.getName())) {
-            log.error("Failed to modify access to user with username {}, does not have access", principal.getName());
+        if (!accessService.hasAccess(databaseId, username)) {
+            log.error("Failed to modify access to user with username {}, does not have access", username);
             throw new NotAllowedException("Failed to modify access to user");
         }
         accessService.modifyAccess(containerId, databaseId, username, accessDto);

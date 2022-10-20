@@ -18,28 +18,12 @@
             <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
           </v-alert>
           <v-text-field
-            v-if="isModification"
-            v-model="access.user.username"
-            label="Username"
-            :rules="[v => !!v || $t('Required')]"
-            required
-            :disabled="isModification" />
-          <v-text-field
-            v-if="!isModification"
             v-model="modify.username"
             label="Username"
             :rules="[v => !!v || $t('Required')]"
             required
             :disabled="isModification" />
           <v-select
-            v-if="isModification"
-            v-model="access.type"
-            :items="types"
-            :rules="[v => !!v || $t('Required')]"
-            required
-            label="Access type" />
-          <v-select
-            v-if="!isModification"
             v-model="modify.type"
             :items="types"
             :rules="[v => !!v || $t('Required')]"
@@ -59,6 +43,7 @@
             :disabled="!valid || loading"
             color="warning"
             type="submit"
+            :loading="loading"
             @click="updateAccess">
             {{ buttonText }}
           </v-btn>
@@ -141,6 +126,24 @@ export default {
       return (this.isModification ? 'Modify' : 'Give') + ' Access'
     }
   },
+  watch: {
+    access (newVal, oldVal) {
+      if (newVal == null) {
+        this.modify.username = null
+        this.modify.type = null
+      } else {
+        this.modify.username = newVal.user.username
+        this.modify.type = newVal.type
+      }
+    }
+  },
+  mounted () {
+    if (this.access === null) {
+      return
+    }
+    this.modify.username = this.access.user.username
+    this.modify.type = this.access.type
+  },
   methods: {
     submit () {
       this.$refs.form.validate()
@@ -150,16 +153,17 @@ export default {
     },
     async updateAccess () {
       if (this.isModification) {
-        if (this.access.type === 'revoke') {
-          await this.revokeAccess(this.access.user.username)
+        if (this.modify.type === 'revoke') {
+          await this.revokeAccess()
         } else {
-          await this.modifyAccess(this.access.user.username)
+          await this.modifyAccess()
         }
       } else {
-        await this.giveAccess(this.access.user.username)
+        await this.giveAccess()
       }
     },
-    async revokeAccess (username) {
+    async revokeAccess () {
+      const username = this.modify.username
       this.loading = true
       try {
         const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, this.config)
@@ -167,34 +171,46 @@ export default {
         this.$toast.success(`Successfully revoked access of ${username}`)
         this.$emit('close-dialog', { success: true })
       } catch (err) {
+        console.log('revoke access', err)
         this.$toast.error('Could not revoke access to database')
       }
       this.loading = false
     },
-    async modifyAccess (username) {
-      if (this.isModification) {
-        this.modify.username = this.access.user.username
-        this.modify.type = this.access.type
-      }
+    async modifyAccess () {
+      const username = this.modify.username
       this.loading = true
       try {
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, this.modify, this.config)
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, {
+          type: this.modify.type
+        }, this.config)
         console.debug('give access', res.data)
         this.$toast.success('Successfully modified access')
         this.$emit('close-dialog', { success: true })
       } catch (err) {
+        console.log('modify access', err)
         this.$toast.error('Could not modify access to database')
       }
       this.loading = false
     },
-    async giveAccess (username) {
+    async giveAccess () {
+      const username = this.modify.username
       this.loading = true
       try {
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, this.modify, this.config)
+        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.modify, this.config)
         console.debug('give access', res.data)
         this.$toast.success(`Successfully gave ${username} access`)
         this.$emit('close-dialog', { success: true })
       } catch (err) {
+        if (err.response.status === 405) {
+          this.$toast.error(`User ${username} already has access`)
+          this.loading = false
+          return
+        } else if (err.response.status === 404) {
+          this.$toast.error(`User ${username} does not exist`)
+          this.loading = false
+          return
+        }
+        console.log('give access', err)
         this.$toast.error('Could not give access to database')
       }
       this.loading = false

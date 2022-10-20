@@ -56,7 +56,7 @@ public class GatewayConfig {
                         .and()
                         .uri("lb://table-service"))
                 .route("database-service", r -> r.path("/api/container/**/database/**",
-                                "/api/container/**/database/**/access")
+                                "/api/container/**/database/**/access/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
