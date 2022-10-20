@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,8 +33,9 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
-                             IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                             IdentifierService identifierService, TableService tableService,
+                             DatabaseAccessRepository databaseAccessRepository) {
+        super(tableService, databaseService, identifierService, databaseAccessRepository);
         this.queryService = queryService;
     }
 
@@ -47,7 +49,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -66,7 +68,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
         }
@@ -86,7 +88,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
         }
@@ -106,7 +108,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
             QueryMalformedException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -133,7 +135,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException, QueryMalformedException, SortException {
         /* check */
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }

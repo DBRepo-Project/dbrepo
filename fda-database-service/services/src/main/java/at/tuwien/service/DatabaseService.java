@@ -53,7 +53,8 @@ public interface DatabaseService {
      */
     void delete(Long id, Long databaseId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException,
+            DatabaseConnectionException, QueryMalformedException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
@@ -70,7 +71,8 @@ public interface DatabaseService {
      */
     Database create(Long id, DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException;
+            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
+            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException;
 
     /**
      * Updates the visibility of the database.

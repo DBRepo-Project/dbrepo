@@ -148,26 +148,6 @@
                 max-width="860">
                 <PersistDatabase :database="database" @close-dialog="closeDialog" />
               </v-dialog>
-              <v-dialog
-                v-model="editVisibilityDialog"
-                max-width="860">
-                <EditVisibility :database="database" @close-dialog="closeDialog" />
-              </v-dialog>
-            </v-card-actions>
-          </v-card-text>
-        </v-card>
-        <v-divider />
-        <v-card v-if="isCreator" flat tile>
-          <v-card-title>Modify visibility</v-card-title>
-          <v-card-subtitle>Dangerous operation</v-card-subtitle>
-          <v-card-text>
-            <v-card-actions>
-              <v-btn
-                small
-                color="error"
-                @click="editVisibilityDialog = true">
-                Modify
-              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
@@ -180,13 +160,11 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import PersistDatabase from '@/components/dialogs/PersistDatabase'
-import EditVisibility from '@/components/dialogs/EditVisibility'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
   components: {
-    EditVisibility,
     DBToolbar,
     PersistDatabase
   },
@@ -194,7 +172,6 @@ export default {
     return {
       loading: false,
       editDbDialog: false,
-      editVisibilityDialog: false,
       user: {
         username: null
       },
@@ -336,13 +313,6 @@ export default {
         this.$toast.error('Could not load database.')
       }
       this.loading = false
-    },
-    closeDialog (event) {
-      if (event.success) {
-        this.loadDatabase()
-      }
-      this.editDbDialog = false
-      this.editVisibilityDialog = false
     },
     loadUser () {
       if (!this.token) {

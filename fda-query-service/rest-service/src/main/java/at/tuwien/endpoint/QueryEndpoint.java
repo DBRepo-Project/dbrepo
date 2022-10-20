@@ -5,6 +5,7 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,8 +31,9 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                         IdentifierService identifierService, TableService tableService,
+                         DatabaseAccessRepository databaseAccessRepository) {
+        super(tableService, databaseService, identifierService, databaseAccessRepository);
         this.queryService = queryService;
         this.storeService = storeService;
     }

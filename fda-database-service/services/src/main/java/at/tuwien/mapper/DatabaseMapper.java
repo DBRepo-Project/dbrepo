@@ -3,8 +3,11 @@ package at.tuwien.mapper;
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
@@ -72,7 +75,8 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
-        log.trace("raw create statement [{}]", statement);try {
+        log.trace("raw create statement [{}]", statement);
+        try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement");
@@ -109,6 +113,44 @@ public interface DatabaseMapper {
 
     default Principal userDetailsDtoToPrincipal(UserDetailsDto data) {
         return new BasicUserPrincipal(data.getUsername());
+    }
+
+    default DatabaseAccess defaultCreatorAccess(Database database, User user) {
+        final DatabaseAccess access = DatabaseAccess.builder()
+                .hdbid(database.getId())
+                .huserid(user.getId())
+                .type(AccessType.WRITE_ALL)
+                .build();
+        log.debug("give default creator access to database with id {} to user with username {}", database.getId(), user.getUsername());
+        return access;
+    }
+
+    AccessType accessTypeDtoToAccessType(AccessTypeDto data);
+
+    AccessTypeDto accessTypeToAccessTypeDto(AccessType data);
+
+    DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
+
+    default DatabaseAccess databaseGiveAccessDtoToDatabaseAccess(Database database, User user,
+                                                                   DatabaseGiveAccessDto data) {
+        final DatabaseAccess access = DatabaseAccess.builder()
+                .hdbid(database.getId())
+                .huserid(user.getId())
+                .type(accessTypeDtoToAccessType(data.getType()))
+                .build();
+        log.trace("mapped database access {} to database access {}", data, access);
+        return access;
+    }
+
+    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, User user,
+                                                                   DatabaseModifyAccessDto data) {
+        final DatabaseAccess access = DatabaseAccess.builder()
+                .hdbid(database.getId())
+                .huserid(user.getId())
+                .type(accessTypeDtoToAccessType(data.getType()))
+                .build();
+        log.trace("mapped database access {} to database access {}", data, access);
+        return access;
     }
 
 }

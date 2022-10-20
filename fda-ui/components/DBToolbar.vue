@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-toolbar v-if="cached_database" flat>
+    <v-toolbar v-if="db" flat>
       <v-toolbar-title>
-        <span>{{ cached_database.name }}</span>
-        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
-        <v-icon v-if="cached_database.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
+        <span>{{ db.name }}</span>
+        <v-icon v-if="!db.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
+        <v-icon v-if="db.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
@@ -35,6 +35,9 @@
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/view`">
             Views
           </v-tab>
+          <v-tab v-if="isOwner" :to="`/container/${$route.params.container_id}/database/${databaseId}/settings`">
+            Settings
+          </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
@@ -64,19 +67,26 @@ export default {
     }
   },
   computed: {
-    cached_database () {
-      return this.$store.state.db
-    },
     databaseId () {
       return this.$route.params.database_id
     },
     loadingColor () {
       return 'primary'
     },
+    db () {
+      return this.$store.state.db
+    },
     token () {
       return this.$store.state.token
     },
     canModify () {
+      if (!this.user.username) {
+        /* not yet loaded */
+        return false
+      }
+      return this.database.creator.username === this.user.username
+    },
+    isOwner () {
       if (!this.user.username) {
         /* not yet loaded */
         return false
@@ -104,9 +114,6 @@ export default {
   },
   mounted () {
     if (this.database.id) {
-      return
-    }
-    if (this.cached_database && this.cached_database.id === this.$route.params.database_id) {
       return
     }
     this.loadDatabase()

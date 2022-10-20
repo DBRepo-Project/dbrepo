@@ -10,6 +10,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -38,8 +39,9 @@ public class ViewEndpoint extends AbstractEndpoint {
 
     @Autowired
     public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
-                        ViewMapper viewMapper, QueryService queryService) {
-        super(databaseService, identifierService);
+                        ViewMapper viewMapper, QueryService queryService, TableService tableService,
+                        DatabaseAccessRepository databaseAccessRepository) {
+        super(tableService, databaseService, identifierService, databaseAccessRepository);
         this.viewService = viewService;
         this.databaseService = databaseService;
         this.viewMapper = viewMapper;

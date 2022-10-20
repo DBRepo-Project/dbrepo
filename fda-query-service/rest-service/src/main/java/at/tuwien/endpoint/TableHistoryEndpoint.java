@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,8 +26,8 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableHistoryEndpoint(TableService tableService, DatabaseService databaseService,
-                                IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                                IdentifierService identifierService, DatabaseAccessRepository databaseAccessRepository) {
+        super(tableService, databaseService, identifierService, databaseAccessRepository);
         this.tableService = tableService;
     }
 
@@ -39,7 +40,7 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException,
             QueryStoreException, DatabaseConnectionException {
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_HISTORY", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_HISTORY", principal)) {
             log.error("Missing data history permission");
             throw new NotAllowedException("Missing data history permission");
         }

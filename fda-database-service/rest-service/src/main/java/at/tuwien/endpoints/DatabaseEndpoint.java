@@ -2,11 +2,13 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,24 +36,26 @@ import java.util.stream.Collectors;
 public class DatabaseEndpoint extends AbstractEndpoint {
 
     private final DatabaseMapper databaseMapper;
+    private final IdentifierMapper identifierMapper;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final IdentifierService identifierService;
-    private final IdentifierMapper identifierMapper;
     private final MessageQueueService messageQueueService;
+    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
                             MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
                             IdentifierService identifierService, IdentifierMapper identifierMapper,
-                            MessageQueueService messageQueueService) {
+                            MessageQueueService messageQueueService, DatabaseAccessRepository databaseAccessRepository) {
         super(databaseService, containerService);
         this.databaseMapper = databaseMapper;
+        this.identifierMapper = identifierMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
         this.identifierService = identifierService;
-        this.identifierMapper = identifierMapper;
         this.messageQueueService = messageQueueService;
+        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     @GetMapping
@@ -121,7 +125,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
-                                                @NotBlank @PathVariable Long databaseId)
+                                                @NotBlank @PathVariable Long databaseId,
+                                                Principal principal)
             throws DatabaseNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -130,6 +135,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
         } catch (IdentifierNotFoundException e) {
             // ignore
+        }
+        if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
+            /* only creator sees the access rights */
+            final List<DatabaseAccess> accesses = databaseAccessRepository.findByHdbid(databaseId);
+            dto.setAccesses(accesses.stream()
+                    .map(databaseMapper::databaseAccessToDatabaseAccessDto)
+                    .collect(Collectors.toList()));
         }
         log.info("Found database with id {}", database.getId());
         log.debug("found database {}", database);

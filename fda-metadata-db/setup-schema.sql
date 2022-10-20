@@ -6,7 +6,7 @@ BEGIN;
 CREATE
     TYPE gender AS ENUM ('F', 'M', 'T');
 CREATE
-    TYPE accesstype AS ENUM ('R', 'W');
+    TYPE access_type AS ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL');
 CREATE
     TYPE image_environment_type AS ENUM ('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD');
 CREATE
@@ -19,6 +19,10 @@ CREATE
 CREATE
     CAST
     (character varying AS role_type)
+    WITH INOUT AS ASSIGNMENT;
+CREATE
+    CAST
+    (character varying AS access_type)
     WITH INOUT AS ASSIGNMENT;
 
 CREATE SEQUENCE public.mdb_images_environment_item_seq
@@ -543,7 +547,7 @@ CREATE TABLE IF NOT EXISTS mdb_feed
 (
     fDBID   bigint,
     fID     bigint,
-    fUserId INTEGER REFERENCES mdb_USERS (UserID),
+    fUserId bigint REFERENCES mdb_USERS (UserID),
     fDataID INTEGER REFERENCES mdb_DATA (ID),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     FOREIGN KEY (fDBID, fID) REFERENCES mdb_TABLES (tDBID, ID),
@@ -552,7 +556,7 @@ CREATE TABLE IF NOT EXISTS mdb_feed
 
 CREATE TABLE IF NOT EXISTS mdb_update
 (
-    uUserID INTEGER REFERENCES mdb_USERS (UserID),
+    uUserID bigint REFERENCES mdb_USERS (UserID),
     uDBID   bigint REFERENCES mdb_DATABASES (id),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (uUserID, uDBID)
@@ -560,7 +564,7 @@ CREATE TABLE IF NOT EXISTS mdb_update
 
 CREATE TABLE IF NOT EXISTS mdb_access
 (
-    aUserID  INTEGER REFERENCES mdb_USERS (UserID),
+    aUserID  bigint REFERENCES mdb_USERS (UserID),
     aDBID    bigint REFERENCES mdb_DATABASES (id),
     attime   TIMESTAMP,
     download BOOLEAN,
@@ -570,16 +574,16 @@ CREATE TABLE IF NOT EXISTS mdb_access
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
-    hUserID INTEGER REFERENCES mdb_USERS (UserID),
+    hUserID bigint REFERENCES mdb_USERS (UserID),
     hDBID   bigint REFERENCES mdb_DATABASES (id),
-    hType   accesstype,
+    hType   access_type,
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (hUserID, hDBID)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_owns
 (
-    oUserID INTEGER REFERENCES mdb_USERS (UserID),
+    oUserID bigint REFERENCES mdb_USERS (UserID),
     oDBID   bigint REFERENCES mdb_DATABASES (ID),
     created timestamp without time zone NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
