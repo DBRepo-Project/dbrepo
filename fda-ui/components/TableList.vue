@@ -61,6 +61,19 @@
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Table Creator
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      <span>{{ formatCreator(item.creator) }}</span>
+                      <sup>
+                        <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
+                      </sup>
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
                 <v-list-item v-if="createdUTC">
                   <v-list-item-content>
                     <v-list-item-title>
@@ -160,7 +173,7 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
@@ -193,7 +206,10 @@ export default {
         description: null,
         topic: null,
         columns: [],
-        created: null
+        created: null,
+        creator: {
+          username: null
+        }
       },
       dialogDelete: false,
       headers: [
@@ -278,6 +294,9 @@ export default {
     this.pollConsumerStatus()
   },
   methods: {
+    formatCreator (creator) {
+      return formatUser(creator)
+    },
     pickUnit (item) {
       this.column = item
       this.unitDialog = true

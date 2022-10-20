@@ -53,6 +53,12 @@ export default {
       tab: null,
       loading: false,
       error: false,
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
+      },
       user: {
         username: null
       },
@@ -84,7 +90,10 @@ export default {
         /* not yet loaded */
         return false
       }
-      return this.database.creator.username === this.user.username
+      if (this.database.creator.username === this.user.username) {
+        return true
+      }
+      return this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     isOwner () {
       if (!this.user.username) {
@@ -99,6 +108,12 @@ export default {
       }
       return {
         headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    silentConfig () {
+      return {
+        headers: this.config.headers,
+        progress: false
       }
     },
     isPublicOrOwner () {
@@ -129,15 +144,27 @@ export default {
         this.$store.commit('SET_DATABASE', res.data)
       } catch (err) {
         console.error('Could not load database', err)
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.user.username}`, this.silentConfig)
+        this.access = res.data
+        console.debug('check access', this.access)
+      } catch (err) {
+        if (!err.response.status === 401) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

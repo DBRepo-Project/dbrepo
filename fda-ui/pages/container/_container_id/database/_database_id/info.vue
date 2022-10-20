@@ -106,13 +106,6 @@
                     <span v-if="!loading">{{ description }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Created
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="createdUTC" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
                     Database Creator
                   </v-list-item-title>
                   <v-list-item-content>
@@ -122,6 +115,20 @@
                         <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
                       </sup>
                     </span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Database Creation
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="createdUTC" />
+                  </v-list-item-content>
+                  <v-list-item-title v-if="access.type" class="mt-2">
+                    Database Access
+                  </v-list-item-title>
+                  <v-list-item-content v-if="access.type">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    {{ accessDescription.text }}
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
@@ -172,6 +179,12 @@ export default {
     return {
       loading: false,
       editDbDialog: false,
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
+      },
       user: {
         username: null
       },
@@ -246,6 +259,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    silentConfig () {
+      return {
+        headers: this.config.headers,
+        progress: false
+      }
+    },
     pid () {
       return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
@@ -296,6 +315,21 @@ export default {
         return false
       }
       return this.database.identifier.id !== null
+    },
+    accessDescription () {
+      if (!this.access.type) {
+        return
+      }
+      switch (this.access.type) {
+        case 'read':
+          return { text: 'You can read all contents' }
+        case 'write_own':
+          return { text: 'You can write own tables and read all contents' }
+        case 'write_all':
+          return { text: 'You have full access' }
+        default:
+          return { text: null, class: null }
+      }
     }
   },
   mounted () {
@@ -314,11 +348,23 @@ export default {
       }
       this.loading = false
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.user.username}`, this.silentConfig)
+        this.access = res.data
+        console.debug('check access', this.access)
+      } catch (err) {
+        if (!err.response.status === 401) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

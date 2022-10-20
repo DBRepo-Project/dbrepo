@@ -1,10 +1,14 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
@@ -29,12 +33,14 @@ import java.security.Principal;
 public class AccessEndpoint extends AbstractEndpoint {
 
     private final AccessService accessService;
+    private final DatabaseMapper databaseMapper;
 
     @Autowired
     public AccessEndpoint(DatabaseService databaseService, ContainerService containerService,
-                          AccessService accessService) {
+                          AccessService accessService, DatabaseMapper databaseMapper) {
         super(databaseService, containerService);
         this.accessService = accessService;
+        this.databaseMapper = databaseMapper;
     }
 
     @PostMapping
@@ -52,9 +58,12 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Missing give access permission");
             throw new NotAllowedException("Missing give access permission");
         }
-        if (accessService.hasAccess(databaseId, accessDto.getUsername())) {
+        try {
+            accessService.hasAccess(databaseId, accessDto.getUsername());
             log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
             throw new NotAllowedException("Failed to give access to user");
+        } catch (AccessDeniedException e) {
+            /* ignore */
         }
         accessService.giveAccess(containerId, databaseId, accessDto);
         return ResponseEntity.accepted()
@@ -70,20 +79,38 @@ public class AccessEndpoint extends AbstractEndpoint {
                                           @NotBlank @PathVariable("username") String username,
                                           @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                           @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
-        log.debug("endpoint modify access to database, containerId={}, databaseId={}, username={}, accessDto={} principal={}",
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+        log.debug("endpoint modify access to database, containerId={}, databaseId={}, username={}, accessDto={}, principal={}",
                 containerId, databaseId, username, accessDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "MODIFY_ACCESS", principal)) {
             log.error("Missing modify access permission");
             throw new NotAllowedException("Missing modify access permission");
         }
-        if (!accessService.hasAccess(databaseId, username)) {
-            log.error("Failed to modify access to user with username {}, does not have access", username);
-            throw new NotAllowedException("Failed to modify access to user");
-        }
+        accessService.hasAccess(databaseId, username);
         accessService.modifyAccess(containerId, databaseId, username, accessDto);
         return ResponseEntity.accepted()
                 .build();
+    }
+
+    @GetMapping("/{username}")
+    @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseAccessDto> checkAccess(@NotBlank @PathVariable("id") Long containerId,
+                                                         @NotBlank @PathVariable("databaseId") Long databaseId,
+                                                         @NotBlank @PathVariable("username") String username,
+                                                         @NotNull Principal principal) throws NotAllowedException,
+            AccessDeniedException {
+        log.debug("endpoint check access to database, containerId={}, databaseId={}, username={}, principal={}",
+                containerId, databaseId, username, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "CHECK_ACCESS", principal)) {
+            log.error("Missing modify access permission");
+            throw new NotAllowedException("Missing modify access permission");
+        }
+        final DatabaseAccess access = accessService.hasAccess(databaseId, username);
+        final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
+        log.trace("check access resulted in dto {}", dto);
+        return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{username}")
@@ -94,17 +121,14 @@ public class AccessEndpoint extends AbstractEndpoint {
                                           @NotBlank @PathVariable("databaseId") Long databaseId,
                                           @NotBlank @PathVariable("username") String username,
                                           @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint revoke access to database, containerId={}, databaseId={}, username={}, principal={}",
                 containerId, databaseId, username, principal);
         if (!hasDatabasePermission(containerId, databaseId, "REVOKE_ACCESS", principal)) {
             log.error("Missing revoke access permission");
             throw new NotAllowedException("Missing revoke access permission");
         }
-        if (!accessService.hasAccess(databaseId, principal.getName())) {
-            log.error("Failed to revoke access to user with username {}, does not have access", principal.getName());
-            throw new NotAllowedException("Failed to revoke access to user");
-        }
+        accessService.hasAccess(databaseId, principal.getName());
         accessService.revokeAccess(containerId, databaseId, username);
         return ResponseEntity.accepted()
                 .build();

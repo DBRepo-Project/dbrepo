@@ -16,7 +16,7 @@
             </template>
             <template v-if="isCreator" v-slot:item.action="{ item }">
               <v-btn
-                v-if="isCreator && item.user.username !== user.username"
+                :disabled="isCreator && item.user.username === user.username"
                 x-small
                 @click="modifyAccess(item)">
                 Modify
@@ -95,9 +95,9 @@ export default {
         is_public: null
       },
       headers: [
-        { text: 'Username', value: 'user' },
-        { text: 'Access', value: 'type' },
-        { text: '', value: 'action' }
+        { text: 'Username', value: 'user', sortable: false },
+        { text: 'Access', value: 'type', sortable: false },
+        { text: 'Action', value: 'action', sortable: false }
       ],
       accesses: [],
       user: {

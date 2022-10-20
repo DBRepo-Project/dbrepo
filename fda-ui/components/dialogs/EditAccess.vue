@@ -17,18 +17,34 @@
             color="warning">
             <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
           </v-alert>
-          <v-text-field
-            v-model="modify.username"
-            label="Username"
-            :rules="[v => !!v || $t('Required')]"
-            required
-            :disabled="isModification" />
-          <v-select
-            v-model="modify.type"
-            :items="types"
-            :rules="[v => !!v || $t('Required')]"
-            required
-            label="Access type" />
+          <v-row>
+            <v-col>
+              <v-autocomplete
+                v-model="modify.username"
+                :items="users"
+                :loading="loadingUsers"
+                :rules="[v => !!v || $t('Required')]"
+                required
+                hide-no-data
+                hide-selected
+                hide-details
+                item-text="username"
+                item-value="username"
+                :disabled="isModification"
+                single-line
+                label="Username" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-select
+                v-model="modify.type"
+                :items="types"
+                :rules="[v => !!v || $t('Required')]"
+                required
+                label="Access type" />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -73,6 +89,8 @@ export default {
     return {
       valid: false,
       loading: false,
+      loadingUsers: false,
+      users: [],
       error: false,
       types: [
         { text: 'Read', value: 'read' },
@@ -138,6 +156,7 @@ export default {
     }
   },
   mounted () {
+    this.loadUsers()
     if (this.access === null) {
       return
     }
@@ -214,6 +233,18 @@ export default {
         this.$toast.error('Could not give access to database')
       }
       this.loading = false
+    },
+    async loadUsers () {
+      this.loadingUsers = true
+      try {
+        const res = await this.$axios.get('/api/user', this.config)
+        this.users = res.data.filter(u => u.username !== this.database.creator.username)
+        console.debug('users', this.users)
+      } catch (err) {
+        console.log('users', err)
+        this.$toast.error('Failed to load users')
+      }
+      this.loadingUsers = false
     }
   }
 }

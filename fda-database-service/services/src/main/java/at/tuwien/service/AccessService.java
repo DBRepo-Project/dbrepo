@@ -2,10 +2,11 @@ package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.UserNotFoundException;
-import org.springframework.transaction.annotation.Transactional;
 
 public interface AccessService {
 
@@ -16,7 +17,7 @@ public interface AccessService {
      * @param username   The username.
      * @return True if user has access, false otherwise.
      */
-    Boolean hasAccess(Long databaseId, String username);
+    DatabaseAccess hasAccess(Long databaseId, String username) throws AccessDeniedException;
 
     /**
      * Give somebody access to a database of container.

@@ -34,13 +34,18 @@ public abstract class AbstractEndpoint {
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of().contains(permissionCode)) {
+        if (database.getIsPublic() && List.of("").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
         }
         if (principal == null) {
             log.debug("failed to grant permission {} because principal is null", permissionCode);
             return false;
+        }
+        /* view-only operations are allowed on all databases */
+        if (List.of("CHECK_ACCESS").contains(permissionCode)) {
+            log.debug("grant permission {} because of public/private database", permissionCode);
+            return true;
         }
         /* modification operations are limited to the creator */
         if (database.getCreator().getUsername().equals(principal.getName())) {

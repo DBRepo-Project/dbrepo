@@ -5,6 +5,7 @@ import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.exception.UserNotFoundException;
@@ -17,6 +18,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -38,10 +41,13 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional(readOnly = true)
-    public Boolean hasAccess(Long databaseId, String username) {
-        return databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username)
-                .isPresent();
-
+    public DatabaseAccess hasAccess(Long databaseId, String username) throws AccessDeniedException {
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
+        if (optional.isEmpty()) {
+            log.error("Failed to retrieve access, not found");
+            throw new AccessDeniedException("Failed to retrieve access");
+        }
+        return optional.get();
     }
 
     @Override
