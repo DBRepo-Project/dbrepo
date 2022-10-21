@@ -48,7 +48,7 @@ public abstract class AbstractEndpoint {
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_EXECUTE").contains(permissionCode)) {
+        if (database.getIsPublic() && List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL").contains(permissionCode)) {
             log.debug("grant permission {} because database is public", permissionCode);
             return true;
         }
@@ -59,6 +59,19 @@ public abstract class AbstractEndpoint {
         if (principal == null) {
             log.debug("failed to grant permission {} because principal is null", permissionCode);
             return false;
+        }
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId,
+                principal.getName());
+        if (optional.isEmpty()) {
+            log.error("Failed to grant permission {} because user has not access", permissionCode);
+            return false;
+        }
+        final AccessType accessType = optional.get()
+                .getType();
+        /* check view access */
+        if (List.of("QUERY_EXECUTE", "QUERY_PERSIST").contains(permissionCode)) {
+            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+            return true;
         }
         /* modification operations are limited to the creator */
         if (database.getCreator().getUsername().equals(principal.getName())) {

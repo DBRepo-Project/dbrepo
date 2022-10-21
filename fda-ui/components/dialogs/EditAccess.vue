@@ -95,7 +95,7 @@ export default {
       types: [
         { text: 'Read', value: 'read' },
         { text: 'Write access (restricted)', value: 'write_own' },
-        { text: 'Write access', value: 'write_all' },
+        { text: 'Full access', value: 'write_all' },
         { text: 'Revoke all access', value: 'revoke' }
       ],
       modify: {
@@ -131,11 +131,11 @@ export default {
     explanation () {
       switch (this.modify.type) {
         case 'read':
-          return 'read all contents'
+          return 'read all contents and create subsets'
         case 'write_own':
-          return 'write their own tables and read all contents'
+          return 'read all contents, create subsets and write their own tables'
         case 'write_all':
-          return 'write all tables and read all contents'
+          return 'read all contents, create subsets and write all tables'
         default:
           return ''
       }
