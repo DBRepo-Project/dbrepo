@@ -2,6 +2,11 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
         <span v-if="!loadingView">{{ view.name }}</span>
       </v-toolbar-title>
@@ -209,5 +214,14 @@ pre {
 }
 .skeleton-xsmall .v-skeleton-loader__text {
   width: 50px;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
 }
 </style>

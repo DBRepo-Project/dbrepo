@@ -33,11 +33,31 @@ export default {
     token () {
       return this.$store.state.token
     },
-    headers () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    executeFirstUrl () {
+      const page = 0
+      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
+    },
+    executeUrl () {
+      const page = this.options.page - 1
+      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.viewId > 0 ? `/view/${this.viewId}` : `/query/${this.queryId}`) + `/data?${urlParams}`
+    }
+  },
+  watch: {
+    options: {
+      handler () {
+        this.execute()
+      },
+      deep: true
     }
   },
   mounted () {
@@ -55,11 +75,7 @@ export default {
         const data = {
           statement: this.parent.sql
         }
-        const page = 0
-        const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`, data, {
-          headers: this.headers
-        })
+        const res = await this.$axios.put(this.executeFirstUrl, data, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
@@ -85,12 +101,7 @@ export default {
       }
       this.loading = true
       try {
-        const page = this.options.page - 1
-        const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.viewId > 0 ? `/view/${this.viewId}` : `/query/${this.queryId}`) + `/data?${urlParams}`
-        const res = await this.$axios.get(url, {
-          headers: this.headers
-        })
+        const res = await this.$axios.get(this.executeUrl, this.config)
         this.mapResults(res.data)
         this.loading = false
       } catch (err) {
