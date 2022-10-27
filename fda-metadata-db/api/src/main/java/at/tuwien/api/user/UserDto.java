@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class UserDto {
 
     @NotNull
@@ -51,13 +52,17 @@ public class UserDto {
     @Schema(example = "true")
     private Boolean themeDark;
 
+    @EqualsAndHashCode.Exclude
     private List<ContainerDto> containers;
 
+    @EqualsAndHashCode.Exclude
     private List<ContainerDto> databases;
 
+    @EqualsAndHashCode.Exclude
     private List<ContainerDto> identifiers;
 
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     private String password;
 

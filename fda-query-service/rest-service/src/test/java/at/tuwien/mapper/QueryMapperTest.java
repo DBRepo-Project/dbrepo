@@ -12,12 +12,14 @@ import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.QueryService;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
+import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,6 +43,7 @@ import java.util.Map;
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
 
 @Log4j2
 @SpringBootTest
@@ -50,13 +53,14 @@ public class QueryMapperTest extends BaseUnitTest {
     @MockBean
     private ReadyConfig readyConfig;
 
+    @MockBean
+    private Channel channel;
+
+    @MockBean
+    private RabbitMqListenerImpl rabbitMqListener;
+
     @Autowired
     private QueryMapper queryMapper;
-
-    @BeforeEach
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-    }
 
     @Test
     public void dataColumnToObject_succeeds() {
@@ -68,6 +72,8 @@ public class QueryMapperTest extends BaseUnitTest {
                 .columnType(TableColumnType.TIMESTAMP)
                 .internalName("date")
                 .name("Date")
+                .dateFormat(ContainerImageDate.builder().build())
+                .table(TABLE_1)
                 .build();
 
         /* mock */

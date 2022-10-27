@@ -34,6 +34,7 @@ public class QueryDto {
     private Long dbid;
 
     @JsonIgnore
+    @EqualsAndHashCode.Exclude
     @NotNull(message = "created by is required")
     private Long createdBy;
 
