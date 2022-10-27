@@ -24,6 +24,7 @@ spring:
     password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9094
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"

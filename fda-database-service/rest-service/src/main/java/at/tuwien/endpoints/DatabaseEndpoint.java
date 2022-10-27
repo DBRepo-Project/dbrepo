@@ -9,6 +9,7 @@ import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -56,8 +57,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Timed(value = "database.list", description = "Time needed to list the databases")
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> findAll(@NotBlank @PathVariable("id") Long containerId) {
+    public ResponseEntity<List<DatabaseBriefDto>> list(@NotBlank @PathVariable("id") Long containerId) {
+        log.debug("endpoint list databases, containerId={}", containerId);
         final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
@@ -70,13 +73,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .findFirst();
             id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
         });
-        log.info("Found {} databases", databases.size());
-        log.debug("found databases {}", databases);
+        log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
     }
 
     @PostMapping
     @Transactional
+    @Timed(value = "database.create", description = "Time needed to create a database")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
@@ -86,6 +89,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
             QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException {
+        log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
+                principal);
         if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {
             log.error("Missing database create permission");
             throw new NotAllowedException("Missing database create permission");
@@ -94,12 +99,15 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId());
         messageQueueService.updatePermissions(principal);
+        final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
+        log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(databaseMapper.databaseToDatabaseBriefDto(database));
+                .body(dto);
     }
 
     @PutMapping("/{databaseId}/transfer")
     @Transactional
+    @Timed(value = "database.transfer", description = "Time needed to transfer a database visibility")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotBlank @PathVariable("id") Long containerId,
@@ -107,22 +115,27 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
+        log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
+                databaseId, transferDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "TRANSFER_DATABASE", principal)) {
             log.error("Missing database update permission");
             throw new NotAllowedException("Missing database update permission");
         }
         final Database database = databaseService.transfer(containerId, databaseId, transferDto);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        log.trace("update database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
     }
 
     @GetMapping("/{databaseId}")
     @Transactional(readOnly = true)
+    @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId)
             throws DatabaseNotFoundException {
+        log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         try {
@@ -131,20 +144,22 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         } catch (IdentifierNotFoundException e) {
             // ignore
         }
-        log.info("Found database with id {}", database.getId());
-        log.debug("found database {}", database);
+        log.trace("find database resulted in database {}", database);
         return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping("/{databaseId}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasRole('ROLE_DATA_STEWARD')")
+    @Timed(value = "database.delete", description = "Time needed to delete a database")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException {
+        log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
+                principal);
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);

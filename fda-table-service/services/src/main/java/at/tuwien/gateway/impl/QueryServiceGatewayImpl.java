@@ -27,8 +27,7 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
         final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.POST,
                 new HttpEntity<>(null, headers), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
-            log.error("Failed to declare consumer for table with id {}", tableId);
-            log.debug("failed to declare consumer for container with id {} database with id {} table with id {}",
+            log.error("Failed to declare consumer for container with id {} database with id {} table with id {}",
                     containerId, databaseId, tableId);
             throw new AmqpException("Failed to declare consumer");
         }

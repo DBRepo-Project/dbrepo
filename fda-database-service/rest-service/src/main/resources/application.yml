@@ -24,6 +24,7 @@ spring:
     host: broker-service
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"

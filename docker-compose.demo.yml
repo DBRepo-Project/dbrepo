@@ -1,4 +1,6 @@
-# Docker compose file for the public demo instance
+# INFO: This compose file deploys the official Docker images from a stable, tested master branch
+# MODIFIED: 2022-10-19
+# MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
 
@@ -6,6 +8,7 @@ volumes:
   metadata-db-data:
   search-service-data:
   broker-service-data:
+  prometheus-data:
 
 networks:
   core:
@@ -378,3 +381,19 @@ services:
         condition: service_started
     logging:
       driver: json-file
+
+  prometheus:
+    image: prom/prometheus:v2.39.1
+    restart: on-failure
+    container_name: tuw-prometheus
+    hostname: prometheus
+    networks:
+      public:
+      core:
+    env_file:
+      - .env
+    ports:
+      - "4200:9090"
+    volumes:
+      - prometheus-data:/etc/prometheus
+      - ./fda-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml

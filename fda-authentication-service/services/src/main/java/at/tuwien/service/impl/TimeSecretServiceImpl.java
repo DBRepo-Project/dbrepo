@@ -35,9 +35,8 @@ public class TimeSecretServiceImpl implements TimeSecretService {
         /* check */
         final Optional<TimeSecret> entity = tokenRepository.findByToken(token);
         if (entity.isEmpty()) {
-            log.error("Failed to find valid token");
-            log.debug("Failed to find valid token [{}]", token);
-            throw new SecretInvalidException("Failed to find valid token");
+            log.error("Failed to find token: {}", token);
+            throw new SecretInvalidException("Failed to find token");
         }
         return entity.get();
     }
@@ -55,7 +54,7 @@ public class TimeSecretServiceImpl implements TimeSecretService {
                 .build();
         final TimeSecret out = tokenRepository.save(token);
         log.info("Created token with id {}", out.getId());
-        log.debug("created token {}", out);
+        log.trace("created token {}", out);
         return out;
     }
 
@@ -69,12 +68,12 @@ public class TimeSecretServiceImpl implements TimeSecretService {
         user.setEmailVerified(true);
         userRepository.save(user);
         log.info("Verified user with username {}", user.getUsername());
-        log.debug("Verified user {}", user);
+        log.trace("Verified user {}", user);
         /* invalidate */
         token1.setProcessed(true);
         final TimeSecret out = tokenRepository.save(token1);
         log.info("Invalidated token with id {}", out.getId());
-        log.debug("Invalidated token {}", out);
+        log.trace("Invalidated token {}", out);
         return user;
     }
 

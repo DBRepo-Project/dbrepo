@@ -24,11 +24,13 @@ public abstract class AbstractEndpoint {
 
     protected Boolean hasDatabasePermission(Long containerId, Long databaseId, String permissionCode,
                                             Principal principal) {
+        log.debug("validate has database permission, containerId={}, databaseId={}, permissionCode={}, principal={}",
+                containerId, databaseId, permissionCode, principal);
         final Database database;
         try {
             database = databaseService.find(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.error("Failed to find database with id {}", databaseId);
+            log.error("Failed to find database");
             return false;
         }
         if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
@@ -42,12 +44,12 @@ public abstract class AbstractEndpoint {
         }
         /* modification operations are limited to the creator */
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
             return false;
         }
@@ -56,12 +58,14 @@ public abstract class AbstractEndpoint {
     }
 
     protected Boolean hasTablePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
-                                            Principal principal) {
+                                         Principal principal) {
+        log.debug("validate has table permissions, containerId={}, databaseId={}, tableId={}, permissionCode={}, principal={}",
+                containerId, databaseId, tableId, permissionCode, principal);
         final Database database;
         try {
             database = databaseService.find(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.debug("Failed to find database with id {}", databaseId);
+            log.error("Failed to find database");
             return false;
         }
         if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
@@ -75,12 +79,12 @@ public abstract class AbstractEndpoint {
         }
         /* modification operations are limited to the creator */
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
             return false;
         }

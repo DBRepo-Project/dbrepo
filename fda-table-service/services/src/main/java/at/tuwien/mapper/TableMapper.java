@@ -83,7 +83,9 @@ public interface TableMapper {
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
-        return slug.toLowerCase(Locale.ENGLISH);
+        final String name = slug.toLowerCase(Locale.ENGLISH);
+        log.trace("mapped name {} to internal name {}", data, name);
+        return name;
     }
 
     @Mappings({
@@ -145,17 +147,18 @@ public interface TableMapper {
      */
     default PreparedStatement tableToDropTableRawQuery(Connection connection, Table data) throws ImageNotSupportedException, QueryMalformedException {
         if (!data.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final StringBuilder statement = new StringBuilder("DROP TABLE `")
                 .append(data.getInternalName())
                 .append("`;");
-        log.trace("mapped raw drop table query [{}]", statement);
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("prepared statement {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -169,13 +172,14 @@ public interface TableMapper {
      * @return The create table query
      */
     default CreateTableRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
-            throws ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException {
+            throws ImageNotSupportedException, TableMalformedException, QueryMalformedException {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         if (data.getName().isBlank()) {
-            throw new TableMalformedException("Table name cannot be blank");
+            log.error("Failed to map create table statement: table name is blank");
+            throw new TableMalformedException("Failed to map create table statement");
         }
         final StringBuilder query = new StringBuilder("CREATE TABLE `")
                 .append(nameToInternalName(data.getName()))
@@ -186,6 +190,7 @@ public interface TableMapper {
                 .anyMatch(ColumnCreateDto::getPrimaryKey);
         /* create columns */
         if (!primaryColumnExists) {
+            log.trace("primary key column does not exist");
             final ColumnCreateDto idColumn = ColumnCreateDto.builder()
                     .name("id")
                     .primaryKey(true)
@@ -193,7 +198,7 @@ public interface TableMapper {
                     .nullAllowed(false)
                     .unique(true)
                     .build();
-            log.debug("attempt to create id column {}", idColumn);
+            log.trace("attempt to create id column {}", idColumn);
             if (data.getColumns().stream().anyMatch(c -> c.getName().equals("id"))) {
                 log.error("Cannot create id column, it already exists");
                 throw new TableMalformedException("Cannot create id column");
@@ -223,14 +228,14 @@ public interface TableMapper {
         /* create primary key index */
         query.append(", PRIMARY KEY (")
                 .append(String.join(",", data.getColumns()
-                                .stream()
+                        .stream()
                         .filter(ColumnCreateDto::getPrimaryKey)
                         .map(c -> "`" + nameToInternalName(
                                 c.getName()) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(c))
                         .toArray(String[]::new)))
                 .append(")");
         /* create unique indices */
-        log.trace("columns {}", new ArrayList<>(data.getColumns()));
+        log.trace("columns are {}", new ArrayList<>(data.getColumns()));
         data.getColumns()
                 .stream()
                 .filter(c -> Objects.nonNull(c.getUnique()))
@@ -253,37 +258,41 @@ public interface TableMapper {
                         .append(nameToInternalName(c.getForeignKey()))
                         .append("`) ON DELETE CASCADE ON UPDATE RESTRICT"));
         query.append(") WITH SYSTEM VERSIONING;");
-        log.debug("create table query built with {} columns and system versioning", data.getColumns().size());
-        log.debug("raw create table query: [{}]", query);
+        log.trace("create table query built with {} columns and system versioning", data.getColumns().size());
         try {
+            final PreparedStatement pstmt = connection.prepareStatement(query.toString());
+            log.trace("prepared create table statement {}", query);
             return CreateTableRawQuery.builder()
-                    .preparedStatement(connection.prepareStatement(query.toString()))
+                    .preparedStatement(pstmt)
                     .generated(!primaryColumnExists)
                     .build();
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", query, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", query, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
 
     default String tableCreateDtoToSequenceName(TableCreateDto data) {
-        return "seq_" + nameToInternalName(data.getName()) + "_id";
+        final String name = "seq_" + nameToInternalName(data.getName()) + "_id";
+        log.trace("mapped name {} to internal name {}", data.getName(), name);
+        return name;
     }
 
     default PreparedStatement tableToCreateSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException, QueryMalformedException {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final StringBuilder statement = new StringBuilder("CREATE SEQUENCE `")
                 .append(tableCreateDtoToSequenceName(data))
                 .append("` START WITH 1 INCREMENT BY 1;");
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("prepared create sequence statement {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -303,12 +312,12 @@ public interface TableMapper {
         statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
                 .append(data.getInternalName())
                 .append("` FOR SYSTEM_TIME ALL GROUP BY inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
-        log.trace("created history view query [{}]", statement);
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("prepared create sequence statement {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }

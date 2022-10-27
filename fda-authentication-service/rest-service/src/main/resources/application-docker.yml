@@ -33,6 +33,7 @@ spring:
       timeout: 5000
       auth: true
       starttls.enable: true
+management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9097
 logging:

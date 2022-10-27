@@ -46,6 +46,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 ).and();
         /* set permissions on endpoints */
         http.authorizeRequests()
+                /* our internal endpoints */
+                .antMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
                 /* our public endpoints */
                 .antMatchers(HttpMethod.GET, "/api/oai/**").permitAll()
                 .antMatchers("/v3/api-docs.yaml",

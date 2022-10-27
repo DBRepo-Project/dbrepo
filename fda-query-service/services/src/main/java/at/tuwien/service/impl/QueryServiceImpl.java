@@ -89,6 +89,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
@@ -268,7 +269,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) {
             log.error("Failed to parse data, the provided map {} is empty", data.getData());
@@ -382,7 +382,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
         /* check */
         if (!(statement instanceof Select)) {
-            log.error("Query attempts to update the dataset, not a SELECT statement");
+            log.error("Query attempts to update the dataset, malicious statement {}", statement);
             throw new JSQLParserException("Query attempts to update the dataset");
         }
 
@@ -403,7 +403,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
         }
-        log.debug("tables referenced: {}", tables);
+        log.trace("tables referenced: {}", tables);
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
 
         /* Checking if all tables exist */
@@ -422,8 +422,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             if (i) {
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table {} does not exist", tableName);
-                log.debug("table {} does not exist, available tables are {}", tableName, database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
+                log.error("Table with name {} does not exist, available names: {}", tableName,
+                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Table does not exist");
             }
         }
@@ -445,8 +445,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 i = true;
             }
             if (i) {
-                log.error("Column {} does not exist", item);
-                log.debug("column {} does not exist, available columns are {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
+                log.error("Column {} does not exist, available columns are {}", item,
+                        allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Column does not exist");
             }
         }

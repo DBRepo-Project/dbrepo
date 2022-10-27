@@ -24,6 +24,7 @@ spring:
     host: localhost
     username: fda
     password: fda
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
