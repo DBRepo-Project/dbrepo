@@ -9,6 +9,7 @@ import at.tuwien.service.impl.RabbitMqServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -20,6 +21,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
@@ -32,6 +35,7 @@ import static at.tuwien.config.DockerConfig.hostConfig;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
+@ActiveProfiles("test-noelastic")
 public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
     private static final String AMQP_EXCHANGE = "fda";
@@ -72,10 +76,15 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
         /* create amqp */
         final CreateContainerResponse request = dockerClient.createContainerCmd(BROKER_IMAGE + ":" + BROKER_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-public"))
+                .withHostConfig(
+                        hostConfig
+                                .withNetworkMode("fda-public")
+                                .withPortBindings(PortBinding.parse("5671:5671"), PortBinding.parse("5672:5672"))
+                )
                 .withName(BROKER_NAME)
                 .withIpv4Address(BROKER_IP)
                 .withHostName(BROKER_HOSTNAME)
+                .withEnv("RABBITMQ_DEFAULT_USER=fda", "RABBITMQ_DEFAULT_PASS=fda")
                 .exec();
         dockerClient.startContainerCmd(request.getId())
                 .exec();
