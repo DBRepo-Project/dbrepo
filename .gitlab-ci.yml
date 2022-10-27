@@ -1,6 +1,6 @@
 before_script: 
   - "docker version"
-  - "docker-compose version"
+  - "docker compose version"
   - "mvn --version"
   - "df / -h"
 
