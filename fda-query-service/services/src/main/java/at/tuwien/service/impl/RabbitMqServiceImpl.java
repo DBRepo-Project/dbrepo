@@ -64,7 +64,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
-                    log.trace("handle delivery of tuple, consumerTag={}, envelope={}, propertie={}, body=(bytes)",
+                    log.debug("handle delivery of tuple, consumerTag={}, envelope={}, properties={}, body=(bytes)",
                             consumerTag, envelope, properties);
                     final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
                     };

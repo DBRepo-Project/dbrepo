@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.security.Principal;
 import java.sql.Connection;
@@ -335,7 +334,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create temporary table: {}", e.getMessage());
-            log.debug("failed to create temporary table {}", table);
+            log.trace("failed to create temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to create temporary table", e);
         }
@@ -349,7 +348,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException | IOException e) {
             log.error("Failed to insert temporary table: {}", e.getMessage());
-            log.debug("failed to insert temporary table {}", table);
+            log.trace("failed to insert temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to insert temporary table", e);
         }
@@ -359,7 +358,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to drop temporary table: {}", e.getMessage());
-            log.debug("failed to drop temporary table {}", table);
+            log.trace("failed to drop temporary table {}", table);
             throw new TableMalformedException("Failed to drop temporary table", e);
         } finally {
             dataSource.close();

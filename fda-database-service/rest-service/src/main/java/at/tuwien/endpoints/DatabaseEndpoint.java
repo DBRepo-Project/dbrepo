@@ -157,7 +157,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException {
+            QueryMalformedException, BrokerVirtualHostCreationException {
         log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
         final Database database = databaseService.findById(containerId, databaseId);

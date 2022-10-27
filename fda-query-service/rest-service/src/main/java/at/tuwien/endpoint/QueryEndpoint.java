@@ -117,7 +117,7 @@ public class QueryEndpoint extends AbstractEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
             QueryMalformedException, DatabaseConnectionException {
-        log.trace("endpoint export query, containerId={}, databaseId={}, queryId={}, download={}, principal={}",
+        log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, download={}, principal={}",
                 containerId, databaseId, queryId, download, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");

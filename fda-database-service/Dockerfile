@@ -27,6 +27,8 @@ ENV METADATA_PASSWORD=postgres
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SEARCH_ENDPOINT=search-service
+ENV SEARCH_USERNAME=elastic
+ENV SEARCH_PASSWORD=elastic
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 
 COPY ./service_ready /usr/bin

@@ -39,7 +39,7 @@ public abstract class AbstractEndpoint {
         try {
             database = databaseService.find(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.debug("failed to find database with id {}", databaseId);
+            log.error("Failed to find database with id {}", databaseId);
             return false;
         }
         /* view-only operations are allowed on public databases */
@@ -53,7 +53,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         /* modification operations are limited to the creator */
@@ -64,11 +64,11 @@ public abstract class AbstractEndpoint {
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
             return false;
         }
-        log.debug("failed to grant permission {} because database is not owner by the current user", permissionCode);
+        log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
         return false;
     }
 
@@ -107,11 +107,11 @@ public abstract class AbstractEndpoint {
         try {
             database = databaseService.find(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.debug("failed to find database with id {}", databaseId);
+            log.error("Failed to find database with id {}", databaseId);
             return false;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         /* modification operations are limited to the creator */
@@ -138,7 +138,7 @@ public abstract class AbstractEndpoint {
         try {
             database = databaseService.find(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.debug("failed to find database with id {}", databaseId);
+            log.error("Failed to find database with id {}", databaseId);
             return false;
         }
         if (hasPublicIdentifier(databaseId, queryId, permissionCode)) {
@@ -155,12 +155,12 @@ public abstract class AbstractEndpoint {
             return true;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-            log.debug("failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
             return false;
         }
@@ -187,7 +187,7 @@ public abstract class AbstractEndpoint {
             log.debug("grant permission {} because identifier visibility is public", permissionCode);
             return true;
         }
-        log.debug("failed to grant permission {} because identifier visibility is not public", permissionCode);
+        log.error("Failed to grant permission {} because identifier visibility is not public", permissionCode);
         return false;
     }
 
@@ -205,7 +205,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because database is private and principal is null",
+            log.error("Failed to grant permission {} because database is private and principal is null",
                     permissionCode);
             return false;
         }
@@ -214,7 +214,7 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return true;
         }
-        log.debug("failed to grant permission {} because database is private and identifier creator is not the current user", permissionCode);
+        log.error("Failed to grant permission {} because database is private and identifier creator is not the current user", permissionCode);
         return false;
     }
 

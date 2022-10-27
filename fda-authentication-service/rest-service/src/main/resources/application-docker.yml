@@ -20,9 +20,6 @@ spring:
     name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
-  rabbitmq:
-    username: fda
-    password: fda
   mail:
     default-encoding: UTF-8
     host: "${SMTP_HOST}"
@@ -40,8 +37,7 @@ logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    org.springframework.mail.: debug
+    at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: authentication-service

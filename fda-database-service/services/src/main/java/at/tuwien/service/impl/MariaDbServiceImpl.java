@@ -78,7 +78,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
-            log.warn("could not find database with id {}", databaseId);
+            log.error("Failed to find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");
         }
         return database.get();
@@ -143,7 +143,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             preparedStatement1.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create database {}, reason: {}", database, e.getMessage());
-            throw new DatabaseMalformedException("\"Failed to create database", e);
+            throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();
         }

@@ -6,7 +6,6 @@ import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
@@ -28,15 +27,12 @@ import java.util.List;
 @Service
 public class StoreServiceImpl extends HibernateConnector implements StoreService {
 
-    private final QueryMapper queryMapper;
     private final StoreMapper storeMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
 
     @Autowired
-    public StoreServiceImpl(QueryMapper queryMapper, StoreMapper storeMapper, UserService userService,
-                            DatabaseService databaseService) {
-        this.queryMapper = queryMapper;
+    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService) {
         this.storeMapper = storeMapper;
         this.userService = userService;
         this.databaseService = databaseService;
@@ -62,7 +58,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement.executeQuery();
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to find queries, reason: {}", e.getMessage());
+            log.error("Failed to find queries: {}", e.getMessage());
             throw new QueryStoreException("Failed to find queries");
         } finally {
             dataSource.close();
@@ -150,7 +146,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement.executeQuery();
             query.setId(storeMapper.resultSetToId(resultSet));
             log.error("Inserted query {} into the query store of database with id {}", query.getQuery(), databaseId);
-            log.debug("inserted query {} into the query store of database {}", query, database);
+            log.trace("inserted query {} into the query store of database {}", query, database);
             return query;
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
