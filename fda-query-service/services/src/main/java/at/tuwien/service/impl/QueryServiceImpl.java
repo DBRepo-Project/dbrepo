@@ -162,12 +162,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
-        final InputStream inputStream;
+        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableToRawExportQuery(connection, table, timestamp, filename);
             preparedStatement.executeUpdate();
-            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+            final File file = new File("/tmp/" + filename);
+            resource = new InputStreamResource(FileUtils.openInputStream(file));
+            FileUtils.forceDelete(file);
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
@@ -175,7 +177,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }
@@ -192,12 +194,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
-        final InputStream inputStream;
+        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawExportQuery(connection, query, filename);
             preparedStatement.executeUpdate();
-            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+            final File file = new File("/tmp/" + filename);
+            resource = new InputStreamResource(FileUtils.openInputStream(file));
+            FileUtils.forceDelete(file);
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
@@ -205,7 +209,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }
@@ -339,9 +343,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)
                     .executeUpdate();
+            final File file = new File(data.getLocation());
+            FileUtils.forceDelete(file);
             queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
                     .executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             log.error("Failed to insert temporary table: {}", e.getMessage());
             log.debug("failed to insert temporary table {}", table);
             dataSource.close();
