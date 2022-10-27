@@ -82,7 +82,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, SortException, PaginationException {
+            DatabaseConnectionException, SortException, PaginationException, UserNotFoundException {
         /* check */
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
             log.error("Missing re-execute query permission");
@@ -90,9 +90,9 @@ public class QueryEndpoint extends AbstractEndpoint {
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
-        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size,
-                sortDirection, sortColumn);
+                sortDirection, sortColumn, principal);
         result.setId(queryId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);
@@ -108,13 +108,13 @@ public class QueryEndpoint extends AbstractEndpoint {
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
-            QueryMalformedException, DatabaseConnectionException {
+            QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");
             throw new NotAllowedException("Missing export query permission");
         }
-        storeService.findOne(containerId, databaseId, queryId);
-        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
+        storeService.findOne(containerId, databaseId, queryId, principal);
+        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);
         if (download != null) {
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

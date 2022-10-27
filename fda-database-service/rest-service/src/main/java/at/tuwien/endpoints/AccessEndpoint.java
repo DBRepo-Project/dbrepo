@@ -4,10 +4,7 @@ import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.NotAllowedException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
@@ -51,7 +48,8 @@ public class AccessEndpoint extends AbstractEndpoint {
                                         @NotBlank @PathVariable("databaseId") Long databaseId,
                                         @Valid @RequestBody DatabaseGiveAccessDto accessDto,
                                         @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
+            DatabaseMalformedException {
         log.debug("endpoint give access to database, containerId={}, databaseId={}, accessDto={}, principal={}",
                 containerId, databaseId, accessDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "GIVE_ACCESS", principal)) {
@@ -79,7 +77,8 @@ public class AccessEndpoint extends AbstractEndpoint {
                                           @NotBlank @PathVariable("username") String username,
                                           @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                           @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify access to database, containerId={}, databaseId={}, username={}, accessDto={}, principal={}",
                 containerId, databaseId, username, accessDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "MODIFY_ACCESS", principal)) {
@@ -121,7 +120,8 @@ public class AccessEndpoint extends AbstractEndpoint {
                                           @NotBlank @PathVariable("databaseId") Long databaseId,
                                           @NotBlank @PathVariable("username") String username,
                                           @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint revoke access to database, containerId={}, databaseId={}, username={}, principal={}",
                 containerId, databaseId, username, principal);
         if (!hasDatabasePermission(containerId, databaseId, "REVOKE_ACCESS", principal)) {

@@ -85,7 +85,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
-                                                   Principal principal)
+                                                   @NotNull Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
@@ -96,7 +96,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         }
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createExchange(database, principal);
-        queryStoreService.create(containerId, database.getId());
+        queryStoreService.create(containerId, database.getId(), principal);
         messageQueueService.updatePermissions(principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(databaseMapper.databaseToDatabaseBriefDto(database));
@@ -156,7 +156,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException {
+            DatabaseConnectionException, QueryMalformedException, BrokerVirtualHostCreationException,
+            UserNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);

@@ -12,6 +12,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -126,9 +128,10 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     @Test
     public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException {
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -137,13 +140,14 @@ public class QueryServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, principal);
     }
 
     @Test
     public void selectAll_noTable_fails() {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -153,7 +157,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size);
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, principal);
         });
     }
 
@@ -161,6 +165,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     public void selectAll_noDatabase_fails() {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -170,7 +175,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size);
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, principal);
         });
     }
 
@@ -179,6 +184,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "some_value"))
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -188,14 +194,15 @@ public class QueryServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, principal);
         });
     }
 
     @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException {
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -204,14 +211,15 @@ public class QueryServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, principal);
     }
 
     @Test
     public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException {
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -220,7 +228,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, principal);
     }
 
 }

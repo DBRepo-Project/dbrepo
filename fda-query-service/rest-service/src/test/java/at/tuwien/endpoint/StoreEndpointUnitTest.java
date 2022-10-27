@@ -43,11 +43,11 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException {
+            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true))
+        when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal))
                 .thenReturn(List.of(QUERY_1));
 
         /* test */
@@ -60,11 +60,11 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_succeeds() throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException, DatabaseConnectionException {
+            ImageNotSupportedException, UserNotFoundException, NotAllowedException, DatabaseConnectionException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
+        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal))
                 .thenReturn(QUERY_1);
 
         /* test */
@@ -75,11 +75,11 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_notFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
+            ImageNotSupportedException, QueryStoreException, UserNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
+        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal))
                 .thenThrow(QueryNotFoundException.class);
 
         /* test */
@@ -90,11 +90,11 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_dbNotFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
+            ImageNotSupportedException, QueryStoreException, UserNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
+        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal))
                 .thenThrow(DatabaseNotFoundException.class);
 
         /* test */

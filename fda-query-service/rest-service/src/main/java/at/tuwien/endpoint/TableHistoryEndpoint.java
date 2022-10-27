@@ -39,12 +39,12 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
                                                         @NotNull @PathVariable("tableId") Long tableId,
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException,
-            QueryStoreException, DatabaseConnectionException {
+            QueryStoreException, DatabaseConnectionException, UserNotFoundException {
         if (!hasTablePermission(containerId, databaseId, tableId, "DATA_HISTORY", principal)) {
             log.error("Missing data history permission");
             throw new NotAllowedException("Missing data history permission");
         }
-        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId);
+        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId, principal);
         return ResponseEntity.ok(history);
     }
 

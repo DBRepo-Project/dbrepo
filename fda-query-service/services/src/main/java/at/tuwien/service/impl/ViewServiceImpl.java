@@ -73,8 +73,10 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* find */
         final View view = findById(databaseId, id, principal);
         final Database database = databaseService.find(containerId, databaseId);
+        final User user = userService.findByUsername(principal.getName());
         /* delete view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                database.getContainer(), database, user);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewToRawDeleteViewQuery(connection, view);
@@ -100,7 +102,8 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         final Database database = databaseService.find(containerId, databaseId);
         final User user = userService.findByUsername(principal.getName());
         /* create view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                database.getContainer(), database, user);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);

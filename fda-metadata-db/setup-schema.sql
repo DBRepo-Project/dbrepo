@@ -3,6 +3,8 @@ CREATE DATABASE root;
 
 BEGIN;
 
+-- TYPES
+
 CREATE
     TYPE gender AS ENUM ('F', 'M', 'T');
 CREATE
@@ -11,6 +13,8 @@ CREATE
     TYPE image_environment_type AS ENUM ('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD');
 CREATE
     TYPE role_type AS ENUM ('ROLE_RESEARCHER', 'ROLE_DEVELOPER', 'ROLE_DATA_STEWARD');
+
+-- CASTS
 
 CREATE
     CAST
@@ -24,6 +28,8 @@ CREATE
     CAST
     (character varying AS access_type)
     WITH INOUT AS ASSIGNMENT;
+
+-- SEQUENCES
 
 CREATE SEQUENCE public.mdb_images_environment_item_seq
     START WITH 1
@@ -151,6 +157,8 @@ CREATE SEQUENCE public.mdb_tokens_seq
     NO MAXVALUE
     CACHE 1;
 
+-- TABLES
+
 CREATE TABLE IF NOT EXISTS mdb_users
 (
     UserID               bigint                      not null DEFAULT nextval('mdb_user_seq'),
@@ -168,6 +176,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     Main_Email           VARCHAR(255)                not null,
     main_email_verified  bool                        not null default false,
     password             VARCHAR(255)                not null,
+    database_password    VARCHAR(255)                not null,
     created              timestamp without time zone NOT NULL DEFAULT NOW(),
     last_modified        timestamp without time zone,
     PRIMARY KEY (UserID),
@@ -590,11 +599,7 @@ CREATE TABLE IF NOT EXISTS mdb_owns
 );
 
 COMMIT;
-
 BEGIN;
-
-INSERT INTO mdb_users (username, Main_Email, password)
-VALUES ('system', 'noreply@dbrepo.ossdip.at', (SELECT md5(random()::text)));
 
 INSERT INTO mdb_licenses (identifier, uri)
 VALUES ('MIT', 'https://opensource.org/licenses/MIT'),

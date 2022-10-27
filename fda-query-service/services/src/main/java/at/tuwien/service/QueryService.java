@@ -38,6 +38,7 @@ public interface QueryService {
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws QueryMalformedException    The query is malformed.
      */
     QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
                            QueryTypeDto type, Principal principal, Long page, Long size,
@@ -56,19 +57,20 @@ public interface QueryService {
      * @param size          The page size.
      * @param sortDirection The sorting direction.
      * @param sortColumn    The sorting column.
+     * @param principal     The user principal.
      * @return The result.
-     * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryMalformedException    The query is malformed.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table is malformed.
      * @throws ColumnParseException       The column mapping/parsing failed.
+     * @throws QueryMalformedException    The query is malformed.
      */
     QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
-                             SortType sortDirection, String sortColumn)
+                             SortType sortDirection, String sortColumn, Principal principal)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
-            DatabaseConnectionException, TableMalformedException, QueryStoreException;
+            DatabaseConnectionException, TableMalformedException, QueryStoreException, UserNotFoundException;
 
     /**
      * Select all data known in the database-table id tuple at a given time and return a page of specific size, using
@@ -80,17 +82,19 @@ public interface QueryService {
      * @param timestamp   The given time.
      * @param page        The page.
      * @param size        The page size.
+     * @param principal   The user principal.
      * @return The select all data result
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      * @throws TableMalformedException    The table is malformed.
+     * @throws QueryMalformedException    The query is malformed.
      */
     QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp,
-                           Long page, Long size) throws TableNotFoundException, DatabaseNotFoundException,
+                           Long page, Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException;
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Select all data known in the database-table id tuple at a given time and return a downloadable input stream
@@ -101,6 +105,7 @@ public interface QueryService {
      * @param databaseId  The container-database id pair.
      * @param tableId     The table id.
      * @param timestamp   The given time.
+     * @param principal   The user principal.
      * @return The select all data result in the form of a downloadable .csv file.
      * @throws ContainerNotFoundException  The container was not found in the metadata database.
      * @throws TableNotFoundException      The table was not found in the metadata database.
@@ -109,11 +114,12 @@ public interface QueryService {
      * @throws ImageNotSupportedException  The image is not supported.
      * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
      * @throws FileStorageException        The file could not be exported.
+     * @throws QueryMalformedException     The query is malformed.
      */
-    ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+    ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, QueryMalformedException;
+            FileStorageException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Finds one query by container-database-query triple.
@@ -121,6 +127,7 @@ public interface QueryService {
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param queryId     The query id.
+     * @param principal   The user principal.
      * @return The query result in the form  of a downloadable .csv file.
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
      * @throws ImageNotSupportedException The image is not supported.
@@ -129,10 +136,11 @@ public interface QueryService {
      * @throws FileStorageException       The file could not be exported.
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryNotFoundException     THe query was not found in the query store.
+     * @throws QueryMalformedException    The query is malformed.
      */
-    ExportResource findOne(Long containerId, Long databaseId, Long queryId)
+    ExportResource findOne(Long containerId, Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
-            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException, DatabaseConnectionException;
+            ContainerNotFoundException, FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException;
 
     /**
      * Count the total tuples for a given table id within a container-database id tuple at a given time.
@@ -141,6 +149,7 @@ public interface QueryService {
      * @param databaseId  The database id.
      * @param tableId     The table id.
      * @param timestamp   The time.
+     * @param principal   The user principal.
      * @return The number of records, if successful
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
@@ -148,13 +157,26 @@ public interface QueryService {
      * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      */
-    Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp)
+    Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
-            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException;
+            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
 
-    void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
+    /**
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param data
+     * @param principal   The user principal.
+     * @throws ImageNotSupportedException  The image is not supported.
+     * @throws TableMalformedException     The table does not exist in the metadata database.
+     * @throws DatabaseNotFoundException   The database was not found in the remote database.
+     * @throws TableNotFoundException      The table was not found in the metadata database.
+     * @throws DatabaseConnectionException The database was not found in the remote database.
+     * @throws QueryMalformedException     The query is malformed.
+     */
+    void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, DatabaseConnectionException, QueryMalformedException;
+            TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
@@ -164,14 +186,15 @@ public interface QueryService {
      * @param databaseId  The database id.
      * @param tableId     The table id.
      * @param data        The data.
+     * @param principal   The user principal.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
      */
-    void insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException;
+    void insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data, Principal principal) throws ImageNotSupportedException,
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException;
 
     /**
      * Deletes a tuple by given constraint set
@@ -180,15 +203,17 @@ public interface QueryService {
      * @param databaseId  The database id.
      * @param tableId     The table id.
      * @param data        The constraint set.
+     * @param principal   The user principal.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
      * @throws TupleDeleteException       The tuple was not deleted.
+     * @throws QueryMalformedException    The query is malformed.
      */
-    void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data)
+    void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
+            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the
@@ -197,12 +222,14 @@ public interface QueryService {
      * @param databaseId The database id.
      * @param tableId    The table id.
      * @param data       The data path.
+     * @param principal  The user principal.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws QueryMalformedException    The query is malformed.
      */
-    void insert(Long containerId, Long databaseId, Long tableId, ImportDto data) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException;
+    void insert(Long containerId, Long databaseId, Long tableId, ImportDto data, Principal principal) throws ImageNotSupportedException,
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 }

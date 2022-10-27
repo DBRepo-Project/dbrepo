@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +16,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 @Log4j2
 @Service
@@ -48,7 +48,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 }
 
                 @Override
-                public void handleCancel(String consumerTag) throws IOException {
+                public void handleCancel(String consumerTag) {
                     //
                 }
 
@@ -63,7 +63,8 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 }
 
                 @Override
-                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
+                public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties,
+                                           byte[] body) {
                     final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
                     };
                     try {
@@ -71,7 +72,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                                 .data(objectMapper.readValue(body, payloadReference))
                                 .build();
                         log.debug("received tuple data {}", data);
-                        queryService.insert(containerId, databaseId, tableId, data);
+                        queryService.insert(containerId, databaseId, tableId, data, new BasicUserPrincipal(properties.getUserId()));
                     } catch (IOException e) {
                         log.error("Failed to parse for table with id {}, because {}", tableId, e.getMessage());
                         /* ignore */
@@ -98,13 +99,16 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                     } catch (DatabaseConnectionException e) {
                         log.error("Failed to connect to container with id {}", containerId);
                         /* ignore */
+                    } catch (UserNotFoundException e) {
+                        log.error("Failed to find user with id {}", properties.getUserId());
+                        /* ignore */
                     }
                 }
             });
             log.info("Declared consumer for table topic {}", routingKey);
             log.debug("declared consumer for table topic {} with tag {}", routingKey, consumerTag);
         } catch (IOException e) {
-            log.error("Failed to create consumer for table with id {}, because", tableId, e.getMessage());
+            log.error("Failed to create consumer for table with id {}, reason {}", tableId, e.getMessage());
             throw new AmqpException("Failed to create consumer", e);
         } catch (Exception e) {
             log.error("Failed unknown: {}", e.getMessage());

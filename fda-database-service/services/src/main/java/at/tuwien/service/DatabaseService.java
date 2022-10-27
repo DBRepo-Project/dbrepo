@@ -54,7 +54,7 @@ public interface DatabaseService {
     void delete(Long id, Long databaseId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException;
+            DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.

@@ -2,11 +2,15 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
+import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -14,6 +18,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.sql.Connection;
@@ -22,6 +27,7 @@ import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {ContainerMapper.class})
 public interface DatabaseMapper {
@@ -52,6 +58,28 @@ public interface DatabaseMapper {
         return data.getRepository() + ":" + data.getTag();
     }
 
+    @Transactional(readOnly = true)
+    default User containerToPrivilegedUser(Container container) {
+        final String username = container.getImage()
+                .getEnvironment()
+                .stream()
+                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME))
+                .map(ContainerImageEnvironmentItem::getValue)
+                .collect(Collectors.toList())
+                .get(0);
+        final String password = container.getImage()
+                .getEnvironment()
+                .stream()
+                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD))
+                .map(ContainerImageEnvironmentItem::getValue)
+                .collect(Collectors.toList())
+                .get(0);
+        return User.builder()
+                .username(username)
+                .databasePassword(password)
+                .build();
+    }
+
     @Mappings({
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "engine", source = "container.image", qualifiedByName = "engineMapping"),
@@ -71,6 +99,21 @@ public interface DatabaseMapper {
     })
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
+    default PreparedStatement userToRawCreateUserQuery(Connection connection, User user) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("CREATE USER `")
+                .append(user.getUsername())
+                .append("`@`%` IDENTIFIED BY PASSWORD '")
+                .append(user.getDatabasePassword())
+                .append("';");
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
     default PreparedStatement databaseToRawCreateDatabaseQuery(Connection connection, Database database) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
@@ -85,9 +128,67 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement imageToRawGrantReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
+    default DatabaseGiveAccessDto databaseModifyAccessToDatabaseGiveAccessDto(String username, DatabaseModifyAccessDto data) {
+        return DatabaseGiveAccessDto.builder()
+                .username(username)
+                .type(data.getType())
+                .build();
+    }
+
+    default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, User user) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.trace("raw grant all privileges statement [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawRevokeUserAccessQuery(Connection connection, User user) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* TO `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.trace("raw revoke all privileges statement [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawGrantUserAccessQuery(Connection connection, DatabaseGiveAccessDto data)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT ");
+        switch (data.getType()) {
+            case READ:
+                statement.append("SELECT");
+            case WRITE_ALL:
+            case WRITE_OWN: // todo restrict the access right
+                statement.append("CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE");
+        }
+        statement.append(" ON *.* TO `")
+                .append(data.getUsername())
+                .append("`@`%`;");
+        log.trace("raw grant readonly privileges statement [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement");
+            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
-        log.trace("raw grant readonly statement [{}]", statement);
+        log.trace("raw grant readonly privileges statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -132,7 +233,7 @@ public interface DatabaseMapper {
     DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
 
     default DatabaseAccess databaseGiveAccessDtoToDatabaseAccess(Database database, User user,
-                                                                   DatabaseGiveAccessDto data) {
+                                                                 DatabaseGiveAccessDto data) {
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
                 .huserid(user.getId())

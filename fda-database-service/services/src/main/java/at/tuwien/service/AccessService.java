@@ -3,10 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.NotAllowedException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 
 public interface AccessService {
 
@@ -29,10 +26,10 @@ public interface AccessService {
      * @throws UserNotFoundException     The authenticated user was not found in the metadata database.
      */
     void giveAccess(Long containerId, Long databaseId, DatabaseGiveAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 
     void modifyAccess(Long containerId, Long databaseId, String username, DatabaseModifyAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 
     /**
      * Revokes access to a database of container.
@@ -44,5 +41,5 @@ public interface AccessService {
      * @throws UserNotFoundException     The authenticated user was not found in the metadata database.
      */
     void revokeAccess(Long containerId, Long databaseId, String username)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 }

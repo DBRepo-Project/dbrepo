@@ -1,16 +1,20 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.DatabaseConnectionException;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryStoreService;
+import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -19,18 +23,22 @@ import java.sql.SQLException;
 @Service
 public class QueryStoreServiceImpl extends HibernateConnector implements QueryStoreService {
 
+    private final UserService userService;
     private final DatabaseService databaseService;
 
     @Autowired
-    public QueryStoreServiceImpl(DatabaseService databaseService) {
+    public QueryStoreServiceImpl(UserService userService, DatabaseService databaseService) {
+        this.userService = userService;
         this.databaseService = databaseService;
     }
 
     @Override
-    public void create(Long containerId, Long databaseId) throws DatabaseNotFoundException, DatabaseConnectionException, DatabaseMalformedException {
+    public void create(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
+            DatabaseConnectionException, DatabaseMalformedException, UserNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
+        final User user = userService.findByUsername(principal.getName());
         /* create */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, user);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement10 = connection.prepareStatement("CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`");

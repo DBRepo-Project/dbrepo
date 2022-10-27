@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.auth.MariaDbPassword;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -102,6 +103,7 @@ public class UserServiceImpl implements UserService {
         user.setRoles(List.of(RoleType.ROLE_RESEARCHER));
         user.setThemeDark(false);
         user.setPassword(passwordEncoder.encode(data.getPassword()));
+        user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         final User entity;
         try {
             entity = userRepository.save(user);
@@ -231,6 +233,7 @@ public class UserServiceImpl implements UserService {
         /* save */
         final String passwd = passwordEncoder.encode(data.getPassword());
         user.setPassword(passwd);
+        user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         log.debug("mapped password {} to updated user {}", passwd, user);
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());

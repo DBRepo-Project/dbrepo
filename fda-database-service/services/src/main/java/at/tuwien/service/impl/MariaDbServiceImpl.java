@@ -1,11 +1,9 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
@@ -92,14 +90,15 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Transactional
     public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException {
+            DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
         final Container container = containerService.find(containerId);
         final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
+        final User user = userService.findByUsername(principal.getName());
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, user);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);
@@ -133,18 +132,24 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             log.error("Currently we only support one database per container.");
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }
+        final User root = databaseMapper.containerToPrivilegedUser(container);
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         database.setContainer(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
             /* create database */
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawCreateDatabaseQuery(connection, database);
             preparedStatement.executeUpdate();
-            /* grant read-only access */
-            final PreparedStatement preparedStatement1 = databaseMapper.imageToRawGrantReadonlyAccessQuery(connection);
+            /* create user */
+            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, root);
             preparedStatement1.executeUpdate();
+            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantCreatorAccessQuery(connection, root);
+            preparedStatement2.executeUpdate();
+            /* grant read-only access */
+            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
+            preparedStatement3.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create database");
             log.debug("failed to create database {}, reason: {}", database, e.getMessage());

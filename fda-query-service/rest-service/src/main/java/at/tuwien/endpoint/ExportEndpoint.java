@@ -47,13 +47,13 @@ public class ExportEndpoint extends AbstractEndpoint {
                                                       Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, NotAllowedException, QueryMalformedException {
+            FileStorageException, NotAllowedException, QueryMalformedException, UserNotFoundException {
         if (!hasTablePermission(id, databaseId, tableId, "TABLE_EXPORT", principal)) {
             log.error("Missing data export permission");
             throw new NotAllowedException("Missing data export permission");
         }
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResource resource = queryService.findAll(id, databaseId, tableId, timestamp);
+        final ExportResource resource = queryService.findAll(id, databaseId, tableId, timestamp, principal);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         return ResponseEntity.ok()
                 .headers(headers)

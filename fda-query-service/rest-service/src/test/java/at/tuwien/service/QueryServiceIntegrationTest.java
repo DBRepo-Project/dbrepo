@@ -12,6 +12,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.junit.jupiter.api.*;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -178,11 +180,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, TableNotFoundException, DatabaseConnectionException,
-            PaginationException, ContainerNotFoundException, QueryMalformedException {
+            PaginationException, ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
-                null, null);
+                null, null, principal);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
         assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(COLUMN_1_2_INTERNAL_NAME));
