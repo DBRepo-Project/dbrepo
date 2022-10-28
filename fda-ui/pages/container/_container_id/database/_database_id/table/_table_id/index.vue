@@ -144,6 +144,17 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    downloadConfig () {
+      if (this.token === null) {
+        return {
+          responseType: 'text'
+        }
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` },
+        responseType: 'text'
+      }
+    },
     versionColor () {
       if (this.version === null) {
         return 'secondary white--text'
@@ -192,19 +203,13 @@ export default {
   },
   methods: {
     async download () {
-      if (!this.token) {
-        return
-      }
       this.downloadLoading = true
       try {
         let exportUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`
         if (this.version) {
           exportUrl += `?timestamp=${this.versionISO}`
         }
-        const res = await this.$axios.get(exportUrl, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          responseType: 'text'
-        })
+        const res = await this.$axios.get(exportUrl, this.downloadConfig)
         console.debug('export table', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
