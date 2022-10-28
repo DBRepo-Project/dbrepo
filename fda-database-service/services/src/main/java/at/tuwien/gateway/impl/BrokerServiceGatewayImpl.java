@@ -41,7 +41,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerVirtualHostCreationException("Failed to create virtual host");
         }
         log.info("Create virtual host with name {}", data.getName());
-        log.debug("create virtual host {}", data);
     }
 
     @Override
@@ -55,7 +54,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerVirtualHostCreationException("Failed to grant exchange");
         }
         log.info("Grant exchange for user with username {}", username);
-        log.debug("grant exchange {}", data);
     }
 
     @Override
@@ -69,7 +67,6 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerVirtualHostCreationException("Failed to grant virtual host");
         }
         log.info("Grant permission for user with username {}", username);
-        log.debug("grant permission {}", data);
     }
 
 }

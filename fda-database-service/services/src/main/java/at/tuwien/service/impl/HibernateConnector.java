@@ -5,13 +5,10 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.DatabaseConnectionException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -45,6 +42,7 @@ public abstract class HibernateConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
+        log.trace("mapped data source {}", dataSource);
         return dataSource;
     }
 

@@ -1,4 +1,6 @@
-# Docker compose file for the public demo instance
+# INFO: This compose file deploys the official Docker images from a stable, tested master branch
+# MODIFIED: 2022-10-19
+# MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
 

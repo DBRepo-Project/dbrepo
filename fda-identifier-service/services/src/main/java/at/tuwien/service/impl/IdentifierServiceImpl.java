@@ -113,6 +113,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         tmp.setCreator(creator);
         tmp.setCreators(List.of());
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
+            log.debug("identifier describes a subset");
             final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
             tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
             tmp.setQuery(query.getQuery());
@@ -123,6 +124,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             tmp.setResultNumber(query.getResultNumber());
             tmp.setResultHash(query.getResultHash());
         } else if (data.getType().equals(IdentifierTypeDto.DATABASE)) {
+            log.debug("identifier describes a database");
             tmp.setVisibility(identifierMapper.databaseToVisibilityType(database));
         } else {
             log.error("Failed to map identifier type: {}", data.getType());
@@ -150,7 +152,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
-        log.debug("created identifier {}", identifier);
+        log.trace("created identifier {}", identifier);
         return identifier;
     }
 
@@ -172,6 +174,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* map */
         final InputStreamResource resource = documentMapper.identifierToInputStreamResource(identifier);
+        log.debug("mapped file stream {}", resource.getDescription());
         return ExportResource.builder()
                 .filename("metadata.xml")
                 .resource(resource)
@@ -200,7 +203,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.error("Failed to open export file: {}", e.getMessage());
             throw new IdentifierRequestException("Failed to open export file", e);
         }
-        log.debug("found resource {}", resource.getFilename());
+        log.trace("found resource {}", resource);
         return resource;
     }
 
@@ -213,7 +216,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* update */
         final Identifier entityUpdated = identifierRepository.save(identifierMapper.identifierDtoToIdentifier(data));
         log.info("Updated identifier with id {}", identifierId);
-        log.debug("updated identifier {}", entityUpdated);
+        log.trace("updated identifier {}", entityUpdated);
         return entityUpdated;
     }
 
@@ -230,7 +233,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(visibility));
         final Identifier entity = identifierRepository.save(identifier);
         log.info("Published identifier with id {}", identifierId);
-        log.debug("published identifier {}", entity);
+        log.trace("published identifier {}", entity);
         return entity;
     }
 
@@ -242,7 +245,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* delete */
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);
-        log.debug("deleted identifier {}", identifier);
+        log.trace("deleted identifier {}", identifier);
     }
 
 }

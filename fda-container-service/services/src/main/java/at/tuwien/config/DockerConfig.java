@@ -20,6 +20,9 @@ public class DockerConfig {
     @Value("${fda.mount.path}")
     private String mountPath;
 
+    @Value("${fda.network}")
+    private String userNetwork;
+
     @Bean
     public HostConfig hostConfig() {
         return HostConfig.newHostConfig()

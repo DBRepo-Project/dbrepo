@@ -27,6 +27,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     public void createUser(String username, SignupRequestDto data) throws BrokerUserCreationException {
+        log.debug("broker service create user, username={}, data={}", username, data);
         final CreateUserDto userDto = CreateUserDto.builder()
                 .password(data.getPassword())
                 .tags("")
@@ -37,6 +38,7 @@ public class QueueServiceImpl implements QueueService {
 
     @Override
     public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException {
+        log.debug("broker service create user, user={}, data={}", user, data);
         final CreateUserDto userDto = CreateUserDto.builder()
                 .password(data.getPassword())
                 .tags("")

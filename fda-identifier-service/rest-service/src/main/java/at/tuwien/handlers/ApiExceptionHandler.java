@@ -14,6 +14,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(DatabaseNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.databasenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(IdentifierAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyExistsException e, WebRequest request) {
@@ -58,6 +69,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IdentifierRequestException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierRequestException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.requestinvalid")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(QueryNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryNotFoundException e, WebRequest request) {
@@ -76,6 +98,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NO_CONTENT)
                 .message(e.getLocalizedMessage())
                 .code("error.identifier.remote")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.usernotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

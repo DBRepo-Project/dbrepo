@@ -570,7 +570,7 @@ CREATE TABLE IF NOT EXISTS mdb_access
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
-    hUserID INTEGER REFERENCES mdb_USERS (UserID),
+    hUserID bigint REFERENCES mdb_USERS (UserID),
     hDBID   bigint REFERENCES mdb_DATABASES (id),
     hType   accesstype,
     created timestamp without time zone NOT NULL DEFAULT NOW(),

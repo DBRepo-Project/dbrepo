@@ -8,6 +8,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.MailService;
 import at.tuwien.service.TimeSecretService;
 import at.tuwien.service.UserService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,23 +45,29 @@ public class TimeSecretEndpoint {
 
     @GetMapping
     @Transactional
+    @Timed(value = "email.verify", description = "Time needed to verify the user email")
     @Operation(summary = "verify user email")
     public void verifyEmail(@RequestParam String token,
                             HttpServletResponse httpServletResponse) throws SecretInvalidException {
+        log.debug("endpoint verify user email, token={}", token);
         tokenService.invalidate(token);
         httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?email_verified");
+        log.debug("redirect user to website {}", securityConfig.getWebsite() + "/login?email_verified");
         httpServletResponse.setStatus(302);
     }
 
     @PostMapping("/resend")
     @Transactional
+    @Timed(value = "email.resend", description = "Time needed to re-send the user email verification")
     @Operation(summary = "resend user token")
     public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
             throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {
+        log.debug("endpoint resend user token, data={}", data);
         final User user = userService.findByUsernameOrEmail(data.getUsername(), data.getEmail());
         if (user.getEmailVerified()) {
-            log.warn("User already has a verified email address");
-            throw new UserEmailAlreadyVerifiedException("User e-mail already verified");
+            log.error("Failed to resend user token for email {}, already verified", user.getEmail());
+            log.trace("failed to resend user token for user {}", user);
+            throw new UserEmailAlreadyVerifiedException("Failed to resend user token, email already verified");
         }
         final TimeSecret token = tokenService.create(user);
         final Context context = new Context();

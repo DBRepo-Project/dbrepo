@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.security.Principal;
 import java.sql.Connection;
@@ -89,6 +88,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
@@ -162,12 +162,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
-        final InputStream inputStream;
+        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableToRawExportQuery(connection, table, timestamp, filename);
             preparedStatement.executeUpdate();
-            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+            final File file = new File("/tmp/" + filename);
+            resource = new InputStreamResource(FileUtils.openInputStream(file));
+            FileUtils.forceDelete(file);
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
@@ -175,7 +177,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }
@@ -192,12 +194,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         /* read file */
-        final InputStream inputStream;
+        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawExportQuery(connection, query, filename);
             preparedStatement.executeUpdate();
-            inputStream = FileUtils.openInputStream(new File("/tmp/" + filename));
+            final File file = new File("/tmp/" + filename);
+            resource = new InputStreamResource(FileUtils.openInputStream(file));
+            FileUtils.forceDelete(file);
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file", e);
@@ -205,7 +209,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         return ExportResource.builder()
-                .resource(new InputStreamResource(inputStream))
+                .resource(resource)
                 .filename(filename)
                 .build();
     }
@@ -264,7 +268,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) {
             log.error("Failed to parse data, the provided map {} is empty", data.getData());
@@ -331,7 +334,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create temporary table: {}", e.getMessage());
-            log.debug("failed to create temporary table {}", table);
+            log.trace("failed to create temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to create temporary table", e);
         }
@@ -339,11 +342,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)
                     .executeUpdate();
+            final File file = new File(data.getLocation());
+            FileUtils.forceDelete(file);
             queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
                     .executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | IOException e) {
             log.error("Failed to insert temporary table: {}", e.getMessage());
-            log.debug("failed to insert temporary table {}", table);
+            log.trace("failed to insert temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to insert temporary table", e);
         }
@@ -353,7 +358,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to drop temporary table: {}", e.getMessage());
-            log.debug("failed to drop temporary table {}", table);
+            log.trace("failed to drop temporary table {}", table);
             throw new TableMalformedException("Failed to drop temporary table", e);
         } finally {
             dataSource.close();
@@ -376,7 +381,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
         /* check */
         if (!(statement instanceof Select)) {
-            log.error("Query attempts to update the dataset, not a SELECT statement");
+            log.error("Query attempts to update the dataset, malicious statement {}", statement);
             throw new JSQLParserException("Query attempts to update the dataset");
         }
 
@@ -397,7 +402,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
         }
-        log.debug("tables referenced: {}", tables);
+        log.trace("tables referenced: {}", tables);
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
 
         /* Checking if all tables exist */
@@ -416,8 +421,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             if (i) {
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table {} does not exist", tableName);
-                log.debug("table {} does not exist, available tables are {}", tableName, database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
+                log.error("Table with name {} does not exist, available names: {}", tableName,
+                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Table does not exist");
             }
         }
@@ -439,8 +444,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 i = true;
             }
             if (i) {
-                log.error("Column {} does not exist", item);
-                log.debug("column {} does not exist, available columns are {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
+                log.error("Column {} does not exist, available columns are {}", item,
+                        allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Column does not exist");
             }
         }

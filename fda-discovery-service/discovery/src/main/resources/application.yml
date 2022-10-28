@@ -22,9 +22,8 @@ logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    com.netflix.eureka.: off
-    com.netflix.discovery.: off
+    at.tuwien.: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   eureka.client.register-with-eureka: false
   eureka.client.fetch-registry: false

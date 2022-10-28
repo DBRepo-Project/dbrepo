@@ -152,6 +152,7 @@ public interface QueryService {
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
             TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException;
 
+    @Deprecated
     void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException, DatabaseConnectionException, QueryMalformedException;
