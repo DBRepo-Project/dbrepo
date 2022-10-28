@@ -44,10 +44,8 @@ services:
       - metadata-db-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_DB: ${METADATA_DB}
-      POSTGRES_USER: ${METADATA_USERNAME}
-      POSTGRES_PASSWORD: ${METADATA_PASSWORD}
+    env_file:
+      - .env
     logging:
       driver: json-file
 
@@ -61,10 +59,8 @@ services:
       core:
     ports:
       - "9090:9090"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
+    env_file:
+      - .env
     logging:
       driver: json-file
 
@@ -78,10 +74,8 @@ services:
       core:
     ports:
       - "9095:9095"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
+    env_file:
+      - .env
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -99,12 +93,8 @@ services:
       core:
     ports:
       - "9092:9092"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      BROKER_USERNAME: ${BROKER_USERNAME}
-      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    env_file:
+      - .env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -127,13 +117,8 @@ services:
       core:
     ports:
       - "9091:9091"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      BROKER_USERNAME: ${BROKER_USERNAME}
-      BROKER_PASSWORD: ${BROKER_PASSWORD}
-      SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
+    env_file:
+      - .env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -152,21 +137,8 @@ services:
       core:
     ports:
       - "9097:9097"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      WEBSITE: ${WEBSITE}
-      MAIL_FROM: ${MAIL_FROM}
-      MAIL_REPLY_TO: ${MAIL_REPLY_TO}
-      JWT_ISSUER: ${JWT_ISSUER}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION: ${JWT_EXPIRATION}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USERNAME: ${SMTP_USERNAME}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      MAIL_VERIFY: ${MAIL_VERIFY}
+    env_file:
+      - .env
     depends_on:
       discovery-service:
         condition: service_healthy
@@ -188,14 +160,8 @@ services:
       userdb:
     ports:
       - "9093:9093"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      BROKER_USERNAME: ${BROKER_USERNAME}
-      BROKER_PASSWORD: ${BROKER_PASSWORD}
-      BROKER_CONSUMERS: ${BROKER_CONSUMERS}
-      SHARED_FILESYSTEM: ${SHARED_FILESYSTEM}
+    env_file:
+      - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
@@ -217,13 +183,8 @@ services:
       userdb:
     ports:
       - "9094:9094"
-    environment:
-      multipart.location: ${SHARED_FILESYSTEM}
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      BROKER_USERNAME: ${BROKER_USERNAME}
-      BROKER_PASSWORD: ${BROKER_PASSWORD}
+    env_file:
+      - .env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${SHARED_FILESYSTEM}:/tmp
@@ -247,11 +208,8 @@ services:
       core:
     ports:
       - "9096:9096"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      WEBSITE: ${WEBSITE}
+    env_file:
+      - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
@@ -259,6 +217,24 @@ services:
         condition: service_healthy
       authentication-service:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-metadata-service:
+    restart: on-failure
+    container_name: dbrepo-metadata-service
+    hostname: metadata-service
+    build: ./fda-metadata-service
+    image: fda-metadata-service
+    networks:
+      core:
+    env_file:
+      - .env
+    ports:
+      - "9098:9098"
+    depends_on:
+      fda-metadata-db:
+        condition: service_started
     logging:
       driver: json-file
 
@@ -314,14 +290,8 @@ services:
       - "5672:5672"
       - "9098:9098"
       - "15672:15672"
-    environment:
-      METADATA_DB: ${METADATA_DB}
-      METADATA_USERNAME: ${METADATA_USERNAME}
-      METADATA_PASSWORD: ${METADATA_PASSWORD}
-      BROKER_USERNAME: ${BROKER_USERNAME}
-      BROKER_PASSWORD: ${BROKER_PASSWORD}
-      RABBITMQ_DEFAULT_USER: ${BROKER_USERNAME}
-      RABBITMQ_DEFAULT_PASS: ${BROKER_PASSWORD}
+    env_file:
+      - .env
     depends_on:
       discovery-service:
         condition: service_healthy
