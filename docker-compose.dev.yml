@@ -233,7 +233,7 @@ services:
     ports:
       - "9098:9098"
     depends_on:
-      fda-metadata-db:
+      metadata-db:
         condition: service_started
     logging:
       driver: json-file
