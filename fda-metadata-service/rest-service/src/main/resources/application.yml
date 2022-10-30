@@ -17,7 +17,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: table-service
+    name: metadata-service
   rabbitmq:
     host: broker-service
     username: "${BROKER_USERNAME}"
@@ -32,7 +32,7 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: table-service
+  instance.hostname: metadata-service
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
