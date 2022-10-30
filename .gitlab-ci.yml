@@ -20,10 +20,10 @@ stages:
   - build
   - tag
 
-build-backend-metadata:
+build-backend-metadata-db:
   stage: build
   script:
-    - "make build-backend-metadata"
+    - "make build-backend-metadata-db"
 
 build-backend-authentication:
   stage: build
@@ -81,6 +81,13 @@ build-backend-table:
   script:
     - "make build-backend-table"
 
+build-backend-metadata:
+  stage: build
+  needs:
+    - build-backend-metadata
+  script:
+    - "make build-backend-metadata"
+
 build-docker:
   stage: build
   script:
@@ -95,7 +102,7 @@ release-latest:
   stage: tag
   needs:
     - build-docker
-    - build-backend-metadata
+    - build-backend-metadata-db
     - build-backend-authentication
     - build-backend-identifier
     - build-backend-container
@@ -104,6 +111,7 @@ release-latest:
     - build-backend-gateway
     - build-backend-query
     - build-backend-table
+    - build-backend-metadata
   only:
     refs:
       - dev
@@ -115,7 +123,7 @@ release-version:
   stage: tag
   needs:
     - build-docker
-    - build-backend-metadata
+    - build-backend-metadata-db
     - build-backend-authentication
     - build-backend-identifier
     - build-backend-container
@@ -124,6 +132,7 @@ release-version:
     - build-backend-gateway
     - build-backend-query
     - build-backend-table
+    - build-backend-metadata
   only:
     refs:
       - master
