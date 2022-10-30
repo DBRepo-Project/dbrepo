@@ -356,3 +356,4 @@ services:
     volumes:
       - prometheus-data:/etc/prometheus
       - ./fda-prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./fda-prometheus/web.yml:/etc/prometheus/web.yml
