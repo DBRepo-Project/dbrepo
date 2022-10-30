@@ -313,27 +313,6 @@ services:
     logging:
       driver: json-file
 
-  ui-proxy:
-    restart: on-failure
-    container_name: ui-proxy
-    hostname: ui-proxy
-    image: nginx:alpine
-    networks:
-      public:
-      core:
-    volumes:
-      - ./fda-ui-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt/live/dbrepo1.ec.tuwien.ac.at/fullchain.pem:/etc/nginx/fullchain.pem:ro
-      - /etc/letsencrypt/live/dbrepo1.ec.tuwien.ac.at/privkey.pem:/etc/nginx/privkey.pem:ro
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      ui:
-        condition: service_started
-    logging:
-      driver: json-file
-
   prometheus:
     image: prom/prometheus:v2.39.1
     restart: on-failure

@@ -29,6 +29,7 @@ ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV SHARED_FILESYSTEM=/tmp
+ENV BROKER_CONSUMERS=2
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
