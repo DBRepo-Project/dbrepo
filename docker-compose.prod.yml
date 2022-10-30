@@ -56,8 +56,6 @@ services:
     image: dbrepo/discovery-service:1.1
     networks:
       core:
-    ports:
-      - "9090:9090"
     environment:
       METADATA_DB: ${METADATA_DB}
       METADATA_USERNAME: ${METADATA_USERNAME}

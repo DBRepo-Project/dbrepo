@@ -57,8 +57,6 @@ services:
     build: ./fda-discovery-service
     networks:
       core:
-    ports:
-      - "9090:9090"
     env_file:
       - .env
     logging:
@@ -231,7 +229,7 @@ services:
     env_file:
       - .env
     ports:
-      - "9098:9098"
+      - "9090:9090"
     depends_on:
       metadata-db:
         condition: service_started
