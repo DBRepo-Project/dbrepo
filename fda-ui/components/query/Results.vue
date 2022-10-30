@@ -20,6 +20,7 @@ export default {
     return {
       loading: false,
       resultId: null,
+      id: null,
       result: {
         headers: [],
         rows: []
@@ -47,6 +48,14 @@ export default {
       const page = 0
       const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
       return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
+    }
+  },
+  watch: {
+    options: { /* keep */
+      handler () {
+        this.reExecute(this.id)
+      },
+      deep: true
     }
   },
   methods: {
@@ -78,10 +87,14 @@ export default {
       return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.type === 'view' ? '/view' : '/query') + `/${resultId}/data?${urlParams}`
     },
     async reExecute (id) {
+      if (id === null) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
         this.mapResults(res.data)
+        this.id = id
         this.loading = false
       } catch (err) {
         console.error('failed to execute query', err)

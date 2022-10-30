@@ -109,7 +109,6 @@ public interface QueryMapper {
         }
     }
 
-
     default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("DROP TABLE `")
                 .append(table.getDatabase().getInternalName())
@@ -125,7 +124,6 @@ public interface QueryMapper {
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
-
 
     default PreparedStatement pathToRawInsertQuery(Connection connection, Table table, ImportDto data) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("LOAD DATA LOCAL INFILE '")
@@ -588,7 +586,7 @@ public interface QueryMapper {
     }
 
     default PreparedStatement queryToRawTimestampedQuery(Connection connection, String query, Database database,
-                                                         Instant timestamp, String selection, Long page, Long size)
+                                                         Instant timestamp, Boolean selection, Long page, Long size)
             throws ImageNotSupportedException,
             QueryMalformedException {
         log.debug("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
@@ -628,23 +626,27 @@ public interface QueryMapper {
             throw new QueryMalformedException("Failed to find from clause");
         }
         log.trace("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query_);
-        final StringBuilder sb = new StringBuilder("SELECT ")
-                .append(selection)
-                .append(" FROM (")
-                .append(query_, 0, matcher.end());
+        final StringBuilder sb = new StringBuilder();
+        if (!selection) {
+            /* is count query */
+            sb.append("SELECT COUNT(*) FROM (");
+        }
+        sb.append(query_, 0, matcher.end());
         if (!query.contains("join")) {
             sb.append(versionPart);
         }
-        sb.append(query, matcher.end(), query.length())
-                .append(") as tbl");
-        if (size != null && page != null) {
+        sb.append(query, matcher.end(), query.length());
+        if (!query.contains("limit") && !query.contains("offset") && size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
             sb.append(" LIMIT ")
                     .append(size);
             log.trace("pagination page/offset of {}", page);
             sb.append(" OFFSET ")
                     .append(page * size);
-
+        }
+        if (!selection) {
+            /* is count query */
+            sb.append(") as tbl");
         }
         String statement = sb.append(";")
                 .toString();

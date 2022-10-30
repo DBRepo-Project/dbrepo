@@ -104,9 +104,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final QueryResultDto dto;
         try {
             final Connection connection = dataSource.getConnection();
-            final String selection = queryMapper.tableColumnsToSelection(columns);
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), selection, page, size);
+                    database, query.getExecution(), true, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -474,7 +473,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), "COUNT(*)", null, null);
+                    database, query.getExecution(), false, null, null);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
