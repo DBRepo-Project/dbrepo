@@ -3,7 +3,7 @@ MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV PORT_APP=9099
+ENV PORT_APP=5010
 ENV FLASK_ENV=production
 ENV HOSTNAME=units-service
 ENV EUREKA_SERVER=http://discovery-service:9090/eureka/
