@@ -55,8 +55,6 @@ services:
     image: dbrepo/discovery-service:1.1
     networks:
       core:
-    ports:
-      - "9090:9090"
     env_file:
       - .env
     logging:
@@ -211,6 +209,23 @@ services:
     logging:
       driver: json-file
 
+  fda-metadata-service:
+    restart: on-failure
+    container_name: dbrepo-metadata-service
+    hostname: metadata-service
+    image: dbrepo/metadata-service:1.1
+    networks:
+      core:
+    env_file:
+      - .env
+    ports:
+      - "9090:9090"
+    depends_on:
+      metadata-db:
+        condition: service_started
+    logging:
+      driver: json-file
+
   analyse-service:
     restart: on-failure
     container_name: dbrepo-analyse-service
@@ -302,14 +317,13 @@ services:
       core:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
-      - /logos:/app/static/logos
+    env_file:
+      - .env
     depends_on:
       identifier-service:
         condition: service_healthy
       database-service:
         condition: service_healthy
-    environment:
-      SANDBOX: 1
     logging:
       driver: json-file
 

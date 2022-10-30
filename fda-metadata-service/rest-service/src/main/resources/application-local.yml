@@ -20,7 +20,7 @@ spring:
     name: metadata-service
   cloud:
     loadbalancer.ribbon.enabled: false
-server.port: 9098
+server.port: 9090
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:

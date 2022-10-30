@@ -7,9 +7,10 @@
         </v-card-title>
         <v-card-text>
           <v-alert
+            v-if="mailVerify"
             border="left"
             color="info">
-            Before you can use the repository sandbox, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
+            Before you can use the repository, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
           <v-row>
             <v-col cols="6">
@@ -47,7 +48,7 @@
                 label="Password *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-if="sandbox">
             <v-col cols="6">
               <v-checkbox
                 v-model="consent"
@@ -56,7 +57,7 @@
                 label="I understand the warning and do not use production data" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-if="sandbox">
             <v-col cols="6">
               <v-checkbox
                 v-model="privacy"
@@ -66,14 +67,9 @@
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
-          <v-btn
-            class="mb-2 ml-2">
-            Cancel
-          </v-btn>
+        <v-card-text>
           <v-btn
             id="login"
-            class="mb-2"
             :disabled="!valid"
             color="primary"
             type="submit"
@@ -81,7 +77,7 @@
             @click="register">
             Submit
           </v-btn>
-        </v-card-actions>
+        </v-card-text>
       </v-card>
     </v-form>
   </div>
@@ -106,9 +102,13 @@ export default {
   computed: {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
+    },
+    sandbox () {
+      return this.$config.sandbox
+    },
+    mailVerify () {
+      return this.$config.mailVerify
     }
-  },
-  beforeMount () {
   },
   methods: {
     submit () {

@@ -56,8 +56,6 @@ services:
       core:
     environment:
       SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "9090:9090"
     logging:
       driver: json-file
 

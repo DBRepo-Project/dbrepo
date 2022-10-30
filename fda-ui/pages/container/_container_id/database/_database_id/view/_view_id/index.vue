@@ -92,7 +92,7 @@
       id="query-results"
       ref="queryResults"
       v-model="view.id"
-      :view-id="view.id"
+      type="view"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -169,6 +169,7 @@ export default {
   mounted () {
     this.loadUser()
     this.loadView()
+      .then(() => this.loadResult())
   },
   methods: {
     async loadView () {
@@ -185,6 +186,9 @@ export default {
         this.error = true
       }
       this.loadingView = false
+    },
+    loadResult () {
+      this.$refs.queryResults.reExecute(this.view.id)
     },
     loadUser () {
       if (!this.token) {

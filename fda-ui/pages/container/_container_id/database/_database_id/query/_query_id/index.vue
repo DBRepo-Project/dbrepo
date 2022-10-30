@@ -234,7 +234,7 @@
       id="query-results"
       ref="queryResults"
       v-model="query.id"
-      :query-id="query.id"
+      type="query"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
@@ -435,6 +435,7 @@ export default {
     this.loadUser()
     this.loadDatabase()
       .then(() => this.loadQuery())
+      .then(() => this.loadResult())
       .then(() => this.loadMetadata())
   },
   methods: {
@@ -455,6 +456,9 @@ export default {
         this.error = true
       }
       this.metadataLoading = false
+    },
+    loadResult () {
+      this.$refs.queryResults.reExecute(this.query.id)
     },
     async download () {
       this.downloadLoading = true
