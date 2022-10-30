@@ -11,13 +11,15 @@
 <script>
 export default {
   props: {
-    queryId: { type: Number, default: () => 0 },
-    viewId: { type: Number, default: () => 0 }
+    type: {
+      type: String,
+      default: () => 'query' /* query or view */
+    }
   },
   data () {
     return {
-      parent: null,
       loading: false,
+      resultId: null,
       result: {
         headers: [],
         rows: []
@@ -41,49 +43,25 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
-    executeFirstUrl () {
+    executeUrl () {
       const page = 0
       const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
       return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
-    },
-    executeUrl () {
-      const page = this.options.page - 1
-      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.viewId > 0 ? `/view/${this.viewId}` : `/query/${this.queryId}`) + `/data?${urlParams}`
     }
-  },
-  watch: {
-    options: {
-      handler () {
-        this.execute()
-      },
-      deep: true
-    }
-  },
-  mounted () {
-    this.execute()
   },
   methods: {
-    async executeFirstTime (parent) {
-      this.parent = parent
-      if (this.parent.queryId) {
-        console.warn('query is already executed once with id', this.parent.queryId)
-        return
-      }
+    async executeFirstTime (parent, sql) {
       this.loading = true
       try {
-        const data = {
-          statement: this.parent.sql
-        }
-        const res = await this.$axios.put(this.executeFirstUrl, data, this.config)
+        const res = await this.$axios.put(this.executeUrl, { statement: sql }, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
         this.loading = false
-        this.parent.queryId = res.data.id
+        parent.resultId = res.data.id
       } catch (err) {
-        console.error('query execute', err)
-        this.$toast.error('Could not execute query')
+        console.error('failed to execute query', err)
+        this.$toast.error('Failed to execute query: ' + err.response.data.message)
         this.loading = false
       }
     },
@@ -94,21 +72,20 @@ export default {
         sortable: false
       }))
     },
-    async execute () {
-      if (this.viewId < 1 && this.queryId < 1) {
-        /* query builder */
-        return
-      }
+    reExecuteUrl (resultId) {
+      const page = this.options.page - 1
+      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.type === 'view' ? '/view' : '/query') + `/${resultId}/data?${urlParams}`
+    },
+    async reExecute (id) {
       this.loading = true
       try {
-        const res = await this.$axios.get(this.executeUrl, this.config)
+        const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
         this.mapResults(res.data)
         this.loading = false
       } catch (err) {
-        if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('query execute', err)
-          this.$toast.error('Could not execute query')
-        }
+        console.error('failed to execute query', err)
+        this.$toast.error('Failed to execute query: ' + err.response.data.message)
         this.loading = false
       }
     },
