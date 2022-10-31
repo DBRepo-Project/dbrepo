@@ -143,7 +143,7 @@ deploy-dev:
       - dev
   script:
     - TAG=latest make pull
-    - printenv > .env
+    - bash ./.dbrepo2/mkenv.sh
     - make deploy-dev
 
 
