@@ -143,6 +143,7 @@ deploy-dev:
       - dev
   script:
     - TAG=latest make pull
+    - printenv > .env
     - make deploy-dev
 
 
