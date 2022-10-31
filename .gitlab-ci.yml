@@ -1,6 +1,6 @@
 before_script: 
   - "docker version"
-  - "docker-compose version"
+  - "docker compose version"
   - "mvn --version"
   - "df / -h"
 
@@ -18,6 +18,7 @@ image: "docker/compose:latest"
 
 stages:
   - build
+  - docker
   - tag
 
 build-backend-metadata-db:
@@ -89,7 +90,18 @@ build-backend-metadata:
     - "make build-backend-metadata"
 
 build-docker:
-  stage: build
+  stage: docker
+  needs:
+    - build-backend-metadata-db
+    - build-backend-authentication
+    - build-backend-identifier
+    - build-backend-container
+    - build-backend-database
+    - build-backend-discovery
+    - build-backend-gateway
+    - build-backend-query
+    - build-backend-table
+    - build-backend-metadata
   script:
     - make build-docker
 
@@ -102,16 +114,6 @@ release-latest:
   stage: tag
   needs:
     - build-docker
-    - build-backend-metadata-db
-    - build-backend-authentication
-    - build-backend-identifier
-    - build-backend-container
-    - build-backend-database
-    - build-backend-discovery
-    - build-backend-gateway
-    - build-backend-query
-    - build-backend-table
-    - build-backend-metadata
   only:
     refs:
       - dev
@@ -123,16 +125,6 @@ release-version:
   stage: tag
   needs:
     - build-docker
-    - build-backend-metadata-db
-    - build-backend-authentication
-    - build-backend-identifier
-    - build-backend-container
-    - build-backend-database
-    - build-backend-discovery
-    - build-backend-gateway
-    - build-backend-query
-    - build-backend-table
-    - build-backend-metadata
   only:
     refs:
       - master

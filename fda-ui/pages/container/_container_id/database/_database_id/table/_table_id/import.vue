@@ -214,7 +214,7 @@ export default {
     async import () {
       this.loading = true
       const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}/data/import`
-      this.tableImport.location = `${this.sharedFilesystem}/${this.file.filename}`
+      this.tableImport.location = `/tmp/${this.file.filename}`
       let insertResult
       try {
         insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)

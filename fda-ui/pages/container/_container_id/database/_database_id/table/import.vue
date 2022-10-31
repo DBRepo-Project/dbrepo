@@ -270,9 +270,6 @@ export default {
     fileConfig () {
       return { headers: { 'Content-Type': 'multipart/form-data' } }
     },
-    sharedFilesystem () {
-      return this.$config.sharedFilesystem
-    },
     validTableName () {
       if (this.tableCreate.name === null) {
         return true
