@@ -137,7 +137,7 @@ release-version:
 deploy-dev:
   stage: deploy
   needs:
-    - deploy
+    - release-latest
   only:
     refs:
       - dev
