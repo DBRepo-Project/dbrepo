@@ -17,80 +17,81 @@ cache:
 image: "docker/compose:latest"
 
 stages:
-  - build
-  - docker
-  - tag
+  - build-backend
+  - build-frontend
+  - build-docker
+  - release
 
 build-backend-metadata-db:
-  stage: build
+  stage: build-backend
   script:
     - "make build-backend-metadata-db"
 
 build-backend-authentication:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-authentication"
 
 build-backend-identifier:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-identifier"
 
 build-backend-container:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-container"
 
 build-backend-database:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-database"
 
 build-backend-discovery:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-discovery"
 
 build-backend-gateway:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-gateway"
 
 build-backend-query:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-query"
 
 build-backend-table:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-table"
 
 build-backend-metadata:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-metadata"
 
 build-docker:
-  stage: docker
+  stage: build-docker
   needs:
     - build-backend-metadata-db
     - build-backend-authentication
@@ -106,12 +107,12 @@ build-docker:
     - make build-docker
 
 build-frontend:
-  stage: build
+  stage: build-frontend
   script:
     - make build-frontend
 
 release-latest:
-  stage: tag
+  stage: release
   needs:
     - build-docker
   only:
@@ -122,7 +123,7 @@ release-latest:
     - TAG=latest make release
 
 release-version:
-  stage: tag
+  stage: release
   needs:
     - build-docker
   only:
