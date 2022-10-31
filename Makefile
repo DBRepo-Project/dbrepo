@@ -5,21 +5,7 @@ TAG ?= latest
 all:
 
 clean:
-
-config-backend:
-	./.fda-deployment/fda-authentication-service/install_smtp
-
-config-frontend:
-	./.fda-deployment/fda-ui/install_cert
-	docker compose -f docker compose.prod.yml config
-
-config-ssl:
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./fda-ui-proxy/default/privkey.pem -out ./fda-ui-proxy/default/fullchain.pem -subj '/C=AT/ST=Vienna/L=Vienna/O=Technische Universität Wien/OU=Data Science Group/CN=dbrepo.ossdip.at'
-
-config-docker:
-	docker image pull -q mariadb:10.5 || true > /dev/null
-
-config: config-docker config-frontend config-backend
+	bash ./.dbrepo2/clean.sh
 
 build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata
 
@@ -249,3 +235,6 @@ test: test-backend test-frontend
 
 teardown:
 	./.fda-deployment/teardown
+
+deploy-dev: clean
+	docker compose -f ./docker-compose.dev.yml up -d

@@ -21,6 +21,7 @@ stages:
   - build-frontend
   - build-docker
   - release
+  - deploy
 
 build-backend-metadata-db:
   stage: build-backend
@@ -132,5 +133,16 @@ release-version:
   script:
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.1 make release
+
+deploy-dev:
+  stage: deploy
+  needs:
+    - deploy
+  only:
+    refs:
+      - dev
+  script:
+    - TAG=latest make pull
+    - make deploy-dev
 
 

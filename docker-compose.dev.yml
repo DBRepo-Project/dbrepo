@@ -1,5 +1,5 @@
-# INFO: This compose file deploys the current local branch and a few official Docker images from a stable, tested master branch
-# MODIFIED: 2022-10-19
+# INFO: This compose file deploys the official Docker images from a staging, tested dev branch
+# MODIFIED: 2022-10-31
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
@@ -35,8 +35,7 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: fda-metadata-db
-    build: ./fda-metadata-db
+    image: dbrepo/metadata-db:latest
     networks:
       core:
     volumes:
@@ -52,8 +51,7 @@ services:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
-    image: fda-discovery-service
-    build: ./fda-discovery-service
+    image: dbrepo/discovery-service:latest
     networks:
       core:
     ports:
@@ -67,8 +65,7 @@ services:
     restart: on-failure
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: fda-gateway-service
-    build: ./fda-gateway-service
+    image: dbrepo/gateway-service:latest
     networks:
       core:
     ports:
@@ -85,8 +82,7 @@ services:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: fda-database-service
-    build: ./fda-database-service
+    image: dbrepo/database-service:latest
     networks:
       userdb:
       core:
@@ -110,8 +106,7 @@ services:
     restart: on-failure
     container_name: dbrepo-container-service
     hostname: container-service
-    image: fda-container-service
-    build: ./fda-container-service
+    image: dbrepo/container-service:latest
     networks:
       core:
     ports:
@@ -130,8 +125,7 @@ services:
     restart: on-failure
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: fda-authentication-service
-    build: ./fda-authentication-service
+    image: dbrepo/authentication-service:latest
     networks:
       core:
     ports:
@@ -152,8 +146,7 @@ services:
     restart: on-failure
     container_name: dbrepo-query-service
     hostname: query-service
-    image: fda-query-service
-    build: ./fda-query-service
+    image: dbrepo/query-service:latest
     networks:
       core:
       userdb:
@@ -175,8 +168,7 @@ services:
     restart: on-failure
     container_name: dbrepo-table-service
     hostname: table-service
-    image: fda-table-service
-    build: ./fda-table-service
+    image: dbrepo/table-service:latest
     networks:
       core:
       userdb:
@@ -201,8 +193,7 @@ services:
     restart: on-failure
     container_name: dbrepo-identifier-service
     hostname: identifier-service
-    image: fda-identifier-service
-    build: ./fda-identifier-service
+    image: dbrepo/identifier-service:latest
     networks:
       core:
     ports:
@@ -223,8 +214,7 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    build: ./fda-metadata-service
-    image: fda-metadata-service
+    image: dbrepo/metadata-service:latest
     networks:
       core:
     env_file:
@@ -241,8 +231,7 @@ services:
     restart: on-failure
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: fda-analyse-service
-    build: ./fda-analyse-service
+    image: dbrepo/analyse-service:latest
     networks:
       core:
       userdb:
@@ -262,8 +251,7 @@ services:
     restart: on-failure
     container_name: dbrepo-units-service
     hostname: units-service
-    image: fda-units-service
-    build: ./fda-units-service
+    image: dbrepo/units-service:latest
     networks:
       core:
     ports:
@@ -281,8 +269,7 @@ services:
     restart: on-failure
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: fda-broker-service
-    build: ./fda-broker-service
+    image: dbrepo/broker-service:latest
     networks:
       core:
     ports:
@@ -326,8 +313,7 @@ services:
     restart: on-failure
     container_name: dbrepo-ui
     hostname: ui
-    image: fda-ui
-    build: ./fda-ui
+    image: dbrepo/ui:latest
     networks:
       core:
     volumes:
