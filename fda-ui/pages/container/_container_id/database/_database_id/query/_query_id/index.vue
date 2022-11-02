@@ -18,7 +18,7 @@
         <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility" class="mb-1" :loading="downloadLoading" @click.stop="download">
+        <v-btn v-if="result_visibility" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
@@ -26,7 +26,7 @@
           color="secondary"
           class="ml-2"
           :loading="metadataLoading"
-          @click.stop="metadata">
+          @click.stop="download('text/xml')">
           <v-icon left>mdi-code-tags</v-icon> Metadata .xml
         </v-btn>
       </v-toolbar-title>
@@ -39,7 +39,7 @@
         <v-list dense>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="database_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
+              <v-icon v-if="database_visibility" :color="database_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
@@ -187,7 +187,7 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="result_visibility_icon ? 'success' : 'error'">{{ result_icon }}</v-icon>
+              <v-icon v-if="result_visibility_icon" :color="result_visibility_icon ? 'success' : 'error'">{{ result_icon }}</v-icon>
             </v-list-item-icon>
             <v-list-item-content v-if="!erroneous">
               <v-list-item-title>
@@ -365,7 +365,7 @@ export default {
       return this.$store.state.user && this.$store.state.user.username
     },
     database_visibility () {
-      return this.database.is_public
+      return this.database.is_public !== null ? this.database.is_public : false
     },
     is_owner () {
       return this.token && this.query.creator.username === this.user.username
@@ -375,6 +375,9 @@ export default {
     },
     result_visibility () {
       if (this.erroneous) {
+        return false
+      }
+      if (this.database.is_public === null) {
         return false
       }
       if (this.database.is_public) {
@@ -387,6 +390,9 @@ export default {
     },
     result_visibility_icon () {
       if (this.erroneous) {
+        return false
+      }
+      if (this.database.is_public === null) {
         return false
       }
       if (this.database.is_public) {
@@ -439,41 +445,29 @@ export default {
       .then(() => this.loadMetadata())
   },
   methods: {
-    async metadata () {
-      this.metadataLoading = true
-      try {
-        const res = await this.$axios.get(`/api/identifier/${this.identifier.id}`, this.config)
-        console.debug('identifier result', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'metadata.xml')
-        document.body.appendChild(link)
-        link.click()
-      } catch (err) {
-        console.error('Could not export metadata', err)
-        this.$toast.error('Could not export metadata')
-        this.error = true
-      }
-      this.metadataLoading = false
-    },
     loadResult () {
       this.$refs.queryResults.reExecute(this.query.id)
     },
-    async download () {
+    async download (mime) {
       this.downloadLoading = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, this.config)
-        console.debug('export query result', res)
+        const config = this.config
+        config.headers.Accept = mime
+        const res = await this.$axios.get(`/api/pid/${this.identifier.id}`, config)
+        console.debug('export identifier', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
-        link.setAttribute('download', 'query.csv')
+        if (mime === 'text/csv') {
+          link.setAttribute('download', 'subset.csv')
+        } else if (mime === 'text/xml') {
+          link.setAttribute('download', 'identifier.xml')
+        }
         document.body.appendChild(link)
         link.click()
       } catch (err) {
-        console.error('Could not export query result', err)
-        this.$toast.error('Could not export query result')
+        console.error('Could not export identifier', err)
+        this.$toast.error('Could not export identifier')
         this.error = true
       }
       this.downloadLoading = false

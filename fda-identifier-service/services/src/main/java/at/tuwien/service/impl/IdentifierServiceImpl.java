@@ -25,6 +25,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
@@ -184,8 +185,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException {
+            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {
@@ -194,15 +194,9 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         /* export */
-        final ExportDto export = queryServiceGateway.export(identifier.getContainerId(),
+        final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
                 identifier.getDatabaseId(), identifier.getQueryId());
-        final InputStreamResource resource;
-        try {
-            resource = new InputStreamResource(FileUtils.openInputStream(new File("/tmp/" + export.getLocation())));
-        } catch (IOException e) {
-            log.error("Failed to open export file: {}", e.getMessage());
-            throw new IdentifierRequestException("Failed to open export file", e);
-        }
+        final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
         log.trace("found resource {}", resource);
         return resource;
     }

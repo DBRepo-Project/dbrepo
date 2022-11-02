@@ -79,13 +79,12 @@ public interface IdentifierService {
      *
      * @param identifierId The identifier id.
      * @return The XML resource, if successful.
-     * @throws IdentifierNotFoundException
-     * @throws QueryNotFoundException
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     * @throws QueryNotFoundException      The query was not found in the metadata database or was deleted.
      * @throws RemoteUnavailableException
-     * @throws IdentifierRequestException
      */
     InputStreamResource exportResource(Long identifierId)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException;
+            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.

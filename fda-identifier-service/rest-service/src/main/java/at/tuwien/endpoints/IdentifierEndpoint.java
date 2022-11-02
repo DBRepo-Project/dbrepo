@@ -59,6 +59,7 @@ public class IdentifierEndpoint {
     }
 
     @GetMapping("/{id}")
+    @Deprecated
     @Transactional(readOnly = true)
     @Timed(value = "identifier.export", description = "Time needed to export an identifier")
     @Operation(summary = "Export some identifier metadata")

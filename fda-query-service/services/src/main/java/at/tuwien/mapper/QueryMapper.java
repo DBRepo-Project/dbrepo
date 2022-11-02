@@ -323,6 +323,16 @@ public interface QueryMapper {
                             .append("`");
                     idx[0]++;
                 });
+        statement.append(" UNION ALL SELECT ");
+        int[] jdx = new int[]{0};
+        table.getColumns()
+                .forEach(column -> {
+                    statement.append(jdx[0] != 0 ? "," : "")
+                            .append("`")
+                            .append(column.getInternalName())
+                            .append("`");
+                    jdx[0]++;
+                });
         statement.append("FROM `")
                 .append(table.getInternalName())
                 .append("`");

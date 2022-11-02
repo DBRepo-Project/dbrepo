@@ -57,13 +57,15 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public ExportDto export(Long containerId, Long databaseId, Long queryId)
+    public byte[] export(Long containerId, Long databaseId, Long queryId)
             throws RemoteUnavailableException, QueryNotFoundException {
         final String url = "/api/container/" + containerId + "/database/" + databaseId + "/query/" + queryId + "/export";
-        final ResponseEntity<ExportDto> response;
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add("Accept", "text/csv");
+        final ResponseEntity<byte[]> response;
         try {
             log.trace("call gateway path {}", url);
-            response = restTemplate.exchange(url, HttpMethod.GET, null, ExportDto.class);
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), byte[].class);
         } catch (HttpServerErrorException.ServiceUnavailable e) {
             log.error("Query service not available: {}", e.getMessage());
             throw new RemoteUnavailableException("Query service not available", e);
