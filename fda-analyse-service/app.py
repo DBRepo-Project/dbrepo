@@ -36,8 +36,8 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "endpoint": "api-analyze",
-            "route": "/api-analyze.json",
+            "endpoint": "api-analyse",
+            "route": "/api-analyse.json",
             "rule_filter": lambda rule: rule.endpoint.startswith('analyze'),
             "model_filter": lambda tag: True,  # all in
         },

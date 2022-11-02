@@ -220,7 +220,7 @@ services:
     env_file:
       - .env
     ports:
-      - "9100:9100"
+      - "9099:9099"
     depends_on:
       fda-metadata-db:
         condition: service_started
@@ -255,7 +255,7 @@ services:
     networks:
       core:
     ports:
-      - "9099:9099"
+      - "5010:5010"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock

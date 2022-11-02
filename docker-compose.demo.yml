@@ -220,7 +220,7 @@ services:
     env_file:
       - .env
     ports:
-      - "9100:9100"
+      - "9099:9099"
     depends_on:
       metadata-db:
         condition: service_started

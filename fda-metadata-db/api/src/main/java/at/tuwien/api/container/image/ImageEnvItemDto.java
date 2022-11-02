@@ -22,6 +22,7 @@ public class ImageEnvItemDto {
     private String key;
 
     @NotBlank
+    @ToString.Exclude
     @Schema(example = "mariadb")
     private String value;
 

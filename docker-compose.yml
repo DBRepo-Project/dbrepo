@@ -231,7 +231,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "9100:9100"
+      - "9099:9099"
     depends_on:
       fda-metadata-db:
         condition: service_started
@@ -272,7 +272,7 @@ services:
     environment:
       EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
     ports:
-      - "9099:9099"
+      - "5010:5010"
     volumes:
       - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
