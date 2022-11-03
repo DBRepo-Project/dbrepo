@@ -5,8 +5,12 @@ import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.service.UserService;
 import at.tuwien.service.impl.StoreServiceImpl;
+import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -16,12 +20,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -32,6 +42,12 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private ReadyConfig readyConfig;
 
+    @MockBean
+    private Channel channel;
+
+    @MockBean
+    private RabbitMqListenerImpl rabbitMqListener;
+
     @Autowired
     private StoreEndpoint storeEndpoint;
 
@@ -41,31 +57,47 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private StoreServiceImpl storeService;
 
+    @MockBean
+    private UserService userService;
+
+    @MockBean
+    private DatabaseService databaseService;
+
     @Test
+    @WithMockUser(username = USER_1_USERNAME)
     public void findAll_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* mock */
-        when(storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true))
-                .thenReturn(List.of(QUERY_1));
+        doReturn(List.of(QUERY_1)).when(storeService)
+                .findAll(CONTAINER_1_ID, DATABASE_1_ID, true);
+        doReturn(Collections.singletonList(USER_1)).when(userService)
+                .findAll();
+        doReturn(DATABASE_1, DATABASE_1).when(databaseService)
+                .find(CONTAINER_1_ID, DATABASE_1_ID);
 
         /* test */
         final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals(QUERY_1_DTO, response.getBody().get(0));
+        assertEquals(QUERY_1_BRIEF_DTO, response.getBody().get(0));
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void find_succeeds() throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException, DatabaseConnectionException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(QUERY_1);
+        doReturn(QUERY_1).when(storeService)
+                .findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+        doReturn(USER_1).when(userService)
+                .find(USER_1_ID);
+        doReturn(DATABASE_1).when(databaseService)
+                .find(CONTAINER_1_ID, DATABASE_1_ID);
 
         /* test */
         final ResponseEntity<QueryDto> response = storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
@@ -74,13 +106,16 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void find_notFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
-                .thenThrow(QueryNotFoundException.class);
+        doThrow(QueryNotFoundException.class).when(storeService)
+                .findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+        doReturn(DATABASE_1).when(databaseService)
+                .find(CONTAINER_1_ID, DATABASE_1_ID);
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
@@ -89,13 +124,16 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void find_dbNotFound_fails() throws QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, DatabaseConnectionException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* mock */
-        when(storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
-                .thenThrow(DatabaseNotFoundException.class);
+        doThrow(DatabaseNotFoundException.class).when(storeService)
+                .findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+        doReturn(DATABASE_1).when(databaseService)
+                .find(CONTAINER_1_ID, DATABASE_1_ID);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {

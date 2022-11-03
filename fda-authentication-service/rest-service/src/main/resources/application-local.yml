@@ -20,6 +20,10 @@ spring:
     name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
   mail:
     default-encoding: UTF-8
     host: ""

@@ -1,8 +1,12 @@
 package at.tuwien;
 
+import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
+import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -15,6 +19,7 @@ import at.tuwien.entities.database.table.columns.TableColumnType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.*;
@@ -22,7 +27,29 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static long USER_1_ID = 1;
     public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_EMAIL = "junit@example.com";
+    public final static Instant USER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static User USER_1 = User.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(true)
+            .themeDark(false)
+            .password("password")
+            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
+            .created(USER_1_CREATED)
+            .lastModified(USER_1_CREATED)
+            .build();
+    public final static UserDto USER_1_DTO = UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(true)
+            .themeDark(false)
+            .password("password")
+            .build();
 
     public final static String DATABASE_NET = "fda-userdb";
 
@@ -322,8 +349,8 @@ public abstract class BaseUnitTest {
     public final static Long COLUMN_4_5_ID = 13L;
     public final static Integer COLUMN_4_5_ORDINALPOS = 4;
     public final static Boolean COLUMN_4_5_PRIMARY = false;
-    public final static String COLUMN_4_5_NAME = "Eggs";
-    public final static String COLUMN_4_5_INTERNAL_NAME = "eggs";
+    public final static String COLUMN_4_5_NAME = "Bread";
+    public final static String COLUMN_4_5_INTERNAL_NAME = "bread";
     public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOLEAN;
     public final static Long COLUMN_4_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_5_NULL = true;
@@ -364,8 +391,8 @@ public abstract class BaseUnitTest {
     public final static Long COLUMN_4_8_ID = 16L;
     public final static Integer COLUMN_4_8_ORDINALPOS = 7;
     public final static Boolean COLUMN_4_8_PRIMARY = false;
-    public final static String COLUMN_4_8_NAME = "Milk";
-    public final static String COLUMN_4_8_INTERNAL_NAME = "milk";
+    public final static String COLUMN_4_8_NAME = "Water";
+    public final static String COLUMN_4_8_INTERNAL_NAME = "water";
     public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOLEAN;
     public final static Long COLUMN_4_8_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_8_NULL = true;
@@ -392,8 +419,8 @@ public abstract class BaseUnitTest {
     public final static Long COLUMN_4_10_ID = 18L;
     public final static Integer COLUMN_4_10_ORDINALPOS = 9;
     public final static Boolean COLUMN_4_10_PRIMARY = false;
-    public final static String COLUMN_4_10_NAME = "Airborne";
-    public final static String COLUMN_4_10_INTERNAL_NAME = "airborne";
+    public final static String COLUMN_4_10_NAME = "Waterborne";
+    public final static String COLUMN_4_10_INTERNAL_NAME = "waterborne";
     public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOLEAN;
     public final static Long COLUMN_4_10_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_10_NULL = true;
@@ -736,6 +763,7 @@ public abstract class BaseUnitTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -746,6 +774,20 @@ public abstract class BaseUnitTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
+            .build();
+
+    public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
+            .id(QUERY_1_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
+            .query(QUERY_1_STATEMENT)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .created(QUERY_1_CREATED)
+            .execution(QUERY_1_EXECUTION)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
@@ -772,6 +814,7 @@ public abstract class BaseUnitTest {
                     .internalName(COLUMN_1_2_INTERNAL_NAME)
                     .columnType(COLUMN_1_2_TYPE)
                     .dfid(COLUMN_1_2_DATE_FORMAT)
+                    .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(COLUMN_1_2_NULL)
                     .isUnique(COLUMN_1_2_UNIQUE)
                     .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
@@ -1822,6 +1865,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchange(DATABASE_1_EXCHANGE)
+            .creator(USER_1)
             .build();
 
     public final static Database DATABASE_2 = Database.builder()

@@ -11,11 +11,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.entities.user.User;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +29,19 @@ public abstract class BaseUnitTest {
     public final static String USER_1_PASSWORD = "junit";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static Boolean USER_1_EMAIL_VERIFIED = true;
+    public final static Boolean USER_1_THEME_DARK = false;
+    public final static Instant USER_1_CREATED = Instant.now()
+            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
 
     public final static User USER_1 = User.builder()
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
+            .themeDark(USER_1_THEME_DARK)
+            .created(USER_1_CREATED)
+            .lastModified(USER_1_LAST_MODIFIED)
             .build();
 
     public final static Long DATABASE_1_ID = 1L;
@@ -45,7 +54,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_2_NAME = "Test Database 2";
     public final static String DATABASE_2_INTERNAL_NAME = "test_database_2";
     public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNAL_NAME;
-    public final static Boolean DATABASE_2_PUBLIC = true;
+    public final static Boolean DATABASE_2_PUBLIC = false;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Rainfall";
@@ -236,6 +245,7 @@ public abstract class BaseUnitTest {
 
     public final static Long IDENTIFIER_1_ID = 1L;
     public final static Long IDENTIFIER_1_QUERY_ID = QUERY_1_ID;
+    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_1_DESCRIPTION = "Selecting all from the weather Australia table";
     public final static String IDENTIFIER_1_TITLE = "Australia weather data";
@@ -251,15 +261,19 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_1_QUERY = "SELECT `id` FROM `foobar`";
     public final static String IDENTIFIER_1_NORMALIZED = "SELECT `id` FROM `foobar`";
     public final static Long IDENTIFIER_1_RESULT_NUMBER = 2L;
+    public final static String IDENTIFIER_1_PUBLISHER = "Australian Government";
+    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.SUBSET;
 
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
-    public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_1_ID;
+    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
     public final static String IDENTIFIER_2_TITLE = "Austria weather data";
     public final static String IDENTIFIER_2_DOI = "10.1000/183";
-    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.EVERYONE;
-    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
+    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
+    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
@@ -271,11 +285,14 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";
     public final static String IDENTIFIER_2_NORMALIZED = "SELECT `id` FROM `foobar`";
     public final static Long IDENTIFIER_2_RESULT_NUMBER = 2L;
+    public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
+    public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(CONTAINER_1_ID)
-            .databaseId(DATABASE_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
@@ -290,12 +307,14 @@ public abstract class BaseUnitTest {
             .query(IDENTIFIER_1_QUERY)
             .queryNormalized(IDENTIFIER_1_NORMALIZED)
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
             .build();
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
-            .containerId(CONTAINER_2_ID)
-            .databaseId(DATABASE_2_ID)
+            .containerId(IDENTIFIER_2_CONTAINER_ID)
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
@@ -312,6 +331,8 @@ public abstract class BaseUnitTest {
             .query(IDENTIFIER_2_QUERY)
             .queryNormalized(IDENTIFIER_2_NORMALIZED)
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .type(IDENTIFIER_2_TYPE)
             .build();
 
     public final static Creator CREATOR_1 = Creator.builder()
@@ -401,12 +422,16 @@ public abstract class BaseUnitTest {
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
             .qid(IDENTIFIER_1_QUERY_ID)
+            .cid(IDENTIFIER_1_CONTAINER_ID)
+            .dbid(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
             .build();
 
     public final static String RELATED_IDENTIFIER_1_VALUE = "10.5281/zenodo.6637333";
@@ -421,6 +446,8 @@ public abstract class BaseUnitTest {
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
             .qid(IDENTIFIER_2_QUERY_ID)
+            .cid(IDENTIFIER_2_CONTAINER_ID)
+            .dbid(IDENTIFIER_2_DATABASE_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
@@ -430,6 +457,8 @@ public abstract class BaseUnitTest {
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
             .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .type(IDENTIFIER_2_TYPE_DTO)
             .build();
 
     public final static String COLUMN_1_INTERNAL_NAME = "id";

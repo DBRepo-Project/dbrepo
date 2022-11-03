@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -53,6 +54,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void create_succeeds()
             throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
@@ -75,6 +77,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void create_duplicate_fails()
             throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
@@ -98,6 +101,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void create_notExists_fails()
             throws ImageNotFoundException, DockerClientException, ImageAlreadyExistsException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
@@ -148,6 +152,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void delete_success() throws ImageNotFoundException, PersistenceException {
 
         /* mock */
@@ -161,6 +166,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void delete_fails() throws ImageNotFoundException, PersistenceException {
 
         /* mock */
@@ -175,6 +181,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void update_succeeds() throws ImageNotFoundException, DockerClientException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(1111)
@@ -186,6 +193,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(roles = "DEVELOPER")
     public void update_notFound_fails() throws ImageNotFoundException, DockerClientException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(1111)

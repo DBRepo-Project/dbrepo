@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
@@ -56,7 +57,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
+        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -106,6 +107,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
+                .cid(CONTAINER_1_ID)
+                .dbid(DATABASE_1_ID)
+                .type(IdentifierTypeDto.SUBSET)
                 .qid(IDENTIFIER_1_QUERY_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)

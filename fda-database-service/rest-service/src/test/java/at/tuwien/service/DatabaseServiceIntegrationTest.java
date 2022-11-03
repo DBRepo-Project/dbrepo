@@ -17,6 +17,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -31,10 +32,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -92,12 +91,14 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* create elastic search */
         final CreateContainerResponse search = dockerClient.createContainerCmd(SEARCH_IMAGE + ":" + SEARCH_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-public"))
+                .withHostConfig(
+                        hostConfig
+                                .withNetworkMode("fda-public")
+                                .withPortBindings(PortBinding.parse("9200:9200"), PortBinding.parse("9300:9300"))
+                )
                 .withName(SEARCH_NAME)
                 .withIpv4Address(SEARCH_IP)
                 .withHostName(SEARCH_HOSTNAME)
-                .withHostConfig(new HostConfig()
-                        .withPortBindings())
                 .withEnv("discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN")
                 .exec();
         CONTAINER_SEARCH.setHash(search.getId());
