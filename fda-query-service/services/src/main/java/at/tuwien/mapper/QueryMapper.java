@@ -318,9 +318,9 @@ public interface QueryMapper {
         table.getColumns()
                 .forEach(column -> {
                     statement.append(idx[0] != 0 ? "," : "")
-                            .append("`")
+                            .append("'")
                             .append(column.getInternalName())
-                            .append("`");
+                            .append("'");
                     idx[0]++;
                 });
         statement.append(" UNION ALL SELECT ");
@@ -333,7 +333,7 @@ public interface QueryMapper {
                             .append("`");
                     jdx[0]++;
                 });
-        statement.append("FROM `")
+        statement.append(" FROM `")
                 .append(table.getInternalName())
                 .append("`");
         if (timestamp != null) {

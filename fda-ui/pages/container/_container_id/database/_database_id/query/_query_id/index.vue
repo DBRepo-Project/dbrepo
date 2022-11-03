@@ -18,7 +18,10 @@
         <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
+        <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
+          <v-icon left>mdi-download</v-icon> Data .csv
+        </v-btn>
+        <v-btn v-if="result_visibility && identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
@@ -241,12 +244,12 @@
       v-model="persistQueryDialog"
       persistent
       max-width="860">
-      <PersistQuery @close="closeDialog" />
+      <Persist @close="closeDialog" />
     </v-dialog>
   </div>
 </template>
 <script>
-import PersistQuery from '@/components/dialogs/PersistQuery'
+import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 import { decodeJwt } from 'jose'
@@ -254,7 +257,7 @@ import { decodeJwt } from 'jose'
 export default {
   name: 'QueryShow',
   components: {
-    PersistQuery,
+    Persist,
     OrcidIcon
   },
   data () {
@@ -449,7 +452,11 @@ export default {
       this.$refs.queryResults.reExecute(this.query.id)
     },
     async download (mime) {
-      this.downloadLoading = true
+      if (mime === 'text/csv') {
+        this.downloadLoading = true
+      } else if (mime === 'text/xml') {
+        this.metadataLoading = true
+      }
       try {
         const config = this.config
         config.headers.Accept = mime
@@ -468,6 +475,27 @@ export default {
       } catch (err) {
         console.error('Could not export identifier', err)
         this.$toast.error('Could not export identifier')
+        this.error = true
+      }
+      this.downloadLoading = false
+      this.metadataLoading = false
+    },
+    async downloadData () {
+      this.downloadLoading = true
+      try {
+        const config = this.config
+        config.headers.Accept = 'text/csv'
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, config)
+        console.debug('export query data', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'subset.csv')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export query data', err)
+        this.$toast.error('Could not export query data')
         this.error = true
       }
       this.downloadLoading = false
