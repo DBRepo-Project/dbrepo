@@ -9,6 +9,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -43,6 +44,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ContainerServiceImpl containerService;
@@ -156,13 +160,48 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        doReturn(null)
-                .when(userService)
-                .findByUsername(USER_1_USERNAME);
+        userRepository.save(USER_1);
 
         /* test */
         final Container container = containerService.create(request, principal);
         assertEquals(CONTAINER_1_NAME, container.getName());
+        assertEquals(1, userRepository.findAll().size());
+    }
+
+    @Test
+    public void create_multiple_succeeds()
+            throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
+            UserNotFoundException {
+        final ContainerCreateRequestDto request1 = ContainerCreateRequestDto.builder()
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .name(CONTAINER_1_NAME)
+                .build();
+        final ContainerCreateRequestDto request2 = ContainerCreateRequestDto.builder()
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .name(CONTAINER_2_NAME)
+                .build();
+        final ContainerCreateRequestDto request3 = ContainerCreateRequestDto.builder()
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .name(CONTAINER_3_NAME)
+                .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        userRepository.save(USER_1);
+
+        /* test */
+        final Container container1 = containerService.create(request1, principal);
+        assertEquals(CONTAINER_1_NAME, container1.getName());
+        assertEquals(1, userRepository.findAll().size());
+        final Container container2 = containerService.create(request2, principal);
+        assertEquals(CONTAINER_2_NAME, container2.getName());
+        assertEquals(1, userRepository.findAll().size());
+        final Container container3 = containerService.create(request3, principal);
+        assertEquals(CONTAINER_3_NAME, container3.getName());
+        assertEquals(1, userRepository.findAll().size());
     }
 
     @Test
@@ -177,9 +216,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        doReturn(null)
-                .when(userService)
-                .findByUsername(USER_1_USERNAME);
+        userRepository.save(USER_1);
         containerService.create(request, principal);
 
         /* test */

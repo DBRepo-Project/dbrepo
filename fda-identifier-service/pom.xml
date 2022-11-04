@@ -197,10 +197,10 @@
                 <version>${jacoco.version}</version>
                 <configuration>
                     <excludes>
+                        <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/utils/**/*</exclude>
-                        <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>**/FdaCitationServiceApplication.class</exclude>
                     </excludes>
