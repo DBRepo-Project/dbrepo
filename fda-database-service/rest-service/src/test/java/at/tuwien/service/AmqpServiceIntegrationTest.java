@@ -79,7 +79,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
                 .withHostConfig(
                         hostConfig
                                 .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("5671:5671"), PortBinding.parse("5672:5672"))
+                                .withPortBindings(PortBinding.parse("15672:15672"), PortBinding.parse("5672:5672"))
                 )
                 .withName(BROKER_NAME)
                 .withIpv4Address(BROKER_IP)

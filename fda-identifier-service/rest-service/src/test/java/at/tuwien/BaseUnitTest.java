@@ -395,43 +395,22 @@ public abstract class BaseUnitTest {
             .name(CREATOR_2_NAME)
             .build();
 
-    public final static Identifier IDENTIFIER_1_REQUEST = Identifier.builder()
-            .queryId(IDENTIFIER_1_QUERY_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
-            .creators(List.of(CREATOR_1_REQUEST, CREATOR_2_REQUEST))
-            .build();
-
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
+            .containerId(CONTAINER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .type(IDENTIFIER_1_TYPE_DTO)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
-            .build();
-
-    public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
-            .qid(IDENTIFIER_1_QUERY_ID)
-            .cid(IDENTIFIER_1_CONTAINER_ID)
-            .dbid(IDENTIFIER_1_DATABASE_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
-            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
-            .publisher(IDENTIFIER_1_PUBLISHER)
-            .type(IDENTIFIER_1_TYPE_DTO)
             .build();
 
     public final static String RELATED_IDENTIFIER_1_VALUE = "10.5281/zenodo.6637333";

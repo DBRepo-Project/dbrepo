@@ -210,8 +210,12 @@ public class IdentifierServiceImpl implements IdentifierService {
             throws IdentifierNotFoundException {
         /* check */
         find(identifierId);
+        /* map */
+        final Identifier entity = identifierMapper.identifierDtoToIdentifier(data);
+        entity.getCreators()
+                .forEach(creator -> creator.setPid(identifierId));
         /* update */
-        final Identifier entityUpdated = identifierRepository.save(identifierMapper.identifierDtoToIdentifier(data));
+        final Identifier entityUpdated = identifierRepository.save(entity);
         log.info("Updated identifier with id {}", identifierId);
         log.debug("updated identifier {}", entityUpdated);
         return entityUpdated;

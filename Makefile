@@ -194,31 +194,34 @@ pull-units:
 pull-broker:
 	docker pull "dbrepo/broker-service:${TAG}"
 
-test-backend: test-backend-auth test-backend-container test-backend-database test-backend-discovery test-backend-gateway test-backend-query test-backend-table
+test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service
 
-test-backend-auth:
+test-authentication-service:
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-backend-identifier:
+test-identifier-service:
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-backend-container:
+test-container-service:
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
-test-backend-database:
+test-database-service:
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-backend-discovery:
+test-discovery-service:
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-backend-gateway:
+test-gateway-service:
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-backend-query:
+test-query-service:
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-backend-table:
+test-table-service:
 	mvn -f ./fda-table-service/pom.xml clean test verify
+
+test-metadata-service:
+	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
 coverage-frontend: clean build-frontend
 	yarn --cwd ./fda-ui run coverage || true
