@@ -235,6 +235,3 @@ test: test-backend test-frontend
 
 teardown:
 	./.fda-deployment/teardown
-
-deploy-dev: clean
-	docker compose -f ./docker-compose.dev.yml up -d
