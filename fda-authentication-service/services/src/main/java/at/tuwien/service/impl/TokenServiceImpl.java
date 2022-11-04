@@ -40,6 +40,8 @@ public class TokenServiceImpl implements TokenService {
     @Transactional(readOnly = true)
     public List<Token> findAll(Principal principal) throws UserNotFoundException {
         final User user = userService.findByUsername(principal.getName());
+        log.debug("found user for username {}", principal.getName());
+        log.trace("resulted in user {}", user);
         return tokenRepository.findMine(user.getId());
     }
 

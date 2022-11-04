@@ -27,6 +27,7 @@ ENV METADATA_PASSWORD=postgres
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SHARED_FILESYSTEM=/tmp
+ENV USER_NETWORK=userdb
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

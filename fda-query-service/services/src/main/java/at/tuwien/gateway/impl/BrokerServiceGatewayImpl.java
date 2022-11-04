@@ -27,6 +27,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
 
+    private final static String VIRTUAL_SERVER = "%2F";
+
     @Autowired
     public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, RestTemplate restTemplate, GatewayConfig gatewayConfig) {
         this.amqpConfig = amqpConfig;
@@ -36,7 +38,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public List<ConsumerDto> findAllConsumers() {
-        final URI findUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/consumers/%2F");
+        log.debug("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
+        final URI findUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/consumers/" + VIRTUAL_SERVER);
         final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
                 new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
                 });
@@ -49,10 +52,11 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
      * @return The headers.
      */
     private HttpHeaders getHeaders() {
+        String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
+        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
+        String authHeader = "Basic " + new String(encodedAuth);
+        log.trace("gateway set authorization header {}", authHeader);
         return new HttpHeaders() {{
-            String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
-            byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
-            String authHeader = "Basic " + new String(encodedAuth);
             set("Authorization", authHeader);
         }};
     }

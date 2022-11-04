@@ -11,13 +11,16 @@
 <script>
 export default {
   props: {
-    queryId: { type: Number, default: () => 0 },
-    viewId: { type: Number, default: () => 0 }
+    type: {
+      type: String,
+      default: () => 'query' /* query or view */
+    }
   },
   data () {
     return {
-      parent: null,
       loading: false,
+      resultId: null,
+      id: null,
       result: {
         headers: [],
         rows: []
@@ -33,41 +36,41 @@ export default {
     token () {
       return this.$store.state.token
     },
-    headers () {
+    config () {
       if (this.token === null) {
-        return null
+        return {}
       }
-      return { Authorization: `Bearer ${this.token}` }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    executeUrl () {
+      const page = 0
+      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
     }
   },
-  mounted () {
-    this.execute()
+  watch: {
+    options: { /* keep */
+      handler () {
+        this.reExecute(this.id)
+      },
+      deep: true
+    }
   },
   methods: {
-    async executeFirstTime (parent) {
-      this.parent = parent
-      if (this.parent.queryId) {
-        console.warn('query is already executed once with id', this.parent.queryId)
-        return
-      }
+    async executeFirstTime (parent, sql) {
       this.loading = true
       try {
-        const data = {
-          statement: this.parent.sql
-        }
-        const page = 0
-        const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`, data, {
-          headers: this.headers
-        })
+        const res = await this.$axios.put(this.executeUrl, { statement: sql }, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
         this.loading = false
-        this.parent.queryId = res.data.id
+        parent.resultId = res.data.id
       } catch (err) {
-        console.error('query execute', err)
-        this.$toast.error('Could not execute query')
+        console.error('failed to execute query', err)
+        this.$toast.error('Failed to execute query: ' + err.response.data.message)
         this.loading = false
       }
     },
@@ -78,26 +81,24 @@ export default {
         sortable: false
       }))
     },
-    async execute () {
-      if (this.viewId < 1 && this.queryId < 1) {
-        /* query builder */
+    reExecuteUrl (resultId) {
+      const page = this.options.page - 1
+      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.type === 'view' ? '/view' : '/query') + `/${resultId}/data?${urlParams}`
+    },
+    async reExecute (id) {
+      if (id === null) {
         return
       }
       this.loading = true
       try {
-        const page = this.options.page - 1
-        const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.viewId > 0 ? `/view/${this.viewId}` : `/query/${this.queryId}`) + `/data?${urlParams}`
-        const res = await this.$axios.get(url, {
-          headers: this.headers
-        })
+        const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
         this.mapResults(res.data)
+        this.id = id
         this.loading = false
       } catch (err) {
-        if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('query execute', err)
-          this.$toast.error('Could not execute query')
-        }
+        console.error('failed to execute query', err)
+        this.$toast.error('Failed to execute query: ' + err.response.data.message)
         this.loading = false
       }
     },

@@ -1,6 +1,6 @@
 before_script: 
   - "docker version"
-  - "docker-compose version"
+  - "docker compose version"
   - "mvn --version"
   - "df / -h"
 
@@ -17,85 +17,84 @@ cache:
 image: "docker/compose:latest"
 
 stages:
-  - build
-  - tag
+  - build-backend
+  - build-frontend
+  - build-docker
+  - release
+  - deploy
 
-build-backend-metadata:
-  stage: build
+build-backend-metadata-db:
+  stage: build-backend
   script:
-    - "make build-backend-metadata"
+    - "make build-backend-metadata-db"
 
 build-backend-authentication:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-authentication"
 
 build-backend-identifier:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-identifier"
 
 build-backend-container:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-container"
 
 build-backend-database:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-database"
 
 build-backend-discovery:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-discovery"
 
 build-backend-gateway:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-gateway"
 
 build-backend-query:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-query"
 
 build-backend-table:
-  stage: build
+  stage: build-backend
   needs:
-    - build-backend-metadata
+    - build-backend-metadata-db
   script:
     - "make build-backend-table"
 
-build-docker:
-  stage: build
-  script:
-    - make build-docker
-
-build-frontend:
-  stage: build
-  script:
-    - make build-frontend
-
-release-latest:
-  stage: tag
+build-backend-metadata:
+  stage: build-backend
   needs:
-    - build-docker
-    - build-backend-metadata
+    - build-backend-metadata-db
+  script:
+    - "make build-backend-metadata"
+
+build-docker:
+  stage: build-docker
+  needs:
+    - build-backend-metadata-db
     - build-backend-authentication
     - build-backend-identifier
     - build-backend-container
@@ -104,6 +103,19 @@ release-latest:
     - build-backend-gateway
     - build-backend-query
     - build-backend-table
+    - build-backend-metadata
+  script:
+    - make build-docker
+
+build-frontend:
+  stage: build-frontend
+  script:
+    - make build-frontend
+
+release-latest:
+  stage: release
+  needs:
+    - build-docker
   only:
     refs:
       - dev
@@ -112,23 +124,26 @@ release-latest:
     - TAG=latest make release
 
 release-version:
-  stage: tag
+  stage: release
   needs:
     - build-docker
-    - build-backend-metadata
-    - build-backend-authentication
-    - build-backend-identifier
-    - build-backend-container
-    - build-backend-database
-    - build-backend-discovery
-    - build-backend-gateway
-    - build-backend-query
-    - build-backend-table
   only:
     refs:
       - master
   script:
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - make release
+    - TAG=1.1 make release
+
+deploy-dev:
+  stage: deploy
+  needs:
+    - release-latest
+  only:
+    refs:
+      - dev
+  script:
+    - TAG=latest make pull
+    - bash ./.dbrepo2/mkenv.sh
+    - make deploy-dev
 
 

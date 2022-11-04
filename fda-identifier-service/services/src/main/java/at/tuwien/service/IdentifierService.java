@@ -74,6 +74,16 @@ public interface IdentifierService {
      */
     ExportResource exportMetadata(Long id) throws IdentifierNotFoundException;
 
+    /**
+     * Exports an identifier to XML
+     *
+     * @param identifierId The identifier id.
+     * @return The XML resource, if successful.
+     * @throws IdentifierNotFoundException
+     * @throws QueryNotFoundException
+     * @throws RemoteUnavailableException
+     * @throws IdentifierRequestException
+     */
     InputStreamResource exportResource(Long identifierId)
             throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException;
 

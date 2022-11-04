@@ -68,6 +68,8 @@
 </template>
 
 <script>
+import { decodeJwt } from 'jose'
+
 const { notEmpty } = require('@/utils')
 
 export default {
@@ -76,6 +78,9 @@ export default {
       valid: false,
       loading: false,
       error: false,
+      user: {
+        username: null
+      },
       engine: {
         repository: null,
         tag: null
@@ -113,7 +118,8 @@ export default {
         }
       }
       return {
-        headers: { Authorization: `Bearer ${this.token}` }
+        headers: { Authorization: `Bearer ${this.token}` },
+        progress: false
       }
     },
     publicLabel () {
@@ -146,6 +152,10 @@ export default {
       this.loading = false
     },
     async createContainer () {
+      if (this.container.id !== null) {
+        console.warn('container id already present', this.container.id)
+        return
+      }
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
       try {
@@ -160,6 +170,10 @@ export default {
       this.loading = false
     },
     async startContainer () {
+      if (this.error) {
+        console.warn('will not attempt to start container, error in previous step')
+        return
+      }
       try {
         this.loading = true
         const res = await this.$axios.put(`/api/container/${this.container.id}`, { action: 'start' }, this.config)
@@ -171,14 +185,17 @@ export default {
       this.loading = false
     },
     async inspectContainer () {
+      if (this.error) {
+        console.warn('will not attempt to inspect container, error in previous step')
+        return
+      }
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.container.id}`, this.config)
         const { state } = res.data
         console.debug('inspected container', res.data)
         if (state !== 'running') {
-          this.error = true
-          console.error('Container is not running')
+          console.warn('Container is not running')
         }
       } catch (err) {
         this.error = true
@@ -187,6 +204,14 @@ export default {
       this.loading = false
     },
     async createDatabase () {
+      if (this.error) {
+        console.warn('will not attempt to create database, error in previous step')
+        return
+      }
+      if (this.database.id !== null) {
+        console.warn('database id already present', this.database.id)
+        return
+      }
       try {
         this.loading = true
         this.createDatabaseDto.name = this.container.name
@@ -201,26 +226,18 @@ export default {
       }
       this.loading = false
     },
-    async deleteContainer () {
-      try {
-        this.loading = true
-        await this.$axios.delete(`/api/container/${this.container.id}`, this.config)
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to delete container')
-      }
-      this.loading = false
-    },
     notEmpty,
     create () {
       this.createContainer()
         .then(() => this.startContainer()
           .then(() => this.inspectContainer()
             .then(() => this.createDatabase())))
-        .catch((err) => {
-          console.error('Failed to create database, rollback container', err)
-          this.deleteContainer()
-        })
+    },
+    loadUser () {
+      if (!this.token) {
+        return
+      }
+      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

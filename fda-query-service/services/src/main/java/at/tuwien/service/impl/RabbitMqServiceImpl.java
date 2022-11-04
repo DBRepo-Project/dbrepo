@@ -64,47 +64,49 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
+                    log.debug("handle delivery of tuple, consumerTag={}, envelope={}, properties={}, body=(bytes)",
+                            consumerTag, envelope, properties);
                     final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
                     };
                     try {
                         final TableCsvDto data = TableCsvDto.builder()
                                 .data(objectMapper.readValue(body, payloadReference))
                                 .build();
-                        log.debug("received tuple data {}", data);
+                        log.trace("tuple data {}", data);
                         queryService.insert(containerId, databaseId, tableId, data);
                     } catch (IOException e) {
-                        log.error("Failed to parse for table with id {}, because {}", tableId, e.getMessage());
+                        log.error("Failed to parse for table with id {}, reason: {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (HttpClientErrorException.Unauthorized e) {
-                        log.error("Failed to authenticate for table with id {}, because {}", tableId, e.getMessage());
+                        log.error("Failed to authenticate for table with id {}, reason: {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (HttpClientErrorException.BadRequest e) {
-                        log.error("Failed to insert for table with id {}, because {}", tableId, e.getMessage());
+                        log.error("Failed to insert for table with id {}, reason: {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (TableNotFoundException e) {
-                        log.error("Failed to find table with id {}", tableId);
+                        log.error("Failed to find table with id {}, reason: {}", tableId, e.getMessage());
                         /* ignore */
                     } catch (TableMalformedException e) {
-                        log.error("Tuple columns do not math table columns with table id {}", tableId);
+                        log.error("Tuple columns do not math table columns with table id {}, reason: {}", tableId,
+                                e.getMessage());
                         /* ignore */
                     } catch (DatabaseNotFoundException e) {
-                        log.error("Failed to find database with id {}", databaseId);
+                        log.error("Failed to find database with id {}, reason: {}", databaseId, e.getMessage());
                         /* ignore */
                     } catch (ImageNotSupportedException e) {
                         /* ignore */
                     } catch (ContainerNotFoundException e) {
-                        log.error("Failed to find container with id {}", containerId);
+                        log.error("Failed to find container with id {}, reason: {}", containerId, e.getMessage());
                         /* ignore */
                     } catch (DatabaseConnectionException e) {
-                        log.error("Failed to connect to container with id {}", containerId);
+                        log.error("Failed to connect to container with id {}, reason: {}", containerId, e.getMessage());
                         /* ignore */
                     }
                 }
             });
-            log.info("Declared consumer for table topic {}", routingKey);
             log.debug("declared consumer for table topic {} with tag {}", routingKey, consumerTag);
         } catch (IOException e) {
-            log.error("Failed to create consumer for table with id {}, because", tableId, e.getMessage());
+            log.error("Failed to create consumer for table with id {}, reason: {}", tableId, e.getMessage());
             throw new AmqpException("Failed to create consumer", e);
         } catch (Exception e) {
             log.error("Failed unknown: {}", e.getMessage());

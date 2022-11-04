@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface ImageMapper {
 
-    @Mappings({})
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageMapper.class);
+
     ImageBriefDto containerImageToImageBriefDto(ContainerImage data);
 
     @Mappings({
@@ -42,15 +43,19 @@ public interface ImageMapper {
     }
 
     default String[] environmentItemsToStringList(List<ContainerImageEnvironmentItem> data) {
-        return data.stream()
+        final String[] list = data.stream()
                 .map(i -> i.getKey() + "=" + i.getValue())
                 .toArray(String[]::new);
+        log.trace("mapped environment items {} to list {}", data, list);
+        return list;
     }
 
     default List<ContainerImageEnvironmentItem> imageEnvironmentItemDtoToEnvironmentItemList(List<ImageEnvItemDto> data) {
-        return data.stream()
+        final List<ContainerImageEnvironmentItem> list = data.stream()
                 .map(this::imageEnvItemDtoToEnvironmentItem)
                 .collect(Collectors.toList());
+        log.trace("mapped environment item {} to environment item {}", data, list);
+        return list;
     }
 
 }

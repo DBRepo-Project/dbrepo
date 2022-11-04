@@ -72,20 +72,19 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final PreparedStatement preparedStatement = tableMapper.tableToDropTableRawQuery(connection, table);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to delete table with id {}", tableId);
-            log.debug("failed to delete table {}, reason: {}", table, e.getMessage());
+            log.error("Failed to delete table {}, reason: {}", table, e.getMessage());
             throw new TableMalformedException("Failed to delete table", e);
         } finally {
             dataSource.close();
         }
         log.info("Deleted table with id {}", table.getId());
-        log.debug("deleted table {}", table);
+        log.trace("deleted table {}", table);
         /* delete in database_index - elastic search */
         tableidxRepository.delete(table);
         /* delete in column_index - elastic search */
         tableColumnidxRepository.deleteAll(table.getColumns());
         log.info("Deleted columns in elastic search with id {}", databaseId);
-        log.debug("deleted columns in elastic search {}", database);
+        log.trace("deleted columns in elastic search {}", database);
     }
 
     @Override
@@ -111,8 +110,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
-            log.error("Table name exists in database with id {} as table id {}", database.getId(),
-                    optional.get().getId());
+            log.error("Table name exists");
             throw new TableNameExistsException("Table name exists");
         }
         /* run query */
@@ -130,8 +128,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final PreparedStatement preparedStatement11 = query.getPreparedStatement();
             preparedStatement11.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create table");
-            log.debug("failed to create table, reason: {}", e.getMessage());
+            log.error("failed to create table, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
         } finally {
             dataSource.close();
@@ -146,7 +143,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setColumns(List.of());
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
-        log.debug("mapped new table {}", tmp);
         /* save in metadata database */
         final Table entity = tableRepository.save(tmp);
         entity.setColumns(createDto.getColumns()
@@ -166,8 +162,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final PreparedStatement preparedStatement = tableMapper.tableToCreateHistoryViewRawQuery(connection, entity);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create history view");
-            log.debug("failed to create history view, reason: {}", e.getMessage());
+            log.error("failed to create history view, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to create history view", e);
         } finally {
             dataSource1.close();
@@ -175,13 +170,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* save in metadata database */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {}", table.getId());
-        log.debug("created table {}", table);
+        log.trace("created table {}", table);
         /* save in database_index - elastic search */
         final Table eTbl = tableidxRepository.save(entity);
         /* save in column_index - elastic search */
         tableColumnidxRepository.saveAll(eTbl.getColumns());
         log.info("Saved table with id {} in elastic search", eTbl.getId());
-        log.debug("saved database in elastic search {}", eTbl);
+        log.trace("saved database in elastic search {}", eTbl);
         return table;
     }
 

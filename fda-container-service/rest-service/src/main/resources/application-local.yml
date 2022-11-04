@@ -20,18 +20,20 @@ spring:
     name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server.port: 9091
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
+    at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: container-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
+  network: userdb
   mount.path: /tmp
   ready.path: ./ready
   gateway.endpoint: http://localhost:9095

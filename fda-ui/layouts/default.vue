@@ -37,7 +37,7 @@
         <v-img
           contain
           class="logo"
-          src="/logo.png" />
+          :src="logo" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -187,6 +187,9 @@ export default {
       }
       console.debug('env sandbox found', this.$config.sandbox)
       return this.$config.sandbox
+    },
+    logo () {
+      return this.$config.logo
     }
   },
   watch: {

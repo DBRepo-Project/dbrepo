@@ -13,9 +13,10 @@ RUN chmod +x ./docker-entrypoint.sh
 
 RUN apk --no-cache add python3 py3-pip
 COPY ./requirements.txt ./requirements.txt
-
 RUN pip3 install -r ./requirements.txt
 
 COPY init.py ./init.py
+
+EXPOSE 15692
 
 ENTRYPOINT [ "./docker-entrypoint.sh" ]

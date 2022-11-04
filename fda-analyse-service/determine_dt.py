@@ -11,6 +11,8 @@ https://github.com/okfn/messytables/
 
 import json
 import csv
+import logging
+
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
     headers_guess, headers_processor, offset_processor
@@ -21,10 +23,11 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None):
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
     fh = open(path, 'rb')
-    if separator == None:
+    if separator is None:
         with open(path) as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())
         separator = dialect.delimiter
+        logging.debug('determined separator: %s', separator)
 
     # Load a file object:
     table_set = CSVTableSet(fh, delimiter=separator)
@@ -84,6 +87,7 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None):
                 r[headers[i]] = "text"
 
     s = {'columns': r, 'separator': separator}
+    logging.info('Determined data types %s', s)
 
     return json.dumps(s)
 

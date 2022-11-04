@@ -9,5 +9,5 @@ DBRepo
 
 --------
 
-https://dbrepo.ossdip.at/
+[[${website}]]/
 https://dbrepo-docs.ossdip.at/
