@@ -5,7 +5,6 @@
 version: "3.6"
 
 volumes:
-  metadata-db-data:
   search-service-data:
   broker-service-data:
 
@@ -126,8 +125,6 @@ services:
         condition: service_healthy
       broker-service:
         condition: service_started
-      metadata-db:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -214,9 +211,6 @@ services:
       - .env
     ports:
       - "9100:9100"
-    depends_on:
-      metadata-db:
-        condition: service_started
     logging:
       driver: json-file
 
