@@ -5,6 +5,7 @@
 version: "3.6"
 
 volumes:
+  search-service-data:
   metadata-db-data:
   broker-service-data:
 
