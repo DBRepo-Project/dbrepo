@@ -6,7 +6,6 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
-  search-service-data:
   broker-service-data:
 
 networks:
@@ -41,7 +40,6 @@ services:
       core:
     volumes:
       - metadata-db-data:/var/lib/postgresql/data
-      - ./dbrepo-metadata-db.sql:/docker-entrypoint-initdb.d/dbrepo-metadata-db.sql
     ports:
       - "5432:5432"
     env_file:
@@ -144,8 +142,6 @@ services:
         condition: service_healthy
       broker-service:
         condition: service_started
-      metadata-db:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -220,7 +216,7 @@ services:
     logging:
       driver: json-file
 
-  fda-metadata-service:
+  metadata-service:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
@@ -232,9 +228,6 @@ services:
       - .env
     ports:
       - "9100:9100"
-    depends_on:
-      metadata-db:
-        condition: service_started
     logging:
       driver: json-file
 
