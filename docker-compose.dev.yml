@@ -6,7 +6,6 @@ version: "3.6"
 
 volumes:
   search-service-data:
-  metadata-db-data:
   broker-service-data:
 
 networks:
@@ -30,23 +29,6 @@ networks:
         - subnet: 172.27.0.0/16
 
 services:
-
-  metadata-db:
-    restart: on-failure
-    container_name: dbrepo-metadata-db
-    hostname: metadata-db
-    image: fda-metadata-db
-    build: ./fda-metadata-db
-    networks:
-      core:
-    volumes:
-      - metadata-db-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
-    logging:
-      driver: json-file
 
   discovery-service:
     restart: on-failure
