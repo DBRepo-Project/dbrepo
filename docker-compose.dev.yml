@@ -31,23 +31,6 @@ networks:
 
 services:
 
-  metadata-db:
-    restart: on-failure
-    container_name: dbrepo-metadata-db
-    hostname: metadata-db
-    image: fda-metadata-db
-    build: ./fda-metadata-db
-    networks:
-      core:
-    volumes:
-      - metadata-db-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
-    logging:
-      driver: json-file
-
   discovery-service:
     restart: on-failure
     container_name: dbrepo-discovery-service
