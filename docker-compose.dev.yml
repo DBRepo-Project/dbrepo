@@ -41,6 +41,7 @@ services:
       core:
     volumes:
       - metadata-db-data:/var/lib/postgresql/data
+      - ./dbrepo-metadata-db.sql:/docker-entrypoint-initdb.d/dbrepo-metadata-db.sql
     ports:
       - "5432:5432"
     env_file:
