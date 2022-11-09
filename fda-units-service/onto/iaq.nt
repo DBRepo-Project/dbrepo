@@ -1,0 +1,561 @@
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Ontology> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2002/07/owl#imports> <http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire/ontology.ttl> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2002/07/owl#imports> <https://w3id.org/bot#> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2002/07/owl#imports> <https://w3id.org/digitalconstruction/Information> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/elements/1.1/creator> "Kostas Tsatsakis (kostas@suite5.eu)" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/elements/1.1/creator> "Spiros Kousouris (spiros@suite5.eu)" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/terms/abstract> "Indoor Air Quality ontology provides an operational framework for the orchestration of heterogeneous (environmental-, health-, user profile- related) data, in order to support user-oriented behavioral profile that incorporates also health related parameters." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/terms/contributor> "Seppo Törmä" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/terms/description> "The IAQ Ontology  formalise the model to be considered for IAQ modeling in the building environment." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/terms/license> <https://creativecommons.org/licenses/by/4.0/> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/dc/terms/title> "Digital Construction - IndoorAirQuality" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/vocab/vann/preferredNamespacePrefix> "diciaq" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://purl.org/vocab/vann/preferredNamespaceUri> "https://w3id.org/digitalconstruction/IndoorAirQuality" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2000/01/rdf-schema#comment> "The IAQ ontology was created by SUITE5 in the BIM4EEB project (GA 820660), supported through the EU Horizon 2020 Research and Innovation Programme under the topic Building information modelling adapted to efficient renovation (RIA). " .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2000/01/rdf-schema#label> "Digital construction - IndoorAirQuality" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality> <http://www.w3.org/2000/01/rdf-schema#seeAlso> <https://w3id.org/digitalconstruction> .
+# 
+# 
+# #################################################################
+# #
+# #    Annotation properties
+# #
+# #################################################################
+# 
+# 
+# http://purl.org/dc/elements/1.1/creator
+<http://purl.org/dc/elements/1.1/creator> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
+# 
+# http://purl.org/dc/elements/1.1/rights
+<http://purl.org/dc/elements/1.1/rights> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#AnnotationProperty> .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Datatypes
+# #
+# #################################################################
+# 
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Allergy
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Allergy> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#CO
+<https://w3id.org/digitalconstruction/IndoorAirQuality#CO> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#CO2
+<https://w3id.org/digitalconstruction/IndoorAirQuality#CO2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Disease
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Disease> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#ISO450001
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ISO450001> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#NOx
+<https://w3id.org/digitalconstruction/IndoorAirQuality#NOx> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#PM10
+<https://w3id.org/digitalconstruction/IndoorAirQuality#PM10> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#PM25
+<https://w3id.org/digitalconstruction/IndoorAirQuality#PM25> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#WHO
+<https://w3id.org/digitalconstruction/IndoorAirQuality#WHO> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#tVOC
+<https://w3id.org/digitalconstruction/IndoorAirQuality#tVOC> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2000/01/rdf-schema#Datatype> .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Object Properties
+# #
+# #################################################################
+# 
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasActivities
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasActivities> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasActivities> <http://www.w3.org/2000/01/rdf-schema#comment> "relationship of a Zone with the associated activities" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirQualityStation
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirQualityStation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirQualityStation> <http://www.w3.org/2000/01/rdf-schema#comment> "Air Quality Sstation is placed at specific zone/location" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasFunction
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasFunction> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasFunction> <http://www.w3.org/2000/01/rdf-schema#comment> "relationship of an IAQ performance with a specific recommendation" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthImpact
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthImpact> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthImpact> <http://www.w3.org/2000/01/rdf-schema#comment> "the condition has a health impact" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthProblem
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthProblem> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthProblem> <http://www.w3.org/2000/01/rdf-schema#comment> "relationship of a situation with a specific health issue" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasImpact
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasImpact> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasImpact> <http://www.w3.org/2000/01/rdf-schema#comment> "An IAQ condition is associated with a health condition" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxAspects
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxAspects> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxAspects> <http://www.w3.org/2000/01/rdf-schema#comment> "the regulation specifies the boundaries for IAQ parameters" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasObservations
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasObservations> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasObservations> <http://www.w3.org/2000/01/rdf-schema#comment> "A class has observations over specific metrics" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasOccupants
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasOccupants> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasOccupants> <http://www.w3.org/2000/01/rdf-schema#comment> "A building zone is assigned with specific occupants" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasProcedure
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasProcedure> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasProcedure> <http://www.w3.org/2000/01/rdf-schema#comment> "relationshipf of an IAQ KPI with a specific calculation procedure" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasSource
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasSource> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasSource> <http://www.w3.org/2000/01/rdf-schema#comment> "IAQ has a specific source" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasZoneReference
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasZoneReference> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasZoneReference> <http://www.w3.org/2000/01/rdf-schema#comment> "relationship of a regulation with a specific buidling/zone" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#isDefined
+<https://w3id.org/digitalconstruction/IndoorAirQuality#isDefined> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#isDefined> <http://www.w3.org/2000/01/rdf-schema#comment> "the key IAQ metrics/parameters are specified in the regulation" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#isRelated
+<https://w3id.org/digitalconstruction/IndoorAirQuality#isRelated> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#isRelated> <http://www.w3.org/2000/01/rdf-schema#comment> "relationship of an IAQ condition with an activity" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#relatedToPerformance
+<https://w3id.org/digitalconstruction/IndoorAirQuality#relatedToPerformance> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#relatedToPerformance> <http://www.w3.org/2000/01/rdf-schema#comment> "the condition has IAQ Performance (KPI values)" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#relatestoConditions
+<https://w3id.org/digitalconstruction/IndoorAirQuality#relatestoConditions> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#ObjectProperty> .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Data properties
+# #
+# #################################################################
+# 
+# 
+# http://purl.org/dc/elements/1.1/date
+<http://purl.org/dc/elements/1.1/date> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+# 
+# http://purl.org/dc/elements/1.1/title
+<http://purl.org/dc/elements/1.1/title> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#classificationParameters
+<https://w3id.org/digitalconstruction/IndoorAirQuality#classificationParameters> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirExchangeRate
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirExchangeRate> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirExchangeRate> <http://www.w3.org/2000/01/rdf-schema#comment> "The air exchange rate for a specific building zone" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> <http://www.w3.org/2000/01/rdf-schema#comment> "A class has a specific description" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasEffectiveDate
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasEffectiveDate> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasEffectiveDate> <http://www.w3.org/2000/01/rdf-schema#comment> "A  regulation has an effective date" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasEndTime
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasEndTime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasEndTime> <http://www.w3.org/2000/01/rdf-schema#comment> "End time of a process" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#CO> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#CO2> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#NOx> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#PM10> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#PM25> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#tVOC> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> <http://www.w3.org/2000/01/rdf-schema#comment> "IAQ types of interest" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxConstraint
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxConstraint> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxConstraint> <http://www.w3.org/2000/01/rdf-schema#comment> "The value has a max constraint" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasName
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasName> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasName> <http://www.w3.org/2000/01/rdf-schema#comment> "the class has a name" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#ISO450001> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#WHO> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher> <http://www.w3.org/2000/01/rdf-schema#comment> "the regulation has an authority responsible for" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasSourceRate
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasSourceRate> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasSourceRate> <http://www.w3.org/2000/01/rdf-schema#comment> "The resource rate of a specific IAQ source" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasStartTime
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasStartTime> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasStartTime> <http://www.w3.org/2000/01/rdf-schema#comment> "The class has a start time" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#hasType
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasType> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#Allergy> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasType> <http://www.w3.org/2000/01/rdf-schema#range> <https://w3id.org/digitalconstruction/IndoorAirQuality#Disease> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#hasType> <http://www.w3.org/2000/01/rdf-schema#comment> "A health issue has a specific type" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#probabilisticParameters
+<https://w3id.org/digitalconstruction/IndoorAirQuality#probabilisticParameters> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#timeStamp
+<https://w3id.org/digitalconstruction/IndoorAirQuality#timeStamp> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#DatatypeProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#timeStamp> <http://www.w3.org/2000/01/rdf-schema#comment> "A specific timestamp for an observation" .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Classes
+# #
+# #################################################################
+# 
+# 
+# http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid1 .
+_:genid1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid1 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasSource> .
+_:genid1 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/bot#Element> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid2 .
+_:genid2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid2 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#isRelated> .
+_:genid2 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid3 .
+_:genid3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid3 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasSourceRate> .
+_:genid3 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#float> .
+# 
+# http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid4 .
+_:genid4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid4 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasImpact> .
+_:genid4 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid5 .
+_:genid5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid5 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#isDefined> .
+_:genid5 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid6 .
+_:genid6 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid6 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid6 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid7 .
+_:genid7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid7 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasIAQType> .
+_:genid7 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+# 
+# http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualitySensor
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualitySensor> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualitySensor> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid8 .
+_:genid8 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid8 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid8 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualitySensor> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid9 .
+_:genid9 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid9 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasName> .
+_:genid9 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+# 
+# http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityStation
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityStation> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid10 .
+_:genid10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid10 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid10 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityStation> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid11 .
+_:genid11 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid11 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid11 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+# 
+# http://www.w3.org/ns/sosa/ObservableProperty
+<http://www.w3.org/ns/sosa/ObservableProperty> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+# 
+# http://www.w3.org/ns/sosa/Procedure
+<http://www.w3.org/ns/sosa/Procedure> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+# 
+# https://w3id.org/bot#Element
+<https://w3id.org/bot#Element> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid12 .
+_:genid12 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid12 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid12 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/bot#Element> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid13 .
+_:genid13 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid13 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid13 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/bot#Element> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid14 .
+_:genid14 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid14 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasSourceRate> .
+_:genid14 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#float> .
+# 
+# https://w3id.org/bot#Zone
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid15 .
+_:genid15 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid15 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/bot#hasElement> .
+_:genid15 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/bot#Element> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid16 .
+_:genid16 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid16 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasActivities> .
+_:genid16 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid17 .
+_:genid17 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid17 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirQualityStation> .
+_:genid17 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityStation> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid18 .
+_:genid18 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid18 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasOccupants> .
+_:genid18 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://xmlns.com/foaf/0.1/Person> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid19 .
+_:genid19 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid19 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#relatedToPerformance> .
+_:genid19 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid20 .
+_:genid20 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid20 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasAirExchangeRate> .
+_:genid20 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#float> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid21 .
+_:genid21 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid21 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid21 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/bot#Zone> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid22 .
+_:genid22 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid22 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasName> .
+_:genid22 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Activity
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid23 .
+_:genid23 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid23 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/bot#hasElement> .
+_:genid23 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/bot#Element> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid24 .
+_:genid24 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid24 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#relatedToPerformance> .
+_:genid24 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid25 .
+_:genid25 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid25 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid25 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid26 .
+_:genid26 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid26 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasEndTime> .
+_:genid26 <http://www.w3.org/2002/07/owl#allValuesFrom> <http://www.w3.org/2001/XMLSchema#dateTimeStamp> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid27 .
+_:genid27 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid27 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasStartTime> .
+_:genid27 <http://www.w3.org/2002/07/owl#allValuesFrom> <http://www.w3.org/2001/XMLSchema#dateTimeStamp> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#comment> "An entity representing occupants physical exercise as a main entity of the Occupants Behaviour Ontology" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> <http://www.w3.org/2000/01/rdf-schema#label> "Building related Activity" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/ns/sosa/ObservableProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid28 .
+_:genid28 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid28 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxAspects> .
+_:genid28 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid29 .
+_:genid29 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid29 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasProcedure> .
+_:genid29 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/ns/sosa/Procedure> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid30 .
+_:genid30 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid30 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid30 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid31 .
+_:genid31 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid31 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasMaxConstraint> .
+_:genid31 <http://www.w3.org/2002/07/owl#allValuesFrom> <http://www.w3.org/2001/XMLSchema#float> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#comment> "An entity for representing the index levels that correspond to specific air pollutant measurements' ranges." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> <http://www.w3.org/2000/01/rdf-schema#label> "IAQ Index" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Classification
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Classification> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Classification> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Classification> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid32 .
+_:genid32 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid32 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#classificationParameters> .
+_:genid32 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2002/07/owl#rational> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Classification> <http://www.w3.org/2000/01/rdf-schema#comment> "A classification analysis model for the extraction fo IAQ parameters" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/ns/sosa/Procedure> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid33 .
+_:genid33 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid33 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasObservations> .
+_:genid33 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid34 .
+_:genid34 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid34 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/date> .
+_:genid34 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid35 .
+_:genid35 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid35 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid35 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid36 .
+_:genid36 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid36 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid36 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#comment> "A data  driven approach for the extraction of IAQ KPIs based on existing data" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Device
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Device> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Device> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/bot#Element> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Device> <http://www.w3.org/2000/01/rdf-schema#comment> "Bulding Device and equipment" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://purl.obolibrary.org/obo/BFO_0000016> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid37 .
+_:genid37 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid37 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#relatestoConditions> .
+_:genid37 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityProperty> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid38 .
+_:genid38 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid38 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid38 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid39 .
+_:genid39 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid39 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid39 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid40 .
+_:genid40 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid40 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasType> .
+_:genid40 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#comment> "An entity for representing possible health problems the users may specify in their user profile." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> <http://www.w3.org/2000/01/rdf-schema#label> "HealthProblem" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://purl.obolibrary.org/obo/BFO_0000015> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/IndoorAirQuality#Activity> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> <http://www.w3.org/2000/01/rdf-schema#comment> "Any activity performed indoors." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IndoorActivity> <http://www.w3.org/2000/01/rdf-schema#label> "IndoorActivity" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Material
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Material> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Material> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/bot#Element> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Material> <http://www.w3.org/2000/01/rdf-schema#comment> "Building Material" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <http://www.w3.org/ns/sosa/Procedure> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid41 .
+_:genid41 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid41 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasObservations> .
+_:genid41 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://vocab.linkeddata.es/datosabiertos/def/medio-ambiente/calidad-aire#AirQualityObservation> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid42 .
+_:genid42 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid42 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/date> .
+_:genid42 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid43 .
+_:genid43 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid43 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid43 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid44 .
+_:genid44 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid44 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid44 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#ModelDrivenMethod> <http://www.w3.org/2000/01/rdf-schema#comment> "A model driven approach for the extraction of IAQ KPIs based on existing metrics" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Probabilistic
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Probabilistic> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Probabilistic> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/IndoorAirQuality#DataDrivenMethod> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Probabilistic> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid45 .
+_:genid45 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid45 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#probabilisticParameters> .
+_:genid45 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2002/07/owl#rational> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Probabilistic> <http://www.w3.org/2000/01/rdf-schema#comment> "A probablistic analysis model for the extraction fo IAQ parameters" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#RecommendMessages
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RecommendMessages> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RecommendMessages> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/Information#Recommendation> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RecommendMessages> <http://www.w3.org/2000/01/rdf-schema#comment> "Personalised recommendation for provision, a direct/indirect user may be provided upon request with one or more message, relevant to his/her preferences." .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RecommendMessages> <http://www.w3.org/2000/01/rdf-schema#label> "IndoorAirQualityRecommendation" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/Information#RegulatoryOrder> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid46 .
+_:genid46 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid46 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasHealthImpact> .
+_:genid46 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/digitalconstruction/IndoorAirQuality#HealthProblem> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid47 .
+_:genid47 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid47 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasZoneReference> .
+_:genid47 <http://www.w3.org/2002/07/owl#someValuesFrom> <https://w3id.org/bot#Zone> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid48 .
+_:genid48 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid48 <http://www.w3.org/2002/07/owl#onProperty> <http://purl.org/dc/elements/1.1/title> .
+_:genid48 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid49 .
+_:genid49 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid49 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasDescription> .
+_:genid49 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid50 .
+_:genid50 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid50 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasEffectiveDate> .
+_:genid50 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#dateTime> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#subClassOf> _:genid51 .
+_:genid51 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Restriction> .
+_:genid51 <http://www.w3.org/2002/07/owl#onProperty> <https://w3id.org/digitalconstruction/IndoorAirQuality#hasPublisher> .
+_:genid51 <http://www.w3.org/2002/07/owl#someValuesFrom> <http://www.w3.org/2001/XMLSchema#string> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#comment> "Regulation and Safety IAQ constrains as set by the respective regulation of each country or at international level" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#RegulationProperty> <http://www.w3.org/2000/01/rdf-schema#label> "IndoorAirQualityRegulation" .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#TipOTheDay
+<https://w3id.org/digitalconstruction/IndoorAirQuality#TipOTheDay> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#Class> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#TipOTheDay> <http://www.w3.org/2000/01/rdf-schema#subClassOf> <https://w3id.org/digitalconstruction/Information#Recommendation> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#TipOTheDay> <http://www.w3.org/2000/01/rdf-schema#comment> "A generic tip for the conditions in building premises" .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#TipOTheDay> <http://www.w3.org/2000/01/rdf-schema#label> "IndoorAirQualityTipOfTheDay" .
+# 
+# 
+# 
+# #################################################################
+# #
+# #    Individuals
+# #
+# #################################################################
+# 
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#AQI
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AQI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#AQI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#BILGA
+<https://w3id.org/digitalconstruction/IndoorAirQuality#BILGA> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Confinement_Index
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Confinement_Index> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Confinement_Index> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#GAPI
+<https://w3id.org/digitalconstruction/IndoorAirQuality#GAPI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#GAPI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#IAPI
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IAPI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#IAPI> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+# 
+# https://w3id.org/digitalconstruction/IndoorAirQuality#Pollution_Index
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Pollution_Index> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2002/07/owl#NamedIndividual> .
+<https://w3id.org/digitalconstruction/IndoorAirQuality#Pollution_Index> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/digitalconstruction/IndoorAirQuality#AirQualityPerformance> .
+# 
+# Generated by the OWL API (version 5.1.11) https://github.com/owlcs/owlapi/

@@ -6,6 +6,7 @@ from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyString, LazyJSONEncoder
 from list import list_units, get_uri
+from list_concept import get_concept
 from validate import validator, stringmapper
 from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_columns_concepts
@@ -134,6 +135,19 @@ def save_column_concept():
             return jsonify({'status': 'error'}), 409
     except Exception as e:
         logging.error('Failed to save column concept: %s', e)
+        res = {"success": False, "message": str(e)}
+        return jsonify(res), 500
+
+@app.route('/api/units/getconcept/<cname>', methods=["GET"], endpoint='get_concept')
+@swag_from('getconcept.yml')
+def get_concept(cname):
+    logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
+    try:
+        res = get_concept(cname)
+        logging.debug('get concept resulted in concept: %s', res)
+        return jsonify(res), 200
+    except Exception as e:
+        logging.error('Failed to get concept: %s', e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 

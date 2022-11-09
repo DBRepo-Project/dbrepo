@@ -1,0 +1,17 @@
+summary: "Get a list of concepts"
+description: "This is a simple API for returning a list of concepts contained in various ontologies."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+parameters:
+- in: "path"
+  type: "string"
+  name: "cname"
+  description: "Enter a table name or attribute name.´"
+  required: true
+responses:
+  200: 
+    description: "OK"
+  405:
+    description: "Invalid input"

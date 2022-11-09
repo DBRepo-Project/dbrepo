@@ -15,7 +15,11 @@ g.parse('onto/om-2.ttl', format='turtle')
 om = rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
 rdf_schema = rdflib.Namespace('http://www.w3.org/2000/01/rdf-schema#')
 
-r={}
+f = rdflib.Graph()
+f.namespace_manager.bind('qudt', 'http://qudt.org/2.1/vocab/unit')
+f.parse('onto/VOCAB_QUDT-UNITS-ALL-v2.1.ttl', format='turtle')
+
+#qudt = rdflib.Namespace('http://qudt.org/2.1/vocab/unit')
 
 def list_units(string,offset=0):
     if bool(re.match('^[a-zA-Z0-9\\s]+$',string)):
