@@ -10,14 +10,14 @@ import rdflib
 import re
 g = rdflib.Graph()
 g.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
-g.parse('onto/om-2.ttl', format='turtle')
+g.parse('ontologies/om-2.ttl', format='turtle')
 
 om = rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
 rdf_schema = rdflib.Namespace('http://www.w3.org/2000/01/rdf-schema#')
 
 f = rdflib.Graph()
 f.namespace_manager.bind('qudt', 'http://qudt.org/2.1/vocab/unit')
-f.parse('onto/VOCAB_QUDT-UNITS-ALL-v2.1.ttl', format='turtle')
+f.parse('ontologies/VOCAB_QUDT-UNITS-ALL-v2.1.ttl', format='turtle')
 
 #qudt = rdflib.Namespace('http://qudt.org/2.1/vocab/unit')
 
@@ -50,6 +50,6 @@ def get_uri(name):
         """
         qres = g.query(uri_query)
         for row in qres: 
-            return {"URI": row.uri}
+            return {"URI": str(row.uri)}
     else:
         return None

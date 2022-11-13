@@ -23,7 +23,7 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 EXPOSE $PORT_APP
 
 COPY ./us-yml/*.yml ./
-COPY ./onto/*.ttl ./onto/
+COPY ./ontologies/* ./ontologies/
 COPY ./*.py ./
 
 ENTRYPOINT [ "python", "./pywsgi.py" ]

@@ -1,0 +1,18 @@
+summary: "Get ontology"
+description: "This is a simple API for getting ontologies (.nt, .ttl files) used in DB-Repo."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+parameters:
+- name: file
+  required: false
+  in: formData
+  type: file
+responses:
+  200:
+    description: "OK"
+  201:
+    description: "Created"
+  405:
+    description: "Invalid input"

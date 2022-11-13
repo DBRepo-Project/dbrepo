@@ -1,0 +1,11 @@
+summary: "Get list of ontologies"
+description: "This is a simple API for getting the list of all ontologies contained in DB-Repo."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+responses:
+  200:
+    description: "OK"
+  405:
+    description: "Invalid input"

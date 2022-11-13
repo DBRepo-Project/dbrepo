@@ -1,15 +1,18 @@
 import os
+import rdflib
 from flask import Flask, request, jsonify
 import logging
 import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyString, LazyJSONEncoder
-from list import list_units, get_uri
-from list_concept import get_concept
+from list import list_units, get_uri as list_get_uri
 from validate import validator, stringmapper
 from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_columns_concepts
+from werkzeug.utils import secure_filename
+from pathlib import Path
+from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, allowed_file
 
 from logging.config import dictConfig
 
@@ -92,7 +95,7 @@ def validate(unit):
 def get_uri(uname):
     logging.debug('endpoint get uri, uname=%s, body=%s', uname, request)
     try:
-        res = get_uri(uname)
+        res = list_get_uri(uname)
         logging.debug('get uri resulted in uri: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -143,7 +146,7 @@ def save_column_concept():
 def get_concept(cname):
     logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
     try:
-        res = get_concept(cname)
+        res = search_ontologies(cname)
         logging.debug('get concept resulted in concept: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -151,6 +154,38 @@ def get_concept(cname):
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
+ONTOLOGIES_DIRECTORY = 'ontologies'
+
+@app.route('/api/ontologies', methods=["POST"], endpoint='upload_onto')
+@swag_from('ontologie.yml')
+def post_ontologies():
+    if 'file' not in request.files:
+        return "no file", 500
+    file = request.files['file']
+    if file.filename == '':
+        return "no file selected", 500
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        if ontology_exists(Path(filename).stem):
+            return "ontology name already exists", 500
+        setup_ontology_dir()
+        file.save(os.path.join(ONTOLOGIES_DIRECTORY, filename))
+        logging.debug('created ontology: %s', filename)
+        return "created", 200
+
+@app.route('/api/ontologies', methods=["GET"], endpoint='get_ontos')
+@swag_from('ontologies.yml')
+def get_ontologies():
+    print(list_ontologies())
+    return jsonify(list_ontologies())
+
+@app.route('/api/ontologies/<name>', methods=["GET"], endpoint='get_onto')
+@swag_from('ontologie.yml')
+def get_ontologies(name):
+    ontology = get_ontology(name)
+    if ontology is None:
+        return "ontology does not exist", 404
+    return ontology
 
 rest_server_port = int(os.getenv("PORT_APP"))
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),

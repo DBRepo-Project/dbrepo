@@ -7,7 +7,7 @@ produces:
 parameters:
 - in: "body"
   name: "body"
-  description: "to-do description"
+  description: "JSON containing cdbid (database ID), cid (column ID), tid (table ID), uri (URI of the concept). Make sure the concept already exists in the MDB. "
   required: true
   schema:
     type: "object"

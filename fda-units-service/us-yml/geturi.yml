@@ -8,7 +8,7 @@ parameters:
 - in: "path"
   type: "string"
   name: "uname"
-  description: "to-do description"
+  description: "Name of a unit in OM"
   required: true
 responses:
   200: 
