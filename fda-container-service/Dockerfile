@@ -28,14 +28,15 @@ ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
+ENV LOG_LEVEL=debug
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./container-service.jar
 
 EXPOSE 9091
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./container-service.jar"]
