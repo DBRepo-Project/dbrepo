@@ -19,6 +19,7 @@ image: "docker/compose:latest"
 stages:
   - build-backend
   - build-frontend
+  - test-backend
   - build-docker
   - release
 
@@ -89,6 +90,69 @@ build-backend-metadata:
     - build-backend-metadata-db
   script:
     - "make build-backend-metadata"
+
+test-backend-authentication:
+  stage: test-backend
+  needs:
+    - build-backend-authentication
+  script:
+    - "make test-authentication-service"
+
+test-backend-identifier:
+  stage: test-backend
+  needs:
+    - build-backend-authentication
+  script:
+    - "make test-identifier-service"
+
+test-backend-container:
+  stage: test-backend
+  needs:
+    - build-backend-container
+  script:
+    - "make test-container-service"
+
+test-backend-database:
+  stage: test-backend
+  needs:
+    - build-backend-database
+  script:
+    - "make test-database-service"
+
+test-backend-discovery:
+  stage: test-backend
+  needs:
+    - build-backend-discovery
+  script:
+    - "make test-discovery-service"
+
+test-backend-query:
+  stage: test-backend
+  needs:
+    - build-backend-query
+  script:
+    - "make test-query-service"
+
+test-backend-table:
+  stage: test-backend
+  needs:
+    - build-backend-table
+  script:
+    - "make test-table-service"
+
+test-backend-metadata:
+  stage: test-backend
+  needs:
+    - build-backend-metadata
+  script:
+    - "make test-metadata-service"
+
+test-backend-gateway:
+  stage: test-backend
+  needs:
+    - build-backend-gateway
+  script:
+    - "make test-gateway-service"
 
 build-docker:
   stage: build-docker

@@ -193,7 +193,7 @@ pull-metadata:
 
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service
 
-test-backend-auth:
+test-authentication-service:
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
 test-identifier-service:
