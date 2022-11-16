@@ -18,14 +18,15 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
+ENV LOG_LEVEL=debug
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./discovery/target/discovery-*.jar ./discovery.jar
+COPY --from=build ./discovery/target/discovery-*.jar ./discovery-service.jar
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./discovery.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./discovery-service.jar"]
