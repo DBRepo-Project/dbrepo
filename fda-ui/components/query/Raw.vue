@@ -29,7 +29,7 @@ export default {
   },
   data () {
     return {
-      content: this.value || '-- MariaDB 10.5 Query\n'
+      content: this.value
     }
   },
   computed: {

@@ -72,17 +72,16 @@ public interface IdentifierService {
      * @return The export, if successful.
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
-    ExportResource exportMetadata(Long id) throws IdentifierNotFoundException;
+    InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException;
 
     /**
      * Exports an identifier to XML
      *
      * @param identifierId The identifier id.
      * @return The XML resource, if successful.
-     * @throws IdentifierNotFoundException
-     * @throws QueryNotFoundException
-     * @throws RemoteUnavailableException
-     * @throws IdentifierRequestException
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     * @throws QueryNotFoundException      The query was not found in the metadata database or was deleted.
+     * @throws RemoteUnavailableException  The remote service is not available
      */
     InputStreamResource exportResource(Long identifierId)
             throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException;

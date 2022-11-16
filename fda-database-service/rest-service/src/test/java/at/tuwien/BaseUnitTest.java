@@ -122,6 +122,11 @@ public abstract class BaseUnitTest {
     public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_2_UPDATED = Instant.now();
 
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
+            .build();
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_IP = "172.28.0.5";

@@ -6,6 +6,8 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
+import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.User;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -17,6 +19,20 @@ import static java.time.temporal.ChronoUnit.HOURS;
 public abstract class BaseUnitTest {
 
     public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_EMAIL = "junit@gmail.com";
+    public final static Boolean USER_1_EMAIL_VERIFIED = false;
+    public final static Boolean USER_1_THEME_DARK = false;
+    public final static String USER_1_PASSWORD = "p455w0rdh45h";
+    public final static RoleType USER_1_ROLE_TYPE = RoleType.ROLE_RESEARCHER;
+
+    public final static User USER_1 = User.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_EMAIL_VERIFIED)
+            .themeDark(USER_1_THEME_DARK)
+            .password(USER_1_PASSWORD)
+            .roles(List.of(USER_1_ROLE_TYPE))
+            .build();
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";

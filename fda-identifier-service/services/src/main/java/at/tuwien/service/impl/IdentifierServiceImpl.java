@@ -1,12 +1,11 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResource;
-import at.tuwien.api.database.query.ExportDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.User;
@@ -20,13 +19,15 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -38,18 +39,23 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     private final UserService userService;
     private final DocumentMapper documentMapper;
+    private final EndpointConfig endpointConfig;
+    private final TemplateEngine templateEngine;
     private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
     private final RelatedIdentifierRepository relatedIdentifierRepository;
 
-    public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper,
-                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
-                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
+    public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper, EndpointConfig endpointConfig,
+                                 TemplateEngine templateEngine, DatabaseService databaseService,
+                                 IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
+                                 IdentifierRepository identifierRepository,
                                  RelatedIdentifierRepository relatedIdentifierRepository) {
         this.userService = userService;
         this.documentMapper = documentMapper;
+        this.endpointConfig = endpointConfig;
+        this.templateEngine = templateEngine;
         this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
@@ -169,23 +175,30 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource exportMetadata(Long id) throws IdentifierNotFoundException {
+    public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
         /* check */
         final Identifier identifier = find(id);
+        /* context */
+        final Context context = new Context();
+        context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        context.setVariable("creators", identifier.getCreators());
+        context.setVariable("title", identifier.getTitle());
+        context.setVariable("publisher", identifier.getPublisher());
+        context.setVariable("publicationYear", identifier.getPublicationYear());
+        context.setVariable("created", documentMapper.instantToDate(identifier.getCreated()));
+        context.setVariable("relatedIdentifiers", identifier.getRelated());
+        context.setVariable("description", identifier.getDescription());
         /* map */
-        final InputStreamResource resource = documentMapper.identifierToInputStreamResource(identifier);
+        final String body = templateEngine.process("doi.xml", context);
+        final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
         log.debug("mapped file stream {}", resource.getDescription());
-        return ExportResource.builder()
-                .filename("metadata.xml")
-                .resource(resource)
-                .build();
+        return resource;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Long identifierId)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException {
+    public InputStreamResource exportResource(Long identifierId) throws IdentifierNotFoundException,
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {
@@ -194,17 +207,20 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         /* export */
-        final ExportDto export = queryServiceGateway.export(identifier.getContainerId(),
-                identifier.getDatabaseId(), identifier.getQueryId());
-        final InputStreamResource resource;
-        try {
-            resource = new InputStreamResource(FileUtils.openInputStream(new File("/tmp/" + export.getLocation())));
-        } catch (IOException e) {
-            log.error("Failed to open export file: {}", e.getMessage());
-            throw new IdentifierRequestException("Failed to open export file", e);
+        if (identifier.getType().equals(IdentifierType.SUBSET)) {
+            /* subset */
+            final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
+                    identifier.getDatabaseId(), identifier.getQueryId());
+            final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
+            log.trace("found resource {}", resource);
+            return resource;
+        } else if (identifier.getType().equals(IdentifierType.DATABASE)) {
+            /* database, we cannot export this to csv */
+            log.warn("Failed to export database to csv, fallback to default http redirect");
+            throw new IdentifierRequestException("Failed to export database to csv");
         }
-        log.trace("found resource {}", resource);
-        return resource;
+        log.warn("Failed to export database, fallback to default http redirect");
+        throw new IdentifierRequestException("Failed to export database");
     }
 
     @Override
