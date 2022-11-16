@@ -65,7 +65,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private DockerUtil dockerUtil;
 
-    @Transactional
     @BeforeEach
     public void beforeEach() {
         afterEach();
@@ -106,7 +105,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_2);
     }
 
-    @Transactional
     @AfterEach
     public void afterEach() {
         /* stop containers and remove them */

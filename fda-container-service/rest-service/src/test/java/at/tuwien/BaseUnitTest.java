@@ -8,6 +8,8 @@ import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -24,6 +26,7 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_1_THEME_DARK = false;
     public final static String USER_1_PASSWORD = "p455w0rdh45h";
     public final static RoleType USER_1_ROLE_TYPE = RoleType.ROLE_RESEARCHER;
+    public final static GrantedAuthority USER_1_AUTHORITY = new SimpleGrantedAuthority("ROLE_RESEARCHER");
 
     public final static User USER_1 = User.builder()
             .username(USER_1_USERNAME)
@@ -32,6 +35,55 @@ public abstract class BaseUnitTest {
             .themeDark(USER_1_THEME_DARK)
             .password(USER_1_PASSWORD)
             .roles(List.of(USER_1_ROLE_TYPE))
+            .build();
+
+    public final static String USER_2_USERNAME = "dev";
+    public final static String USER_2_EMAIL = "dev@gmail.com";
+    public final static Boolean USER_2_EMAIL_VERIFIED = false;
+    public final static Boolean USER_2_THEME_DARK = false;
+    public final static String USER_2_PASSWORD = "p455w0rdh45";
+    public final static RoleType USER_2_ROLE_TYPE = RoleType.ROLE_DEVELOPER;
+    public final static GrantedAuthority USER_2_AUTHORITY = new SimpleGrantedAuthority("ROLE_DEVELOPER");
+
+    public final static User USER_2 = User.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_EMAIL_VERIFIED)
+            .themeDark(USER_2_THEME_DARK)
+            .password(USER_2_PASSWORD)
+            .roles(List.of(USER_2_ROLE_TYPE))
+            .build();
+
+    public final static String USER_3_USERNAME = "steward";
+    public final static String USER_3_EMAIL = "steward@gmail.com";
+    public final static Boolean USER_3_EMAIL_VERIFIED = false;
+    public final static Boolean USER_3_THEME_DARK = false;
+    public final static String USER_3_PASSWORD = "p455w0rdh45";
+    public final static RoleType USER_3_ROLE_TYPE = RoleType.ROLE_DATA_STEWARD;
+    public final static GrantedAuthority USER_3_AUTHORITY = new SimpleGrantedAuthority("ROLE_DATA_STEWARD");
+
+    public final static User USER_3 = User.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(USER_3_EMAIL_VERIFIED)
+            .themeDark(USER_3_THEME_DARK)
+            .password(USER_3_PASSWORD)
+            .roles(List.of(USER_3_ROLE_TYPE))
+            .build();
+
+    public final static String USER_4_USERNAME = "nobody";
+    public final static String USER_4_EMAIL = "nobody@gmail.com";
+    public final static Boolean USER_4_EMAIL_VERIFIED = false;
+    public final static Boolean USER_4_THEME_DARK = false;
+    public final static String USER_4_PASSWORD = "p455w0rdh45";
+
+    public final static User USER_4 = User.builder()
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .emailVerified(USER_4_EMAIL_VERIFIED)
+            .themeDark(USER_4_THEME_DARK)
+            .password(USER_4_PASSWORD)
+            .roles(List.of())
             .build();
 
     public final static Long IMAGE_1_ID = 1L;
