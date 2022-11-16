@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 
 import static at.tuwien.config.DockerConfig.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -118,11 +119,23 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
                 .exec();
         CONTAINER_1.setHash(response1.getId());
+        /* create fda-userdb-u02 */
+        final CreateContainerResponse response2 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
+                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withName(CONTAINER_2_NAME)
+                .withIpv4Address(CONTAINER_2_IP)
+                .withHostName(CONTAINER_2_INTERNALNAME)
+                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
+                .exec();
+        CONTAINER_2.setHash(response2.getId());
         /* start fda-userdb-u01 */
         startContainer(CONTAINER_1);
+        /* start fda-userdb-u02 */
+        startContainer(CONTAINER_2);
         /* metadata db */
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
         USER_1.setPassword(passwordEncoder.encode(USER_1_PASSWORD));
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
@@ -132,6 +145,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void afterEach() {
         stopContainer(CONTAINER_1);
         removeContainer(CONTAINER_1);
+        stopContainer(CONTAINER_2);
+        removeContainer(CONTAINER_2);
     }
 
     @AfterAll
@@ -169,6 +184,21 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
+    }
+
+    @Test
+    public void create_multiple_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
+            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
+            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* test */
+        final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
+        assertEquals(DATABASE_1_NAME, database1.getName());
+        assertEquals(1, userRepository.findAll().size());
+        final Database database2 = databaseService.create(CONTAINER_2_ID, DATABASE_2_CREATE, principal);
+        assertEquals(DATABASE_2_NAME, database2.getName());
+        assertEquals(1, userRepository.findAll().size());
     }
 
 }

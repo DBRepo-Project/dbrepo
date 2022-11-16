@@ -200,6 +200,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -210,6 +219,7 @@
                         <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
+                        <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>at/tuwien/seeder/**/*</exclude>
                         <exclude>**/HibernateConnector.class</exclude>

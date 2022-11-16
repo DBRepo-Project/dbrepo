@@ -1,38 +1,83 @@
 package at.tuwien.entities.identifier;
 
 public enum RelationType {
-    IS_CITED_BY,
-    CITES,
-    IS_SUPPLEMENT_TO,
-    IS_SUPPLEMENTED_BY,
-    IS_CONTINUED_BY,
-    CONTINUES,
-    IS_DESCRIBED_BY,
-    DESCRIBES,
-    HAS_METADATA,
-    IS_METADATA_FOR,
-    HAS_VERSION,
-    IS_VERSION_OF,
-    IS_NEW_VERSION_OF,
-    IS_PREVIOUS_VERSION_OF,
-    IS_PART_OF,
-    HAS_PART,
-    IS_PUBLISHED_IN,
-    IS_REFERENCED_BY,
-    REFERENCES,
-    IS_DOCUMENTED_BY,
-    DOCUMENTS,
-    IS_COMPILED_BY,
-    COMPILES,
-    IS_VARIANT_FORM_OF,
-    IS_ORIGINAL_FORM_OF,
-    IS_IDENTICAL_TO,
-    IS_REVIEWED_BY,
-    REVIEWS,
-    IS_DERIVED_FROM,
-    IS_SOURCE_OF,
-    IS_REQUIRED_BY,
-    REQUIRES,
-    IS_OBSOLETED_BY,
-    OBSOLETES,
+
+    IS_CITED_BY("IsCitedBy"),
+
+    CITES("Cites"),
+
+    IS_SUPPLEMENT_TO("IsSupplementTo"),
+
+    IS_SUPPLEMENTED_BY("IsSupplementedBy"),
+
+    IS_CONTINUED_BY("IsContinuedBy"),
+
+    CONTINUES("Continues"),
+
+    IS_DESCRIBED_BY("IsDescribedBy"),
+
+    DESCRIBES("Describes"),
+
+    HAS_METADATA("HasMetadata"),
+
+    IS_METADATA_FOR("IsMetadataFor"),
+
+    HAS_VERSION("HasVersion"),
+
+    IS_VERSION_OF("IsVersionOf"),
+
+    IS_NEW_VERSION_OF("IsNewVersionOf"),
+
+    IS_PREVIOUS_VERSION_OF("IsPreviousVersionOf"),
+
+    IS_PART_OF("IsPartOf"),
+
+    HAS_PART("HasPart"),
+
+    IS_PUBLISHED_IN("IsPublishedIn"),
+
+    IS_REFERENCED_BY("IsReferencedBy"),
+
+    REFERENCES("References"),
+
+    IS_DOCUMENTED_BY("IsDocumentedBy"),
+
+    DOCUMENTS("Documents"),
+
+    IS_COMPILED_BY("IsCompiledBy"),
+
+    COMPILES("Compiles"),
+
+    IS_VARIANT_FORM_OF("IsVariantFormOf"),
+
+    IS_ORIGINAL_FORM_OF("IsOriginalFormOf"),
+
+    IS_IDENTICAL_TO("IsIdenticalTo"),
+
+    IS_REVIEWED_BY("IsReviewedBy"),
+
+    REVIEWS("Reviews"),
+
+    IS_DERIVED_FROM("IsDerivedFrom"),
+
+    IS_SOURCE_OF("IsSourceOf"),
+
+    IS_REQUIRED_BY("IsRequiredBy"),
+
+    REQUIRES("Requires"),
+
+    IS_OBSOLETED_BY("IsObsoletedBy"),
+
+    OBSOLETES("Obsoletes");
+
+    private String name;
+
+    RelationType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }
