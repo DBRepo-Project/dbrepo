@@ -31,7 +31,6 @@ import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -99,20 +98,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         CONTAINER_1.setHash(request.getId());
 
         /* mock data */
-        log.debug("save image {}", ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .containers(List.of())
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build());
+        log.debug("save image {}", IMAGE_1);
         imageRepository.save(IMAGE_1);
         log.debug("save container {}", CONTAINER_1);
         containerRepository.save(CONTAINER_1);

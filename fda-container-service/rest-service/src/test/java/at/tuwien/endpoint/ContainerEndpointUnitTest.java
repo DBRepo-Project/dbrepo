@@ -6,10 +6,10 @@ import at.tuwien.auth.PermissionEvaluatorImpl;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,11 +17,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.persistence.Basic;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
@@ -39,16 +39,19 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private ContainerServiceImpl containerService;
+    private ImageRepository imageRepository;
 
     @MockBean
-    private ImageRepository imageRepository;
+    private ContainerRepository containerRepository;
 
     @MockBean
     private PermissionEvaluatorImpl permissionEvaluator;
 
     @Autowired
     private ContainerEndpoint containerEndpoint;
+
+    @Autowired
+    private ContainerServiceImpl containerService;
 
     @Test
     public void listAllDatabases_succeeds() {
@@ -83,45 +86,37 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
         assertEquals(CONTAINER_1_NAME, Objects.requireNonNull(response.getBody()).getName());
     }
 
-    @Disabled
     @Test
-    public void create_noImage_fails() throws DockerClientException, ImageNotFoundException, UserNotFoundException, ContainerAlreadyExistsException {
+    @WithMockUser(roles = "RESEARCHER")
+    public void create_noImage_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
-                .repository("image")
-                .tag("notexisting")
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
                 .thenReturn(Optional.empty());
 
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
-
-        /* test */
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertThrows(ImageNotFoundException.class, () -> {
+            containerEndpoint.create(request, principal);
+        });
     }
 
-    @Disabled
-    @WithMockUser(username = "not3x1st1ng", roles = {"ROLE_RESEARCHER"})
     @Test
-    public void create_docker_fails() throws DockerClientException, ImageNotFoundException, UserNotFoundException, ContainerAlreadyExistsException {
+    public void create_noAuth_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
-                .repository(IMAGE_1.getRepository())
-                .tag(IMAGE_1.getTag())
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
-        /* mock */
-        when(imageRepository.findByRepositoryAndTag(request.getRepository(), request.getTag()))
-                .thenReturn(Optional.of(IMAGE_1));
-
-        final ResponseEntity<ContainerBriefDto> response = containerEndpoint.create(request, principal);
-
-        /* test */
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            containerEndpoint.create(request, principal);
+        });
     }
 
     @Test
@@ -246,12 +241,8 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(roles = "RESEARCHER")
-    public void delete_noContainer_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
-        doThrow(new ContainerNotFoundException("no container"))
-                .when(containerService)
-                .remove(CONTAINER_1_ID);
-
+    @WithMockUser(roles = "DEVELOPER")
+    public void delete_noContainer_fails() {
         doReturn(true)
                 .when(permissionEvaluator)
                 .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
@@ -263,15 +254,15 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(roles = "RESEARCHER")
+    @WithMockUser(roles = "DEVELOPER")
     public void delete_success() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
-        doNothing()
-                .when(containerService)
-                .remove(CONTAINER_1_ID);
-
         doReturn(true)
                 .when(permissionEvaluator)
                 .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
+
+        /* mock */
+        when(containerRepository.findById(CONTAINER_1_ID))
+                .thenReturn(Optional.of(CONTAINER_1));
 
         /* test */
         final ResponseEntity<?> response = containerEndpoint.delete(CONTAINER_1_ID);
@@ -280,11 +271,20 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(roles = "RESEARCHER")
-    public void delete_docker_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
-        doThrow(new DockerClientException("docker failed"))
-                .when(containerService)
-                .remove(CONTAINER_1_ID);
+    public void delete_notDeveloper_fails() {
+        doReturn(true)
+                .when(permissionEvaluator)
+                .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
 
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            containerEndpoint.delete(CONTAINER_1_ID);
+        });
+    }
+
+    @Test
+    @WithMockUser(roles = "DEVELOPER")
+    public void delete_docker_fails() {
         doReturn(true)
                 .when(permissionEvaluator)
                 .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
@@ -296,12 +296,8 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(roles = "RESEARCHER")
-    public void delete_dockerStillRunning_fails() throws ContainerStillRunningException, DockerClientException, ContainerNotFoundException {
-        doThrow(new ContainerStillRunningException("container running"))
-                .when(containerService)
-                .remove(CONTAINER_1_ID);
-
+    @WithMockUser(roles = "DEVELOPER")
+    public void delete_dockerStillRunning_fails() {
         doReturn(true)
                 .when(permissionEvaluator)
                 .hasPermission(any(), eq(CONTAINER_1_ID), eq("DELETE_CONTAINER"));
