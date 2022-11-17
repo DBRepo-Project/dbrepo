@@ -61,8 +61,8 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "iid", insertable = false, updatable = false)
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
     private List<ContainerImageEnvironmentItem> environment;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
