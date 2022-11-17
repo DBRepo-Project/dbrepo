@@ -203,26 +203,10 @@ public abstract class BaseUnitTest {
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_NAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-fda-userdb-u01";
     public final static String CONTAINER_1_DATABASE = "univie";
     public final static String CONTAINER_1_IP = "172.28.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
-
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_DATABASE = "univie";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
-
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_DATABASE = "u03";
-    public final static String CONTAINER_3_IP = "173.38.0.7";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -230,8 +214,17 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .image(IMAGE_1)
             .hash(CONTAINER_1_HASH)
+            .ipAddress(CONTAINER_1_IP)
             .created(CONTAINER_1_CREATED)
             .build();
+
+    public final static Long CONTAINER_2_ID = 2L;
+    public final static String CONTAINER_2_HASH = "deadbeef";
+    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-fda-userdb-u02";
+    public final static String CONTAINER_2_DATABASE = "univie";
+    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -239,8 +232,17 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .image(IMAGE_1)
             .hash(CONTAINER_2_HASH)
+            .ipAddress(CONTAINER_2_IP)
             .created(CONTAINER_2_CREATED)
             .build();
+
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-fda-userdb-u03";
+    public final static String CONTAINER_3_DATABASE = "u03";
+    public final static String CONTAINER_3_IP = "173.38.0.7";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -248,6 +250,7 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_3_INTERNALNAME)
             .image(IMAGE_1)
             .hash(CONTAINER_3_HASH)
+            .ipAddress(CONTAINER_3_IP)
             .created(CONTAINER_3_CREATED)
             .build();
 

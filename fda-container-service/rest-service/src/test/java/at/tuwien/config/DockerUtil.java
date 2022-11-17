@@ -2,7 +2,9 @@ package at.tuwien.config;
 
 import at.tuwien.entities.container.Container;
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.HostConfig;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -13,11 +15,25 @@ import java.util.Objects;
 @Configuration
 public class DockerUtil {
 
+    private final HostConfig hostConfig;
     private final DockerClient dockerClient;
 
     @Autowired
-    public DockerUtil(DockerClient dockerClient) {
+    public DockerUtil(HostConfig hostConfig, DockerClient dockerClient) {
+        this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
+    }
+
+    public void createContainer(Container container) {
+        final CreateContainerResponse create = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())
+                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withName(container.getInternalName())
+                .withIpv4Address(container.getIpAddress())
+                .withHostName(container.getInternalName())
+                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
+                .exec();
+        container.setHash(create.getId());
+        log.trace("container {} needs to be started", container.getHash());
     }
 
     public void startContainer(Container container) throws InterruptedException {
