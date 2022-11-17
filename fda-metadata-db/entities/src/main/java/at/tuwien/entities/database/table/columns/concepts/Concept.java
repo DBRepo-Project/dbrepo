@@ -29,7 +29,7 @@ public class Concept {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = @JoinColumn(name = "uri"),
             inverseJoinColumns = {

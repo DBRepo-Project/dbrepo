@@ -71,7 +71,7 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumns({
             @JoinColumn(name = "License", referencedColumnName = "identifier")
     })
@@ -118,7 +118,7 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility = VisibilityType.SELF;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     @JoinColumns({
             @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
     })
