@@ -4,8 +4,10 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.ContainerImageEnvironmentItemRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -39,14 +41,21 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ContainerImageEnvironmentItemRepository containerImageEnvironmentItemRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Transactional
     @BeforeEach
     public void beforeEach() {
+        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
-        log.debug("save container {}", CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
+        IMAGE_1.setEnvironment(IMAGE_1_ENV);
     }
 
     @Test

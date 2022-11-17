@@ -6,6 +6,7 @@ import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
+import at.tuwien.repository.jpa.ContainerImageEnvironmentItemRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
@@ -49,6 +50,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private ContainerImageEnvironmentItemRepository containerImageEnvironmentItemRepository;
+
+    @Autowired
     private DockerClient dockerClient;
 
     @Autowired
@@ -82,6 +86,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* mock data */
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
+        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
+        IMAGE_1.setEnvironment(IMAGE_1_ENV);
     }
 
     @AfterEach
