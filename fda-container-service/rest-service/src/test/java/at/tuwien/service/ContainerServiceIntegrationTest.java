@@ -46,20 +46,17 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private ContainerRepository containerRepository;
 
-    @Autowired
-    private DockerClient dockerClient;
+    @MockBean
+    private ImageRepository imageRepository;
 
     @Autowired
-    private HostConfig hostConfig;
+    private DockerClient dockerClient;
 
     @Autowired
     private ContainerService containerService;
 
     @Autowired
     private DockerUtil dockerUtil;
-
-    @Autowired
-    private ImageRepository imageRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -85,7 +82,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
     }
 
     @AfterEach
@@ -131,6 +127,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.empty());
         when(containerRepository.save(any(Container.class)))
                 .thenReturn(CONTAINER_1);
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
 
         /* test */
         final Container container = containerService.create(request, principal);
@@ -150,6 +148,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         when(containerRepository.findByInternalName(CONTAINER_1_INTERNALNAME))
                 .thenReturn(Optional.of(CONTAINER_1));
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
 
         /* test */
         assertThrows(ContainerAlreadyExistsException.class, () -> {
@@ -163,6 +163,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.empty());
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -179,6 +181,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
+
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
             containerService.create(request, principal);
@@ -188,6 +194,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findById_notFound_fails() {
+
+        /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -199,6 +209,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -211,6 +223,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -224,6 +238,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startSavedButNotFound_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
 
@@ -237,6 +253,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_removeSavedButNotFound_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
 
@@ -250,6 +268,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void getAll_succeeds() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findAll())
                 .thenReturn(List.of(CONTAINER_1, CONTAINER_2));
 
@@ -262,6 +282,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -284,6 +306,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_stillRunning_fails() throws InterruptedException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -299,6 +323,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyRunning_fails() throws InterruptedException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -314,6 +340,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startNotFound_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.empty());
         dockerUtil.createContainer(CONTAINER_1);
@@ -328,6 +356,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyStopped_fails() throws InterruptedException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -344,6 +374,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopNeverStarted_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -358,6 +390,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopSavedButNotFound_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
 
@@ -372,6 +406,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
@@ -388,6 +424,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void inspect_notFound_fails() {
 
+        /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
+
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
             containerService.inspect(CONTAINER_2_ID);
@@ -398,6 +438,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void inspect_notRunning_fails() {
 
         /* mock */
+        when(imageRepository.findByRepositoryAndTag(IMAGE_1_REPOSITORY, IMAGE_1_TAG))
+                .thenReturn(Optional.of(IMAGE_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         dockerUtil.createContainer(CONTAINER_1);
