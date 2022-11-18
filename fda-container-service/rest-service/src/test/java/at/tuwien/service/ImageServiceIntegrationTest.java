@@ -49,13 +49,13 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ContainerRepository containerRepository;
 
-    @Transactional
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
         IMAGE_1.setEnvironment(IMAGE_1_ENV);
+        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
     }
 
     @Test

@@ -88,6 +88,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
         IMAGE_1.setEnvironment(IMAGE_1_ENV);
+        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
     }
 
     @AfterEach
