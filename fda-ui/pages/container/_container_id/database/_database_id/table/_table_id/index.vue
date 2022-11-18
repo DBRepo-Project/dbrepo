@@ -138,7 +138,10 @@ export default {
     },
     config () {
       if (this.token === null) {
-        return {}
+        return {
+          headers: {},
+          progress: false
+        }
       }
       return {
         headers: { Authorization: `Bearer ${this.token}` }

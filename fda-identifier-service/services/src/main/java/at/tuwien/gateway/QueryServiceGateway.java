@@ -25,6 +25,16 @@ public interface QueryServiceGateway {
     QueryDto find(Long containerId, Long databaseId, IdentifierCreateDto identifier, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException;
 
-    ExportDto export(Long containerId, Long databaseId, Long queryId) throws RemoteUnavailableException,
+    /**
+     * Exports a query by given id.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param queryId     The query id.
+     * @return The exported resource as bytes.
+     * @throws RemoteUnavailableException The remote service is not available.
+     * @throws QueryNotFoundException     The query was not found.
+     */
+    byte[] export(Long containerId, Long databaseId, Long queryId) throws RemoteUnavailableException,
             QueryNotFoundException;
 }

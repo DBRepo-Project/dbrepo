@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -35,13 +37,13 @@ import static at.tuwien.config.DockerConfig.hostConfig;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@ActiveProfiles("test-noelastic")
 public class AmqpServiceIntegrationTest extends BaseUnitTest {
-
-    private static final String AMQP_EXCHANGE = "fda";
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @Autowired
     private Channel channel;
@@ -118,7 +120,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createExchange_succeeds() throws AmqpException, IOException, BrokerVirtualHostCreationException {
+    public void createExchange_succeeds() throws AmqpException, IOException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */

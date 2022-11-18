@@ -61,6 +61,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
     }
 
     @PutMapping
+    @Deprecated
     @Transactional
     @Timed(value = "data.update", description = "Time needed to update data in a table")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
