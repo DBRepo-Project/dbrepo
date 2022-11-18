@@ -61,8 +61,8 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "iid", insertable = false, updatable = false)
     private List<ContainerImageEnvironmentItem> environment;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
@@ -70,7 +70,7 @@ public class ContainerImage {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
     private List<Container> containers;
 
     @Column(nullable = false, updatable = false)
