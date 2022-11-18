@@ -52,13 +52,13 @@ public class TableColumn implements Comparable<TableColumn> {
     private Long dfid;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
@@ -117,7 +117,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
