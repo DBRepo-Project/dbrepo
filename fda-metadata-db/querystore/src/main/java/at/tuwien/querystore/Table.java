@@ -35,7 +35,7 @@ public class Table implements Serializable {
     @javax.persistence.Column(nullable = false)
     private Long dbid;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<at.tuwien.querystore.Column> columns;
 
     @javax.persistence.Column(nullable = false, updatable = false)
