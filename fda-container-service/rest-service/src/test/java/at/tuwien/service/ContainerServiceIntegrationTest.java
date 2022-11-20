@@ -79,7 +79,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock data */
         userRepository.save(USER_1);
-        final ContainerImage tmp = ContainerImage.builder()
+        imageRepository.save(ContainerImage.builder()
                 .id(IMAGE_1_ID)
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
@@ -91,8 +91,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .size(IMAGE_1_SIZE)
                 .environment(IMAGE_1_ENV)
                 .defaultPort(IMAGE_1_PORT)
-                .build();
-        imageRepository.save(tmp);
+                .build());
     }
 
     @AfterEach

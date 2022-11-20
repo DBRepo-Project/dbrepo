@@ -64,6 +64,7 @@ public class Container {
     })
     private List<Database> databases;
 
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private ContainerImage image;
 
