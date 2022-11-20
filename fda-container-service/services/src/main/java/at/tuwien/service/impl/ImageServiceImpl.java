@@ -127,7 +127,7 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     @Transactional
-    public void delete(Long imageId) throws ImageNotFoundException, PersistenceException {
+    public void delete(Long imageId) throws ImageNotFoundException {
         try {
             imageRepository.deleteById(imageId);
         } catch (EntityNotFoundException | EmptyResultDataAccessException e) {

@@ -68,13 +68,13 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds()
             throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .defaultPort(IMAGE_1_PORT)
-                .environment(IMAGE_1_ENV_DTO)
+                .repository(IMAGE_2_REPOSITORY)
+                .tag(IMAGE_2_TAG)
+                .jdbcMethod(IMAGE_2_JDBC)
+                .dialect(IMAGE_2_DIALECT)
+                .driverClass(IMAGE_2_DRIVER)
+                .environment(IMAGE_2_ENV_DTO)
+                .defaultPort(IMAGE_2_PORT)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

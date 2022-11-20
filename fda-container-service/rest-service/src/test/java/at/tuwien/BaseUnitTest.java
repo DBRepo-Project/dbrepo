@@ -149,6 +149,30 @@ public abstract class BaseUnitTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
+    public final static Long IMAGE_2_ID = 2L;
+    public final static String IMAGE_2_REPOSITORY = "mysql";
+    public final static String IMAGE_2_TAG = "8.0";
+    public final static String IMAGE_2_HASH = "83b40f2726e5";
+    public final static Integer IMAGE_2_PORT = 3306;
+    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
+    public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
+    public final static String IMAGE_2_JDBC = "mysql";
+    public final static Long IMAGE_2_SIZE = 12000L;
+    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
+
+    public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
+                    .iid(IMAGE_2_ID)
+                    .key("MYSQL_USER")
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.USERNAME)
+                    .build(),
+            ImageEnvItemDto.builder()
+                    .iid(IMAGE_2_ID)
+                    .key("MYSQL_PASSWORD")
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.PASSWORD)
+                    .build());
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_NAME = "fda-userdb-u01";
