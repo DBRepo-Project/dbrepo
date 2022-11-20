@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ContainerAlreadyExistsException;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
@@ -47,8 +48,20 @@ public class ContainerServiceUnitTest extends BaseUnitTest {
     public void beforeEach() {
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
-        imageRepository.save(IMAGE_2);
+        final ContainerImage tmp = ContainerImage.builder()
+                .id(IMAGE_1_ID)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .hash(IMAGE_1_HASH)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
+                .compiled(IMAGE_1_BUILT)
+                .size(IMAGE_1_SIZE)
+                .environment(IMAGE_1_ENV)
+                .defaultPort(IMAGE_1_PORT)
+                .build();
+        imageRepository.save(tmp);
         containerRepository.save(CONTAINER_1);
     }
 

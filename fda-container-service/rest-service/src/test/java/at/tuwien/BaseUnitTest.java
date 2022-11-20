@@ -86,39 +86,51 @@ public abstract class BaseUnitTest {
             .roles(List.of())
             .build();
 
-    public final static Long IMAGE_1_ID = 1L;
-    public final static String IMAGE_1_REPOSITORY = "mysql";
-    public final static String IMAGE_1_TAG = "8.0";
+    public final static Long IMAGE_1_ID = 2L;
+    public final static String IMAGE_1_REPOSITORY = "mariadb";
+    public final static String IMAGE_1_TAG = "10.5";
     public final static String IMAGE_1_HASH = "83b40f2726e5";
     public final static Integer IMAGE_1_PORT = 3306;
-    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MySQLDialect";
-    public final static String IMAGE_1_DRIVER = "com.mysql.jdbc.Driver";
-    public final static String IMAGE_1_JDBC = "mysql";
+    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_1_JDBC = "mariadb";
     public final static Long IMAGE_1_SIZE = 12000L;
     public final static Instant IMAGE_1_BUILT = Instant.now().minus(38, HOURS);
 
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
-                    .key("MYSQL_USER")
+                    .key("MARIADB_USER")
                     .value("mariadb")
                     .type(ContainerImageEnvironmentItemType.USERNAME)
                     .build(),
             ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
-                    .key("MYSQL_PASSWORD")
+                    .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ContainerImageEnvironmentItemType.PASSWORD)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_ROOT_PASSWORD")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("UZERNAME")
+                    .value("root")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
                     .build());
 
     public final static List<ImageEnvItemDto> IMAGE_1_ENV_DTO = List.of(ImageEnvItemDto.builder()
                     .iid(IMAGE_1_ID)
-                    .key("MYSQL_USER")
+                    .key("MARIADB_USER")
                     .value("mariadb")
                     .type(ImageEnvItemTypeDto.USERNAME)
                     .build(),
             ImageEnvItemDto.builder()
                     .iid(IMAGE_1_ID)
-                    .key("MYSQL_PASSWORD")
+                    .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ImageEnvItemTypeDto.PASSWORD)
                     .build());
@@ -135,69 +147,6 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .build();
-
-    public final static Long IMAGE_2_ID = 2L;
-    public final static String IMAGE_2_REPOSITORY = "mariadb";
-    public final static String IMAGE_2_TAG = "10.5";
-    public final static String IMAGE_2_HASH = "83b40f2726e5";
-    public final static Integer IMAGE_2_PORT = 3306;
-    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_2_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_2_JDBC = "mariadb";
-    public final static Long IMAGE_2_SIZE = 12000L;
-    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
-
-    public final static List<ContainerImageEnvironmentItem> IMAGE_2_ENV = List.of(ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MARIADB_USER")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.USERNAME)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MARIADB_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MARIADB_ROOT_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("UZERNAME")
-                    .value("root")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
-                    .build());
-
-    public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_USER")
-                    .value("mariadb")
-                    .type(ImageEnvItemTypeDto.USERNAME)
-                    .build(),
-            ImageEnvItemDto.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_PASSWORD")
-                    .value("mariadb")
-                    .type(ImageEnvItemTypeDto.PASSWORD)
-                    .build());
-
-    public final static ContainerImage IMAGE_2 = ContainerImage.builder()
-            .id(IMAGE_2_ID)
-            .repository(IMAGE_2_REPOSITORY)
-            .tag(IMAGE_2_TAG)
-            .hash(IMAGE_2_HASH)
-            .jdbcMethod(IMAGE_2_JDBC)
-            .dialect(IMAGE_2_DIALECT)
-            .driverClass(IMAGE_2_DRIVER)
-            .compiled(IMAGE_2_BUILT)
-            .size(IMAGE_2_SIZE)
-            .environment(IMAGE_2_ENV)
-            .defaultPort(IMAGE_2_PORT)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;

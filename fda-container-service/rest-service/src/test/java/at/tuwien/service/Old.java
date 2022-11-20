@@ -168,8 +168,8 @@ public class Old extends BaseUnitTest {
     
     public void create_notFound_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .repository(IMAGE_2_REPOSITORY)
-                .tag(IMAGE_2_TAG)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
                 .name(CONTAINER_3_NAME)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);

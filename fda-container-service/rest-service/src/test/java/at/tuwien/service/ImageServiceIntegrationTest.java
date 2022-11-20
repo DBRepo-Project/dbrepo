@@ -48,20 +48,32 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
-        imageRepository.save(IMAGE_2);
+        final ContainerImage tmp = ContainerImage.builder()
+                .id(IMAGE_1_ID)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .hash(IMAGE_1_HASH)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
+                .compiled(IMAGE_1_BUILT)
+                .size(IMAGE_1_SIZE)
+                .environment(IMAGE_1_ENV)
+                .defaultPort(IMAGE_1_PORT)
+                .build();
+        imageRepository.save(tmp);
     }
 
     @Test
     public void create_succeeds()
             throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_2_REPOSITORY)
-                .tag(IMAGE_2_TAG)
-                .dialect(IMAGE_2_DIALECT)
-                .driverClass(IMAGE_2_DRIVER)
-                .jdbcMethod(IMAGE_2_JDBC)
-                .defaultPort(IMAGE_2_PORT)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .defaultPort(IMAGE_1_PORT)
                 .environment(IMAGE_1_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
