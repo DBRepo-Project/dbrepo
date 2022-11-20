@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
@@ -73,6 +74,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private TableRepository tableRepository;
+
+    @Autowired
+    private TableColumnRepository tableColumnRepository;
 
     @Autowired
     private ConceptRepository conceptRepository;
@@ -169,25 +173,31 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
         databaseRepository.save(DATABASE_2);
         databaseRepository.save(DATABASE_3);
-        /* create tables */
+        /* create tables 1 */
         TABLE_1.setDatabase(DATABASE_1);
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_1_COLUMNS.forEach(column -> column.setTable(TABLE_1));
         tableRepository.save(TABLE_1);
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        tableRepository.save(TABLE_1);
+        TABLE_1_COLUMNS.forEach(column -> column.setTable(TABLE_1));
+        /* create tables 2 */
         TABLE_2.setDatabase(DATABASE_1);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_2_COLUMNS.forEach(column -> column.setTable(TABLE_2));
         tableRepository.save(TABLE_2);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        tableRepository.save(TABLE_2);
+        TABLE_2_COLUMNS.forEach(column -> column.setTable(TABLE_2));
+        /* create tables 3 */
         TABLE_3.setDatabase(DATABASE_3);
         tableRepository.save(TABLE_3);
-        TABLE_4.setDatabase(DATABASE_2);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_4_COLUMNS.forEach(column -> column.setTable(TABLE_4));
-        tableRepository.save(TABLE_4);
-        TABLE_5.setDatabase(DATABASE_2);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_5_COLUMNS.forEach(column -> column.setTable(TABLE_5));
-        tableRepository.save(TABLE_5);
+//        TABLE_4.setDatabase(DATABASE_2);
+//        tableRepository.save(TABLE_4);
+//        TABLE_4.setColumns(TABLE_4_COLUMNS);
+//        TABLE_4_COLUMNS.forEach(column -> column.setTable(TABLE_4));
+//        tableRepository.save(TABLE_4);
+//        TABLE_5.setDatabase(DATABASE_2);
+//        tableRepository.save(TABLE_5);
+//        TABLE_5.setColumns(TABLE_5_COLUMNS);
+//        TABLE_5_COLUMNS.forEach(column -> column.setTable(TABLE_5));
+//        tableRepository.save(TABLE_5);
     }
 
     @Test
