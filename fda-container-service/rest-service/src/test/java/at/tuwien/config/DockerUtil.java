@@ -33,7 +33,7 @@ public class DockerUtil {
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
                 .exec();
         container.setHash(create.getId());
-        log.trace("container {} needs to be started", container.getHash());
+        log.info("container {} needs to be started", container.getHash());
     }
 
     public void startContainer(Container container) throws InterruptedException {
@@ -47,7 +47,7 @@ public class DockerUtil {
         dockerClient.startContainerCmd(container.getHash())
                 .exec();
         Thread.sleep(12 * 1000L);
-        log.debug("container {} was started", container.getHash());
+        log.info("container {} was started", container.getHash());
     }
 
     public void stopContainer(Container container) {
@@ -60,7 +60,7 @@ public class DockerUtil {
         log.trace("container {} needs to be stopped", container.getHash());
         dockerClient.stopContainerCmd(container.getHash())
                 .exec();
-        log.debug("container {} was stopped", container.getHash());
+        log.info("container {} was stopped", container.getHash());
     }
 
     public void removeContainer(Container container) {
@@ -68,7 +68,7 @@ public class DockerUtil {
         log.trace("container {} needs to be removed", container.getHash());
         dockerClient.removeContainerCmd(container.getHash())
                 .exec();
-        log.debug("container {} was removed", container.getHash());
+        log.info("container {} was removed", container.getHash());
     }
 
 }
