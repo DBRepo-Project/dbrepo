@@ -44,48 +44,48 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(imageRepository.findAll())
-                .thenReturn(List.of(IMAGE_1));
+                .thenReturn(List.of(IMAGE_2));
 
         /* test */
         final List<ContainerImage> response = imageService.getAll();
         assertEquals(1, response.size());
-        assertEquals(IMAGE_1_REPOSITORY, response.get(0).getRepository());
-        assertEquals(IMAGE_1_TAG, response.get(0).getTag());
+        assertEquals(IMAGE_2_REPOSITORY, response.get(0).getRepository());
+        assertEquals(IMAGE_2_TAG, response.get(0).getTag());
     }
 
     @Test
     public void getById_succeeds() throws ImageNotFoundException {
 
         /* mock */
-        when(imageRepository.findById(IMAGE_1_ID))
-                .thenReturn(Optional.of(IMAGE_1));
+        when(imageRepository.findById(IMAGE_2_ID))
+                .thenReturn(Optional.of(IMAGE_2));
 
         /* test */
-        final ContainerImage response = imageService.find(IMAGE_1_ID);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        final ContainerImage response = imageService.find(IMAGE_2_ID);
+        assertEquals(IMAGE_2_REPOSITORY, response.getRepository());
+        assertEquals(IMAGE_2_TAG, response.getTag());
     }
 
     @Test
     public void getById_notFound_fails() {
 
         /* mock */
-        when(imageRepository.findById(IMAGE_1_ID))
+        when(imageRepository.findById(IMAGE_2_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.find(IMAGE_1_ID);
+            imageService.find(IMAGE_2_ID);
         });
     }
 
     @Test
     public void create_duplicate_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .defaultPort(IMAGE_1_PORT)
-                .environment(IMAGE_1_ENV_DTO)
+                .repository(IMAGE_2_REPOSITORY)
+                .tag(IMAGE_2_TAG)
+                .defaultPort(IMAGE_2_PORT)
+                .environment(IMAGE_2_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -102,55 +102,55 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_succeeds() throws ImageNotFoundException, DockerClientException {
         final ImageChangeDto request = ImageChangeDto.builder()
-                .environment(IMAGE_1_ENV_DTO)
-                .defaultPort(IMAGE_1_PORT)
+                .environment(IMAGE_2_ENV_DTO)
+                .defaultPort(IMAGE_2_PORT)
                 .build();
 
         /* mock */
-        when(imageRepository.findById(IMAGE_1_ID))
-                .thenReturn(Optional.of(IMAGE_1));
+        when(imageRepository.findById(IMAGE_2_ID))
+                .thenReturn(Optional.of(IMAGE_2));
         when(imageRepository.save(any()))
-                .thenReturn(IMAGE_1);
+                .thenReturn(IMAGE_2);
 
         /* test */
-        final ContainerImage response = imageService.update(IMAGE_1_ID, request);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        final ContainerImage response = imageService.update(IMAGE_2_ID, request);
+        assertEquals(IMAGE_2_REPOSITORY, response.getRepository());
+        assertEquals(IMAGE_2_TAG, response.getTag());
     }
 
     @Test
     public void update_port_succeeds() throws ImageNotFoundException, DockerClientException {
         final ImageChangeDto request = ImageChangeDto.builder()
-                .environment(IMAGE_1_ENV_DTO)
+                .environment(IMAGE_2_ENV_DTO)
                 .defaultPort(9999)
                 .build();
 
         /* mock */
-        when(imageRepository.findById(IMAGE_1_ID))
-                .thenReturn(Optional.of(IMAGE_1));
+        when(imageRepository.findById(IMAGE_2_ID))
+                .thenReturn(Optional.of(IMAGE_2));
         when(imageRepository.save(any()))
-                .thenReturn(IMAGE_1);
+                .thenReturn(IMAGE_2);
 
         /* test */
-        final ContainerImage response = imageService.update(IMAGE_1_ID, request);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        final ContainerImage response = imageService.update(IMAGE_2_ID, request);
+        assertEquals(IMAGE_2_REPOSITORY, response.getRepository());
+        assertEquals(IMAGE_2_TAG, response.getTag());
     }
 
     @Test
     public void update_notFound_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
-                .environment(IMAGE_1_ENV_DTO)
-                .defaultPort(IMAGE_1_PORT)
+                .environment(IMAGE_2_ENV_DTO)
+                .defaultPort(IMAGE_2_PORT)
                 .build();
 
         /* mock */
-        when(imageRepository.findById(IMAGE_1_ID))
+        when(imageRepository.findById(IMAGE_2_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.update(IMAGE_1_ID, request);
+            imageService.update(IMAGE_2_ID, request);
         });
     }
 
@@ -160,10 +160,10 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(imageRepository)
-                .deleteById(IMAGE_1_ID);
+                .deleteById(IMAGE_2_ID);
 
         /* test */
-        imageService.delete(IMAGE_1_ID);
+        imageService.delete(IMAGE_2_ID);
     }
 
     @Test
@@ -172,11 +172,11 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
-                .deleteById(IMAGE_1_ID);
+                .deleteById(IMAGE_2_ID);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.delete(IMAGE_1_ID);
+            imageService.delete(IMAGE_2_ID);
         });
     }
 
@@ -184,7 +184,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void toString_omitSecrets_succeeds() {
 
         /* test */
-        final String response = IMAGE_1.toString();
+        final String response = IMAGE_2.toString();
         assertFalse(response.contains("MARIADB_PASSWORD"));
         assertFalse(response.contains("MARIADB_ROOT_PASSWORD"));
     }

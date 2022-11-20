@@ -79,7 +79,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(IMAGE_2);
     }
 
     @AfterEach
@@ -114,8 +114,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
             UserNotFoundException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .repository(IMAGE_2_REPOSITORY)
+                .tag(IMAGE_2_TAG)
                 .name(CONTAINER_1_NAME)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);

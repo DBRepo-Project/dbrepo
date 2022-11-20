@@ -80,7 +80,7 @@ public class Old extends BaseUnitTest {
 
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(IMAGE_2);
     }
 
     @AfterEach
@@ -111,302 +111,302 @@ public class Old extends BaseUnitTest {
     }
 
     
-    public void create_succeeds()
-            throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
-            UserNotFoundException {
-        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .name(CONTAINER_1_NAME)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(containerRepository.findByInternalName(CONTAINER_1_INTERNALNAME))
-                .thenReturn(Optional.empty());
-        when(containerRepository.save(any(Container.class)))
-                .thenReturn(CONTAINER_1);
-
-        /* test */
-        final Container container = containerService.create(request, principal);
-        assertEquals(CONTAINER_1_NAME, container.getName());
-        assertEquals(1, userRepository.findAll().size());
-    }
-
-    
-    public void create_conflictingNames_fails() {
-        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .name(CONTAINER_1_NAME)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(containerRepository.findByInternalName(CONTAINER_1_INTERNALNAME))
-                .thenReturn(Optional.of(CONTAINER_1));
-
-        /* test */
-        assertThrows(ContainerAlreadyExistsException.class, () -> {
-            containerService.create(request, principal);
-        });
-    }
-
-    
-    public void remove_alreadyRemoved_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.remove(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void create_notFound_fails() {
-        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .repository(IMAGE_2_REPOSITORY)
-                .tag(IMAGE_2_TAG)
-                .name(CONTAINER_3_NAME)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-
-        /* test */
-        assertThrows(ImageNotFoundException.class, () -> {
-            containerService.create(request, principal);
-        });
-    }
-
-
-    
-    public void findById_notFound_fails() {
-
-        /* mock */
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.find(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-
-        /* test */
-        containerService.start(CONTAINER_1_ID);
-    }
-
-    
-    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-
-        /* test */
-        containerService.stop(CONTAINER_1_ID);
-    }
-
-    
-    public void change_startSavedButNotFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.start(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_removeSavedButNotFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.remove(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void getAll_succeeds() {
-
-        /* mock */
-        when(containerRepository.findAll())
-                .thenReturn(List.of(CONTAINER_1, CONTAINER_2));
-
-        /* test */
-        final List<Container> response = containerService.getAll();
-        assertEquals(2, response.size());
-    }
-
-    
-    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.stopContainer(CONTAINER_1);
-
-        /* test */
-        containerService.remove(CONTAINER_1_ID);
-    }
-
-    
-    public void remove_notFound_fails() {
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.remove(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void remove_stillRunning_fails() throws InterruptedException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(ContainerStillRunningException.class, () -> {
-            containerService.remove(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_alreadyRunning_fails() throws InterruptedException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.start(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_startNotFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
-        dockerUtil.createContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.start(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_alreadyStopped_fails() throws InterruptedException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-        dockerUtil.stopContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.stop(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_stopNeverStarted_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.stop(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void change_stopSavedButNotFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-
-        /* test */
-        assertThrows(DockerClientException.class, () -> {
-            containerService.stop(CONTAINER_1_ID);
-        });
-    }
-
-    
-    public void inspect_succeeds() throws InterruptedException, DockerClientException, ContainerNotFoundException,
-            ContainerNotRunningException {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-
-        /* test */
-        final Container response = containerService.inspect(CONTAINER_1_ID);
-        assertEquals(CONTAINER_1_ID, response.getId());
-        assertEquals(CONTAINER_1_NAME, response.getName());
-        assertEquals(CONTAINER_1_INTERNALNAME, response.getInternalName());
-        assertEquals(CONTAINER_1_IP, response.getIpAddress());
-    }
-
-    
-    public void inspect_notFound_fails() {
-
-        /* mock */
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.inspect(CONTAINER_2_ID);
-        });
-    }
-
-    
-    public void inspect_notRunning_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        dockerUtil.createContainer(CONTAINER_1);
-
-        /* test */
-        assertThrows(ContainerNotRunningException.class, () -> {
-            containerService.inspect(CONTAINER_1_ID);
-        });
-    }
+//    public void create_succeeds()
+//            throws DockerClientException, ImageNotFoundException, ContainerAlreadyExistsException,
+//            UserNotFoundException {
+//        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
+//                .repository(IMAGE_1_REPOSITORY)
+//                .tag(IMAGE_1_TAG)
+//                .name(CONTAINER_1_NAME)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(containerRepository.findByInternalName(CONTAINER_1_INTERNALNAME))
+//                .thenReturn(Optional.empty());
+//        when(containerRepository.save(any(Container.class)))
+//                .thenReturn(CONTAINER_1);
+//
+//        /* test */
+//        final Container container = containerService.create(request, principal);
+//        assertEquals(CONTAINER_1_NAME, container.getName());
+//        assertEquals(1, userRepository.findAll().size());
+//    }
+//
+//
+//    public void create_conflictingNames_fails() {
+//        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
+//                .repository(IMAGE_1_REPOSITORY)
+//                .tag(IMAGE_1_TAG)
+//                .name(CONTAINER_1_NAME)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//        when(containerRepository.findByInternalName(CONTAINER_1_INTERNALNAME))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//
+//        /* test */
+//        assertThrows(ContainerAlreadyExistsException.class, () -> {
+//            containerService.create(request, principal);
+//        });
+//    }
+//
+//
+//    public void remove_alreadyRemoved_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.empty());
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            containerService.remove(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void create_notFound_fails() {
+//        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
+//                .repository(IMAGE_2_REPOSITORY)
+//                .tag(IMAGE_2_TAG)
+//                .name(CONTAINER_3_NAME)
+//                .build();
+//        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+//
+//        /* mock */
+//
+//        /* test */
+//        assertThrows(ImageNotFoundException.class, () -> {
+//            containerService.create(request, principal);
+//        });
+//    }
+//
+//
+//
+//    public void findById_notFound_fails() {
+//
+//        /* mock */
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            containerService.find(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//
+//        /* test */
+//        containerService.start(CONTAINER_1_ID);
+//    }
+//
+//
+//    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.startContainer(CONTAINER_1);
+//
+//        /* test */
+//        containerService.stop(CONTAINER_1_ID);
+//    }
+//
+//
+//    public void change_startSavedButNotFound_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.start(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_removeSavedButNotFound_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.remove(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void getAll_succeeds() {
+//
+//        /* mock */
+//        when(containerRepository.findAll())
+//                .thenReturn(List.of(CONTAINER_1, CONTAINER_2));
+//
+//        /* test */
+//        final List<Container> response = containerService.getAll();
+//        assertEquals(2, response.size());
+//    }
+//
+//
+//    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.stopContainer(CONTAINER_1);
+//
+//        /* test */
+//        containerService.remove(CONTAINER_1_ID);
+//    }
+//
+//
+//    public void remove_notFound_fails() {
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            containerService.remove(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void remove_stillRunning_fails() throws InterruptedException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.startContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(ContainerStillRunningException.class, () -> {
+//            containerService.remove(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_alreadyRunning_fails() throws InterruptedException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.startContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.start(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_startNotFound_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.empty());
+//        dockerUtil.createContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            containerService.start(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_alreadyStopped_fails() throws InterruptedException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.startContainer(CONTAINER_1);
+//        dockerUtil.stopContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.stop(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_stopNeverStarted_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.stop(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void change_stopSavedButNotFound_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//
+//        /* test */
+//        assertThrows(DockerClientException.class, () -> {
+//            containerService.stop(CONTAINER_1_ID);
+//        });
+//    }
+//
+//
+//    public void inspect_succeeds() throws InterruptedException, DockerClientException, ContainerNotFoundException,
+//            ContainerNotRunningException {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//        dockerUtil.startContainer(CONTAINER_1);
+//
+//        /* test */
+//        final Container response = containerService.inspect(CONTAINER_1_ID);
+//        assertEquals(CONTAINER_1_ID, response.getId());
+//        assertEquals(CONTAINER_1_NAME, response.getName());
+//        assertEquals(CONTAINER_1_INTERNALNAME, response.getInternalName());
+//        assertEquals(CONTAINER_1_IP, response.getIpAddress());
+//    }
+//
+//
+//    public void inspect_notFound_fails() {
+//
+//        /* mock */
+//
+//        /* test */
+//        assertThrows(ContainerNotFoundException.class, () -> {
+//            containerService.inspect(CONTAINER_2_ID);
+//        });
+//    }
+//
+//
+//    public void inspect_notRunning_fails() {
+//
+//        /* mock */
+//        when(containerRepository.findById(CONTAINER_1_ID))
+//                .thenReturn(Optional.of(CONTAINER_1));
+//        dockerUtil.createContainer(CONTAINER_1);
+//
+//        /* test */
+//        assertThrows(ContainerNotRunningException.class, () -> {
+//            containerService.inspect(CONTAINER_1_ID);
+//        });
+//    }
 
 }

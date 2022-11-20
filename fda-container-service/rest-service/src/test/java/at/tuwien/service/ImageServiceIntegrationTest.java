@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
@@ -49,7 +48,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_2);
-        imageRepository.save(IMAGE_1);
     }
 
     @Test
@@ -62,7 +60,7 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
                 .driverClass(IMAGE_2_DRIVER)
                 .jdbcMethod(IMAGE_2_JDBC)
                 .defaultPort(IMAGE_2_PORT)
-                .environment(IMAGE_1_ENV_DTO)
+                .environment(IMAGE_2_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -84,11 +82,11 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository("s0m3th1ng_n0t3x1st1ng")
                 .tag("d3v_h3ll")
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .defaultPort(IMAGE_1_PORT)
-                .environment(IMAGE_1_ENV_DTO)
+                .dialect(IMAGE_2_DIALECT)
+                .driverClass(IMAGE_2_DRIVER)
+                .jdbcMethod(IMAGE_2_JDBC)
+                .defaultPort(IMAGE_2_PORT)
+                .environment(IMAGE_2_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -101,13 +99,13 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_duplicate_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .defaultPort(IMAGE_1_PORT)
-                .driverClass(IMAGE_1_DRIVER)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .environment(IMAGE_1_ENV_DTO)
+                .repository(IMAGE_2_REPOSITORY)
+                .tag(IMAGE_2_TAG)
+                .defaultPort(IMAGE_2_PORT)
+                .driverClass(IMAGE_2_DRIVER)
+                .jdbcMethod(IMAGE_2_JDBC)
+                .dialect(IMAGE_2_DIALECT)
+                .environment(IMAGE_2_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -121,18 +119,18 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void delete_hasNoContainer_succeeds() throws ImageNotFoundException, PersistenceException {
 
         /* test */
-        imageService.delete(IMAGE_1_ID);
-        assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
+        imageService.delete(IMAGE_2_ID);
+        assertTrue(imageRepository.findById(IMAGE_2_ID).isEmpty());
         assertFalse(containerRepository.findById(CONTAINER_1_ID).isPresent()); /* container should NEVER be deletable in the metadata db */
     }
 
     @Test
     public void delete_noContainer_succeeds() throws ImageNotFoundException, PersistenceException {
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(IMAGE_2);
 
         /* test */
-        imageService.delete(IMAGE_1_ID);
-        assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
+        imageService.delete(IMAGE_2_ID);
+        assertTrue(imageRepository.findById(IMAGE_2_ID).isEmpty());
     }
 
 }
