@@ -86,6 +86,68 @@ public abstract class BaseUnitTest {
             .roles(List.of())
             .build();
 
+    public final static Long IMAGE_1_ID = 1L;
+    public final static String IMAGE_1_REPOSITORY = "mariadb";
+    public final static String IMAGE_1_TAG = "10.5";
+    public final static String IMAGE_1_HASH = "83b40f2726e5";
+    public final static Integer IMAGE_1_PORT = 5432;
+    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_1_JDBC = "mariadb";
+    public final static Long IMAGE_1_SIZE = 12000L;
+    public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
+    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_USER")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.USERNAME)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_PASSWORD")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.PASSWORD)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_ROOT_PASSWORD")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("UZERNAME")
+                    .value("root")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
+                    .build());
+
+    public final static List<ImageEnvItemDto> IMAGE_1_ENV_DTO = List.of(ImageEnvItemDto.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_USER")
+                    .value("mariadb")
+                    .type(ImageEnvItemTypeDto.USERNAME)
+                    .build(),
+            ImageEnvItemDto.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_PASSWORD")
+                    .value("mariadb")
+                    .type(ImageEnvItemTypeDto.PASSWORD)
+                    .build());
+
+    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .dialect(IMAGE_1_DIALECT)
+            .driverClass(IMAGE_1_DRIVER)
+            .compiled(IMAGE_1_BUILT)
+            .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENV)
+            .defaultPort(IMAGE_1_PORT)
+            .build();
+
     public final static Long IMAGE_2_ID = 2L;
     public final static String IMAGE_2_REPOSITORY = "mariadb";
     public final static String IMAGE_2_TAG = "10.5";
@@ -95,7 +157,7 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_2_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_2_JDBC = "mariadb";
     public final static Long IMAGE_2_SIZE = 12000L;
-    public final static Instant IMAGE_2_BUILT = Instant.now().minus(40, HOURS);
+    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
 
     public final static List<ContainerImageEnvironmentItem> IMAGE_2_ENV = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_2_ID)
@@ -123,13 +185,13 @@ public abstract class BaseUnitTest {
                     .build());
 
     public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
-                    .iid(IMAGE_2_ID)
+                    .iid(IMAGE_1_ID)
                     .key("MARIADB_USER")
                     .value("mariadb")
                     .type(ImageEnvItemTypeDto.USERNAME)
                     .build(),
             ImageEnvItemDto.builder()
-                    .iid(IMAGE_2_ID)
+                    .iid(IMAGE_1_ID)
                     .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ImageEnvItemTypeDto.PASSWORD)
@@ -161,7 +223,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
-            .image(IMAGE_2)
+            .image(IMAGE_1)
             .hash(CONTAINER_1_HASH)
             .ipAddress(CONTAINER_1_IP)
             .created(CONTAINER_1_CREATED)
@@ -179,7 +241,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
-            .image(IMAGE_2)
+            .image(IMAGE_1)
             .hash(CONTAINER_2_HASH)
             .ipAddress(CONTAINER_2_IP)
             .created(CONTAINER_2_CREATED)
@@ -197,7 +259,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
             .internalName(CONTAINER_3_INTERNALNAME)
-            .image(IMAGE_2)
+            .image(IMAGE_1)
             .hash(CONTAINER_3_HASH)
             .ipAddress(CONTAINER_3_IP)
             .created(CONTAINER_3_CREATED)
