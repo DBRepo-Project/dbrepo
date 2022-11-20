@@ -144,6 +144,7 @@ public abstract class BaseUnitTest {
             .driverClass(IMAGE_1_DRIVER)
             .compiled(IMAGE_1_BUILT)
             .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
             .build();
 

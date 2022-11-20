@@ -46,6 +46,7 @@ public class ContainerImageEnvironmentItem {
     @Enumerated(EnumType.STRING)
     private ContainerImageEnvironmentItemType type;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
