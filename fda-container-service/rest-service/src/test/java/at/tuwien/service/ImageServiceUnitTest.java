@@ -22,8 +22,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -179,5 +178,23 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         assertThrows(ImageNotFoundException.class, () -> {
             imageService.delete(IMAGE_1_ID);
         });
+    }
+
+    @Test
+    public void toString_omitSecrets_succeeds() {
+
+        /* test */
+        final String response = IMAGE_1.toString();
+        assertFalse(response.contains("MARIADB_PASSWORD"));
+        assertFalse(response.contains("MARIADB_ROOT_PASSWORD"));
+    }
+
+    @Test
+    public void toString_omitSecrets2_succeeds() {
+
+        /* test */
+        final String response = CONTAINER_1.toString();
+        assertFalse(response.contains("MARIADB_PASSWORD"));
+        assertFalse(response.contains("MARIADB_ROOT_PASSWORD"));
     }
 }
