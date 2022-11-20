@@ -86,7 +86,7 @@ public abstract class BaseUnitTest {
             .roles(List.of())
             .build();
 
-    public final static Long IMAGE_1_ID = 2L;
+    public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
     public final static String IMAGE_1_HASH = "83b40f2726e5";
