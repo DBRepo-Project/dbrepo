@@ -49,13 +49,12 @@ public class ContainerServiceUnitTest extends BaseUnitTest {
         /* mock data */
         userRepository.save(USER_1);
         final ContainerImage tmp = ContainerImage.builder()
-                .id(IMAGE_1_ID)
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .hash(IMAGE_1_HASH)
-                .jdbcMethod("mariadb")
-                .dialect("org.hibernate.dialect.MariaDBDialect")
-                .driverClass("org.mariadb.jdbc.Driver")
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
                 .compiled(IMAGE_1_BUILT)
                 .size(IMAGE_1_SIZE)
                 .environment(IMAGE_1_ENV)

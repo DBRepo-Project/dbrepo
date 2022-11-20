@@ -49,7 +49,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         userRepository.save(USER_1);
         final ContainerImage tmp = ContainerImage.builder()
-                .id(IMAGE_1_ID)
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .hash(IMAGE_1_HASH)
@@ -140,7 +139,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void delete_noContainer_succeeds() throws ImageNotFoundException, PersistenceException {
-        imageRepository.save(IMAGE_1);
 
         /* test */
         imageService.delete(IMAGE_1_ID);
