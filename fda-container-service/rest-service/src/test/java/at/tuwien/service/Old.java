@@ -6,7 +6,6 @@ import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ContainerImageEnvironmentItemRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
@@ -17,7 +16,6 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,9 +46,6 @@ public class Old extends BaseUnitTest {
 
     @Autowired
     private ImageRepository imageRepository;
-
-    @Autowired
-    private ContainerImageEnvironmentItemRepository containerImageEnvironmentItemRepository;
 
     @Autowired
     private DockerClient dockerClient;
@@ -86,9 +81,6 @@ public class Old extends BaseUnitTest {
         /* mock data */
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
-        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
-        IMAGE_1.setEnvironment(IMAGE_1_ENV);
-        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
     }
 
     @AfterEach

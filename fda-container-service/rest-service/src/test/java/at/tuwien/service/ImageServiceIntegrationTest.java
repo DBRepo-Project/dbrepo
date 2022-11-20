@@ -3,8 +3,8 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ContainerImageEnvironmentItemRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -44,18 +43,13 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ContainerImageEnvironmentItemRepository containerImageEnvironmentItemRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
 
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
+        imageRepository.save(IMAGE_2);
         imageRepository.save(IMAGE_1);
-        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
-        IMAGE_1.setEnvironment(IMAGE_1_ENV);
-        containerImageEnvironmentItemRepository.saveAll(IMAGE_1_ENV);
     }
 
     @Test
