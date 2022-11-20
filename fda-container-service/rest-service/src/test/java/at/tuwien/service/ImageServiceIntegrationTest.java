@@ -124,12 +124,12 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_hasContainer_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_hasNoContainer_succeeds() throws ImageNotFoundException, PersistenceException {
 
         /* test */
         imageService.delete(IMAGE_1_ID);
         assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
-        assertTrue(containerRepository.findById(CONTAINER_1_ID).isPresent()); /* container should NEVER be deletable in the metadata db */
+        assertFalse(containerRepository.findById(CONTAINER_1_ID).isPresent()); /* container should NEVER be deletable in the metadata db */
     }
 
     @Test
