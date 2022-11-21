@@ -171,6 +171,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -238,6 +239,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -271,6 +273,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -305,6 +308,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -339,6 +343,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -373,6 +378,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
 
@@ -407,6 +413,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -450,6 +457,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -486,6 +494,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -522,6 +531,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
 
         /* test */
@@ -556,6 +566,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
@@ -593,6 +604,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -628,6 +640,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -663,6 +676,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -710,6 +724,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
