@@ -37,7 +37,7 @@ public class QueryEndpoint extends AbstractEndpoint {
         this.storeService = storeService;
     }
 
-    @PutMapping
+    @PostMapping
     @Transactional(readOnly = true)
     @Timed(value = "query.execute", description = "Time needed to execute a query")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
