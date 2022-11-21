@@ -1,6 +1,7 @@
 before_script: 
   - "docker version"
   - "docker compose version"
+  - "docker system prune -f"
   - "mvn --version"
   - "df / -h"
 
