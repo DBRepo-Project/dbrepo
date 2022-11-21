@@ -378,6 +378,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .ipAddress(CONTAINER_1_IP)
                 .created(CONTAINER_1_CREATED)
                 .build();
+        final Container CONTAINER_2 = Container.builder()
+                .id(CONTAINER_2_ID)
+                .name(CONTAINER_2_NAME)
+                .internalName(CONTAINER_2_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_2_HASH)
+                .ipAddress(CONTAINER_2_IP)
+                .created(CONTAINER_2_CREATED)
+                .build();
         log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
