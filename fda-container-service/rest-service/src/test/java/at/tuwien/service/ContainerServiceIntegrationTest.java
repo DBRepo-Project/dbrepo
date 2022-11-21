@@ -148,6 +148,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -193,6 +202,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -204,6 +222,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -228,6 +255,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_removeSavedButNotFound_fails() {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -240,6 +276,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void getAll_succeeds() {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
 
@@ -252,6 +297,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -273,6 +327,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_stillRunning_fails() throws InterruptedException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -287,6 +350,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyRunning_fails() throws InterruptedException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -313,6 +385,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyStopped_fails() throws InterruptedException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
@@ -328,6 +409,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopNeverStarted_fails() {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -341,6 +431,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopSavedButNotFound_fails() {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -354,6 +453,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -379,6 +487,15 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void inspect_notRunning_fails() {
 
         /* mock */
+        final Container CONTAINER_1 = Container.builder()
+                .id(CONTAINER_1_ID)
+                .name(CONTAINER_1_NAME)
+                .internalName(CONTAINER_1_INTERNALNAME)
+                .image(IMAGE_1)
+                .hash(CONTAINER_1_HASH)
+                .ipAddress(CONTAINER_1_IP)
+                .created(CONTAINER_1_CREATED)
+                .build();
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
