@@ -40,9 +40,9 @@ services:
     networks:
       core:
     volumes:
-      - metadata-db-data:/var/lib/postgresql/data
+      - metadata-db-data:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3306:3306"
     logging:
       driver: json-file
 

@@ -20,9 +20,8 @@ RUN mvn -q clean install > /dev/null
 ###### SECOND STAGE ######
 FROM postgres:14-alpine as runtime
 
-ENV POSTGRES_DB=fda
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=postgres
+ENV METADATA_USERNAME=dbrepo
+ENV METADATA_PASSWORD=dbrepo
 
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD pg_isready

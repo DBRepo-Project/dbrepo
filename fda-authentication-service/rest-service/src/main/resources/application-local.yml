@@ -2,10 +2,10 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    url: jdbc:mariadb://localhost:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: dbrepo
+    password: dbrepo
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect

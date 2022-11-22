@@ -2,8 +2,8 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
-    driver-class-name: org.postgresql.Driver
+    url: "jdbc:mariadb://metadata-db:3306/${METADATA_DB}"
+    driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME}"
     password: "${METADATA_PASSWORD}"
   jpa:
