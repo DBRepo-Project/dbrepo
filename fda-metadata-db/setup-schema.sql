@@ -126,6 +126,13 @@ CREATE SEQUENCE mdb_tokens_seq
     NO MAXVALUE
     CACHE 1;
 
+CREATE SEQUENCE mdb_concepts_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
 CREATE TABLE IF NOT EXISTS mdb_users
 (
     UserID               bigint       not null DEFAULT nextval(mdb_user_seq),
@@ -306,7 +313,7 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     tDescription  TEXT,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    separator     CHAR(1),
+    `separator`   CHAR(1),
     quote         CHAR(1),
     element_null  VARCHAR(50),
     skip_lines    BIGINT,
@@ -404,21 +411,22 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS_cat
 
 CREATE TABLE IF NOT EXISTS mdb_concepts
 (
+    id         bigint    not null default nextval(mdb_concepts_seq),
     URI        TEXT,
     name       TEXT,
     created    timestamp NOT NULL DEFAULT NOW(),
     created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    PRIMARY KEY (URI)
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 (
-    cDBID   bigint    NOT NULL,
-    tID     bigint    NOT NULL,
-    cID     bigint    NOT NULL,
-    URI     TEXT REFERENCES mdb_concepts (URI),
-    created timestamp NOT NULL DEFAULT NOW(),
+    cDBID      bigint    NOT NULL,
+    tID        bigint    NOT NULL,
+    cID        bigint    NOT NULL,
+    concept_id bigint REFERENCES mdb_concepts (id), /* mysql does not allow text primary keys */
+    created    timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
@@ -509,21 +517,12 @@ CREATE TABLE IF NOT EXISTS mdb_creators
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_views_databases
-(
-    mdb_view_id  bigint,
-    databases_id bigint REFERENCES mdb_databases (id),
-    created      timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (mdb_view_id, databases_id) REFERENCES mdb_VIEW (id, vdbid),
-    PRIMARY KEY (mdb_view_id, databases_id)
-);
-
 CREATE TABLE IF NOT EXISTS mdb_feed
 (
     fDBID   bigint,
     fID     bigint,
-    fUserId INTEGER REFERENCES mdb_users (UserID),
-    fDataID INTEGER REFERENCES mdb_data (ID),
+    fUserId bigint REFERENCES mdb_users (UserID),
+    fDataID bigint REFERENCES mdb_data (ID),
     created timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
     PRIMARY KEY (fDBID, fID, fUserId, fDataID)
@@ -531,7 +530,7 @@ CREATE TABLE IF NOT EXISTS mdb_feed
 
 CREATE TABLE IF NOT EXISTS mdb_update
 (
-    uUserID INTEGER REFERENCES mdb_users (UserID),
+    uUserID bigint REFERENCES mdb_users (UserID),
     uDBID   bigint REFERENCES mdb_databases (id),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (uUserID, uDBID)
@@ -539,7 +538,7 @@ CREATE TABLE IF NOT EXISTS mdb_update
 
 CREATE TABLE IF NOT EXISTS mdb_access
 (
-    aUserID  INTEGER REFERENCES mdb_users (UserID),
+    aUserID  bigint REFERENCES mdb_users (UserID),
     aDBID    bigint REFERENCES mdb_databases (id),
     attime   TIMESTAMP,
     download BOOLEAN,
@@ -551,14 +550,14 @@ CREATE TABLE IF NOT EXISTS mdb_have_access
 (
     hUserID bigint REFERENCES mdb_users (UserID),
     hDBID   bigint REFERENCES mdb_databases (id),
-    hType ENUM('R', 'W'),
+    hType   ENUM ('R', 'W'),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (hUserID, hDBID)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_owns
 (
-    oUserID INTEGER REFERENCES mdb_users (UserID),
+    oUserID bigint REFERENCES mdb_users (UserID),
     oDBID   bigint REFERENCES mdb_databases (ID),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
