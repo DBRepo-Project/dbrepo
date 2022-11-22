@@ -210,7 +210,7 @@ services:
     logging:
       driver: json-file
 
-  fda-metadata-service:
+  metadata-service:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
