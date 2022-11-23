@@ -425,9 +425,11 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
     cDBID      bigint    NOT NULL,
     tID        bigint    NOT NULL,
     cID        bigint    NOT NULL,
-    concept_id bigint REFERENCES mdb_concepts (id), /* mysql does not allow text primary keys */
+    concept_id bigint    NOT NULL,
+    uri        text,
     created    timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
+    FOREIGN KEY (concept_id) REFERENCES mdb_concepts (id),
     PRIMARY KEY (cDBID, tID, cID)
 );
 
