@@ -23,13 +23,8 @@ public class ContainerImageEnvironmentItem {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
-    @GeneratedValue(generator = "environment-sequence")
-    @GenericGenerator(
-            name = "environment-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_environment_item_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     public Long id;
 
     @Id

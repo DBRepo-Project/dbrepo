@@ -23,13 +23,8 @@ public class TimeSecret {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "id", columnDefinition = "numeric(19, 2)")
-    @GeneratedValue(generator = "time-secret-sequence")
-    @GenericGenerator(
-            name = "time-secret-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_time_secrets_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Column(nullable = false)

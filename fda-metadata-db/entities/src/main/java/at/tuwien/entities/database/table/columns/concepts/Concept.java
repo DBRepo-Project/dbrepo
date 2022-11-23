@@ -23,12 +23,8 @@ public class Concept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "concept-sequence")
-    @GenericGenerator(
-            name = "concept-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_concepts_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Column(name = "URI", nullable = false, columnDefinition = "TEXT")

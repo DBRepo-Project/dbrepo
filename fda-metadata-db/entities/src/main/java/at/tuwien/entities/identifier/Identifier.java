@@ -33,13 +33,8 @@ public class Identifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
-    @GeneratedValue(generator = "database-sequence")
-    @GenericGenerator(
-            name = "database-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_identifiers_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Column(name = "cid", nullable = false)

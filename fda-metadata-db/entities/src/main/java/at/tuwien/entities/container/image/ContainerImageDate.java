@@ -23,12 +23,8 @@ public class ContainerImageDate {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "images-date-sequence")
-    @GenericGenerator(
-            name = "images-date-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_date_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Column(name = "iid")

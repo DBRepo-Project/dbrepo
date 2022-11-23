@@ -29,12 +29,8 @@ public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "related-identifier-sequence")
-    @GenericGenerator(
-            name = "related-identifier-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_related_identifiers_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Id

@@ -24,13 +24,9 @@ public class Token {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "id", columnDefinition = "numeric(19, 2)")
-    @GeneratedValue(generator = "tokens-sequence")
-    @GenericGenerator(
-            name = "tokens-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_tokens_seq")
-    )
+    @Column(name = "id")
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Column(nullable = false, updatable = false)

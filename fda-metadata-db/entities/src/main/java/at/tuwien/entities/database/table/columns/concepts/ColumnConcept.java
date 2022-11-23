@@ -1,6 +1,7 @@
 package at.tuwien.entities.database.table.columns.concepts;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -23,7 +24,8 @@ public class ColumnConcept implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "cid", nullable = false)
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long cid;
 
     @Id
@@ -33,4 +35,8 @@ public class ColumnConcept implements Serializable {
     @Id
     @EqualsAndHashCode.Include
     private Long cdbid;
+
+    @EqualsAndHashCode.Include
+    @Column(name = "concept_id")
+    private Long conceptId;
 }

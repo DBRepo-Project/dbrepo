@@ -32,12 +32,8 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "column-sequence")
-    @GenericGenerator(
-            name = "column-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_columns_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Id

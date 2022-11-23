@@ -26,12 +26,8 @@ public class ContainerImage {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "image-sequence")
-    @GenericGenerator(
-            name = "image-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     public Long id;
 
     @Column(nullable = false)

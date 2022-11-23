@@ -31,12 +31,8 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "table-sequence")
-    @GenericGenerator(
-            name = "table-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_tables_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Id

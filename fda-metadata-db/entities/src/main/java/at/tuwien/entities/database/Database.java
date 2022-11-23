@@ -34,12 +34,8 @@ public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "database-sequence")
-    @GenericGenerator(
-            name = "database-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_databases_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

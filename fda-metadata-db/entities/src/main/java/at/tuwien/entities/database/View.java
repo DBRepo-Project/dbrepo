@@ -23,12 +23,8 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "view-sequence")
-    @GenericGenerator(
-            name = "view-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @Id

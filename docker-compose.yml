@@ -269,8 +269,6 @@ services:
     image: fda-units-service
     networks:
       core:
-    environment:
-      EUREKA_SERVER: http://fda-discovery-service:9090/eureka/
     ports:
       - "5010:5010"
     volumes:

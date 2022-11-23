@@ -31,12 +31,8 @@ public class Container {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "container-sequence")
-    @GenericGenerator(
-            name = "container-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_containers_seq")
-    )
+    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
