@@ -98,7 +98,7 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_1_TAG = "13-alpine";
     public final static String IMAGE_1_HASH = "83b40f2726e5";
     public final static Integer IMAGE_1_PORT = 5432;
-    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.PostgreSQLDialect";
+    public final static String IMAGE_1_DIALECT = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_DRIVER = "org.postgresql.Driver";
     public final static String IMAGE_1_JDBC = "postgresql";
     public final static Long IMAGE_1_SIZE = 12000L;

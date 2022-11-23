@@ -6,6 +6,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 
+/**
+ * Join Table
+ */
 @Data
 @Entity
 @Builder
@@ -30,7 +33,4 @@ public class ColumnConcept implements Serializable {
     @Id
     @EqualsAndHashCode.Include
     private Long cdbid;
-
-    @Column(nullable = false)
-    private String uri;
 }

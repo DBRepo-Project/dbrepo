@@ -2,6 +2,7 @@ package at.tuwien.entities.database.table.columns.concepts;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -21,7 +22,16 @@ import java.util.List;
 public class Concept {
 
     @Id
-    @Column(name = "URI", nullable = false)
+    @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "concept-sequence")
+    @GenericGenerator(
+            name = "concept-sequence",
+            strategy = "enhanced-sequence",
+            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_concepts_seq")
+    )
+    private Long id;
+
+    @Column(name = "URI", nullable = false, columnDefinition = "TEXT")
     private String uri;
 
     @Column(name = "name", nullable = false)
@@ -31,7 +41,7 @@ public class Concept {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_columns_concepts",
-            joinColumns = @JoinColumn(name = "uri"),
+            joinColumns = @JoinColumn(name = "concept_id", referencedColumnName = "id", insertable = false, updatable = false),
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),

@@ -58,7 +58,7 @@ public class Table {
     @Column(nullable = false, updatable = false)
     private String topic;
 
-    @Column(name = "tdescription")
+    @Column(name = "tdescription", columnDefinition = "TEXT")
     private String description;
 
     @org.springframework.data.annotation.Transient

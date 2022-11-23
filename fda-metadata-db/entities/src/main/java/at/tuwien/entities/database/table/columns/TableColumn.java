@@ -124,7 +124,7 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "concept_id", referencedColumnName = "id"))
     private Concept concept;
 
     @Column

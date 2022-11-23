@@ -212,7 +212,7 @@ CREATE TABLE mdb_images_date
     created_at      timestamp              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     FOREIGN KEY (iid) REFERENCES mdb_images (id),
-    UNIQUE (database_format)
+    UNIQUE (database_format, unix_format, example)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_containers
@@ -328,7 +328,7 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_COLUMNS
+CREATE TABLE IF NOT EXISTS mdb_columns
 (
     ID               bigint       NOT NULL DEFAULT nextval(mdb_columns_seq),
     cDBID            bigint       NOT NULL,
@@ -353,7 +353,7 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS
     PRIMARY KEY (cDBID, tID, ID)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_COLUMNS_ENUMS
+CREATE TABLE IF NOT EXISTS mdb_columns_enums
 (
     ID            bigint                 NOT NULL DEFAULT nextval(mdb_columns_enum_seq),
     eDBID         bigint                 NOT NULL,
@@ -362,11 +362,11 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS_ENUMS
     enum_values   CHARACTER VARYING(255) NOT NULL,
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    FOREIGN KEY (eDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
+    FOREIGN KEY (eDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (ID, eDBID, tID, cID)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_COLUMNS_nom
+CREATE TABLE IF NOT EXISTS mdb_columns_nom
 (
     cDBID         bigint,
     tID           bigint,
@@ -374,11 +374,11 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS_nom
     maxlength     INTEGER,
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_COLUMNS_num
+CREATE TABLE IF NOT EXISTS mdb_columns_num
 (
     cDBID         bigint,
     tID           bigint,
@@ -392,11 +392,11 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS_num
 --    Histogram     INTEGER[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_COLUMNS_cat
+CREATE TABLE IF NOT EXISTS mdb_columns_cat
 (
     cDBID         bigint,
     tID           bigint,
@@ -405,7 +405,7 @@ CREATE TABLE IF NOT EXISTS mdb_COLUMNS_cat
 --    cat_array     TEXT[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
 
@@ -413,7 +413,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
 (
     id         bigint    not null default nextval(mdb_concepts_seq),
     URI        TEXT,
-    name       TEXT,
+    name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
     created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
@@ -427,11 +427,11 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
     cID        bigint    NOT NULL,
     concept_id bigint REFERENCES mdb_concepts (id), /* mysql does not allow text primary keys */
     created    timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_COLUMNS (cDBID, tID, ID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_VIEW
+CREATE TABLE IF NOT EXISTS mdb_view
 (
     id            bigint       NOT NULL DEFAULT nextval(mdb_view_seq),
     vcid          bigint       NOT NULL,
@@ -488,13 +488,13 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
 
 CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 (
-    id            bigint             DEFAULT nextval(mdb_related_identifiers_seq),
-    iid           bigint    NOT NULL,
-    value         text      NOT NULL,
+    id            bigint                DEFAULT nextval(mdb_related_identifiers_seq),
+    iid           bigint       NOT NULL,
+    value         varchar(255) NOT NULL,
     type          varchar(255),
     relation      varchar(255),
-    created       timestamp NOT NULL DEFAULT NOW(),
-    created_by    bigint    NOT NULL,
+    created       timestamp    NOT NULL DEFAULT NOW(),
+    created_by    bigint       NOT NULL,
     last_modified timestamp,
     deleted       timestamp,
     PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */

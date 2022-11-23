@@ -62,7 +62,7 @@ public class View {
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
 
     @Column(nullable = false, updatable = false)

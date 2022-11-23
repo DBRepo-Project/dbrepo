@@ -8,12 +8,13 @@ spring:
     password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
+        default_schema: "${METADATA_DB}"
         jdbc:
           time_zone: UTC
   application:

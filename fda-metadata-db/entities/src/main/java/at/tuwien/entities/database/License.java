@@ -21,7 +21,7 @@ public class License {
     @Column(nullable = false)
     private String identifier;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
 }

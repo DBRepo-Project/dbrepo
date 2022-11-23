@@ -65,7 +65,7 @@ public class Database {
     @Column(nullable = false)
     private String exchange;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)

@@ -60,7 +60,7 @@ public class Identifier {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @NotBlank
@@ -81,10 +81,10 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String query;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
     @Column
