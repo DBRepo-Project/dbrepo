@@ -1,141 +1,8 @@
 BEGIN;
 
-CREATE SEQUENCE mdb_images_environment_item_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_images_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_images_date_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_containers_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_user_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_user_role_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_data_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_databases_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_tables_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_columns_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_columns_enum_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_view_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_columns_concepts_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_identifiers_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_related_identifiers_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_creators_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_time_secrets_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_tokens_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-CREATE SEQUENCE mdb_concepts_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
 CREATE TABLE IF NOT EXISTS mdb_users
 (
-    UserID               bigint       not null DEFAULT nextval(mdb_user_seq),
+    UserID               bigint       not null AUTO_INCREMENT,
     external_id          VARCHAR(255) UNIQUE,
     OID                  bigint,
     username             VARCHAR(255) not null,
@@ -160,7 +27,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
 
 CREATE TABLE mdb_images
 (
-    id            bigint                 NOT NULL DEFAULT nextval(mdb_images_seq),
+    id            bigint                 NOT NULL AUTO_INCREMENT,
     repository    character varying(255) NOT NULL,
     tag           character varying(255) NOT NULL,
     default_port  integer                NOT NULL,
@@ -178,7 +45,7 @@ CREATE TABLE mdb_images
 
 CREATE TABLE mdb_time_secrets
 (
-    id        bigint                 not null default nextval(mdb_time_secrets_seq),
+    id        bigint                 not null AUTO_INCREMENT,
     uid       bigint                 not null,
     token     character varying(255) NOT NULL,
     processed boolean                NOT NULL default false,
@@ -190,20 +57,19 @@ CREATE TABLE mdb_time_secrets
 
 CREATE TABLE mdb_tokens
 (
-    id         bigint       not null default nextval(mdb_tokens_seq),
+    id         bigint       not null AUTO_INCREMENT,
     token_hash varchar(255) NOT NULL,
     creator    bigint       not null,
     created    timestamp    NOT NULL DEFAULT NOW(),
     expires    timestamp    NOT NULL,
     last_used  timestamp,
-    deleted    timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
 );
 
 CREATE TABLE mdb_images_date
 (
-    id              bigint                 NOT NULL DEFAULT nextval(mdb_images_date_seq),
+    id              bigint                 NOT NULL AUTO_INCREMENT,
     iid             bigint                 NOT NULL,
     database_format character varying(255) NOT NULL,
     unix_format     character varying(255) NOT NULL,
@@ -217,7 +83,7 @@ CREATE TABLE mdb_images_date
 
 CREATE TABLE IF NOT EXISTS mdb_containers
 (
-    id            bigint                 NOT NULL DEFAULT nextval(mdb_containers_seq),
+    id            bigint                 NOT NULL AUTO_INCREMENT,
     HASH          character varying(255) NOT NULL,
     INTERNAL_NAME character varying(255) NOT NULL,
     NAME          character varying(255) NOT NULL,
@@ -227,7 +93,6 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     created       timestamp              NOT NULL DEFAULT NOW(),
     created_by    bigint                 NOT NULL,
     LAST_MODIFIED timestamp,
-    deleted       timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
@@ -235,7 +100,7 @@ CREATE TABLE IF NOT EXISTS mdb_containers
 
 CREATE TABLE mdb_images_environment_item
 (
-    id            bigint                                                                      NOT NULL DEFAULT nextval(mdb_images_environment_item_seq),
+    id            bigint                                                                      NOT NULL AUTO_INCREMENT,
     `key`         character varying(255)                                                      NOT NULL,
     value         character varying(255)                                                      NOT NULL,
     etype         ENUM ('PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD', 'USERNAME', 'PASSWORD') NOT NULL,
@@ -248,7 +113,7 @@ CREATE TABLE mdb_images_environment_item
 
 CREATE TABLE IF NOT EXISTS mdb_data
 (
-    ID           bigint DEFAULT nextval(mdb_data_seq),
+    ID           bigint NOT NULL AUTO_INCREMENT,
     PROVENANCE   TEXT,
     FileEncoding TEXT,
     FileType     VARCHAR(100),
@@ -278,7 +143,7 @@ CREATE TABLE IF NOT EXISTS mdb_licenses
 
 CREATE TABLE IF NOT EXISTS mdb_databases
 (
-    id            bigint                 NOT NULL DEFAULT nextval(mdb_databases_seq),
+    id            bigint                 NOT NULL AUTO_INCREMENT,
     name          character varying(255) NOT NULL,
     internal_name character varying(255) NOT NULL,
     exchange      character varying(255) NOT NULL,
@@ -289,7 +154,6 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     Contactperson BIGINT,
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    deleted       timestamp              NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (Creator) REFERENCES mdb_users (UserID),
     FOREIGN KEY (Contactperson) REFERENCES mdb_users (UserID),
@@ -305,7 +169,7 @@ CREATE TABLE IF NOT EXISTS mdb_databases_subjects
 
 CREATE TABLE IF NOT EXISTS mdb_tables
 (
-    ID            bigint                 NOT NULL DEFAULT nextval(mdb_tables_seq),
+    ID            bigint                 NOT NULL AUTO_INCREMENT,
     tDBID         bigint                 NOT NULL,
     internal_name character varying(255) NOT NULL,
     topic         character varying(255) NOT NULL,
@@ -323,14 +187,14 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     created       timestamp              NOT NULL DEFAULT NOW(),
     created_by    bigint                 NOT NULL,
     last_modified timestamp,
-    PRIMARY KEY (tDBID, ID),
+    PRIMARY KEY (ID, tDBID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_columns
 (
-    ID               bigint       NOT NULL DEFAULT nextval(mdb_columns_seq),
+    ID               bigint       NOT NULL AUTO_INCREMENT,
     cDBID            bigint       NOT NULL,
     tID              bigint       NOT NULL,
     dfID             bigint,
@@ -350,12 +214,12 @@ CREATE TABLE IF NOT EXISTS mdb_columns
     last_modified    timestamp,
     FOREIGN KEY (cDBID, tID) REFERENCES mdb_tables (tDBID, ID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    PRIMARY KEY (cDBID, tID, ID)
+    PRIMARY KEY (ID, cDBID, tID)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_columns_enums
 (
-    ID            bigint                 NOT NULL DEFAULT nextval(mdb_columns_enum_seq),
+    ID            bigint                 NOT NULL AUTO_INCREMENT,
     eDBID         bigint                 NOT NULL,
     tID           bigint                 NOT NULL,
     cID           bigint                 NOT NULL,
@@ -411,7 +275,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
 
 CREATE TABLE IF NOT EXISTS mdb_concepts
 (
-    id         bigint    not null default nextval(mdb_concepts_seq),
+    id         bigint    not null AUTO_INCREMENT,
     URI        TEXT,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
@@ -435,7 +299,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 
 CREATE TABLE IF NOT EXISTS mdb_view
 (
-    id            bigint       NOT NULL DEFAULT nextval(mdb_view_seq),
+    id            bigint       NOT NULL AUTO_INCREMENT,
     vcid          bigint       NOT NULL,
     vdbid         bigint       NOT NULL,
     vName         VARCHAR(255) NOT NULL,
@@ -447,16 +311,15 @@ CREATE TABLE IF NOT EXISTS mdb_view
     InitialView   BOOLEAN      NOT NULL,
     created       timestamp    NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    deleted       timestamp,
     created_by    bigint       NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    PRIMARY KEY (vdbid, id)
+    PRIMARY KEY (id, vdbid)
 );
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers
 (
-    id                bigint                                        DEFAULT nextval(mdb_identifiers_seq),
+    id                bigint                               NOT NULL AUTO_INCREMENT,
     cid               bigint                               NOT NULL,
     dbid              bigint                               NOT NULL,
     qid               bigint,
@@ -480,7 +343,6 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     created           timestamp                            NOT NULL DEFAULT NOW(),
     created_by        bigint                               NOT NULL,
     last_modified     timestamp,
-    deleted           timestamp,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
@@ -490,7 +352,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
 
 CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 (
-    id            bigint                DEFAULT nextval(mdb_related_identifiers_seq),
+    id            bigint       NOT NULL AUTO_INCREMENT,
     iid           bigint       NOT NULL,
     value         varchar(255) NOT NULL,
     type          varchar(255),
@@ -498,7 +360,6 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
     created       timestamp    NOT NULL DEFAULT NOW(),
     created_by    bigint       NOT NULL,
     last_modified timestamp,
-    deleted       timestamp,
     PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID)
@@ -506,7 +367,7 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 
 CREATE TABLE IF NOT EXISTS mdb_creators
 (
-    id            bigint                DEFAULT nextval(mdb_creators_seq),
+    id            bigint       NOT NULL AUTO_INCREMENT,
     pid           bigint       NOT NULL,
     name          VARCHAR(255) NOT NULL,
     affiliation   VARCHAR(255),

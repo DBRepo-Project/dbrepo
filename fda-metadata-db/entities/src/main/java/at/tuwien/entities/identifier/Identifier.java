@@ -23,9 +23,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_identifiers set deleted = NOW() where id = ?")
 @javax.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
 })
@@ -33,8 +31,8 @@ public class Identifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "cid", nullable = false)
@@ -132,9 +130,6 @@ public class Identifier {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }
 

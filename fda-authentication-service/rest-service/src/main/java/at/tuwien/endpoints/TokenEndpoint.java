@@ -67,10 +67,7 @@ public class TokenEndpoint {
             TokenNotEligableException {
         log.debug("endpoint create developer token, principal={}", principal);
         /* check */
-        final List<Token> tokens = tokenService.findAll(principal)
-                .stream()
-                .filter(t -> Objects.isNull(t.getDeleted()))
-                .collect(Collectors.toList());
+        final List<Token> tokens = tokenService.findAll(principal);
         log.trace("found all tokens {}", tokens);
         if (tokens.size() >= authenticationConfig.getTokenCount()) {
             log.error("Failed to create token, already exceeded maximum quota of {}", authenticationConfig.getTokenCount());

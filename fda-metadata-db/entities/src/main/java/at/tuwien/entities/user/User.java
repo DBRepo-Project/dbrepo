@@ -25,9 +25,8 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "userid")
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "userid", updatable = false, nullable = false)
     private Long id;
 
     @Column(unique = true, nullable = false)

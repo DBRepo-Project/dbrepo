@@ -23,8 +23,8 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -68,8 +68,5 @@ public class View {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

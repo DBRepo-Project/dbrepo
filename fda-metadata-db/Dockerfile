@@ -25,17 +25,13 @@ ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV MARIADB_DATABASE="${METADATA_DB}"
 ENV MARIADB_ROOT_PASSWORD="${METADATA_PASSWORD}"
-ENV MARIADB_USERNAME="${METADATA_USERNAME}"
-ENV MARIADB_PASSWORD="${METADATA_PASSWORD}"
 
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
 
 WORKDIR /docker-entrypoint-initdb.d
 
-COPY ./setup-schema.sql ./1.sql
-COPY ./setup-user.sh ./2.sh
-RUN chmod +x ./2.sh
+COPY ./setup-schema.sql ./setup-schema.sql
 
 WORKDIR /app
 

@@ -16,7 +16,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@SQLDelete(sql = "update mdb_tokens set deleted = NOW() where id = ?")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_tokens")
@@ -24,9 +23,8 @@ public class Token {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "id")
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(nullable = false, updatable = false)
@@ -49,8 +47,5 @@ public class Token {
 
     @Column(nullable = false, updatable = false)
     private Instant lastUsed;
-
-    @Column(nullable = false, updatable = false)
-    private Instant deleted;
 
 }

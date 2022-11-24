@@ -24,9 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(indexName = "databaseindex", createIndex = false)
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_databases set deleted = NOW() where id = ?")
 @javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
 })
@@ -34,8 +32,8 @@ public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -86,8 +84,5 @@ public class Database {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

@@ -22,10 +22,8 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@SQLDelete(sql = "update mdb_containers set deleted = NOW() where id = ?")
 @Table(name = "mdb_containers")
 public class Container {
 
@@ -74,8 +72,5 @@ public class Container {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

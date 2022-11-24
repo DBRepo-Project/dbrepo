@@ -19,7 +19,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(RelatedIdentifierKey.class)
-@Where(clause = "deleted is null")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_related_identifiers", uniqueConstraints = {
@@ -29,8 +28,8 @@ public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -61,9 +60,6 @@ public class RelatedIdentifier {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }
 

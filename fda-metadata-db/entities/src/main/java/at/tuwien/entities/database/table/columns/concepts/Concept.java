@@ -23,8 +23,8 @@ public class Concept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GenericGenerator(name = "native", strategy = "native")
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "URI", nullable = false, columnDefinition = "TEXT")

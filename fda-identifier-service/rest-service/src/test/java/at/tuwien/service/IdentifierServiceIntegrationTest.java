@@ -89,7 +89,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .created(IDENTIFIER_2_CREATED)
                 .lastModified(IDENTIFIER_2_MODIFIED)
                 .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-                .deleted(Instant.now().minus(4, ChronoUnit.MINUTES))
                 .publisher(IDENTIFIER_2_PUBLISHER)
                 .type(IDENTIFIER_2_TYPE)
                 .build());

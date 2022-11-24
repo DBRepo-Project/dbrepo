@@ -107,7 +107,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         } finally {
             dataSource.close();
         }
-        database.setDeleted(Instant.now()) /* method has void, only for debug logs */;
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {}", databaseId);
