@@ -1,0 +1,19 @@
+summary: "Get ontology"
+description: "This is a simple API for getting a certain ontologies (.nt, .ttl files) stored in DB-Repo."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+parameters:
+  - name: o_name
+    in: path
+    required: true
+    type: string
+    default: "VOCAB_QUDT-UNITS-ALL-v2.1"
+responses:
+  200:
+    description: "OK"
+  404:
+    description: "Not found"
+  405:
+    description: "Invalid input"

@@ -1,0 +1,11 @@
+summary: "Get ontology"
+description: "This is a simple API for listing all ontologies (.nt, .ttl files) used in DB-Repo."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+responses:
+  200:
+    description: "OK"
+  405:
+    description: "Invalid input"

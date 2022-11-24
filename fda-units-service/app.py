@@ -87,7 +87,7 @@ def validate(unit):
     except Exception as e:
         logging.error(e)
         res = {"success": False, "message": str(e)}
-        return jsonify(res)
+        return jsonify(res), 500
 
 
 @app.route('/api/units/uri/<uname>', methods=["GET"], endpoint='uri')
@@ -141,7 +141,7 @@ def save_column_concept():
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
-@app.route('/api/units/getconcept/<cname>', methods=["GET"], endpoint='get_concept')
+@app.route('/api/ontologies/getconcept/<cname>', methods=["GET"], endpoint='get_concept')
 @swag_from('getconcept.yml')
 def get_concept(cname):
     logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
@@ -156,33 +156,33 @@ def get_concept(cname):
 
 ONTOLOGIES_DIRECTORY = 'ontologies'
 
-@app.route('/api/ontologies', methods=["POST"], endpoint='upload_onto')
-@swag_from('ontologie.yml')
+@app.route('/api/ontology', methods=["POST"], endpoint='upload_onto')
+@swag_from('ontologies.yml')
 def post_ontologies():
     if 'file' not in request.files:
         return "no file", 500
     file = request.files['file']
     if file.filename == '':
-        return "no file selected", 500
+        return "no file selected", 400
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         if ontology_exists(Path(filename).stem):
-            return "ontology name already exists", 500
+            return "ontology name already exists", 409
         setup_ontology_dir()
         file.save(os.path.join(ONTOLOGIES_DIRECTORY, filename))
         logging.debug('created ontology: %s', filename)
-        return "created", 200
+        return "created", 201
 
 @app.route('/api/ontologies', methods=["GET"], endpoint='get_ontos')
-@swag_from('ontologies.yml')
+@swag_from('ontology.yml')
 def get_ontologies():
     print(list_ontologies())
     return jsonify(list_ontologies())
 
-@app.route('/api/ontologies/<name>', methods=["GET"], endpoint='get_onto')
-@swag_from('ontologie.yml')
-def get_ontologies(name):
-    ontology = get_ontology(name)
+@app.route('/api/ontologies/<o_name>', methods=["GET"], endpoint='get_onto')
+@swag_from('ontologybyname.yml')
+def get_ontologies(o_name):
+    ontology = get_ontology(o_name)
     if ontology is None:
         return "ontology does not exist", 404
     return ontology

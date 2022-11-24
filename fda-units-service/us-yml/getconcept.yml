@@ -8,7 +8,7 @@ parameters:
 - in: "path"
   type: "string"
   name: "cname"
-  description: "Enter a table name or attribute name.´"
+  description: "Enter a concept name."
   required: true
 responses:
   200: 

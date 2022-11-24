@@ -3,6 +3,7 @@ import glob
 import sys
 import os
 from pathlib import Path
+import rdflib
 
 ALLOWED_EXTENSIONS = {'ttl', 'nt'}
 

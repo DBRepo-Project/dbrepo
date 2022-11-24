@@ -1,11 +1,22 @@
-summary: "Get list of ontologies"
-description: "This is a simple API for getting the list of all ontologies contained in DB-Repo."
+summary: "Post / Upload ontology"
+description: "This is a simple API for posting ontologies (.nt, .ttl files) to DB-Repo."
 consumes:
 - "application/json"
 produces:
 - "application/json"
+parameters:
+- name: file
+  required: false
+  in: formData
+  type: file
 responses:
   200:
     description: "OK"
+  201:
+    description: "Created"
+  400:
+    description: "Bad request"
   405:
     description: "Invalid input"
+  409:
+    description: "Conflict"

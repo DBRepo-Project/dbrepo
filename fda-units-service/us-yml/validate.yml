@@ -8,7 +8,7 @@ parameters:
 - in: "path"
   type: "string"
   name: "unit"
-  description: "to-do description"
+  description: "Validates unit against om-2."
   required: true
 responses:
   200: 
