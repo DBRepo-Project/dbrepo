@@ -58,6 +58,10 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
@@ -182,6 +186,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/templates/*.xml</include>
                 </includes>
             </resource>
         </resources>
@@ -192,10 +197,10 @@
                 <version>${jacoco.version}</version>
                 <configuration>
                     <excludes>
+                        <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/utils/**/*</exclude>
-                        <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>**/FdaCitationServiceApplication.class</exclude>
                     </excludes>

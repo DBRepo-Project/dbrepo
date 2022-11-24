@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
@@ -13,8 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,21 +53,6 @@ public class IdentifierEndpoint {
         log.info("Find identifiers resulted in {} identifiers", identifiers.size());
         log.trace("endpoint find identifiers, list={}", dto);
         return ResponseEntity.ok(dto);
-    }
-
-    @GetMapping("/{id}")
-    @Transactional(readOnly = true)
-    @Timed(value = "identifier.export", description = "Time needed to export an identifier")
-    @Operation(summary = "Export some identifier metadata")
-    public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long id)
-            throws IdentifierNotFoundException {
-        log.debug("endpoint export identifier, id={}", id);
-        final HttpHeaders headers = new HttpHeaders();
-        final ExportResource resource = identifierService.exportMetadata(id);
-        headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource.getResource());
     }
 
     @PostMapping

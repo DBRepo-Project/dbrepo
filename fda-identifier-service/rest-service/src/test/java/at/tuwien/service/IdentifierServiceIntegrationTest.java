@@ -235,6 +235,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void update_succeeds() throws IdentifierNotFoundException {
 
         /* test */

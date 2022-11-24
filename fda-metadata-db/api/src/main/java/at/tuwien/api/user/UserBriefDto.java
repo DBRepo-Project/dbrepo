@@ -1,5 +1,6 @@
 package at.tuwien.api.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -22,10 +23,12 @@ public class UserBriefDto {
     @Schema(example = "user", description = "Only contains lowercase characters")
     private String username;
 
+    @JsonIgnore
     @JsonProperty("titles_before")
     @Schema(example = "Prof.")
     private String titlesBefore;
 
+    @JsonIgnore
     @JsonProperty("titles_after")
     private String titlesAfter;
 
@@ -41,12 +44,12 @@ public class UserBriefDto {
     @Schema(example = "0000-0002-1825-0097")
     private String orcid;
 
-    @NotNull
+    @JsonIgnore
     @JsonProperty("theme_dark")
     @Schema(example = "true")
     private Boolean themeDark;
 
-    @NotNull
+    @JsonIgnore
     @JsonProperty("email_verified")
     @Schema(example = "true")
     private Boolean emailVerified;

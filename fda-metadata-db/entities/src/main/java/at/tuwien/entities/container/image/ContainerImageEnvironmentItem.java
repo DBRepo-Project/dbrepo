@@ -46,6 +46,13 @@ public class ContainerImageEnvironmentItem {
     @Enumerated(EnumType.STRING)
     private ContainerImageEnvironmentItemType type;
 
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private ContainerImage image;
+
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;

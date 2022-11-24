@@ -193,31 +193,31 @@ pull-metadata:
 
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service
 
-test-backend-auth:
+test-authentication-service: build-backend-metadata-db
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-identifier-service:
+test-identifier-service: build-backend-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-container-service:
+test-container-service: build-backend-metadata-db
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
-test-database-service:
+test-database-service: build-backend-metadata-db
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-discovery-service:
+test-discovery-service: build-backend-metadata-db
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-gateway-service:
+test-gateway-service: build-backend-metadata-db
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-query-service:
+test-query-service: build-backend-metadata-db
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-table-service:
+test-table-service: build-backend-metadata-db
 	mvn -f ./fda-table-service/pom.xml clean test verify
 
-test-metadata-service:
+test-metadata-service: build-backend-metadata-db
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
 coverage-frontend: clean build-frontend

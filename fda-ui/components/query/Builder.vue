@@ -99,6 +99,15 @@
             <v-tab-item>
               <v-row>
                 <v-col>
+                  <v-alert
+                    border="left"
+                    color="info">
+                    Currently, comments in the query (e.g. <code>-- Comment</code>) are not supported!
+                  </v-alert>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col>
                   <QueryRaw
                     v-model="rawSQL"
                     class="mt-2 ml-3" />
@@ -165,9 +174,6 @@ export default {
     columnNames () {
       return this.selectItems && this.selectItems.map(s => s.internal_name)
     },
-    defaultRawSqlText () {
-      return '-- MariaDB 10.5 Query'
-    },
     tableId () {
       return this.table.id
     },
@@ -198,10 +204,7 @@ export default {
       return null
     },
     canExecute () {
-      if (!this.sql || this.sql.length === 0) {
-        return false
-      }
-      return this.sql.trim() !== this.defaultRawSqlText
+      return !(!this.sql || this.sql.length === 0)
     },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
@@ -293,13 +296,8 @@ export default {
         this.resultId = res.data.id
         console.debug('view', res.data)
       } catch (err) {
-        if (err.response.status === 423) {
-          console.error('View name exist', err)
-          this.$toast.error('View name already exists')
-          return
-        }
         console.error('Failed to create view', err)
-        this.$toast.error('Failed to create view ' + err.response.text)
+        this.$toast.error(err.response.data.message)
       }
       this.loadingQuery = false
       await this.$refs.queryResults.reExecute(this.resultId)

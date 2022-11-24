@@ -68,13 +68,19 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("failed to get image with name {}:{}", createDto.getRepository(), createDto.getTag());
             throw new ImageNotFoundException("image was not found in metadata database.");
         }
-        /* save to metadata database */
+        /* entity */
         final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         Container container = new Container();
         container.setImage(image.get());
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
+        /* check duplicate */
+        final Optional<Container> optional = containerRepository.findByInternalName(container.getInternalName());
+        if (optional.isPresent()) {
+            log.error("Failed to create container with internal name {}", container.getInternalName());
+            throw new ContainerAlreadyExistsException("Container name already exists");
+        }
         /* create the volume */
         final CreateVolumeResponse response = dockerClient.createVolumeCmd()
                 .withName(container.getInternalName())

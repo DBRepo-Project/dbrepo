@@ -112,13 +112,13 @@ public class QueryEndpoint extends AbstractEndpoint {
     public ResponseEntity<?> export(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("queryId") Long queryId,
-                                    @RequestParam(value = "download", required = false) String download,
+                                    @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
             QueryMalformedException, DatabaseConnectionException {
-        log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, download={}, principal={}",
-                containerId, databaseId, queryId, download, principal);
+        log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, accept={}, principal={}",
+                containerId, databaseId, queryId, accept, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
             log.error("Missing export query permission");
             throw new NotAllowedException("Missing export query permission");
@@ -127,7 +127,7 @@ public class QueryEndpoint extends AbstractEndpoint {
         final Query query = storeService.findOne(containerId, databaseId, queryId);
         log.trace("querystore returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
-        if (download != null) {
+        if (accept.equals("text/csv")) {
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
             log.trace("export query resulted in resource {}", resource);
@@ -135,12 +135,9 @@ public class QueryEndpoint extends AbstractEndpoint {
                     .headers(headers)
                     .body(resource.getResource());
         }
-        final ExportDto dto = ExportDto.builder()
-                .location(resource.getFilename())
+        log.error("Failed to export, non-csv exports are not supported");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
                 .build();
-        log.trace("export query resulted in export file {}", dto);
-        return ResponseEntity.ok()
-                .body(dto);
     }
 
 }

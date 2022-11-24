@@ -39,6 +39,7 @@ ENV SMTP_HOST=""
 ENV SMTP_PORT=""
 ENV SMTP_USERNAME=""
 ENV SMTP_PASSWORD=""
+ENV LOG_LEVEL=debug
 
 VOLUME /tmp
 
@@ -47,8 +48,8 @@ RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./authentication-service.jar
 
 EXPOSE 9097
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./authentication-service.jar"]
