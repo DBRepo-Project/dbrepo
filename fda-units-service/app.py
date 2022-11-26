@@ -14,6 +14,8 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, allowed_file
 
+logging.basicConfig(level=logging.DEBUG)
+
 from logging.config import dictConfig
 
 dictConfig({
@@ -32,34 +34,56 @@ dictConfig({
     }
 })
 
-logging.basicConfig(level=logging.DEBUG)
-
 app = Flask(__name__)
-app.config["SWAGGER"] = {"title": "FDA-Units-Service", "uiversion": 3}
+app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {
     "headers": [],
     "specs": [
         {
-            "title": "units",
             "endpoint": "api-units",
-            "route": "/api-units.json"
-        }
+            "route": "/api-units.json",
+            "rule_filter": lambda rule: rule.endpoint.startswith('units'),
+            "model_filter": lambda tag: True,  # all in
+        },
+        {
+            "endpoint": "api-ontologies",
+            "route": "/api-ontologies.json",
+            "rule_filter": lambda rule: rule.endpoint.startswith('ontologies'),
+            "model_filter": lambda tag: True,  # all in
+        },
     ],
     "static_url_path": "/flasgger_static",
     "swagger_ui": True,
     "specs_route": "/swagger-ui/",
 }
 
-template = dict(
-    swaggerUiPrefix=LazyString(lambda: request.environ.get("HTTP_X_SCRIPT_NAME", ""))
-)
+template = {
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Database Repository Unit / Ontology Service API",
+        "description": "Service for assigning concepts to database tables and columns.",
+        "version": "1.1.0-alpha",
+        "contact": {
+            "name": "Prof. Andreas Rauber",
+            "email": "andreas.rauber@tuwien.ac.at"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+    },
+    "servers": [{
+        "url": "http://localhost:5010",
+        "description": "Generated server url"
+    }]
+}
 
 app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
 
 
-@app.route('/api/units/suggest', methods=["POST"], endpoint='suggest')
+@app.route('/api/units/suggest', methods=["POST"], endpoint='units_suggest')
 @swag_from('suggest.yml')
 def suggest():
     logging.debug('endpoint suggest unit, body=%s', request)
@@ -76,7 +100,7 @@ def suggest():
         return jsonify(res), 500
 
 
-@app.route('/api/units/validate/<unit>', methods=["GET"], endpoint='validate')
+@app.route('/api/units/validate/<unit>', methods=["GET"], endpoint='units_validate')
 @swag_from('validate.yml')
 def validate(unit):
     logging.debug('endpoint validate unit, unit=%s, body=%s', unit, request)
@@ -90,7 +114,7 @@ def validate(unit):
         return jsonify(res), 500
 
 
-@app.route('/api/units/uri/<uname>', methods=["GET"], endpoint='uri')
+@app.route('/api/units/uri/<uname>', methods=["GET"], endpoint='units_uri')
 @swag_from('geturi.yml')
 def get_uri(uname):
     logging.debug('endpoint get uri, uname=%s, body=%s', uname, request)
@@ -104,7 +128,7 @@ def get_uri(uname):
         return jsonify(res), 500
 
 
-@app.route('/api/units/saveconcept', methods=["POST"], endpoint='saveconcept')
+@app.route('/api/units/saveconcept', methods=["POST"], endpoint='units_saveconcept')
 @swag_from('saveconcept.yml')
 def save_concept():
     logging.debug('endpoint save concept, body=%s', request)
@@ -122,7 +146,7 @@ def save_concept():
         return jsonify(res), 500
 
 
-@app.route('/api/units/savecolumnsconcept', methods=["POST"], endpoint='savecolumnsconcept')
+@app.route('/api/units/savecolumnsconcept', methods=["POST"], endpoint='units_savecolumnsconcept')
 @swag_from('savecolumnsconcept.yml')
 def save_column_concept():
     logging.debug('endpoint save column concept, body=%s', request)
@@ -141,7 +165,7 @@ def save_column_concept():
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
-@app.route('/api/ontologies/getconcept/<cname>', methods=["GET"], endpoint='get_concept')
+@app.route('/api/ontologies/getconcept/<cname>', methods=["GET"], endpoint='ontologies_get_concept')
 @swag_from('getconcept.yml')
 def get_concept(cname):
     logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
@@ -156,7 +180,7 @@ def get_concept(cname):
 
 ONTOLOGIES_DIRECTORY = 'ontologies'
 
-@app.route('/api/ontology', methods=["POST"], endpoint='upload_onto')
+@app.route('/api/ontologies/upload', methods=["POST"], endpoint='ontologies_upload_onto')
 @swag_from('ontologies.yml')
 def post_ontologies():
     if 'file' not in request.files:
@@ -173,13 +197,13 @@ def post_ontologies():
         logging.debug('created ontology: %s', filename)
         return "created", 201
 
-@app.route('/api/ontologies', methods=["GET"], endpoint='get_ontos')
+@app.route('/api/ontologies/listontologies', methods=["GET"], endpoint='ontologies_get_ontos')
 @swag_from('ontology.yml')
 def get_ontologies():
     print(list_ontologies())
     return jsonify(list_ontologies())
 
-@app.route('/api/ontologies/<o_name>', methods=["GET"], endpoint='get_onto')
+@app.route('/api/ontologies/<o_name>', methods=["GET"], endpoint='ontologies_get_onto')
 @swag_from('ontologybyname.yml')
 def get_ontologies(o_name):
     ontology = get_ontology(o_name)
@@ -187,7 +211,7 @@ def get_ontologies(o_name):
         return "ontology does not exist", 404
     return ontology
 
-rest_server_port = int(os.getenv("PORT_APP"))
+rest_server_port = 5010
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
                    app_name=os.getenv('HOSTNAME', 'fda-units-service'),
                    instance_ip=os.getenv('HOSTNAME', 'fda-units-service'),
