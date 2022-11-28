@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:mariadb://metadata-db:3306/fda
+    url: jdbc:mariadb://localhost:3306/fda
     driver-class-name: org.mariadb.jdbc.Driver
     username: root
     password: dbrepo
@@ -11,6 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
+      use-new-id-generator-mappings: false
     open-in-view: false
     properties:
       hibernate:
@@ -38,7 +39,7 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   elastic:
-    endpoint: search-service:9200
+    endpoint: localhost:9200
     username: elastic
     password: elastic
   ready.path: ./ready

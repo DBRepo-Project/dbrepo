@@ -50,6 +50,9 @@ public class Container {
     @Column(nullable = false)
     private String hash;
 
+    @Column(name = "image_id", nullable = false, updatable = false)
+    private Long imageId;
+
     @Column
     private Integer port;
 

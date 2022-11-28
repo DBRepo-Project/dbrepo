@@ -11,6 +11,7 @@ spring:
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
+      use-new-id-generator-mappings: false
     open-in-view: false
     properties:
       hibernate:

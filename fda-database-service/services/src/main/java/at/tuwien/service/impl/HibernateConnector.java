@@ -21,6 +21,9 @@ public abstract class HibernateConnector {
 
     protected static ComboPooledDataSource getDataSource(ContainerImage image, Container container, Database database) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        log.trace("jdbc method: {}", image.getJdbcMethod());
+        log.trace("jdbc url: {}", container.getInternalName());
+        log.trace("jdbc resource: {}", database != null ? database.getInternalName() : "");
         final String url = "jdbc:" + image.getJdbcMethod() + "://" + container.getInternalName() + "/" + (database != null ? database.getInternalName() : "");
         dataSource.setJdbcUrl(url);
         final String username = image.getEnvironment()
@@ -42,7 +45,6 @@ public abstract class HibernateConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
-        log.trace("mapped data source {}", dataSource);
         return dataSource;
     }
 

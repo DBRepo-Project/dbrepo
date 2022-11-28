@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     INTERNAL_NAME character varying(255) NOT NULL,
     NAME          character varying(255) NOT NULL,
     PORT          integer,
-    image_id      bigint,
+    image_id      bigint                 NOT NULL,
     ip_address    character varying(255),
     created       timestamp              NOT NULL DEFAULT NOW(),
     created_by    bigint                 NOT NULL,
