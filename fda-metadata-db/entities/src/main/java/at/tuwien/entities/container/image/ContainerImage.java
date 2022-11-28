@@ -64,7 +64,7 @@ public class ContainerImage {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE}, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
     private List<Container> containers;
 
     @Column(nullable = false, updatable = false)

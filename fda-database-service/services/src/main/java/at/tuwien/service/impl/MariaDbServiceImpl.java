@@ -124,7 +124,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
         final Container container = containerService.find(containerId);
-        if (container.getDatabases().size() != 0) {
+        if (container.getDatabase() != null) {
             log.error("Currently we only support one database per container.");
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }

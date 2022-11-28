@@ -4,6 +4,8 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.container.Container;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
@@ -22,10 +24,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
@@ -63,6 +67,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ImageEnvironmentRepository imageEnvironmentRepository;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -127,15 +134,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1) /* public */;
-        databaseRepository.save(DATABASE_2) /* private */;
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+        CONTAINER_1.setDatabase(DATABASE_1);
+        CONTAINER_2.setDatabase(DATABASE_2);
+        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_2);
+        tableRepository.save(TABLE_1) /* public */;
+        tableRepository.save(TABLE_2) /* private */;
     }
 
     @Test

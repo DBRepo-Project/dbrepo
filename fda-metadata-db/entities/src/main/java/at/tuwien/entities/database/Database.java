@@ -42,9 +42,9 @@ public class Database {
     })
     private User creator;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -68,6 +68,7 @@ public class Database {
     })
     private User contact;
 
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)

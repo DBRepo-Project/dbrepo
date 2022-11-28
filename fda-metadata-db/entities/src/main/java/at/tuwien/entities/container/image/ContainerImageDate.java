@@ -30,7 +30,7 @@ public class ContainerImageDate {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "iid", insertable = false, updatable = false)
     private ContainerImage image;
 

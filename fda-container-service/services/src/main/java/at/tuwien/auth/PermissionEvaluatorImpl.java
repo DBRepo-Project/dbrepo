@@ -56,7 +56,7 @@ public class PermissionEvaluatorImpl implements PermissionEvaluator {
                     log.error("Failed to grant permission {}", permission);
                     log.debug("failed to grant permission {}, owner is not the current user", permission);
                     return false;
-                } else if (container.getDatabases().size() > 0) {
+                } else if (container.getDatabase() != null) {
                     log.error("Failed to grant permission {}", permission);
                     log.debug("failed to grant permission {}, databases present in the container", permission);
                     return false;

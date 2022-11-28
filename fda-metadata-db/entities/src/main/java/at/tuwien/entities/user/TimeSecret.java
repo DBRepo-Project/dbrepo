@@ -39,7 +39,7 @@ public class TimeSecret {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "uid", referencedColumnName = "userid", insertable = false, updatable = false)
     })

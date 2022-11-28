@@ -42,7 +42,7 @@ public class Creator {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)
     private Identifier identifier;
 

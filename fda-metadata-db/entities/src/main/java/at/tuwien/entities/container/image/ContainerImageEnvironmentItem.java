@@ -42,7 +42,7 @@ public class ContainerImageEnvironmentItem {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
     })

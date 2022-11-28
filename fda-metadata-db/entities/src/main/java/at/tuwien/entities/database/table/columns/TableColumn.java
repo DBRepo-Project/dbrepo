@@ -54,7 +54,7 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)

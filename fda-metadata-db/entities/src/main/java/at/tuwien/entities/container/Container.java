@@ -53,15 +53,19 @@ public class Container {
     @Column
     private Integer port;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
-    private List<Database> databases;
+    private Database database;
 
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "image_id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private ContainerImage image;
 
     @Column
