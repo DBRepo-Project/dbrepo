@@ -1,10 +1,7 @@
 package at.tuwien.entities.container.image;
 
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.user.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,7 +23,7 @@ public class ContainerImage {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(updatable = false, nullable = false)
     public Long id;
 
@@ -67,7 +64,7 @@ public class ContainerImage {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE}, mappedBy = "image")
     private List<Container> containers;
 
     @Column(nullable = false, updatable = false)
