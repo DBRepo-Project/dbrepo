@@ -2,6 +2,7 @@ package at.tuwien;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.*;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
@@ -735,6 +736,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
@@ -745,6 +747,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
@@ -755,6 +758,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
             .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
@@ -1842,7 +1846,7 @@ public abstract class BaseUnitTest {
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
             .lastModified(TABLE_2_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
+            .tdbid(DATABASE_1_ID)
             .topic(TABLE_2_TOPIC)
             .build();
 
@@ -1855,6 +1859,12 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
+            .build();
+
+    public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_5_NAME)
+            .description(TABLE_5_DESCRIPTION)
+            .columns(List.of())
             .build();
 
     public final static Table TABLE_4 = Table.builder()

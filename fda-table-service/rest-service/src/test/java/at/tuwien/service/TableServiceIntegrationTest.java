@@ -4,10 +4,11 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.Container;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import at.tuwien.repository.elastic.TableColumnidxRepository;
+import at.tuwien.repository.elastic.TableidxRepository;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -24,16 +25,19 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -49,6 +53,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexInitializer indexInitializer;
+
+    @MockBean
+    private TableidxRepository tableidxRepository;
+
+    @MockBean
+    private TableColumnidxRepository tableColumnidxRepository;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -134,12 +144,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        CONTAINER_1.setDatabase(DATABASE_1);
-        CONTAINER_2.setDatabase(DATABASE_2);
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_2);
-        tableRepository.save(TABLE_1) /* public */;
-        tableRepository.save(TABLE_2) /* private */;
+        imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+        databaseRepository.save(DATABASE_1) /* will have 2 tables */;
+        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_2);
     }
 
     @Test
@@ -148,16 +158,89 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final List<Table> response = tableService.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test
-    public void findAll_fails() throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_2_USERNAME) /* not owner */;
+    public void findAll_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final List<Table> response = tableService.findAll(CONTAINER_2_ID, DATABASE_2_ID, principal);
-        assertEquals(0, response.size());
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            tableService.findAll(CONTAINER_2_ID, DATABASE_2_ID, principal);
+        });
+    }
+
+    @Test
+    public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
+            ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* test */
+        final Table response = tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal);
+        assertEquals(TABLE_1_ID, response.getId());
+        assertEquals(TABLE_1_NAME, response.getName());
+        assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
+    }
+
+    @Test
+    public void findById_tableNotFound_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_ID, principal);
+        });
+    }
+
+    @Test
+    public void findById_databaseNotFound_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            tableService.findById(CONTAINER_2_ID, DATABASE_3_ID, TABLE_3_ID, principal);
+        });
+    }
+
+    @Test
+    public void findById_containerNotFound_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* test */
+        assertThrows(ContainerNotFoundException.class, () -> {
+            tableService.findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_3_ID, principal);
+        });
+    }
+
+    @Test
+    public void create_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
+            ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(tableidxRepository.save(any(Table.class)))
+                .thenReturn(TABLE_1);
+        when(tableColumnidxRepository.saveAll(anyList()))
+                .thenReturn(List.of());
+
+        /* test */
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, principal);
+    }
+
+    @Test
+    public void delete_succeeds() throws TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, TableNotFoundException, DataProcessingException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        doNothing()
+                .when(tableidxRepository)
+                .delete(any(Table.class));
+
+        /* test */
+        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal);
     }
 
 }

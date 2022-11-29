@@ -33,7 +33,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
         }
         if (database.isEmpty()) {
-            log.error("Failed to find database");
+            log.error("Failed to find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");
         }
         return database.get();
