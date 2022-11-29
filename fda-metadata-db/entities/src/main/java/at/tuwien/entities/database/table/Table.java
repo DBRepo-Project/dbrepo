@@ -63,7 +63,7 @@ public class Table {
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 

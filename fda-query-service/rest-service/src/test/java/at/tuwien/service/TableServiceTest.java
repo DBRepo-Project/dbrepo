@@ -11,10 +11,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.TableColumnRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
@@ -80,12 +77,16 @@ public class TableServiceTest extends BaseUnitTest {
     @Autowired
     private TableRepository tableRepository;
 
+    @Autowired
+    private ContainerRepository containerRepository;
+
     @BeforeEach
     @Transactional
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
         imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         TABLE_1.setDatabase(DATABASE_1);
         tableRepository.save(TABLE_1);
