@@ -45,18 +45,33 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class TableServiceIntegrationTest extends BaseUnitTest {
 
+    /**
+     * RabbitMQ not required in this test
+     */
     @MockBean
     private ReadyConfig readyConfig;
 
+    /**
+     * RabbitMQ not required in this test
+     */
     @MockBean
     private Channel channel;
 
+    /**
+     * ElasticSearch not required in this test
+     */
     @MockBean
     private IndexInitializer indexInitializer;
 
+    /**
+     * ElasticSearch not required in this test
+     */
     @MockBean
     private TableidxRepository tableidxRepository;
 
+    /**
+     * ElasticSearch not required in this test
+     */
     @MockBean
     private TableColumnidxRepository tableColumnidxRepository;
 
@@ -74,12 +89,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private TableService tableService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ImageEnvironmentRepository imageEnvironmentRepository;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
