@@ -81,6 +81,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ConceptRepository conceptRepository;
 
+    @Autowired
+    private ContainerRepository containerRepository;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
@@ -169,6 +172,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* image dates */
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
         imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+        containerRepository.save(CONTAINER_3);
         /* create databases */
         databaseRepository.save(DATABASE_1);
         databaseRepository.save(DATABASE_2);
@@ -188,16 +194,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* create tables 3 */
         TABLE_3.setDatabase(DATABASE_3);
         tableRepository.save(TABLE_3);
-//        TABLE_4.setDatabase(DATABASE_2);
-//        tableRepository.save(TABLE_4);
-//        TABLE_4.setColumns(TABLE_4_COLUMNS);
-//        TABLE_4_COLUMNS.forEach(column -> column.setTable(TABLE_4));
-//        tableRepository.save(TABLE_4);
-//        TABLE_5.setDatabase(DATABASE_2);
-//        tableRepository.save(TABLE_5);
-//        TABLE_5.setColumns(TABLE_5_COLUMNS);
-//        TABLE_5_COLUMNS.forEach(column -> column.setTable(TABLE_5));
-//        tableRepository.save(TABLE_5);
     }
 
     @Test
