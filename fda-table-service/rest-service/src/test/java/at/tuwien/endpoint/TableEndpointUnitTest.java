@@ -11,6 +11,7 @@ import at.tuwien.repository.elastic.TableidxRepository;
 import at.tuwien.service.DatabaseService;
 import com.rabbitmq.client.Channel;
 import org.apache.http.auth.BasicUserPrincipal;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     private TableEndpoint tableEndpoint;
 
     @Test
+    @Disabled
     public void list_databaseNotFound_fails() throws DatabaseNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

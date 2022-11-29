@@ -1837,6 +1837,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_1_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -1848,6 +1849,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_2_TOPIC)
+            .creator(USER_2)
             .build();
 
     public final static Table TABLE_3 = Table.builder()
@@ -1859,6 +1861,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
+            .creator(USER_2)
             .build();
 
     public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
@@ -1876,6 +1879,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_4_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_4_TOPIC)
+            .creator(USER_2)
             .build();
 
     public final static Table TABLE_5 = Table.builder()
@@ -1887,6 +1891,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_5_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_5_TOPIC)
+            .creator(USER_2)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()
@@ -1910,6 +1915,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchange(DATABASE_2_EXCHANGE)
+            .creator(USER_2)
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -1921,6 +1927,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchange(DATABASE_3_EXCHANGE)
+            .creator(USER_2)
             .build();
 
 }
