@@ -138,6 +138,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         startContainer(CONTAINER_2);
         /* metadata db */
         licenseRepository.save(LICENSE_1);
+        imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
         USER_1.setPassword(passwordEncoder.encode(USER_1_PASSWORD));
