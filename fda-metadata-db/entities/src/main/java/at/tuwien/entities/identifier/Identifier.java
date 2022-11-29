@@ -121,7 +121,7 @@ public class Identifier {
     @Column
     private String doi;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "identifier")
     private List<Creator> creators;
 
     @Column(nullable = false, updatable = false)
