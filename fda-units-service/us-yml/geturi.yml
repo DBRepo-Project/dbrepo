@@ -6,10 +6,11 @@ produces:
 - "application/json"
 parameters:
 - in: "path"
-  type: "string"
   name: "uname"
   description: "Name of a unit in OM"
   required: true
+  schema:
+    type: "string"
 responses:
   200: 
     description: "OK"

@@ -5,11 +5,12 @@ consumes:
 produces:
 - "application/json"
 parameters:
-  - name: o_name
-    in: path
+  - in: "path"
+    name: "o_name"
     required: true
-    type: string
-    default: "VOCAB_QUDT-UNITS-ALL-v2.1"
+    schema:
+      type: "string"
+      example: "VOCAB_QUDT-UNITS-ALL-v2.1"
 responses:
   200:
     description: "OK"

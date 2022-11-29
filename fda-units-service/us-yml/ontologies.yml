@@ -5,10 +5,10 @@ consumes:
 produces:
 - "application/json"
 parameters:
-- name: file
+- in: "formData"
+  name: "file"
   required: false
-  in: formData
-  type: file
+  type: "file"
 responses:
   200:
     description: "OK"
