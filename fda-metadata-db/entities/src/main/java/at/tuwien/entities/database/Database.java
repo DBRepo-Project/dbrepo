@@ -39,7 +39,7 @@ public class Database {
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "Creator", referencedColumnName = "UserID")
+            @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
     private User creator;
 
@@ -65,7 +65,7 @@ public class Database {
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "Contactperson", referencedColumnName = "UserID")
+            @JoinColumn(name = "contact_person", referencedColumnName = "UserID")
     })
     private User contact;
 

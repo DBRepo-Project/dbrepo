@@ -61,7 +61,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @BeforeEach
-    @Transactional
     public void beforeEach() {
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
@@ -77,7 +76,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Transactional
     public void findAll_succeeds() {
 
         /* mock */

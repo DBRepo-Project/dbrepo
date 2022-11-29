@@ -24,7 +24,7 @@ public class Creator {
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "creators-sequence")
-    @GenericGenerator(name = "creatos-sequence", strategy = "increment")
+    @GenericGenerator(name = "creators-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

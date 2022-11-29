@@ -143,20 +143,20 @@ CREATE TABLE IF NOT EXISTS mdb_licenses
 
 CREATE TABLE IF NOT EXISTS mdb_databases
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    name          character varying(255) NOT NULL,
-    internal_name character varying(255) NOT NULL,
-    exchange      character varying(255) NOT NULL,
-    Description   TEXT,
-    Engine        VARCHAR(20),
-    is_public     BOOLEAN                NOT NULL DEFAULT TRUE,
-    Creator       BIGINT,
-    Contactperson BIGINT,
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    last_modified timestamp,
+    id             bigint                 NOT NULL AUTO_INCREMENT,
+    name           character varying(255) NOT NULL,
+    internal_name  character varying(255) NOT NULL,
+    exchange       character varying(255) NOT NULL,
+    description    TEXT,
+    engine         character varying(20),
+    is_public      BOOLEAN                NOT NULL DEFAULT TRUE,
+    created_by     bigint,
+    contact_person bigint,
+    created        timestamp              NOT NULL DEFAULT NOW(),
+    last_modified  timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (Creator) REFERENCES mdb_users (UserID),
-    FOREIGN KEY (Contactperson) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (contact_person) REFERENCES mdb_users (UserID),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 );
 
