@@ -23,7 +23,8 @@ public class Token {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "tokens-sequence")
+    @GenericGenerator(name = "tokens-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

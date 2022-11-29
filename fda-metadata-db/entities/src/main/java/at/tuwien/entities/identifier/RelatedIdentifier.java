@@ -28,7 +28,8 @@ public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "related-identifiers-sequence")
+    @GenericGenerator(name = "related-identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

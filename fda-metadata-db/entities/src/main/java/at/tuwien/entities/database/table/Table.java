@@ -31,7 +31,8 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "tables-sequence")
+    @GenericGenerator(name = "tables-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

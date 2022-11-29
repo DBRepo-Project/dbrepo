@@ -24,7 +24,8 @@ public class ColumnConcept implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "columns-concepts-sequence")
+    @GenericGenerator(name = "columns-concepts-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long cid;
 

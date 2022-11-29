@@ -25,7 +25,8 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "users-sequence")
+    @GenericGenerator(name = "users-sequence", strategy = "increment")
     @Column(name = "userid", updatable = false, nullable = false)
     private Long id;
 

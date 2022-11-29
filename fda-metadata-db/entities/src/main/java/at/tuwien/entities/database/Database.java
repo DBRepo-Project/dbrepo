@@ -32,7 +32,8 @@ public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "databases-sequence")
+    @GenericGenerator(name = "databases-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

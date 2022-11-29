@@ -31,7 +31,8 @@ public class Container {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "containers-sequence")
+    @GenericGenerator(name = "containers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

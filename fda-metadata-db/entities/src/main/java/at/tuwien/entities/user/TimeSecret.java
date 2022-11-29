@@ -23,7 +23,8 @@ public class TimeSecret {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "time-secrets-sequence")
+    @GenericGenerator(name = "time-secrets-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

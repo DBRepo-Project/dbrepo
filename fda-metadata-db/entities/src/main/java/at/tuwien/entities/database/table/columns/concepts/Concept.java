@@ -23,7 +23,8 @@ public class Concept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "concepts-sequence")
+    @GenericGenerator(name = "concepts-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

@@ -1,6 +1,7 @@
 package at.tuwien.entities.container.image;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -22,7 +23,8 @@ public class ContainerImageEnvironmentItem {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "environments-sequence")
+    @GenericGenerator(name = "environments-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     public Long id;
 

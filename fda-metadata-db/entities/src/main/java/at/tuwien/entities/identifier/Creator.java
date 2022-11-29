@@ -23,7 +23,8 @@ public class Creator {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "creators-sequence")
+    @GenericGenerator(name = "creatos-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

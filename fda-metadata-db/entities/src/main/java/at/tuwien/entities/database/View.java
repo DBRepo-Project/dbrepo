@@ -23,7 +23,8 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "views-sequence")
+    @GenericGenerator(name = "views-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 

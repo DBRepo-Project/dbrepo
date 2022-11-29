@@ -32,7 +32,8 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "columns-sequence")
+    @GenericGenerator(name = "columns-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
