@@ -155,6 +155,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
             .build();
@@ -163,6 +164,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
             .build();

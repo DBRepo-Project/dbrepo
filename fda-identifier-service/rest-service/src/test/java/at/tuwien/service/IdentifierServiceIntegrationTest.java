@@ -57,10 +57,14 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     @BeforeEach
     @Transactional
     public void beforeEach() {
         userRepository.save(USER_1);
+        imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         identifierRepository.save(IDENTIFIER_1);
