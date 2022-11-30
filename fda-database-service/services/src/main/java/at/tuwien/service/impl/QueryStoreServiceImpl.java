@@ -41,6 +41,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
+            executeQuery(connection, "USE  `" + database.getInternalName() + "`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_tables_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`");
@@ -50,7 +51,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
             executeQuery(connection, "CREATE TABLE `qs_columns` (`id` bigint not null primary key default nextval(`qs_columns_seq`), `created` datetime not null, `dbid` bigint not null, `tid` bigint not null, `last_modified` datetime)");
             executeQuery(connection, "CREATE TABLE `qs_views` ( `id` bigint not null primary key default nextval(`qs_views_seq`), `vcid` bigint not null, `vdbid` bigint not null, `created_by` bigint not null, `name` varchar(255) not null, `internal_name` varchar(255) not null, `is_public` boolean not null, `is_initial_view` boolean not null, `query` text not null, `created` datetime not null)");
         } catch (SQLException e) {
-            log.error("Failed to create database {}, reason: {}", database, e.getMessage());
+            log.error("Failed to create query store {}, reason: {}", database, e.getMessage());
             throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();
@@ -60,8 +61,8 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
     }
 
     private void executeQuery(Connection connection, String statement) throws SQLException {
+        log.debug("execute query, statement={}", statement);
         final PreparedStatement pstmt = connection.prepareStatement(statement);
-        log.trace("mapped statement {} to prepared statement {}", statement, pstmt);
         pstmt.executeUpdate();
     }
 

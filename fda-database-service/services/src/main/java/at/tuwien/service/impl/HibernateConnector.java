@@ -20,6 +20,7 @@ public abstract class HibernateConnector {
                                                          User user) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         final String url = "jdbc:" + image.getJdbcMethod() + "://" + container.getInternalName() + "/" + (database != null ? database.getInternalName() : "");
+        log.debug("connecting via jdbc, url={}", url);
         dataSource.setJdbcUrl(url);
         dataSource.setUser(user.getUsername());
         dataSource.setPassword(user.getDatabasePassword());
