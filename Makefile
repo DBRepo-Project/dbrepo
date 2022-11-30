@@ -1,56 +1,47 @@
+.PHONY: clean all
+
 TAG ?= latest
 
 all:
 
 clean:
+	bash ./.dbrepo2/clean.sh
 
-config-backend:
-	./.fda-deployment/fda-authentication-service/install_smtp
+build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata
 
-config-frontend:
-	./.fda-deployment/fda-ui/install_cert
-	docker-compose -f docker-compose.prod.yml config
-
-config-ssl:
-	openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./fda-ui-proxy/default/privkey.pem -out ./fda-ui-proxy/default/fullchain.pem -subj '/C=AT/ST=Vienna/L=Vienna/O=Technische Universität Wien/OU=Data Science Group/CN=dbrepo.ossdip.at'
-
-config-docker:
-	docker image pull -q mariadb:10.5 || true > /dev/null
-
-config: config-docker config-frontend config-backend
-
-build-backend-metadata:
+build-backend-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
 
-build-backend-authentication: build-backend-metadata
+build-backend-authentication: build-backend-metadata-db
 	mvn -f ./fda-authentication-service/pom.xml clean package -DskipTests
 
-build-backend-identifier: build-backend-metadata
+build-backend-identifier: build-backend-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
 
-build-backend-table: build-backend-metadata
+build-backend-table: build-backend-metadata-db
 	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
 
-build-backend-container: build-backend-metadata
+build-backend-container: build-backend-metadata-db
 	mvn -f ./fda-container-service/pom.xml clean package -DskipTests
 
-build-backend-database: build-backend-metadata
+build-backend-database: build-backend-metadata-db
 	mvn -f ./fda-database-service/pom.xml clean package -DskipTests
 
-build-backend-discovery: build-backend-metadata
+build-backend-discovery: build-backend-metadata-db
 	mvn -f ./fda-discovery-service/pom.xml clean package -DskipTests
 
-build-backend-gateway: build-backend-metadata
+build-backend-gateway: build-backend-metadata-db
 	mvn -f ./fda-gateway-service/pom.xml clean package -DskipTests
 
-build-backend-query: build-backend-metadata
+build-backend-query: build-backend-metadata-db
 	mvn -f ./fda-query-service/pom.xml clean package -DskipTests
 
-build-backend: build-backend-metadata build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway
+build-backend-metadata: build-backend-metadata-db
+	mvn -f ./fda-metadata-service/pom.xml clean package -DskipTests
 
 build-docker:
-	docker-compose build fda-metadata-db
-	docker-compose build --parallel
+	docker compose build fda-metadata-db
+	docker compose build --parallel
 
 build-frontend:
 	yarn --cwd ./fda-ui install --legacy-peer-deps
@@ -59,7 +50,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy
+tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy tag-metadata
 
 tag-analyse:
 	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -80,7 +71,7 @@ tag-identifier:
 	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
 
 tag-metadata:
-	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
+	docker tag fda-metadata-service:latest "dbrepo/metadata-service:${TAG}"
 
 tag-container:
 	docker tag fda-container-service:latest "dbrepo/container-service:${TAG}"
@@ -106,7 +97,7 @@ tag-units:
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
-release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy
+release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy release-metadata
 
 release-analyse:
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -150,7 +141,10 @@ release-units:
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
 
-pull: pull-identifier pull-container pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy
+release-metadata:
+	docker push "dbrepo/metadata-service:${TAG}"
+
+pull: pull-identifier pull-container pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy pull-metadata
 
 pull-analyse:
 	docker pull "dbrepo/analyse-service:${TAG}"
@@ -194,38 +188,44 @@ pull-units:
 pull-broker:
 	docker pull "dbrepo/broker-service:${TAG}"
 
-test-backend: test-backend-auth test-backend-container test-backend-database test-backend-discovery test-backend-gateway test-backend-query test-backend-table
+pull-metadata:
+	docker pull "dbrepo/metadata-service:${TAG}"
 
-test-backend-auth:
+test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service
+
+test-authentication-service: build-backend-metadata-db
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-backend-identifier:
+test-identifier-service: build-backend-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-backend-container:
+test-container-service: build-backend-metadata-db
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
-test-backend-database:
+test-database-service: build-backend-metadata-db
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-backend-discovery:
+test-discovery-service: build-backend-metadata-db
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-backend-gateway:
+test-gateway-service: build-backend-metadata-db
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-backend-query:
+test-query-service: build-backend-metadata-db
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-backend-table:
+test-table-service: build-backend-metadata-db
 	mvn -f ./fda-table-service/pom.xml clean test verify
+
+test-metadata-service: build-backend-metadata-db
+	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
 coverage-frontend: clean build-frontend
 	yarn --cwd ./fda-ui run coverage || true
 
 test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
-	docker-compose up -d
+	docker compose up -d
 	yarn --cwd ./fda-ui run test
 
 test-clients:

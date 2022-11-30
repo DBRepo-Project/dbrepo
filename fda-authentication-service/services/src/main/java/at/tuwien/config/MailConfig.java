@@ -31,6 +31,9 @@ public class MailConfig {
     @Value("${fda.mail.verify}")
     private Boolean mailVerify;
 
+    @Value("${fda.website}")
+    private String website;
+
     @Bean
     public SpringTemplateEngine springTemplateEngine() {
         final SpringTemplateEngine springTemplateEngine = new SpringTemplateEngine();

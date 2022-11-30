@@ -17,8 +17,12 @@ import java.util.regex.Pattern;
 @Mapper(componentModel = "spring", uses = {ImageMapper.class, DatabaseMapper.class})
 public interface ContainerMapper {
 
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContainerMapper.class);
+
     default String containerCreateRequestDtoToDockerImage(ContainerCreateRequestDto data) {
-        return data.getRepository() + ":" + data.getTag();
+        final String image = data.getRepository() + ":" + data.getTag();
+        log.trace("mapped container request {} to image {}", data, image);
+        return image;
     }
 
     ContainerImage containerCreateRequestDtoToContainerImage(ContainerCreateRequestDto data);
@@ -40,7 +44,9 @@ public interface ContainerMapper {
 
     @Named("containerStateDto")
     default ContainerStateDto containerStateToContainerStateDto(InspectContainerResponse.ContainerState data) {
-        return ContainerStateDto.valueOf(Objects.requireNonNull(data.getStatus()).toUpperCase());
+        final ContainerStateDto dto = ContainerStateDto.valueOf(Objects.requireNonNull(data.getStatus()).toUpperCase());
+        log.trace("mapped container state {} to state {}", data, dto);
+        return dto;
     }
 
     // https://stackoverflow.com/questions/1657193/java-code-library-for-generating-slugs-for-use-in-pretty-urls#answer-1657250
@@ -50,6 +56,8 @@ public interface ContainerMapper {
         String nowhitespace = WHITESPACE.matcher(data.getName()).replaceAll("-");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
-        return "fda-userdb-" + slug.toLowerCase(Locale.ENGLISH);
+        final String name = "dbrepo-userdb-" + slug.toLowerCase(Locale.ENGLISH);
+        log.trace("mapped container name {} to name {}", data, name);
+        return name;
     }
 }

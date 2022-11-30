@@ -20,6 +20,10 @@ spring:
     name: authentication-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
   mail:
     default-encoding: UTF-8
     host: ""
@@ -30,14 +34,14 @@ spring:
       timeout: 5000
       auth: true
       starttls.enable: true
+management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9097
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    org.springframework.mail.: debug
+    at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: authentication-service

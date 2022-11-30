@@ -27,15 +27,18 @@ ENV METADATA_PASSWORD=postgres
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SEARCH_ENDPOINT=search-service
+ENV SEARCH_USERNAME=elastic
+ENV SEARCH_PASSWORD=elastic
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV LOG_LEVEL=debug
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./database-service.jar
 
 EXPOSE 9092
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./database-service.jar"]

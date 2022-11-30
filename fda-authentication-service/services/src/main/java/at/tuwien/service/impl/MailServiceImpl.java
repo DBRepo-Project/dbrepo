@@ -36,10 +36,14 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void send(User user, String subject, String path, Context context) throws UserEmailFailedException {
+        log.debug("send email template with context, subject={}, path={}, context={}", subject, path, context);
+        log.trace("send email for user {}", user);
         if (mailConfig.getMailUsername().isBlank()) {
             /* local instance, not the deployment instance */
             return;
         }
+        log.trace("add default website variable website={} to context", mailConfig.getWebsite());
+        context.setVariable("website", mailConfig.getWebsite());
         final SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setSubject(subject);
@@ -50,11 +54,9 @@ public class MailServiceImpl implements MailService {
         try {
             mailSender.send(message);
         } catch (MailException e) {
-            log.error("Failed to send message to {}: {}", user.getEmail(), e.getMessage());
+            log.error("Failed to send email to address {}, reason: {}", user.getEmail(), e.getMessage());
             throw new UserEmailFailedException("Failed to send message", e);
         }
-        log.info("Sent mail to {}", user.getEmail());
-        log.debug("sent mail to user {}", user);
-        log.trace("sent mail with content [{}]", content);
+        log.info("Sent mail to email address {}", user.getEmail());
     }
 }

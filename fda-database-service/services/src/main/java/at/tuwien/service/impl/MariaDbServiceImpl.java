@@ -64,13 +64,15 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             throws DatabaseNotFoundException {
         final Optional<Database> database;
         if (principal == null) {
+            log.trace("principal is null, find public database");
             database = databaseRepository.findPublic(containerId, databaseId);
         } else {
+            log.trace("principal is not null, find public or mine database");
             database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
         }
         if (database.isEmpty()) {
-            log.warn("could not find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("could not find database with this id");
+            log.error("Failed to find database");
+            throw new DatabaseNotFoundException("Failed to find database");
         }
         return database.get();
     }
@@ -80,7 +82,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
-            log.warn("could not find database with id {}", databaseId);
+            log.error("Failed to find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");
         }
         return database.get();
@@ -94,6 +96,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Container container = containerService.find(containerId);
         final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final User user = userService.findByUsername(principal.getName());
@@ -104,9 +107,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to delete database with id {}", databaseId);
-            log.debug("failed to delete database {}, reason: {}", database, e.getMessage());
-            throw new DatabaseMalformedException("Failed to execute and map time-versioned query", e);
+            log.error("Failed to delete database {}, reason: {}", database, e.getMessage());
+            throw new DatabaseMalformedException("Failed to delete database", e);
         } finally {
             dataSource.close();
         }
@@ -114,11 +116,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {}", databaseId);
-        log.debug("deleted database {}", database);
+        log.trace("deleted database {}", database);
         // delete in database_index - elastic search
         databaseidxRepository.delete(database);
         log.info("Deleted database in elastic search with id {}", databaseId);
-        log.debug("deleted database in elastic search {}", database);
+        log.trace("deleted database in elastic search {}", database);
     }
 
     @Override
@@ -151,9 +153,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
             preparedStatement3.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create database");
-            log.debug("failed to create database {}, reason: {}", database, e.getMessage());
-            throw new DatabaseMalformedException("Failed to execute query", e);
+            log.error("Failed to create database {}, reason: {}", database, e.getMessage());
+            throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();
         }
@@ -162,16 +163,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setIsPublic(createDto.getIsPublic());
         final User creator = userService.findByUsername(principal.getName());
         database.setCreator(creator);
-        final Database entity = databaseRepository.save(database);
-        log.info("Created database with id {}", entity.getId());
-        log.debug("created database {}", entity);
-        /* give creator access */
-        databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, creator));
+        final Database dbdb = databaseRepository.save(database);
+        log.info("Created database with id {}", dbdb.getId());
+        log.trace("created database {}", dbdb);
         /* save in database_index - elastic search */
         final Database edb = databaseidxRepository.save(database);
         log.info("Saved database in elastic search with id {}", edb.getId());
-        log.debug("saved database in elastic search {}", edb);
-        return entity;
+        log.trace("saved database in elastic search {}", edb);
+        return dbdb;
     }
 
     @Override
@@ -183,14 +182,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* map */
         database.setIsPublic(transferDto.getIsPublic());
         /* update entity in metadata database */
-        final Database entity = databaseRepository.save(database);
-        log.info("Updated database with id {}", entity.getId());
-        log.debug("updated database {}", entity);
+        final Database dbdb = databaseRepository.save(database);
+        log.info("Updated database with id {}", dbdb.getId());
+        log.trace("updated database {}", dbdb);
         // save in database_index - elastic search
         final Database edb = databaseidxRepository.save(database);
         log.info("Updated database in elastic search with id {}", edb.getId());
-        log.debug("updated database in elastic search {}", edb);
-        return entity;
+        log.trace("updated database in elastic search {}", edb);
+        return dbdb;
     }
 
 }

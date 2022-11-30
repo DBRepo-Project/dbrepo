@@ -12,6 +12,8 @@ import java.util.Properties;
 @Mapper(componentModel = "spring")
 public interface ImageMapper {
 
+    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ImageMapper.class);
+
     @Deprecated
     default Properties containerImageToProperties(ContainerImage data) throws ImageNotSupportedException {
         final Properties properties = new Properties();
@@ -20,14 +22,16 @@ public interface ImageMapper {
                 .filter(i -> i.getType().equals(ContainerImageEnvironmentItemType.USERNAME))
                 .findFirst();
         if (username.isEmpty()) {
-            throw new ImageNotSupportedException("Credentials error: no username found");
+            log.error("Credentials error: no username found");
+            throw new ImageNotSupportedException("Credentials error");
         }
         final Optional<ContainerImageEnvironmentItem> password = data.getEnvironment()
                 .stream()
                 .filter(i -> i.getType().equals(ContainerImageEnvironmentItemType.PASSWORD))
                 .findFirst();
         if (password.isEmpty()) {
-            throw new ImageNotSupportedException("Credentials error: no password found");
+            log.error("Credentials error: no password found");
+            throw new ImageNotSupportedException("Credentials error");
         }
         properties.setProperty("user", username.get()
                 .getValue());

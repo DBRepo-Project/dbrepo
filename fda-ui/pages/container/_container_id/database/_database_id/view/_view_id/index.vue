@@ -2,6 +2,11 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
         <span v-if="!loadingView">{{ view.name }}</span>
       </v-toolbar-title>
@@ -87,7 +92,7 @@
       id="query-results"
       ref="queryResults"
       v-model="view.id"
-      :view-id="view.id"
+      type="view"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -164,6 +169,7 @@ export default {
   mounted () {
     this.loadUser()
     this.loadView()
+      .then(() => this.loadResult())
   },
   methods: {
     async loadView () {
@@ -180,6 +186,9 @@ export default {
         this.error = true
       }
       this.loadingView = false
+    },
+    loadResult () {
+      this.$refs.queryResults.reExecute(this.view.id)
     },
     loadUser () {
       if (!this.token) {
@@ -209,5 +218,14 @@ pre {
 }
 .skeleton-xsmall .v-skeleton-loader__text {
   width: 50px;
+}
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
 }
 </style>

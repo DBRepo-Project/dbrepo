@@ -8,6 +8,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -49,8 +50,10 @@ public class ImageEndpoint {
             @ApiResponse(responseCode = "200", description = "Found images")
     })
     @Transactional(readOnly = true)
+    @Timed(value = "image.list", description = "Time needed to list the container images")
     @Operation(summary = "Find all images")
     public ResponseEntity<List<ImageBriefDto>> findAll() {
+        log.debug("endpoint find all images");
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -59,59 +62,74 @@ public class ImageEndpoint {
     }
 
     @PostMapping
-    @Transactional
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Created image"),
             @ApiResponse(responseCode = "404", description = "Image not found"),
     })
+    @Transactional
+    @Timed(value = "image.create", description = "Time needed to create a container image")
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            Principal principal) throws ImageNotFoundException,
             ImageAlreadyExistsException, DockerClientException, UserNotFoundException {
+        log.debug("endpoint create image, data={}, principal={}", data, principal);
         final ContainerImage image = imageService.create(data, principal);
+        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        log.trace("create image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(imageMapper.containerImageToImageDto(image));
+                .body(dto);
     }
 
     @GetMapping("/{id}")
-    @Transactional(readOnly = true)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found some image"),
             @ApiResponse(responseCode = "404", description = "Image not found"),
     })
+    @Transactional(readOnly = true)
+    @Timed(value = "image.find", description = "Time needed to find a container image")
     @Operation(summary = "Find some image")
     public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id) throws ImageNotFoundException {
+        log.debug("endpoint find image, id={}", id);
         final ContainerImage image = imageService.find(id);
+        final ImageDto dto = imageMapper.containerImageToImageDto(image);
+        log.trace("find image resulted in image {}", dto);
         return ResponseEntity.ok()
-                .body(imageMapper.containerImageToImageDto(image));
+                .body(dto);
     }
 
     @PutMapping("/{id}")
-    @Transactional
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202", description = "Updated image"),
             @ApiResponse(responseCode = "404", description = "Image not found"),
     })
+    @Transactional
+    @Timed(value = "image.update", description = "Time needed to update a container image")
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id, @RequestBody @Valid ImageChangeDto changeDto)
+    public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id,
+                                           @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
+        log.debug("endpoint update image, id={}, changeDto={}", id, changeDto);
+        final ImageDto dto = imageMapper.containerImageToImageDto(imageService.update(id, changeDto));
+        log.trace("update image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(imageMapper.containerImageToImageDto(imageService.update(id, changeDto)));
+                .body(dto);
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Deleted image"),
             @ApiResponse(responseCode = "403", description = "Unable to delete image"),
             @ApiResponse(responseCode = "404", description = "Image not found"),
     })
+    @Transactional
+    @Timed(value = "image.delete", description = "Time needed to delete a container image")
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ImageNotFoundException,
             PersistenceException {
+        log.debug("endpoint delete image, id={}", id);
         imageService.delete(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .build();

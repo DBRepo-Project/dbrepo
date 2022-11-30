@@ -24,16 +24,13 @@ spring:
     password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9093
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    at.tuwien.mapper.: trace
-    at.tuwien.service.: debug
-    at.tuwien.config.: debug
-    at.tuwien.auth.UserPermissionEvaluator: trace
+    at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: query-service

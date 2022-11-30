@@ -37,7 +37,7 @@
         <v-img
           contain
           class="logo"
-          src="/logo.png" />
+          :src="logo" />
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
@@ -75,7 +75,7 @@
         v-if="!token"
         class="mr-2"
         color="secondary"
-        to="/login">
+        @click="login">
         <v-icon left>mdi-login</v-icon> Login
       </v-btn>
       <v-btn
@@ -187,6 +187,9 @@ export default {
       }
       console.debug('env sandbox found', this.$config.sandbox)
       return this.$config.sandbox
+    },
+    logo () {
+      return this.$config.logo
     }
   },
   watch: {
@@ -258,6 +261,10 @@ export default {
         title: item.item.name,
         subtitle: item.item.description
       }
+    },
+    login () {
+      let redirect = ![undefined ,'/', '/login'].includes(this.$router.currentRoute.path)
+      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {}})
     },
     navigate (item) {
       this.$router.push(this.metadata(item).link)

@@ -5,11 +5,13 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
+import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
@@ -39,6 +41,12 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private ReadyConfig readyConfig;
 
+    @MockBean
+    private Channel channel;
+
+    @MockBean
+    private RabbitMqListenerImpl rabbitMqListener;
+
     @Autowired
     private StoreService storeService;
 
@@ -60,12 +68,11 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         final String bind = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
         log.trace("container bind {}", bind);
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind)))
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
-                .withBinds(Bind.parse(bind))
                 .exec();
         /* start */
         CONTAINER_1.setHash(response.getId());

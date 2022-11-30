@@ -45,7 +45,9 @@ public interface DatabaseMapper {
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
-        return slug.toLowerCase(Locale.ENGLISH);
+        final String name = slug.toLowerCase(Locale.ENGLISH);
+        log.trace("mapping name {} to internal name {}", data, name);
+        return name;
     }
 
     /* keep */
@@ -118,12 +120,12 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
-        log.trace("raw create statement [{}]", statement);
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("mapped create database query {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -143,8 +145,7 @@ public interface DatabaseMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -188,12 +189,12 @@ public interface DatabaseMapper {
 
     default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
-        log.trace("raw grant readonly privileges statement [{}]", statement);
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("mapped create database query {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -202,18 +203,20 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("DROP DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
-        log.trace("raw grant readonly statement [{}]", statement);
         try {
-            return connection.prepareStatement(statement.toString());
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("mapped create database query {}", statement);
+            return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
 
     default Principal userDetailsDtoToPrincipal(UserDetailsDto data) {
-        return new BasicUserPrincipal(data.getUsername());
+        final Principal principal = new BasicUserPrincipal(data.getUsername());
+        log.trace("mapped user details {} to principal {}", data, principal);
+        return principal;
     }
 
     default DatabaseAccess defaultCreatorAccess(Database database, User user) {

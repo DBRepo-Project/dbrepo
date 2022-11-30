@@ -9,7 +9,7 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn :disabled="!canExecute || !token || !valid || isExecuted" :loading="loadingQuery" color="primary" @click="execute">
+        <v-btn v-if="token && !isExecuted" :disabled="!canExecute || !valid" :loading="loadingQuery" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
           Create
         </v-btn>
@@ -29,17 +29,25 @@
     </v-toolbar>
     <v-form v-model="valid">
       <v-card flat>
-        <v-card-text>
+        <v-card-text v-if="isView">
           <v-row>
             <v-col cols="6">
               <v-text-field
-                v-if="isView"
                 v-model="view.name"
                 :disabled="isExecuted"
                 type="text"
                 label="View name"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('Required'),
+                         v => !validViewName(v) || $t('View name already exists')]"
                 required />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-switch
+                v-if="isView"
+                v-model="view.is_public"
+                :label="`${view.is_public ? 'Public' : 'Private'} view`" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -78,14 +86,6 @@
                 v-model="clauses"
                 :disabled="isExecuted"
                 :columns="columnNames" />
-              <v-row>
-                <v-col>
-                  <v-switch
-                    v-if="isView"
-                    v-model="view.is_public"
-                    :label="`${view.is_public ? 'Public' : 'Private'} view`" />
-                </v-col>
-              </v-row>
               <v-row v-if="query.formatted" id="query-raw">
                 <v-col>
                   <span class="subtitle-1">Generated SQL-Query:</span>
@@ -97,6 +97,15 @@
               </v-row>
             </v-tab-item>
             <v-tab-item>
+              <v-row>
+                <v-col>
+                  <v-alert
+                    border="left"
+                    color="info">
+                    Currently, comments in the query (e.g. <code>-- Comment</code>) are not supported!
+                  </v-alert>
+                </v-col>
+              </v-row>
               <v-row>
                 <v-col>
                   <QueryRaw
@@ -118,7 +127,7 @@
         </v-card-text>
       </v-card>
     </v-form>
-    <QueryResults ref="queryResults" v-model="queryId" />
+    <QueryResults ref="queryResults" :result-id="resultId" :type="mode" />
   </div>
 </template>
 
@@ -136,9 +145,9 @@ export default {
     return {
       table: {},
       tables: [],
+      views: [],
       tableDetails: null,
-      queryId: null,
-      viewId: null,
+      resultId: null,
       valid: false,
       query: {
         sql: ''
@@ -169,7 +178,7 @@ export default {
       return this.table.id
     },
     viewLink () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? `/view/${this.viewId}` : `/query/${this.queryId}`)
+      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
     },
     token () {
       return this.$store.state.token
@@ -184,22 +193,18 @@ export default {
     },
     sql () {
       if (this.tabs === 0) {
-        // builder
         return this.query.sql
-      } else {
-        // raw sql
-        return this.rawSQL
+      } else if (this.tabs === 1) {
+        const sql = this.rawSQL.replaceAll('\n', ' ') /* remove newline */
+          .replaceAll(/\s+/g, ' ') /* remove whitespace */
+          .trim()
+        console.debug('raw sql', sql)
+        return sql
       }
+      return null
     },
     canExecute () {
-      if (this.tabs === 0) {
-        // builder
-        return this.sql.length &&
-                 this.select.length // select `*` columns not supported in backend
-      } else {
-        // raw sql
-        return this.sql.length
-      }
+      return !(!this.sql || this.sql.length === 0)
     },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
@@ -211,7 +216,7 @@ export default {
       return this.isView ? 'Create View' : 'Create Subset'
     },
     isExecuted () {
-      return this.viewId !== null || this.queryId !== null
+      return this.resultId !== null
     }
   },
   watch: {
@@ -219,23 +224,14 @@ export default {
       deep: true,
       handler () {
         this.buildQuery()
-        this.queryId = null
       }
-    },
-    table () {
-      this.queryId = null
-    },
-    sql () {
-      this.queryId = null
-    },
-    select () {
-      this.queryId = null
     }
   },
   mounted () {
     this.loadTables()
       .then(() => this.selectTable())
       .then(() => this.loadColumns())
+    this.loadViews()
   },
   methods: {
     async loadTables () {
@@ -246,6 +242,27 @@ export default {
         console.debug('tables', this.tables)
       } catch (err) {
         this.$toast.error('Could not list table.')
+      }
+      this.loadingTables = false
+    },
+    validViewName (name) {
+      if (!name) {
+        return false
+      }
+      const names = this.views.map(v => v.name)
+      return names.includes(name.toLowerCase())
+    },
+    async loadViews () {
+      if (this.mode !== 'view') {
+        return
+      }
+      try {
+        this.loadingTables = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
+        this.views = res.data
+        console.debug('views', this.views)
+      } catch (err) {
+        this.$toast.error('Could not list views')
       }
       this.loadingTables = false
     },
@@ -265,19 +282,25 @@ export default {
     },
     async execute () {
       if (this.isView) {
-        this.loadingQuery = true
-        try {
-          this.view.query = this.query.sql
-          const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
-          console.debug('view', res.data)
-          this.viewId = res.data.id
-        } catch (err) {
-          console.error('Failed to create view', err)
-          return
-        }
-        this.loadingQuery = false
+        await this.createView()
+        return
       }
-      await this.$refs.queryResults.executeFirstTime(this)
+      await this.$refs.queryResults.executeFirstTime(this, this.sql)
+    },
+    async createView () {
+      this.loadingQuery = true
+      try {
+        this.view.query = this.sql
+        console.debug('create view payload', this.view)
+        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
+        this.resultId = res.data.id
+        console.debug('view', res.data)
+      } catch (err) {
+        console.error('Failed to create view', err)
+        this.$toast.error(err.response.data.message)
+      }
+      this.loadingQuery = false
+      await this.$refs.queryResults.reExecute(this.resultId)
     },
     async buildQuery () {
       if (!this.table) {

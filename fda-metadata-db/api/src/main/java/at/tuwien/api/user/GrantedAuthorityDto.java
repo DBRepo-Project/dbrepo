@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class GrantedAuthorityDto {
 
     @Schema(example = "ROLE_RESEARCHER")

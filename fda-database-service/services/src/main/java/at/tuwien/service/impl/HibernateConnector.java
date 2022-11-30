@@ -28,6 +28,7 @@ public abstract class HibernateConnector {
         dataSource.setAcquireIncrement(5);
         dataSource.setMaxPoolSize(20);
         dataSource.setMaxStatements(100);
+        log.trace("created pooled data source {}", dataSource);
         return dataSource;
     }
 

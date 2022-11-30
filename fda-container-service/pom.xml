@@ -26,7 +26,6 @@
         <spring-cloud.version>3.0.1</spring-cloud.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
         <docker.version>3.2.7</docker.version>
-        <testcontainers.version>1.15.2</testcontainers.version>
         <swagger.version>2.2.2</swagger.version>
         <jacoco.version>0.8.7</jacoco.version>
         <sqlserver.version>9.2.1.jre11</sqlserver.version>
@@ -58,6 +57,16 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <!-- Swagger -->
         <dependency>

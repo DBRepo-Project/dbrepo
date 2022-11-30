@@ -6,7 +6,6 @@ import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
@@ -47,6 +46,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
@@ -124,6 +124,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         log.trace("insert into database id {}, metadata {}", databaseId, metadata);
@@ -167,6 +168,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final User user = userService.findByUsername(principal.getName());
@@ -182,8 +184,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement1.executeQuery();
             out = storeMapper.resultSetToQuery(resultSet, true);
         } catch (SQLException e) {
-            log.error("Failed to update query");
-            log.debug("failed to update query, reason: {}", e.getMessage());
+            log.error("Failed to update query, reason: {}", e.getMessage());
             throw new QueryStoreException("Failed to update query", e);
         } finally {
             dataSource.close();
@@ -199,6 +200,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         final User user = userService.findByUsername(principal.getName());

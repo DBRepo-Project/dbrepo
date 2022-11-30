@@ -55,6 +55,22 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Entities and API -->
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>fda-metadata-db-entites</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- Monitoring -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- elasticsearch -->
         <dependency>
             <groupId>org.springframework.data</groupId>
@@ -184,6 +200,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -194,6 +219,7 @@
                         <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
+                        <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>at/tuwien/seeder/**/*</exclude>
                         <exclude>**/HibernateConnector.class</exclude>

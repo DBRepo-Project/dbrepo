@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://fda-metadata-db:5432/fda
+    url: jdbc:postgresql://metadata-db:5432/fda
     driver-class-name: org.postgresql.Driver
     username: postgres
     password: postgres
@@ -24,18 +24,21 @@ spring:
     host: broker-service
     username: fda
     password: fda
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
-    at.tuwien.mapper.: trace
+    at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: database-service
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  elastic.endpoint: "${SEARCH_ENDPOINT}"
+  elastic:
+    endpoint: "${SEARCH_ENDPOINT}"
+    username: "${SEARCH_USERNAME}"
+    password: "${SEARCH_PASSWORD}"
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"

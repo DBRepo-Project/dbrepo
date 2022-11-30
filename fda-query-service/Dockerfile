@@ -29,14 +29,16 @@ ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV SHARED_FILESYSTEM=/tmp
+ENV BROKER_CONSUMERS=2
+ENV LOG_LEVEL=debug
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./query-service.jar
 
 EXPOSE 9093
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./query-service.jar"]

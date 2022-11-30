@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -33,6 +34,7 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
+    @Timed(value = "history.list", description = "Time needed to retrieve table history")
     @Operation(summary = "Find all history", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<TableHistoryDto>> getAll(@NotNull @PathVariable("id") Long containerId,
                                                         @NotNull @PathVariable("databaseId") Long databaseId,
@@ -40,11 +42,14 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException,
             QueryStoreException, DatabaseConnectionException, UserNotFoundException {
+        log.debug("endpoint find all history, containerId={}, databaseid={}, tableId={}, principal={}", containerId,
+                databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "DATA_HISTORY", principal)) {
             log.error("Missing data history permission");
             throw new NotAllowedException("Missing data history permission");
         }
         final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId, principal);
+        log.trace("find all history resulted in history {}", history);
         return ResponseEntity.ok(history);
     }
 

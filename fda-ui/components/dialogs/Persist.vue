@@ -2,11 +2,10 @@
   <div>
     <v-card>
       <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-      <v-card-title>
-        Persist Subset and Result
-      </v-card-title>
+      <v-card-title v-text="`Persist ${title}`" />
       <v-card-text>
         <v-alert
+          v-if="is_subset"
           border="left"
           color="info">
           Choose an expressive subset title and describe what it produces.
@@ -18,7 +17,8 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
-                label="Subset Title *"
+                :label="`${prefix} title *`"
+                :disabled="is_database"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
@@ -26,7 +26,7 @@
                 v-model="identifier.description"
                 name="description"
                 rows="2"
-                label="Subset Description" />
+                :label="`${prefix} description *`" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -35,7 +35,7 @@
                 id="publisher"
                 v-model="identifier.publisher"
                 name="publisher"
-                label="Subset Publisher *"
+                :label="`${prefix} publisher *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -46,21 +46,21 @@
                 id="publication-day"
                 v-model.number="identifier.publication_day"
                 type="number"
-                label="Publication Day" />
+                label="Publication day" />
             </v-col>
             <v-col cols="2">
               <v-text-field
                 id="publication-month"
                 v-model.number="identifier.publication_month"
                 type="number"
-                label="Publication Month" />
+                label="Publication month" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 id="publication-year"
                 v-model.number="identifier.publication_year"
                 type="number"
-                label="Publication Year *"
+                label="Publication year *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -74,7 +74,7 @@
                 item-value="value"
                 :disabled="database.is_public"
                 item-text="name"
-                label="Visibility *"
+                :label="`${prefix} visibility *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -84,7 +84,7 @@
               <v-text-field
                 v-model="creator.name"
                 name="name"
-                label="Name *"
+                label="Lastname, Firstname *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
@@ -178,6 +178,12 @@
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
 export default {
+  props: {
+    type: {
+      type: String,
+      default: 'subset'
+    }
+  },
   data () {
     return {
       formValid: false,
@@ -289,12 +295,35 @@ export default {
         return null
       }
       return { Authorization: `Bearer ${this.token}` }
+    },
+    is_subset () {
+      return this.type === 'subset'
+    },
+    is_database () {
+      return this.type === 'database'
+    },
+    title () {
+      if (this.is_subset) {
+        return 'subset'
+      } else if (this.is_database) {
+        return 'database'
+      }
+      return ''
+    },
+    prefix () {
+      if (this.is_subset) {
+        return 'Subset'
+      } else if (this.is_database) {
+        return 'Database'
+      }
+      return ''
     }
   },
   mounted () {
     this.loadUser()
       .then(() => this.addCreatorSelf())
     this.loadDatabase()
+      .then(() => this.prefill())
   },
   methods: {
     cancel () {
@@ -358,11 +387,11 @@ export default {
       } catch (err) {
         this.error = true
         this.loading = false
-        this.$toast.error('Failed to persist query')
+        this.$toast.error('Failed to persist')
         console.error('persist failed', err)
         return
       }
-      this.$toast.success('Query persisted.')
+      this.$toast.success(this.prefix + ' successfully persisted')
       this.$emit('close', { action: 'persisted' })
       this.loading = false
     },
@@ -383,6 +412,14 @@ export default {
         console.error('load user data failed', err)
       }
       this.loading = false
+    },
+    prefill () {
+      if (!this.is_database) {
+        return
+      }
+      this.identifier.title = this.database.name
+      this.identifier.type = 'database'
+      console.debug('pre-filled identifier', this.identifier)
     }
   }
 }

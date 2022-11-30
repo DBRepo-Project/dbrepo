@@ -45,8 +45,10 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     @Transactional(readOnly = true)
     public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException {
         if (principal == null) {
+            log.trace("principal is null, list only public views");
             return viewRepository.findAllPublicByDatabaseId(databaseId);
         }
+        log.trace("principal is not null, list public views and mine");
         return viewRepository.findAllPublicOrMineByDatabaseId(databaseId, principal.getName());
     }
 
@@ -55,12 +57,14 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException {
         final Optional<View> optional;
         if (principal == null) {
+            log.trace("principal is null, find only public view");
             optional = viewRepository.findPublicByDatabaseIdAndId(databaseId, id);
         } else {
+            log.trace("principal is not null, find public view or mine");
             optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, principal.getName());
         }
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {}", id);
+            log.error("Failed to find view");
             throw new ViewNotFoundException("Failed to find view");
         }
         return optional.get();
@@ -90,7 +94,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* delete in metadata database */
         viewRepository.delete(view);
         log.info("Deleted view with id {}", view.getId());
-        log.debug("deleted view {}", view);
+        log.trace("deleted view {}", view);
     }
 
     @Override
@@ -132,7 +136,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .build();
         final View view = viewRepository.save(entity);
         log.info("Created view with id {}", view.getId());
-        log.debug("created view {}", view);
+        log.trace("created view {}", view);
         return view;
     }
 

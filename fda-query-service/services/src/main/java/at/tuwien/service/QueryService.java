@@ -174,6 +174,7 @@ public interface QueryService {
      * @throws DatabaseConnectionException The database was not found in the remote database.
      * @throws QueryMalformedException     The query is malformed.
      */
+    @Deprecated
     void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;

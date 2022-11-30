@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -41,6 +42,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
+    @Timed(value = "data.insert", description = "Time needed to insert data into a table")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> insert(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -48,8 +50,11 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, UserNotFoundException {
-        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
+            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
+            UserNotFoundException {
+        log.debug("endpoint insert data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -60,6 +65,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @PutMapping
     @Transactional
+    @Timed(value = "data.update", description = "Time needed to update data in a table")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> update(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -67,8 +73,11 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvUpdateDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
-        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_UPDATE", principal)) {
+            ImageNotSupportedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
+            UserNotFoundException {
+        log.debug("endpoint update data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
         }
@@ -79,6 +88,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @DeleteMapping
     @Transactional
+    @Timed(value = "data.delete", description = "Time needed to delete data into a table")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -88,7 +98,9 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, TupleDeleteException, NotAllowedException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
-        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_DELETE", principal)) {
+        log.debug("endpoint delete data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
+                databaseId, tableId, data, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
         }
@@ -99,6 +111,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @PostMapping("/import")
     @Transactional
+    @Timed(value = "data.insertbulk", description = "Time needed to insert data from .csv into a table")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> importCsv(@NotNull @PathVariable("id") Long containerId,
                                           @NotNull @PathVariable("databaseId") Long databaseId,
@@ -108,12 +121,12 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
             QueryMalformedException, UserNotFoundException {
-        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
+        log.debug("endpoint insert data from csv, containerId={}, databaseId={}, tableId={}, data={}, principal={}",
+                containerId, databaseId, tableId, data, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
-        log.info("Insert data into database with id {}", databaseId);
-        log.debug("insert data from location {} into database with id {}", data, databaseId);
         queryService.insert(containerId, databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -121,6 +134,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
+    @Timed(value = "data.all", description = "Time needed to find all data from a table")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
                                                  @NotNull @PathVariable("databaseId") Long databaseId,
@@ -134,17 +148,21 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
             QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+        log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
+                containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
-        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
+        if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* find */
         final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
+        log.debug("find table data has produced {} tuples", count);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("FDA-COUNT", count.toString());
         final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal);
+        log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(response);

@@ -79,7 +79,7 @@ public class Query implements Serializable {
     @javax.persistence.Column(nullable = false)
     private Long createdBy;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<at.tuwien.querystore.Table> tables;
 
     @javax.persistence.Column(name = "last_modified")

@@ -5,9 +5,11 @@ target/
 !**/src/test/**/target/
 
 # Notebooks
-.jupyter/.idea/
-.jupyter/.ipynb_checkpoints
-.jupyter/venv
+.jupyter/
+.pytest_cache/
+
+# demo
+.demo
 
 # Environment
 .env

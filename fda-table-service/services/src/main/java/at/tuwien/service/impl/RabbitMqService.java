@@ -30,11 +30,9 @@ public class RabbitMqService implements MessageQueueService {
             channel.queueBind(table.getTopic(), table.getDatabase().getExchange(), table.getTopic());
         } catch (IOException e) {
             log.error("Failed to create queue and bind for table with id {}", table.getId());
-            log.debug("Failed to create queue and bind for table {}", table);
             throw new AmqpException("Failed to create", e);
         }
         log.info("Created queue for table with id {}", table.getId());
-        log.debug("created queue for table {}", table);
     }
 
 }

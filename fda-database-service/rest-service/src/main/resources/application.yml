@@ -24,17 +24,21 @@ spring:
     host: broker-service
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9092
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: debug
+    at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance.hostname: database-service
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  elastic.endpoint: search-service:9200
+  elastic:
+    endpoint: "${SEARCH_ENDPOINT}"
+    username: "${SEARCH_USERNAME}"
+    password: "${SEARCH_PASSWORD}"
   ready.path: /ready
   gateway.endpoint: http://gateway-service:9095

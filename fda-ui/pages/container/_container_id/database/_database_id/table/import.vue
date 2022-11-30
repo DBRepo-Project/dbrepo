@@ -270,9 +270,6 @@ export default {
     fileConfig () {
       return { headers: { 'Content-Type': 'multipart/form-data' } }
     },
-    sharedFilesystem () {
-      return this.$config.sharedFilesystem
-    },
     validTableName () {
       if (this.tableCreate.name === null) {
         return true
@@ -321,7 +318,7 @@ export default {
     async analyse () {
       this.loading = true
       try {
-        const payload = { filepath: `${this.sharedFilesystem}/${this.file.filename}` }
+        const payload = { filepath: `/tmp/${this.file.filename}` }
         const res = await this.$axios.post('/api/analyse/determinedt', payload, this.config)
         const { columns } = res.data
         console.log('data analyse result', columns)

@@ -2,41 +2,53 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
+import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Network;
+import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.Rule;
 import org.junit.rules.Timeout;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.Principal;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 
 @Log4j2
@@ -47,6 +59,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private Channel channel;
+
+    @MockBean
+    private RabbitMqListenerImpl rabbitMqListener;
 
     @Autowired
     private QueryService queryService;
@@ -59,6 +77,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private TableRepository tableRepository;
+
+    @Autowired
+    private TableColumnRepository tableColumnRepository;
 
     @Autowired
     private ConceptRepository conceptRepository;
@@ -84,13 +105,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
         log.trace("container bind {}", bind);
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
                         "MARIADB_DATABASE=weather")
-                .withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"))
+                //.withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"))
                 .exec();
         CONTAINER_1.setHash(response.getId());
         DockerConfig.startContainer(CONTAINER_1);
@@ -101,13 +122,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         log.trace("container bind {}", bind);
         final CreateContainerResponse response2 =
                 dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                        .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                        .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp")))
                         .withName(CONTAINER_2_INTERNALNAME)
                         .withIpv4Address(CONTAINER_2_IP)
                         .withHostName(CONTAINER_2_INTERNALNAME)
                         .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
                                 "MARIADB_DATABASE=zoo")
-                        .withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp"))
+                        //.withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp"))
                         .exec();
         CONTAINER_1.setHash(response.getId());
         CONTAINER_2.setHash(response2.getId());
@@ -155,33 +176,29 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
         databaseRepository.save(DATABASE_2);
         databaseRepository.save(DATABASE_3);
-        /* create tables */
+        /* create tables 1 */
         TABLE_1.setDatabase(DATABASE_1);
         tableRepository.save(TABLE_1);
-        TABLE_2.setDatabase(DATABASE_1);
-        tableRepository.save(TABLE_2);
-        TABLE_3.setDatabase(DATABASE_3);
-        tableRepository.save(TABLE_3);
-        TABLE_4.setDatabase(DATABASE_2);
-        tableRepository.save(TABLE_4);
-        TABLE_5.setDatabase(DATABASE_2);
-        tableRepository.save(TABLE_5);
-        /* create columns */
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         tableRepository.save(TABLE_1);
+        TABLE_1_COLUMNS.forEach(column -> column.setTable(TABLE_1));
+        /* create tables 2 */
+        TABLE_2.setDatabase(DATABASE_1);
+        tableRepository.save(TABLE_2);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         tableRepository.save(TABLE_2);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        tableRepository.save(TABLE_4);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        tableRepository.save(TABLE_5);
+        TABLE_2_COLUMNS.forEach(column -> column.setTable(TABLE_2));
+        /* create tables 3 */
+        TABLE_3.setDatabase(DATABASE_3);
+        tableRepository.save(TABLE_3);
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, TableNotFoundException, DatabaseConnectionException,
             PaginationException, ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
         final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
@@ -202,6 +219,82 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals("Albury", result.getResult().get(2).get(COLUMN_1_3_INTERNAL_NAME));
         assertEquals(12.9, result.getResult().get(2).get(COLUMN_1_4_INTERNAL_NAME));
         assertEquals(0.0, result.getResult().get(2).get(COLUMN_1_5_INTERNAL_NAME));
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
+            ContainerNotFoundException, QueryMalformedException, SQLException, UserNotFoundException {
+        final Long page = 0L;
+        final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, principal);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void selectAll_noTable_fails() {
+        final Long page = 0L;
+        final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, -1L, Instant.now(), page, size, principal);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void selectAll_noDatabase_fails() {
+        final Long page = 0L;
+        final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            queryService.findAll(CONTAINER_1_ID, -1L, TABLE_1_ID, Instant.now(), page, size, principal);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void insert_columns_fails() {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("key", "some_value"))
+                .build();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, principal);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, principal);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
+    public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* test */
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, principal);
     }
 
     @SneakyThrows

@@ -24,6 +24,15 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ publisher }}</span>
                   </v-list-item-content>
+                  <v-list-item-title v-if="database.identifier.creators.length > 0" class="mt-2">
+                    Creators
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <span v-for="(person_or_org, i) in database.identifier.creators" :key="`c-${i}`" class="mt-1">
+                      <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
+                      {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
+                    </span>
+                  </v-list-item-content>
                   <v-list-item-title v-if="language" class="mt-2">
                     Language
                   </v-list-item-title>
@@ -38,6 +47,33 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="publication" />
                   </v-list-item-content>
+                  <v-list-item-title v-if="database.identifier.related.length > 0" class="mt-2">
+                    Related Identifiers
+                  </v-list-item-title>
+                  <v-list-item-content v-if="database.identifier.related.length > 0">
+                    <div v-for="(rel, i) in database.identifier.related" :key="`r-${i}`">
+                      <span v-if="rel.type === 'DOI'">
+                        {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                        <span v-if="rel.relation">({{ rel.relation }})</span>
+                      </span>
+                      <span v-if="rel.type === 'URL'">
+                        {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
+                        <span v-if="rel.relation">({{ rel.relation }})</span>
+                      </span>
+                      <span v-if="rel.type === 'arXiv'">
+                        {{ rel.type }}: <a :href="`https://arxiv.org/abs/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                        <span v-if="rel.relation">({{ rel.relation }})</span>
+                      </span>
+                      <span v-if="rel.type === 'EISSN'">
+                        {{ rel.type }}: <a :href="`https://portal.issn.org/resource/ISSN/${rel.value}`" target="_blank">{{ rel.value }}</a>
+                        <span v-if="rel.relation">({{ rel.relation }})</span>
+                      </span>
+                      <span v-if="rel.type !== 'DOI' && rel.type !== 'URL' && rel.type !== 'arXiv' && rel.type !== 'EISSN'">
+                        {{ rel.type }}: {{ rel.value }}
+                        <span v-if="rel.relation">({{ rel.relation }})</span>
+                      </span>
+                    </div>
+                  </v-list-item-content>
                   <v-list-item-title v-if="database.identifier.license" class="mt-2">
                     License
                   </v-list-item-title>
@@ -49,6 +85,16 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
+            <v-card-actions>
+              <v-btn
+                v-if="hasIdentifier"
+                small
+                color="secondary"
+                :loading="metadataLoading"
+                @click.stop="download">
+                <v-icon left>mdi-code-tags</v-icon> Metadata .xml
+              </v-btn>
+            </v-card-actions>
           </v-card-text>
         </v-card>
         <v-divider v-if="hasIdentifier" />
@@ -153,7 +199,7 @@
                 v-model="editDbDialog"
                 persistent
                 max-width="860">
-                <PersistDatabase :database="database" @close-dialog="closeDialog" />
+                <Persist type="database" @close="closeDialog" />
               </v-dialog>
             </v-card-actions>
           </v-card-text>
@@ -166,14 +212,18 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar'
-import PersistDatabase from '@/components/dialogs/PersistDatabase'
+import Persist from '@/components/dialogs/Persist'
+import EditVisibility from '@/components/dialogs/EditVisibility'
+import OrcidIcon from '@/components/icons/OrcidIcon'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
   components: {
+    EditVisibility,
     DBToolbar,
-    PersistDatabase
+    Persist,
+    OrcidIcon
   },
   data () {
     return {
@@ -185,6 +235,8 @@ export default {
           username: null
         }
       },
+      editVisibilityDialog: false,
+      metadataLoading: false,
       user: {
         username: null
       },
@@ -257,12 +309,6 @@ export default {
       }
       return {
         headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
-    silentConfig () {
-      return {
-        headers: this.config.headers,
-        progress: false
       }
     },
     pid () {
@@ -348,7 +394,34 @@ export default {
       }
       this.loading = false
     },
-    async loadUser () {
+    closeDialog (event) {
+      if (event.action === 'persisted') {
+        this.loadDatabase()
+      }
+      this.editDbDialog = false
+      this.editVisibilityDialog = false
+    },
+    async download () {
+      this.metadataLoading = true
+      try {
+        const config = this.config
+        config.headers.Accept = 'text/xml'
+        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, config)
+        console.debug('export identifier', res)
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'identifier.xml')
+        document.body.appendChild(link)
+        link.click()
+      } catch (err) {
+        console.error('Could not export identifier', err)
+        this.$toast.error('Could not export identifier')
+        this.error = true
+      }
+      this.metadataLoading = false
+    },
+    loadUser () {
       if (!this.token) {
         return
       }

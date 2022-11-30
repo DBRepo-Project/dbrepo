@@ -23,9 +23,9 @@ public abstract class BaseUnitTest {
 
     public final static String BROKER_NAME = "fda-broker-service";
     public final static String BROKER_IP = "172.29.0.2";
-    public final static String BROKER_HOSTNAME = "fda-broker-service";
-    public final static String BROKER_IMAGE = "rabbitmq";
-    public final static String BROKER_TAG = "3-alpine";
+    public final static String BROKER_HOSTNAME = "broker-service";
+    public final static String BROKER_IMAGE = "fda-broker-service";
+    public final static String BROKER_TAG = "latest";
 
     public final static String SEARCH_NAME = "fda-search-mock-service";
     public final static String SEARCH_IP = "172.29.0.3";
@@ -121,6 +121,11 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_2_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
+            .build();
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";

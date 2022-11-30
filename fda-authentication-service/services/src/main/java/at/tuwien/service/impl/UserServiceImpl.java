@@ -42,9 +42,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<User> findAll() {
-        final List<User> users = userRepository.findAllSorted();
-        log.info("Found {} users", users.size());
-        return users;
+        return userRepository.findAll();
     }
 
     @Override
@@ -89,12 +87,12 @@ public class UserServiceImpl implements UserService {
         /* duplicate */
         final Optional<User> email = userRepository.findByEmail(data.getEmail());
         if (email.isPresent()) {
-            log.error("Email address is already present in the database");
+            log.error("Email address {} is already present in the database", data.getEmail());
             throw new UserEmailExistsException("Email taken");
         }
         final Optional<User> username = userRepository.findByUsername(data.getUsername());
         if (username.isPresent()) {
-            log.error("Username is already present in the database");
+            log.error("Username {} is already present in the database", data.getUsername());
             throw new UserNameExistsException("Username taken");
         }
         /* save */
@@ -112,7 +110,7 @@ public class UserServiceImpl implements UserService {
             throw new UserNameExistsException("Failed to create user", e);
         }
         log.info("Created user with id {}", entity.getId());
-        log.debug("created user {}", entity);
+        log.trace("created user {}", entity);
         return entity;
     }
 
@@ -123,7 +121,7 @@ public class UserServiceImpl implements UserService {
         final User user = findByUsernameOrEmail(data.getUsername(), data.getEmail());
         /* save */
         log.info("Forgot user with id {}", user.getId());
-        log.debug("forgot user {}", user);
+        log.trace("forgot user {}", user);
         return user;
     }
 
@@ -149,7 +147,7 @@ public class UserServiceImpl implements UserService {
         log.debug("mapped data {} to new user {}", data, user);
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.trace("updated user {}", entity);
         return entity;
     }
 
@@ -209,7 +207,7 @@ public class UserServiceImpl implements UserService {
             throw new RoleUniqueException("Failed to assign roles", e);
         }
         log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.trace("updated user {}", entity);
         return entity;
     }
 
@@ -222,7 +220,7 @@ public class UserServiceImpl implements UserService {
         user.setThemeDark(data.getThemeDark());
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.trace("updated user {}", entity);
     }
 
     @Override
@@ -232,12 +230,13 @@ public class UserServiceImpl implements UserService {
         final User user = find(id);
         /* save */
         final String passwd = passwordEncoder.encode(data.getPassword());
+        log.debug("encoded updated user password {}", passwd);
         user.setPassword(passwd);
         user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         log.debug("mapped password {} to updated user {}", passwd, user);
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.trace("updated user {}", entity);
         return entity;
     }
 

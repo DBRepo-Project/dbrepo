@@ -1,3 +1,7 @@
+# INFO: This compose file builds the local branch and deploys them as a small, local test instance
+# MODIFIED: 2022-10-19
+# MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
+
 version: "3.6"
 
 volumes:
@@ -50,10 +54,10 @@ services:
     image: fda-discovery-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9090:9090"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
     logging:
       driver: json-file
 
@@ -227,7 +231,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
     ports:
-      - "9098:9098"
+      - "9099:9099"
     depends_on:
       fda-metadata-db:
         condition: service_started
@@ -310,6 +314,7 @@ services:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=elastic
       - logger.level=WARN
     depends_on:
       fda-discovery-service:

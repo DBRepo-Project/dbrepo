@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
@@ -9,6 +10,7 @@ import at.tuwien.service.impl.RabbitMqServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -20,6 +22,9 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
@@ -34,10 +39,11 @@ import static at.tuwien.config.DockerConfig.hostConfig;
 @ExtendWith(SpringExtension.class)
 public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
-    private static final String AMQP_EXCHANGE = "fda";
-
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @Autowired
     private Channel channel;
@@ -72,10 +78,15 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
         /* create amqp */
         final CreateContainerResponse request = dockerClient.createContainerCmd(BROKER_IMAGE + ":" + BROKER_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-public"))
+                .withHostConfig(
+                        hostConfig
+                                .withNetworkMode("fda-public")
+                                .withPortBindings(PortBinding.parse("15672:15672"), PortBinding.parse("5672:5672"))
+                )
                 .withName(BROKER_NAME)
                 .withIpv4Address(BROKER_IP)
                 .withHostName(BROKER_HOSTNAME)
+                .withEnv("RABBITMQ_DEFAULT_USER=fda", "RABBITMQ_DEFAULT_PASS=fda")
                 .exec();
         dockerClient.startContainerCmd(request.getId())
                 .exec();
@@ -109,7 +120,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createExchange_succeeds() throws AmqpException, IOException, BrokerVirtualHostCreationException {
+    public void createExchange_succeeds() throws AmqpException, IOException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */

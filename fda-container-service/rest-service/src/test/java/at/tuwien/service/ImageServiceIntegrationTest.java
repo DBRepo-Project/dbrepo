@@ -3,9 +3,11 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -17,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -39,13 +40,27 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
-    @Transactional
     @BeforeEach
     public void beforeEach() {
-        log.debug("save container {}", CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        userRepository.save(USER_1);
+        final ContainerImage tmp = ContainerImage.builder()
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .hash(IMAGE_1_HASH)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
+                .compiled(IMAGE_1_BUILT)
+                .size(IMAGE_1_SIZE)
+                .environment(IMAGE_1_ENV)
+                .defaultPort(IMAGE_1_PORT)
+                .build();
+        imageRepository.save(tmp);
     }
 
     @Test
@@ -54,11 +69,11 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_2_REPOSITORY)
                 .tag(IMAGE_2_TAG)
+                .jdbcMethod(IMAGE_2_JDBC)
                 .dialect(IMAGE_2_DIALECT)
                 .driverClass(IMAGE_2_DRIVER)
-                .jdbcMethod(IMAGE_2_JDBC)
+                .environment(IMAGE_2_ENV_DTO)
                 .defaultPort(IMAGE_2_PORT)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -114,17 +129,16 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_hasContainer_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_hasNoContainer_succeeds() throws ImageNotFoundException, PersistenceException {
 
         /* test */
         imageService.delete(IMAGE_1_ID);
         assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
-        assertTrue(containerRepository.findById(CONTAINER_1_ID).isPresent()); /* container should NEVER be deletable in the metadata db */
+        assertFalse(containerRepository.findById(CONTAINER_1_ID).isPresent()); /* container should NEVER be deletable in the metadata db */
     }
 
     @Test
     public void delete_noContainer_succeeds() throws ImageNotFoundException, PersistenceException {
-        imageRepository.save(IMAGE_1);
 
         /* test */
         imageService.delete(IMAGE_1_ID);

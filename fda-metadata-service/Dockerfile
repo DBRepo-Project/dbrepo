@@ -32,14 +32,15 @@ ENV ADMIN_MAIL="noreply@example.com"
 ENV EARLIEST_DATESTAMP="2022-09-17T18:23:00Z"
 ENV DELETED_RECORD=persistent
 ENV GRANULARITY="YYYY-MM-DDThh:mm:ssZ"
+ENV LOG_LEVEL=debug
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./rest.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./metadata-service.jar
 
-EXPOSE 9094
+EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./metadata-service.jar"]

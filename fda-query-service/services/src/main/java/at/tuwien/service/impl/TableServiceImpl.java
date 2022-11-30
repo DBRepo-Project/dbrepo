@@ -47,7 +47,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             TableNotFoundException {
         final Optional<Table> table = tableRepository.find(containerId, databaseId, tableId);
         if (table.isEmpty()) {
-            log.error("Failed to find table with id {} in container with id {} and database with id {}", tableId, containerId, databaseId);
+            log.error("Failed to find table");
             throw new TableNotFoundException("Failed to find table");
         }
         return table.get();

@@ -61,6 +61,7 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "iid", insertable = false, updatable = false)
     private List<ContainerImageEnvironmentItem> environment;
@@ -68,8 +69,8 @@ public class ContainerImage {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
     private List<Container> containers;
 

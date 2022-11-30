@@ -26,20 +26,22 @@ public abstract class AbstractEndpoint {
 
     protected Boolean hasDatabasePermission(Long containerId, Long databaseId, String permissionCode,
                                             Principal principal) {
+        log.trace("validate has database permission, containerId={}, databaseId={}, permissionCode={}, principal={}",
+                containerId, databaseId, permissionCode, principal);
         final Database database;
         try {
             database = databaseService.findById(containerId, databaseId);
         } catch (DatabaseNotFoundException e) {
-            log.debug("failed to find database with id {}", databaseId);
+            log.error("Failed to find database");
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of("").contains(permissionCode)) {
-            log.debug("grant permission {} because database is public", permissionCode);
+        if (database.getIsPublic() && List.of().contains(permissionCode)) {
+            log.trace("grant permission {} because database is public", permissionCode);
             return true;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         /* view-only operations are allowed on all databases */
@@ -49,20 +51,22 @@ public abstract class AbstractEndpoint {
         }
         /* modification operations are limited to the creator */
         if (database.getCreator().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
+            log.trace("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
                     database.getCreator().getUsername());
             return true;
         }
-        log.debug("failed to grant permission {} because database is not owner by the current user", permissionCode);
+        log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
         return false;
     }
 
     protected Boolean hasContainerPermission(Long containerId, String permissionCode, Principal principal) {
+        log.trace("validate has container permission, containerId={}, permissionCode={}, principal={}",
+                containerId, permissionCode, principal);
         final Container container;
         try {
             container = containerService.find(containerId);
         } catch (ContainerNotFoundException e) {
-            log.debug("failed to find container with id {}", containerId);
+            log.error("Failed to find container");
             return false;
         }
         /* view-only operations are allowed on public databases */
@@ -71,7 +75,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         if (principal == null) {
-            log.debug("failed to grant permission {} because principal is null", permissionCode);
+            log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
         /* modification operations are limited to the creator */
@@ -80,7 +84,7 @@ public abstract class AbstractEndpoint {
                     container.getCreator().getUsername());
             return true;
         }
-        log.debug("failed to grant permission {} because container is not owner by the current user", permissionCode);
+        log.error("Failed to grant permission {} because container is not owner by the current user", permissionCode);
         return false;
     }
 
