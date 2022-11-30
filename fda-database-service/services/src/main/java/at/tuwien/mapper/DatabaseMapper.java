@@ -107,6 +107,7 @@ public interface DatabaseMapper {
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
                 .append(user.getDatabasePassword())
                 .append("';");
+        log.trace("raw create user statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -120,10 +121,9 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
+        log.trace("raw create database statement [{}]", statement);
         try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped create database query {}", statement);
-            return pstmt;
+            return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);

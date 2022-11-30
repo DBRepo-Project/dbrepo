@@ -6,9 +6,9 @@ import at.tuwien.exception.DatabaseConnectionException;
 import at.tuwien.exception.DatabaseMalformedException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryStoreService;
-import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +23,12 @@ import java.sql.SQLException;
 @Service
 public class QueryStoreServiceImpl extends HibernateConnector implements QueryStoreService {
 
-    private final UserService userService;
+    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public QueryStoreServiceImpl(UserService userService, DatabaseService databaseService) {
-        this.userService = userService;
+    public QueryStoreServiceImpl(DatabaseMapper databaseMapper, DatabaseService databaseService) {
+        this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
     }
 
@@ -36,9 +36,9 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
     public void create(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             DatabaseConnectionException, DatabaseMalformedException, UserNotFoundException {
         final Database database = databaseService.findById(containerId, databaseId);
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* create */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, user);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`");

@@ -135,19 +135,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }
         final User root = databaseMapper.containerToPrivilegedUser(container);
+        final User user = userService.findByUsername(principal.getName());
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         database.setContainer(container);
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
-            /* create database */
             final Connection connection = dataSource.getConnection();
+            /* create database */
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawCreateDatabaseQuery(connection, database);
             preparedStatement.executeUpdate();
             /* create user */
-            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, root);
+            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
-            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantCreatorAccessQuery(connection, root);
+            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantCreatorAccessQuery(connection, user);
             preparedStatement2.executeUpdate();
             /* grant read-only access */
             final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
@@ -158,6 +159,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         } finally {
             dataSource.close();
         }
+        log.info("Created user {} on database with creator access", user.getUsername());
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setIsPublic(createDto.getIsPublic());

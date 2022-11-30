@@ -201,6 +201,26 @@
                 max-width="860">
                 <Persist type="database" @close="closeDialog" />
               </v-dialog>
+              <v-dialog
+                v-model="editVisibilityDialog"
+                max-width="860">
+                <EditVisibility :database="database" @close-dialog="closeDialog" />
+              </v-dialog>
+            </v-card-actions>
+          </v-card-text>
+        </v-card>
+        <v-divider />
+        <v-card v-if="isCreator" flat tile>
+          <v-card-title>Modify visibility</v-card-title>
+          <v-card-subtitle>Dangerous operation</v-card-subtitle>
+          <v-card-text>
+            <v-card-actions>
+              <v-btn
+                small
+                color="error"
+                @click="editVisibilityDialog = true">
+                Modify
+              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
@@ -421,7 +441,7 @@ export default {
       }
       this.metadataLoading = false
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
