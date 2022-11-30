@@ -58,6 +58,7 @@ public class Table {
     @Column(name = "tdescription", columnDefinition = "TEXT")
     private String description;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
