@@ -36,6 +36,7 @@ public abstract class BaseUnitTest {
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_PASSWORD = "junit";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_EMAIL = "junit@ossdip.at";
     public final static Boolean USER_1_VERIFIED = true;
     public final static Boolean USER_1_THEME = false;
@@ -46,6 +47,8 @@ public abstract class BaseUnitTest {
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME)
+            .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .build();
 
     public final static Long IMAGE_1_ID = 1L;

@@ -1,8 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
@@ -10,13 +8,9 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
@@ -36,6 +30,8 @@ import java.security.Principal;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -48,6 +44,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexInitializer indexInitializer;
+
+    @MockBean
+    private DatabaseidxRepository databaseidxRepository;
 
     @MockBean
     private Channel channel;
@@ -186,6 +185,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* when */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
         /* test */
         databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
     }
@@ -195,6 +198,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* when */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_2);
 
         /* test */
         final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
