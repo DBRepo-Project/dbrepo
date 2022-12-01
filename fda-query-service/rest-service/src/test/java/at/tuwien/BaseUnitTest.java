@@ -1,6 +1,5 @@
 package at.tuwien;
 
-import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -9,6 +8,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
@@ -21,14 +21,11 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
-import org.apache.commons.io.FileUtils;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
-import java.io.File;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.Collections;
@@ -1865,6 +1862,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_1_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -1876,6 +1874,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_2_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_3 = Table.builder()
@@ -1887,6 +1886,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_4 = Table.builder()
@@ -1898,6 +1898,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_4_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_4_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_5 = Table.builder()
@@ -1909,6 +1910,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_5_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_5_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()
@@ -2012,6 +2014,46 @@ public abstract class BaseUnitTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .build();
+
+    public final static Long VIEW_1_ID = 1L;
+    public final static Boolean VIEW_1_INITIAL_VIEW = false;
+    public final static String VIEW_1_NAME = "JUnit";
+    public final static String VIEW_1_INTERNAL_NAME = "junit";
+    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_1_PUBLIC = true;
+    public final static String VIEW_1_QUERY = "select `location` from `weather`";
+
+    public final static View VIEW_1 = View.builder()
+            .id(VIEW_1_ID)
+            .isInitialView(VIEW_1_INITIAL_VIEW)
+            .name(VIEW_1_NAME)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .vcid(VIEW_1_CONTAINER_ID)
+            .vdbid(VIEW_1_DATABASE_ID)
+            .isPublic(VIEW_1_PUBLIC)
+            .query(VIEW_1_QUERY)
+            .build();
+
+    public final static Long VIEW_2_ID = 2L;
+    public final static Boolean VIEW_2_INITIAL_VIEW = false;
+    public final static String VIEW_2_NAME = "JUnit";
+    public final static String VIEW_2_INTERNAL_NAME = "junit";
+    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_2_PUBLIC = true;
+    public final static String VIEW_2_QUERY = "select `location` from `weather`";
+
+    public final static View VIEW_2 = View.builder()
+            .id(VIEW_2_ID)
+            .isInitialView(VIEW_2_INITIAL_VIEW)
+            .name(VIEW_2_NAME)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .vcid(VIEW_2_CONTAINER_ID)
+            .vdbid(VIEW_2_DATABASE_ID)
+            .isPublic(VIEW_2_PUBLIC)
+            .query(VIEW_2_QUERY)
             .build();
 
 }

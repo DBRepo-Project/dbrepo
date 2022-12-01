@@ -125,7 +125,7 @@ public abstract class AbstractEndpoint {
         try {
             table = tableService.find(containerId, databaseId, tableId);
         } catch (TableNotFoundException e) {
-            log.error("Failed to find table");
+            log.error("Failed to find table with id {} in database with id {}", tableId, databaseId);
             return false;
         } catch (DatabaseNotFoundException e) {
             /* can never occur here */
