@@ -5,6 +5,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.IdentifierMapper;
@@ -36,6 +37,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/container/{id}/database")
 public class DatabaseEndpoint extends AbstractEndpoint {
 
+    private final UserService userService;
+    private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
     private final IdentifierMapper identifierMapper;
     private final MariaDbServiceImpl databaseService;
@@ -46,10 +49,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
-                            MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            UserService userService, MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
                             IdentifierService identifierService, IdentifierMapper identifierMapper,
-                            MessageQueueService messageQueueService, DatabaseAccessRepository databaseAccessRepository) {
+                            MessageQueueService messageQueueService, AccessService accessService,
+                            DatabaseAccessRepository databaseAccessRepository) {
         super(databaseService, containerService);
+        this.userService = userService;
+        this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.identifierMapper = identifierMapper;
         this.databaseService = databaseService;
@@ -100,9 +106,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing database create permission");
         }
         final Database database = databaseService.create(containerId, createDto, principal);
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(containerId, database.getId(), principal);
         messageQueueService.updatePermissions(principal);
+        databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -139,7 +147,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId,
                                                 Principal principal)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, AccessDeniedException {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -151,7 +159,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         }
         if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
             /* only creator sees the access rights */
-            final List<DatabaseAccess> accesses = databaseAccessRepository.findByHdbid(databaseId);
+            final List<DatabaseAccess> accesses = accessService.list(databaseId);
             dto.setAccesses(accesses.stream()
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
                     .collect(Collectors.toList()));

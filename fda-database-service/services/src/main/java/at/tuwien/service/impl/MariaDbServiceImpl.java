@@ -99,9 +99,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(container);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, user);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);

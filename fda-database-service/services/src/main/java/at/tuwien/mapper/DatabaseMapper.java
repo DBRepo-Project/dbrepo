@@ -137,6 +137,13 @@ public interface DatabaseMapper {
                 .build();
     }
 
+    default DatabaseGiveAccessDto databaseDefaultCreatorAccess(String username) {
+        return DatabaseGiveAccessDto.builder()
+                .username(username)
+                .type(AccessTypeDto.WRITE_ALL)
+                .build();
+    }
+
     default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, User user) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
                 .append(user.getUsername())

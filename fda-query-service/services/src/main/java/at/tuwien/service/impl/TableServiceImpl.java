@@ -5,11 +5,11 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
-import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,15 +28,15 @@ import java.util.*;
 public class TableServiceImpl extends HibernateConnector implements TableService {
 
     private final QueryMapper queryMapper;
-    private final UserService userService;
+    private final DatabaseMapper databaseMapper;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
 
     @Autowired
-    public TableServiceImpl(QueryMapper queryMapper, UserService userService, TableRepository tableRepository,
+    public TableServiceImpl(QueryMapper queryMapper, DatabaseMapper databaseMapper, TableRepository tableRepository,
                             DatabaseService databaseService) {
         this.queryMapper = queryMapper;
-        this.userService = userService;
+        this.databaseMapper = databaseMapper;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
     }
@@ -67,10 +67,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = find(containerId, databaseId, tableId);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* use jpa to select one */
         try {
             final Connection connection = dataSource.getConnection();

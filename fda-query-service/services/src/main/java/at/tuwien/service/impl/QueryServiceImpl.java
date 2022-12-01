@@ -14,6 +14,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.*;
@@ -53,16 +54,18 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final UserService userService;
     private final TableService tableService;
     private final StoreService storeService;
+    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
     public QueryServiceImpl(QueryMapper queryMapper, UserService userService, TableService tableService,
-                            DatabaseService databaseService, StoreService storeService) {
+                            DatabaseService databaseService, StoreService storeService, DatabaseMapper databaseMapper) {
         this.queryMapper = queryMapper;
         this.userService = userService;
         this.tableService = tableService;
-        this.databaseService = databaseService;
         this.storeService = storeService;
+        this.databaseMapper = databaseMapper;
+        this.databaseService = databaseService;
     }
 
     @Override
@@ -93,10 +96,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns;
         try {
@@ -132,10 +135,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         final QueryResultDto result;
         try {
             final Connection connection = dataSource.getConnection();
@@ -164,10 +167,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* read file */
         final InputStreamResource resource;
         try {
@@ -198,10 +201,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* read file */
         final InputStreamResource resource;
         try {
@@ -231,10 +234,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableToRawCountAllQuery(connection, table, timestamp);
@@ -256,11 +259,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         if (data.getData().size() == 0 || data.getKeys().size() == 0) return;
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
@@ -281,7 +284,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0) {
@@ -289,7 +292,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throw new TableMalformedException("Failed to parse data");
         }
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* prepare the statement */
         try {
             final Connection connection = dataSource.getConnection();
@@ -317,11 +320,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         if (data.getKeys().size() == 0) return;
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* prepare the statement */
         try {
             final Connection connection = dataSource.getConnection();
@@ -344,10 +347,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* preparing the statements */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
         try {
             final Connection connection = dataSource.getConnection();
@@ -489,10 +492,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException, UserNotFoundException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),

@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
@@ -29,12 +30,15 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     private final StoreMapper storeMapper;
     private final UserService userService;
+    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService) {
+    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseMapper databaseMapper,
+                            DatabaseService databaseService) {
         this.storeMapper = storeMapper;
         this.userService = userService;
+        this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
     }
 
@@ -49,11 +53,10 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
-        log.trace("find all queries in database id {}", databaseId);
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* select all */
         try {
             final Connection connection = dataSource.getConnection();
@@ -79,10 +82,10 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByPrincipalOrAnonymous(principal, database.getContainer());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         /* use jpa to select one */
         final Query query;
         try {
@@ -129,10 +132,11 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         }
         log.trace("insert into database id {}, metadata {}", databaseId, metadata);
         /* user */
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         final User creator = userService.findByUsername(principal.getName());
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, creator);
+                database.getContainer(), database, root);
         final Query query = at.tuwien.querystore.Query.builder()
                 .cid(containerId)
                 .dbid(databaseId)
@@ -171,10 +175,10 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* persist */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         final Query out;
         try {
             final Connection connection = dataSource.getConnection();
@@ -196,17 +200,17 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Transactional(readOnly = true)
     public Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query query,
                         Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, UserNotFoundException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, user);
+                database.getContainer(), database, root);
         query.setQueryHash(DigestUtils.sha256Hex(query.getQuery()));
         query.setResultNumber(resultNumber);
         query.setResultHash(storeMapper.queryResultDtoToString(result));
