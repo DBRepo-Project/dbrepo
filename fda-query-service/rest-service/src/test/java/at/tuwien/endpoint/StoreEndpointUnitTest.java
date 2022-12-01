@@ -4,8 +4,11 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.UserService;
@@ -28,6 +31,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
@@ -62,6 +66,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseService databaseService;
+
+    @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
@@ -144,6 +151,85 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         assertThrows(DatabaseNotFoundException.class, () -> {
             storeEndpoint.find(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         });
+    }
+
+    @Test
+    public void persist_publicAnonymous_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            persist_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, null, null, null);
+        });
+    }
+
+    @Test
+    public void persist_publicRead_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            persist_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+        });
+    }
+
+    @Test
+    public void persist_publicWriteOwn_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            persist_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    public void persist_publicWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
+            NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        persist_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void persist_publicOwner_succeeds() throws UserNotFoundException, QueryStoreException,
+            NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        persist_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void persist_generic(Long containerId, Long databaseId, Long queryId, String username,
+                                   Principal principal, DatabaseAccess access) throws DatabaseNotFoundException,
+            UserNotFoundException, QueryStoreException, QueryNotFoundException, ImageNotSupportedException,
+            NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException {
+
+        /* mock */
+        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(databaseService.find(CONTAINER_2_ID, DATABASE_2_ID))
+                .thenReturn(DATABASE_2);
+        when(storeService.findOne(containerId, databaseId, queryId, principal))
+                .thenReturn(QUERY_1);
+        when(storeService.persist(containerId, databaseId, queryId, principal))
+                .thenReturn(QUERY_2);
+        if (access == null) {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.of(access));
+        }
+
+        /* test */
+        final ResponseEntity<QueryDto> response = storeEndpoint.persist(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_2_ID, response.getBody().getId());
+        assertEquals(QUERY_2_STATEMENT, response.getBody().getQuery());
     }
 
 }

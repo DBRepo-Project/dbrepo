@@ -64,13 +64,22 @@ public abstract class AbstractEndpoint {
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
         if (List.of("QUERY_EXECUTE", "QUERY_PERSIST").contains(permissionCode)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
+            log.debug("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
         /* modification operations are limited to the creator */
         if (database.getCreator().getUsername().equals(principal.getName())) {
             log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
                     database.getCreator().getUsername());
+            return true;
+        }
+        /* write permission */
+        if (List.of("CREATE_VIEW").contains(permissionCode) && hasWritePermission(access.getType())) {
+            log.debug("grant permission {} because user has write access {}", permissionCode, access.getType());
+            return true;
+        }
+        if (List.of("DELETE_VIEW").contains(permissionCode) && access.getType().equals(AccessType.WRITE_ALL)) {
+            log.debug("grant permission {} because user has full access {}", permissionCode, access.getType());
             return true;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
@@ -80,6 +89,15 @@ public abstract class AbstractEndpoint {
             return false;
         }
         log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
+        return false;
+    }
+
+    protected boolean hasWritePermission(AccessType accessType) {
+        switch (accessType) {
+            case WRITE_OWN:
+            case WRITE_ALL:
+                return true;
+        }
         return false;
     }
 

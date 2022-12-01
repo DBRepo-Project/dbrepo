@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.impl.QueryServiceImpl;
 import com.rabbitmq.client.Channel;
@@ -26,11 +27,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -55,6 +55,9 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private DatabaseService databaseService;
 
+    @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
+
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void insert_succeeds() throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
@@ -67,6 +70,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         final ResponseEntity<?> response = dataEndpoint.importCsv(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request,
@@ -88,6 +93,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         final ResponseEntity<?> response = dataEndpoint.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request,
@@ -106,6 +113,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
         doThrow(TableMalformedException.class).when(queryService)
                 .insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, (TableCsvDto) null, principal);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
@@ -123,6 +132,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal, null, null, null, null, null);
@@ -140,6 +151,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal, DATABASE_1_CREATED, page, size, null, null);
@@ -155,6 +168,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -172,6 +187,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -189,6 +206,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -206,6 +225,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -223,6 +244,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -240,6 +263,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -257,6 +282,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -276,6 +303,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID,
@@ -296,6 +325,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_WRITE_ALL_ACCESS));
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(CONTAINER_1_ID, DATABASE_1_ID,

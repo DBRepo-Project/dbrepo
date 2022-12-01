@@ -42,6 +42,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_1_CREATED = Instant.now().minus(1, HOURS);
     
     public final static User USER_1 = User.builder()
@@ -51,6 +52,7 @@ public abstract class BaseUnitTest {
             .emailVerified(true)
             .themeDark(false)
             .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
@@ -79,6 +81,7 @@ public abstract class BaseUnitTest {
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_EMAIL = "junit2@example.com";
     public final static String USER_2_PASSWORD = "password";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_2_CREATED = Instant.now().minus(1, HOURS);
 
     public final static User USER_2 = User.builder()
@@ -88,6 +91,7 @@ public abstract class BaseUnitTest {
             .emailVerified(true)
             .themeDark(false)
             .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_2_CREATED)
             .lastModified(USER_2_CREATED)
@@ -798,14 +802,7 @@ public abstract class BaseUnitTest {
     public final static String QUERY_1_RESULT_HASH = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
     public final static Instant QUERY_1_CREATED = Instant.now();
     public final static Instant QUERY_1_EXECUTION = Instant.now();
-
-    public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT * FROM `weather`;";
-    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
-    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
-    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
-    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Boolean QUERY_1_PERSISTED = false;
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
@@ -816,6 +813,7 @@ public abstract class BaseUnitTest {
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
+            .isPersisted(QUERY_1_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -840,6 +838,27 @@ public abstract class BaseUnitTest {
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
             .creator(USER_1_DTO)
+            .build();
+
+    public final static Long QUERY_2_ID = 2L;
+    public final static String QUERY_2_STATEMENT = "SELECT * FROM `weather`;";
+    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
+    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
+    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
+    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Boolean QUERY_2_PERSISTED = true;
+
+    public final static Query QUERY_2 = Query.builder()
+            .id(QUERY_2_ID)
+            .cid(QUERY_2_CONTAINER_ID)
+            .dbid(QUERY_2_DATABASE_ID)
+            .query(QUERY_2_STATEMENT)
+            .resultHash(QUERY_2_RESULT_HASH)
+            .created(QUERY_2_CREATED)
+            .execution(QUERY_2_EXECUTION)
+            .createdBy(USER_1_ID)
+            .isPersisted(QUERY_2_PERSISTED)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
