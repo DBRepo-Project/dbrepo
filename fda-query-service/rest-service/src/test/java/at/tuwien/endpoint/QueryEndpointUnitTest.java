@@ -72,7 +72,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+        final Principal principal = new BasicUserPrincipal(USER_2_USERNAME);
         final Long page = 0L;
         final Long size = 2L;
         final SortType sortDirection = SortType.ASC;
@@ -81,7 +81,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_2_USERNAME))
                 .thenReturn(Optional.empty());
         when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
                 principal, page, size, sortDirection, sortColumn))
@@ -102,6 +102,108 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
+        final Principal principal = new BasicUserPrincipal(USER_2_USERNAME);
+        final Long page = 0L;
+        final Long size = 2L;
+        final SortType sortDirection = SortType.ASC;
+        final String sortColumn = "location";
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_2_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_ACCESS));
+        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
+                principal, page, size, sortDirection, sortColumn))
+                .thenReturn(QUERY_1_RESULT_DTO);
+
+        /* test */
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                page, size, principal, sortDirection, sortColumn);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+    }
+
+    @Test
+    public void execute_writeOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
+        final Principal principal = new BasicUserPrincipal(USER_2_USERNAME);
+        final Long page = 0L;
+        final Long size = 2L;
+        final SortType sortDirection = SortType.ASC;
+        final String sortColumn = "location";
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_2_USERNAME))
+                .thenReturn(Optional.of(DATABASE_2_ACCESS));
+        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
+                principal, page, size, sortDirection, sortColumn))
+                .thenReturn(QUERY_1_RESULT_DTO);
+
+        /* test */
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                page, size, principal, sortDirection, sortColumn);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+    }
+
+    @Test
+    public void execute_writeAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
+        final Principal principal = new BasicUserPrincipal(USER_2_USERNAME);
+        final Long page = 0L;
+        final Long size = 2L;
+        final SortType sortDirection = SortType.ASC;
+        final String sortColumn = "location";
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_2_USERNAME))
+                .thenReturn(Optional.of(DATABASE_3_ACCESS));
+        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
+                principal, page, size, sortDirection, sortColumn))
+                .thenReturn(QUERY_1_RESULT_DTO);
+
+        /* test */
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request,
+                page, size, principal, sortDirection, sortColumn);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+    }
+
+    @Test
+    public void execute_owner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final Long page = 0L;
         final Long size = 2L;
@@ -112,7 +214,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(Optional.of(DATABASE_1_ACCESS));
+                .thenReturn(Optional.of(DATABASE_3_ACCESS));
         when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
                 principal, page, size, sortDirection, sortColumn))
                 .thenReturn(QUERY_1_RESULT_DTO);
