@@ -14,10 +14,9 @@ public interface TableService {
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
-     * @param principal   The principal.
      * @return The list of tables.
      */
-    List<Table> findAll(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException;
+    List<Table> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException;
 
     /**
      * Deletes a table for a fiven database-table id pair.
@@ -25,13 +24,12 @@ public interface TableService {
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param tableId     The table id.
-     * @param principal   The principal.
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws DataProcessingException    The deletion did not work.
      */
-    void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
+    void deleteTable(Long containerId, Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException,
             QueryMalformedException;
@@ -42,12 +40,11 @@ public interface TableService {
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param tableId     The table id.
-     * @param principal   The principal.
      * @return The table.
      * @throws TableNotFoundException    The table was not found in the metadata database.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
-    Table findById(Long containerId, Long databaseId, Long tableId, Principal principal)
+    Table findById(Long containerId, Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException;
 
 

@@ -12,7 +12,10 @@
           {{ item.name }}
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
-          <v-row dense>
+          <v-row v-if="loadingDetails" dense>
+            <v-progress-linear color="primary" indeterminate />
+          </v-row>
+          <v-row v-if="!loadingDetails" dense>
             <v-col>
               <v-list dense>
                 <v-list-item>
@@ -47,7 +50,7 @@
                     <v-list-item-content v-text="tableDetails.topic" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item v-if="isPublicOrOwner">
+                <v-list-item v-if="hasReadAccess">
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Consumer(s)
@@ -85,7 +88,7 @@
               </v-list>
             </v-col>
           </v-row>
-          <v-row v-if="isPublicOrOwner" dense>
+          <v-row v-if="hasReadAccess" dense>
             <v-col>
               <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
@@ -103,13 +106,13 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-if="isPublicOrOwner && tableDetails.columns">
+          <v-row v-if="hasReadAccess && tableDetails.columns">
             <v-data-table
               class="full-width"
               disable-sort
               :loading="loadingDetails"
               hide-default-footer
-              items-per-page="-1"
+              :items-per-page="-1"
               :headers="headers"
               :items="tableDetails.columns">
               <template v-slot:item.is_null_allowed="{ item }">
@@ -190,6 +193,9 @@ export default {
       unitDialog: false,
       consumers: [],
       attemptedLoadingConsumers: false,
+      access: {
+        type: null
+      },
       user: {
         username: null
       },
@@ -262,8 +268,20 @@ export default {
       }
       return formatTimestampUTCLabel(this.tableDetails.created)
     },
-    isPublicOrOwner () {
-      return this.database.is_public || this.database.creator.username === this.user.username
+    hasReadAccess () {
+      if (this.database.is_public) {
+        /* database is public */
+        return true
+      }
+      if (this.database.creator.username === this.user.username) {
+        /* user is creator of database */
+        return true
+      }
+      if (this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all') {
+        /* user has some level of access */
+        return true
+      }
+      return false
     },
     consumersState () {
       if (this.consumersTotal === 0) {
@@ -290,8 +308,9 @@ export default {
   },
   mounted () {
     this.$root.$on('table-create', this.refresh)
-    this.loadDatabase()
     this.loadUser()
+    this.loadAccess()
+    this.loadDatabase()
     this.pollConsumerStatus()
   },
   methods: {
@@ -323,6 +342,21 @@ export default {
       }
       this.loading = false
     },
+    async loadAccess () {
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('access', this.access)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Could not get database access permissions')
+      }
+      this.loading = false
+    },
     columnName (column) {
       const filter = this.columnTypes.filter(t => t.value === column.column_type)
       if (filter.length > 0) {
@@ -339,7 +373,7 @@ export default {
       /* use cache */
       this.tableDetails = table
       /* load remaining info */
-      if (this.isPublicOrOwner) {
+      if (this.hasReadAccess) {
         try {
           this.loadingDetails = true
           const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)

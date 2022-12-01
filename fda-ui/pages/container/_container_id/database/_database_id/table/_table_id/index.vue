@@ -365,7 +365,7 @@ export default {
       this.user.username = decodeJwt(this.token).sub
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/access/${this.user.username}`, this.config)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/access`, this.config)
         this.access = res.data
         console.debug('check access', this.access)
       } catch (err) {

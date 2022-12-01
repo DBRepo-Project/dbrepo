@@ -58,7 +58,7 @@
                 <v-col cols="6">
                   <v-select
                     v-model="table"
-                    :disabled="isExecuted"
+                    :disabled="isExecuted || loadingTables"
                     :items="tables"
                     item-text="name"
                     :loading="loadingTables"
@@ -71,7 +71,7 @@
                   <v-select
                     v-model="select"
                     item-text="name"
-                    :disabled="!table || isExecuted"
+                    :disabled="!table || isExecuted || loadingTables"
                     :items="selectItems"
                     :loading="loadingColumns"
                     label="Columns"

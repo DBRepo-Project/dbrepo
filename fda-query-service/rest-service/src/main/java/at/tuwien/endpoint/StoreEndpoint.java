@@ -7,7 +7,6 @@ import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,9 +37,8 @@ public class StoreEndpoint extends AbstractEndpoint {
     @Autowired
     public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper,
                          UserService userService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService, TableService tableService,
-                         DatabaseAccessRepository databaseAccessRepository) {
-        super(tableService, databaseService, identifierService, databaseAccessRepository);
+                         IdentifierService identifierService, TableService tableService, AccessService accessService) {
+        super(tableService, accessService, databaseService, identifierService);
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!token">
+      <v-card v-if="!token" flat>
         <v-card-title>
           Login
         </v-card-title>

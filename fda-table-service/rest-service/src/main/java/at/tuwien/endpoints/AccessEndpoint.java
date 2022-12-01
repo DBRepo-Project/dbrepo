@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.NotAllowedException;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotAllowedException;
 import java.security.Principal;
 
 @Log4j2
@@ -31,28 +31,27 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @Autowired
     public AccessEndpoint(DatabaseService databaseService, AccessService accessService, DatabaseMapper databaseMapper) {
-        super(databaseService);
+        super(accessService, databaseService);
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
     }
 
-    @GetMapping("/{username}")
+    @GetMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
-    @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Check access to some table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> checkAccess(@NotBlank @PathVariable("id") Long containerId,
                                                          @NotBlank @PathVariable("databaseId") Long databaseId,
                                                          @NotBlank @PathVariable("tableId") Long tableId,
-                                                         @NotBlank @PathVariable("username") String username,
-                                                         @NotNull Principal principal) throws NotAllowedException,
-            AccessDeniedException {
-        log.debug("endpoint check access to database, containerId={}, databaseId={}, username={}, principal={}",
-                containerId, databaseId, username, principal);
+                                                         @NotNull Principal principal)
+            throws NotAllowedException, AccessDeniedException {
+        log.debug("endpoint check access to database, containerId={}, databaseId={}, principal={}",
+                containerId, databaseId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "CHECK_ACCESS", principal)) {
-            log.error("Missing modify access permission");
-            throw new NotAllowedException("Missing modify access permission");
+            log.error("Missing check access permission");
+            throw new NotAllowedException("Missing check access permission");
         }
-        final DatabaseAccess access = accessService.hasAccess(databaseId, tableId, username);
+        final DatabaseAccess access = accessService.hasAccess(databaseId, tableId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
         return ResponseEntity.ok(dto);

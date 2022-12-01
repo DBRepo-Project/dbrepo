@@ -12,10 +12,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !query.is_persisted && is_owner" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
+        <v-btn v-if="token && !query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
@@ -287,6 +287,12 @@ export default {
       user: {
         username: null
       },
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
+      },
       loadingSave: false,
       identifier: {
         id: null,
@@ -373,9 +379,6 @@ export default {
     database_visibility () {
       return this.database.is_public !== null ? this.database.is_public : false
     },
-    is_owner () {
-      return this.token && this.query.creator.username === this.user.username
-    },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
     },
@@ -393,6 +396,15 @@ export default {
         return true
       }
       return this.identifier.visibility === 'everyone'
+    },
+    canWrite () {
+      if (!this.access.type) {
+        return false
+      }
+      if (this.access.type === 'write_own' || this.access.type === 'write_all') {
+        return true
+      }
+      return false
     },
     result_visibility_icon () {
       if (this.erroneous) {
@@ -575,11 +587,23 @@ export default {
         this.loadMetadata()
       }
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('check access', this.access)
+      } catch (err) {
+        if (!err.response.status === 401) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

@@ -51,20 +51,19 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public List<Table> findAll(Long containerId, Long databaseId, Principal principal)
-            throws DatabaseNotFoundException {
-        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
+    public List<Table> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException {
+        final Database database = databaseService.find(containerId, databaseId);
         return tableRepository.findByDatabase(database);
     }
 
     @Override
     @Transactional
-    public void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
+    public void deleteTable(Long containerId, Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, QueryMalformedException {
         /* find */
-        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
-        final Table table = findById(containerId, databaseId, tableId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        final Table table = findById(containerId, databaseId, tableId);
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
@@ -89,9 +88,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public Table findById(Long containerId, Long databaseId, Long tableId, Principal principal)
+    public Table findById(Long containerId, Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException {
-        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
         final Optional<Table> optional = tableRepository.findByDatabaseAndId(database, tableId);
         if (optional.isEmpty()) {
             log.error("Failed to find table with id {} in metadata database", tableId);
@@ -106,7 +105,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, UserNotFoundException, QueryMalformedException {
         /* find */
-        final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {

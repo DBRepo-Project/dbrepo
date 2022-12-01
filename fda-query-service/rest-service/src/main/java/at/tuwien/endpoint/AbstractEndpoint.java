@@ -7,7 +7,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
+import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.TableService;
@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import static at.tuwien.entities.identifier.VisibilityType.EVERYONE;
 
@@ -25,21 +24,21 @@ import static at.tuwien.entities.identifier.VisibilityType.EVERYONE;
 public abstract class AbstractEndpoint {
 
     private final TableService tableService;
+    private final AccessService accessService;
     private final DatabaseService databaseService;
     private final IdentifierService identifierService;
-    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    protected AbstractEndpoint(TableService tableService, DatabaseService databaseService,
-                               IdentifierService identifierService, DatabaseAccessRepository databaseAccessRepository) {
+    protected AbstractEndpoint(TableService tableService, AccessService accessService, DatabaseService databaseService,
+                               IdentifierService identifierService) {
         this.tableService = tableService;
+        this.accessService = accessService;
         this.databaseService = databaseService;
         this.identifierService = identifierService;
-        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     protected Boolean hasDatabasePermission(Long containerId, Long databaseId, String permissionCode,
-                                            Principal principal) {
+                                            Principal principal) throws NotAllowedException {
         log.trace("validate database permission, containerId={}, databaseId={}, permissionCode={}, principal={}",
                 containerId, databaseId, permissionCode, principal);
         final Database database;
@@ -62,17 +61,10 @@ public abstract class AbstractEndpoint {
             log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId,
-                principal.getName());
-        if (optional.isEmpty()) {
-            log.error("Failed to grant permission {} because user has not access", permissionCode);
-            return false;
-        }
-        final AccessType accessType = optional.get()
-                .getType();
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
         if (List.of("QUERY_EXECUTE", "QUERY_PERSIST").contains(permissionCode)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
         /* modification operations are limited to the creator */
@@ -119,7 +111,7 @@ public abstract class AbstractEndpoint {
     }
 
     protected Boolean hasTablePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
-                                         Principal principal) {
+                                         Principal principal) throws NotAllowedException {
         log.trace("validate queue permission, containerId={}, databaseId={}, tableId={}, permissionCode={}, principal={}",
                 containerId, databaseId, tableId, permissionCode, principal);
         final Database database;
@@ -165,21 +157,14 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return false;
         }
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId,
-                principal.getName());
-        if (optional.isEmpty()) {
-            log.error("Failed to grant permission {} because user has not access", permissionCode);
-            return false;
-        }
-        final AccessType accessType = optional.get()
-                .getType();
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
         if (List.of("TABLE_EXPORT", "DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_RE_EXECUTE", "QUERY_VIEW", "FIND_VIEW").contains(permissionCode)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
-        if (accessType.equals(AccessType.WRITE_ALL)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+        if (access.getType().equals(AccessType.WRITE_ALL)) {
+            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
         log.debug("failed to grant permission {} because database is not owner by the current user and also has not appropriate access", permissionCode);
@@ -187,7 +172,7 @@ public abstract class AbstractEndpoint {
     }
 
     protected Boolean hasQueryPermission(Long containerId, Long databaseId, Long queryId, String permissionCode,
-                                         Principal principal) {
+                                         Principal principal) throws NotAllowedException {
         log.trace("validate query permission, containerId={}, databaseId={}, queryId={}, permissionCode={}, principal={}",
                 containerId, databaseId, queryId, permissionCode, principal);
         final Database database;
@@ -226,21 +211,14 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return true;
         }
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId,
-                principal.getName());
-        if (optional.isEmpty()) {
-            log.error("Failed to grant permission {} because user has not access", permissionCode);
-            return false;
-        }
-        final AccessType accessType = optional.get()
-                .getType();
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
         if (List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_RE_EXECUTE", "QUERY_VIEW", "FIND_VIEW").contains(permissionCode)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
-        if (accessType.equals(AccessType.WRITE_ALL)) {
-            log.trace("grant permission {} because user has access {}", permissionCode, accessType);
+        if (access.getType().equals(AccessType.WRITE_ALL)) {
+            log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
         log.debug("failed to grant permission {} because database is not owner by the current user and also has not appropriate access", permissionCode);

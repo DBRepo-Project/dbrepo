@@ -41,8 +41,8 @@ public class ViewEndpoint extends AbstractEndpoint {
     @Autowired
     public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
                         ViewMapper viewMapper, QueryService queryService, TableService tableService,
-                        DatabaseAccessRepository databaseAccessRepository) {
-        super(tableService, databaseService, identifierService, databaseAccessRepository);
+                        AccessService accessService) {
+        super(tableService, accessService, databaseService, identifierService);
         this.viewService = viewService;
         this.databaseService = databaseService;
         this.viewMapper = viewMapper;

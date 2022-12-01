@@ -26,7 +26,7 @@
           <v-card-text>
             <v-btn
               small
-              color="info"
+              color="warning"
               class="black--text"
               @click="giveAccess">
               Give Access
@@ -41,23 +41,24 @@
             <v-alert
               v-if="database.is_public !== modifyVisibility.is_public"
               border="left"
-              color="warning">
+              color="info">
               <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
             </v-alert>
             <v-row dense>
               <v-col>
-                <v-switch
-                  id="public"
+                <v-select
+                  id="visibility"
                   v-model="modifyVisibility.is_public"
-                  color="grey"
-                  :label="publicLabel"
-                  name="public" />
+                  :items="visibility"
+                  label="Standard"
+                  name="visibility" />
               </v-col>
             </v-row>
             <v-btn
               small
               :disabled="database.is_public === modifyVisibility.is_public"
               color="warning"
+              class="black--text"
               @click="updateDatabaseVisibility">
               Modify Visibility
             </v-btn>
@@ -95,6 +96,10 @@ export default {
       modifyVisibility: {
         is_public: null
       },
+      visibility: [
+        { text: 'Public', value: true },
+        { text: 'Private', value: false }
+      ],
       headers: [
         { text: 'Username', value: 'user', sortable: false },
         { text: 'Access', value: 'type', sortable: false },

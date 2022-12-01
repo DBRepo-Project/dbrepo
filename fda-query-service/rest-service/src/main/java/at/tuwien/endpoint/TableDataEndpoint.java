@@ -7,7 +7,6 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,8 +34,8 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @Autowired
     public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
                              IdentifierService identifierService, TableService tableService,
-                             DatabaseAccessRepository databaseAccessRepository) {
-        super(tableService, databaseService, identifierService, databaseAccessRepository);
+                             AccessService accessService) {
+        super(tableService, accessService, databaseService, identifierService);
         this.queryService = queryService;
     }
 

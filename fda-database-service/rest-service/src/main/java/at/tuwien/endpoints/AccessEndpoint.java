@@ -91,22 +91,21 @@ public class AccessEndpoint extends AbstractEndpoint {
                 .build();
     }
 
-    @GetMapping("/{username}")
+    @GetMapping
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
                                                   @NotBlank @PathVariable("databaseId") Long databaseId,
-                                                  @NotBlank @PathVariable("username") String username,
                                                   @NotNull Principal principal) throws NotAllowedException,
             AccessDeniedException {
-        log.debug("endpoint check access to database, containerId={}, databaseId={}, username={}, principal={}",
-                containerId, databaseId, username, principal);
+        log.debug("endpoint check access to database, containerId={}, databaseId={}, principal={}",
+                containerId, databaseId, principal);
         if (!hasDatabasePermission(containerId, databaseId, "CHECK_ACCESS", principal)) {
             log.error("Missing modify access permission");
             throw new NotAllowedException("Missing modify access permission");
         }
-        final DatabaseAccess access = accessService.find(databaseId, username);
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
         return ResponseEntity.ok(dto);

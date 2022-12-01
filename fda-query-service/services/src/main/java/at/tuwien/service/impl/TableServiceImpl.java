@@ -62,8 +62,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional(readOnly = true)
     public List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, QueryStoreException,
-            QueryMalformedException, UserNotFoundException {
+            throws DatabaseNotFoundException, TableNotFoundException, QueryStoreException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = find(containerId, databaseId, tableId);

@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,8 +26,8 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableHistoryEndpoint(TableService tableService, DatabaseService databaseService,
-                                IdentifierService identifierService, DatabaseAccessRepository databaseAccessRepository) {
-        super(tableService, databaseService, identifierService, databaseAccessRepository);
+                                IdentifierService identifierService, AccessService accessService) {
+        super(tableService, accessService, databaseService, identifierService);
         this.tableService = tableService;
     }
 
