@@ -23,11 +23,13 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
 import java.io.File;
+import java.security.Principal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,6 +75,9 @@ public abstract class BaseUnitTest {
             .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
 
+    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+            USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
     public final static Long USER_2_ID = 2L;
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_EMAIL = "junit2@example.com";
@@ -97,6 +102,9 @@ public abstract class BaseUnitTest {
             .password(USER_2_PASSWORD)
             .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
+
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static String DATABASE_NET = "fda-userdb";
 
@@ -1958,31 +1966,52 @@ public abstract class BaseUnitTest {
             .result(QUERY_1_RESULT_RESULT)
             .build();
 
-    public final static AccessType DATABASE_1_ACCESS_TYPE = AccessType.READ;
-    public final static AccessTypeDto DATABASE_1_ACCESS_TYPE_DTO = AccessTypeDto.READ;
-
-    public final static DatabaseAccess DATABASE_1_ACCESS = DatabaseAccess.builder()
-            .type(DATABASE_1_ACCESS_TYPE)
+    public final static DatabaseAccess DATABASE_1_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static AccessType DATABASE_2_ACCESS_TYPE = AccessType.WRITE_OWN;
-    public final static AccessTypeDto DATABASE_2_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_OWN;
-
-    public final static DatabaseAccess DATABASE_2_ACCESS = DatabaseAccess.builder()
-            .type(DATABASE_2_ACCESS_TYPE)
+    public final static DatabaseAccess DATABASE_1_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static AccessType DATABASE_3_ACCESS_TYPE = AccessType.WRITE_ALL;
-    public final static AccessTypeDto DATABASE_3_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_ALL;
+    public final static DatabaseAccess DATABASE_2_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
 
-    public final static DatabaseAccess DATABASE_3_ACCESS = DatabaseAccess.builder()
-            .type(DATABASE_3_ACCESS_TYPE)
-            .hdbid(DATABASE_1_ID)
-            .huserid(USER_1_ID)
+    public final static DatabaseAccess DATABASE_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
             .build();
 
 }
