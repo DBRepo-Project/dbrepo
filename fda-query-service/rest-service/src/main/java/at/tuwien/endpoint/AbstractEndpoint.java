@@ -213,7 +213,7 @@ public abstract class AbstractEndpoint {
         }
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
-        if (List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_RE_EXECUTE", "QUERY_VIEW", "FIND_VIEW").contains(permissionCode)) {
+        if (List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_RE_EXECUTE", "QUERY_VIEW", "FIND_VIEW", "QUERY_EXPORT").contains(permissionCode)) {
             log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
