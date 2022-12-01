@@ -127,7 +127,7 @@ public class QueryEndpoint extends AbstractEndpoint {
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         log.trace("querystore returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);
-        if (accept.equals("text/csv")) {
+        if (accept == null || accept.equals("text/csv")) {
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
             log.trace("export query resulted in resource {}", resource);

@@ -4,6 +4,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.AccessType;
@@ -20,8 +21,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
+import java.io.File;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,7 +63,14 @@ public abstract class BaseUnitTest {
             .email(USER_1_EMAIL)
             .emailVerified(true)
             .themeDark(false)
-            .password("password")
+            .password(USER_1_PASSWORD)
+            .build();
+
+    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .password(USER_1_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
 
     public final static Long USER_2_ID = 2L;
@@ -76,6 +89,13 @@ public abstract class BaseUnitTest {
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_2_CREATED)
             .lastModified(USER_2_CREATED)
+            .build();
+
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
 
     public final static String DATABASE_NET = "fda-userdb";
@@ -1887,7 +1907,7 @@ public abstract class BaseUnitTest {
             .id(DATABASE_1_ID)
             .created(Instant.now().minus(1, HOURS))
             .lastModified(Instant.now())
-            .isPublic(false)
+            .isPublic(true)
             .name(DATABASE_1_NAME)
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
