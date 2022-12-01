@@ -1,5 +1,6 @@
 package at.tuwien;
 
+import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
@@ -7,7 +8,9 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
@@ -49,6 +52,24 @@ public abstract class BaseUnitTest {
             .themeDark(USER_1_THEME)
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
+            .build();
+
+    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_USERNAME = "junit2";
+    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_2_EMAIL = "junit2@ossdip.at";
+    public final static Boolean USER_2_VERIFIED = true;
+    public final static Boolean USER_2_THEME = false;
+
+    public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME)
+            .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .build();
 
     public final static Long IMAGE_1_ID = 1L;
@@ -224,4 +245,31 @@ public abstract class BaseUnitTest {
     public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb");
 
     public final static List<String> IMAGE_2_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather_at");
+
+    public final static AccessType DATABASE_1_ACCESS_TYPE = AccessType.READ;
+    public final static AccessTypeDto DATABASE_1_ACCESS_TYPE_DTO = AccessTypeDto.READ;
+
+    public final static DatabaseAccess DATABASE_1_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_1_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static AccessType DATABASE_2_ACCESS_TYPE = AccessType.WRITE_OWN;
+    public final static AccessTypeDto DATABASE_2_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_OWN;
+
+    public final static DatabaseAccess DATABASE_2_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_2_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static AccessType DATABASE_3_ACCESS_TYPE = AccessType.WRITE_ALL;
+    public final static AccessTypeDto DATABASE_3_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_ALL;
+
+    public final static DatabaseAccess DATABASE_3_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_3_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
 }

@@ -1,9 +1,13 @@
 package at.tuwien;
 
+import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.AccessType;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
@@ -20,7 +24,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.*;
 
@@ -1888,6 +1894,52 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchange(DATABASE_3_EXCHANGE)
+            .build();
+
+    public final static Long QUERY_1_RESULT_ID = 1L;
+    public final static Long QUERY_1_RESULT_NUMBER = 2L;
+    public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(
+            new HashMap<>() {{
+                put("location", "Albury");
+                put("lat", -36.0653583);
+                put("lng", 146.9112214);
+            }}, new HashMap<>() {{
+                put("location", "Sydney");
+                put("lat", -33.847927);
+                put("lng", 150.6517942);
+            }});
+
+    public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
+            .id(QUERY_1_RESULT_ID)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
+            .result(QUERY_1_RESULT_RESULT)
+            .build();
+
+    public final static AccessType DATABASE_1_ACCESS_TYPE = AccessType.READ;
+    public final static AccessTypeDto DATABASE_1_ACCESS_TYPE_DTO = AccessTypeDto.READ;
+
+    public final static DatabaseAccess DATABASE_1_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_1_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static AccessType DATABASE_2_ACCESS_TYPE = AccessType.WRITE_OWN;
+    public final static AccessTypeDto DATABASE_2_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_OWN;
+
+    public final static DatabaseAccess DATABASE_2_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_2_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static AccessType DATABASE_3_ACCESS_TYPE = AccessType.WRITE_ALL;
+    public final static AccessTypeDto DATABASE_3_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_ALL;
+
+    public final static DatabaseAccess DATABASE_3_ACCESS = DatabaseAccess.builder()
+            .type(DATABASE_3_ACCESS_TYPE)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
             .build();
 
 }

@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.container.Container;
@@ -70,8 +69,12 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Container container = database.getContainer();
         final User user = userService.findByUsername(accessDto.getUsername());
         if (database.getCreator().getUsername().equals(user.getUsername())) {
-            log.error("Failed to modify access of user with username {}, because it is the owner and not giving full write access", user.getUsername());
-            throw new NotAllowedException("Failed modify access");
+            log.error("Failed to give access to user with username {}, is already database owner", user.getUsername());
+            throw new NotAllowedException("Failed give access");
+        }
+        if (databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, accessDto.getUsername()).isPresent()) {
+            log.error("Failed to give access to user with username {}, has already permission", accessDto.getUsername());
+            throw new NotAllowedException("Failed to give access");
         }
         final User root = databaseMapper.containerToPrivilegedUser(container);
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);

@@ -144,14 +144,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
     }
 
-    @AfterEach
-    public void afterEach() {
-        stopContainer(CONTAINER_1);
-        removeContainer(CONTAINER_1);
-        stopContainer(CONTAINER_2);
-        removeContainer(CONTAINER_2);
-    }
-
     @AfterAll
     public static void afterAll() {
         /* stop containers and remove them */
