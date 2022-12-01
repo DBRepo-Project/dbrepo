@@ -319,7 +319,7 @@ export default {
         console.debug('tables', this.tables)
       } catch (err) {
         this.error = true
-        this.$toast.error('Could not get database details.')
+        this.$toast.error('Could not get database details')
       }
       this.loading = false
     },
@@ -372,7 +372,7 @@ export default {
         this.loading = false
         if (tableId) { this.openPanelByTableId(tableId) }
       } catch (err) {
-        this.$toast.error('Could not load tables.')
+        this.$toast.error('Could not load tables')
       }
       this.$store.commit('SET_TABLE', null)
     },
@@ -383,7 +383,7 @@ export default {
         this.loading = false
         this.refresh()
       } catch (err) {
-        this.$toast.error('Could not delete table.')
+        this.$toast.error('Could not delete table')
       }
       this.dialogDelete = false
     },

@@ -196,9 +196,9 @@ export default {
       } catch (error) {
         const { status } = error.response
         if (status === 409) {
-          console.debug('concept already saved, skipping.')
+          console.debug('concept already saved, skipping')
         } else {
-          this.$toast.error('Could not save concept.')
+          this.$toast.error('Could not save concept')
           console.error('save', error)
         }
       }
@@ -221,7 +221,7 @@ export default {
         })
         console.debug('column', this.column)
       } catch (err) {
-        this.$toast.error('Could not save column unit.')
+        this.$toast.error('Could not save column unit')
         console.error('save', err)
       }
     }

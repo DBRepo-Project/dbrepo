@@ -241,7 +241,7 @@ export default {
         this.tables = res.data
         console.debug('tables', this.tables)
       } catch (err) {
-        this.$toast.error('Could not list table.')
+        this.$toast.error('Could not list table')
       }
       this.loadingTables = false
     },
@@ -333,7 +333,7 @@ export default {
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
-        this.$toast.error('Could not get table details.')
+        this.$toast.error('Could not get table details')
       }
       this.loadingColumns = false
     }

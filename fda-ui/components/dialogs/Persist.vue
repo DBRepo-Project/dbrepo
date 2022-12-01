@@ -18,7 +18,6 @@
                 v-model="identifier.title"
                 name="title"
                 :label="`${prefix} title *`"
-                :disabled="is_database"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea

@@ -27,7 +27,8 @@ public class DatabaseAccess {
     @EqualsAndHashCode.Include
     private Long hdbid;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "huserid", referencedColumnName = "userid", updatable = false, insertable = false)
     })

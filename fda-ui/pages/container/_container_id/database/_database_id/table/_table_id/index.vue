@@ -298,7 +298,7 @@ export default {
         }
       } catch (err) {
         console.error('Failed to delete rows', err)
-        this.$toast.error('Failed to delete rows.')
+        this.$toast.error('Failed to delete rows')
         return
       }
       this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
@@ -323,7 +323,7 @@ export default {
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (err) {
-        this.$toast.error('Could not get table details.')
+        this.$toast.error('Could not get table details')
       }
       this.loading = false
     },
@@ -354,7 +354,7 @@ export default {
         console.debug('rows', this.rows)
       } catch (err) {
         console.error('failed to load data', err)
-        this.$toast.error('Could not load table data.')
+        this.$toast.error('Could not load table data')
       }
       this.loadingData = false
     },

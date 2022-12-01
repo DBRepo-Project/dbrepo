@@ -30,7 +30,17 @@
                   <v-list-item-content>
                     <span v-for="(person_or_org, i) in database.identifier.creators" :key="`c-${i}`" class="mt-1">
                       <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
+                      <v-tooltip
+                        top>
+                        <template v-slot:activator="{ on, attrs }">
+                          <span
+                            v-bind="attrs"
+                            v-on="on">
+                            {{ person_or_org.name }}
+                          </span>
+                        </template>
+                        <span v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</span>
+                      </v-tooltip>
                     </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="language" class="mt-2">
@@ -201,26 +211,6 @@
                 max-width="860">
                 <Persist type="database" @close="closeDialog" />
               </v-dialog>
-              <v-dialog
-                v-model="editVisibilityDialog"
-                max-width="860">
-                <EditVisibility :database="database" @close-dialog="closeDialog" />
-              </v-dialog>
-            </v-card-actions>
-          </v-card-text>
-        </v-card>
-        <v-divider />
-        <v-card v-if="isCreator" flat tile>
-          <v-card-title>Modify visibility</v-card-title>
-          <v-card-subtitle>Dangerous operation</v-card-subtitle>
-          <v-card-text>
-            <v-card-actions>
-              <v-btn
-                small
-                color="error"
-                @click="editVisibilityDialog = true">
-                Modify
-              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
@@ -233,14 +223,12 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
-import EditVisibility from '@/components/dialogs/EditVisibility'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
   components: {
-    EditVisibility,
     DBToolbar,
     Persist,
     OrcidIcon
@@ -255,7 +243,6 @@ export default {
           username: null
         }
       },
-      editVisibilityDialog: false,
       metadataLoading: false,
       user: {
         username: null
@@ -410,7 +397,7 @@ export default {
         this.database = res.data
         console.debug('database', res.data)
       } catch (err) {
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     },

@@ -100,18 +100,18 @@ export default {
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 418) {
-            this.$toast.error('Check your inbox and confirm your e-mail address.')
+            this.$toast.error('Check your inbox and confirm your e-mail address')
             console.error('user has not confirmed e-mail', err)
             this.loading = false
             return
           } else if (err.response.status === 404) {
-            this.$toast.error('Username not found.')
+            this.$toast.error('Username not found')
             console.error('user has not confirmed e-mail', err)
             this.loading = false
             return
           }
           console.error('login user failed', err)
-          this.$toast.error('Login not successful.')
+          this.$toast.error('Login not successful')
         }
       }
       this.loading = false

@@ -207,7 +207,7 @@ export default {
       } catch (err) {
         console.error('Failed to upload .csv data', err)
         console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data.')
+        this.$toast.error('Could not upload data')
       }
       this.loading = false
     },

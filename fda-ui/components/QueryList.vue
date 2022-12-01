@@ -213,7 +213,7 @@ export default {
         console.debug('database', this.database)
       } catch (err) {
         this.error = true
-        this.$toast.error('Could not get database details.')
+        this.$toast.error('Could not get database details')
       }
       this.loading = false
     }

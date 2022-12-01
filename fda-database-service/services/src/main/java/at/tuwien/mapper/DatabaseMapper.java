@@ -10,7 +10,6 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -46,7 +45,7 @@ public interface DatabaseMapper {
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
         final String name = slug.toLowerCase(Locale.ENGLISH);
-        log.trace("mapping name {} to internal name {}", data, name);
+        log.debug("mapping name {} to internal name {}", data, name);
         return name;
     }
 
@@ -102,17 +101,29 @@ public interface DatabaseMapper {
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
     default PreparedStatement userToRawCreateUserQuery(Connection connection, User user) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("CREATE USER `")
+        final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
                 .append(user.getUsername())
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
                 .append(user.getDatabasePassword())
                 .append("';");
-        log.trace("raw create user statement [{}]", statement);
+        log.debug("raw create user statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement userToRawDropUserQuery(Connection connection, User user) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("DROP USER IF EXISTS `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.debug("raw drop user statement [{}]", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -121,7 +132,7 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
-        log.trace("raw create database statement [{}]", statement);
+        log.debug("raw create database statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -148,7 +159,7 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
                 .append(user.getUsername())
                 .append("`@`%`;");
-        log.trace("raw grant all privileges statement [{}]", statement);
+        log.debug("raw grant all privileges statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -158,15 +169,14 @@ public interface DatabaseMapper {
     }
 
     default PreparedStatement rawRevokeUserAccessQuery(Connection connection, User user) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* TO `")
+        final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* FROM `")
                 .append(user.getUsername())
                 .append("`@`%`;");
-        log.trace("raw revoke all privileges statement [{}]", statement);
+        log.debug("raw revoke all privileges statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -177,19 +187,20 @@ public interface DatabaseMapper {
         switch (data.getType()) {
             case READ:
                 statement.append("SELECT");
+                break;
             case WRITE_ALL:
             case WRITE_OWN: // todo restrict the access right
                 statement.append("CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE");
+                break;
         }
         statement.append(" ON *.* TO `")
                 .append(data.getUsername())
                 .append("`@`%`;");
-        log.trace("raw grant readonly privileges statement [{}]", statement);
+        log.debug("raw grant {} privileges statement [{}]", data.getType(), statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement");
-            log.debug("failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -198,7 +209,7 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped create database query {}", statement);
+            log.debug("mapped create database query {}", statement);
             return pstmt;
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -212,7 +223,7 @@ public interface DatabaseMapper {
                 .append("`;");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped create database query {}", statement);
+            log.debug("mapped create database query {}", statement);
             return pstmt;
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -222,7 +233,7 @@ public interface DatabaseMapper {
 
     default Principal userDetailsDtoToPrincipal(UserDetailsDto data) {
         final Principal principal = new BasicUserPrincipal(data.getUsername());
-        log.trace("mapped user details {} to principal {}", data, principal);
+        log.debug("mapped user details {} to principal {}", data, principal);
         return principal;
     }
 
@@ -249,7 +260,7 @@ public interface DatabaseMapper {
                 .huserid(user.getId())
                 .type(accessTypeDtoToAccessType(data.getType()))
                 .build();
-        log.trace("mapped database access {} to database access {}", data, access);
+        log.debug("mapped database access {} to database access {}", data, access);
         return access;
     }
 
@@ -260,7 +271,7 @@ public interface DatabaseMapper {
                 .huserid(user.getId())
                 .type(accessTypeDtoToAccessType(data.getType()))
                 .build();
-        log.trace("mapped database access {} to database access {}", data, access);
+        log.debug("mapped database access {} to database access {}", data, access);
         return access;
     }
 

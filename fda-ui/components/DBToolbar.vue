@@ -3,8 +3,28 @@
     <v-toolbar v-if="db" flat>
       <v-toolbar-title>
         <span>{{ db.name }}</span>
-        <v-icon v-if="!db.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
-        <v-icon v-if="db.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon
+              v-if="!db.is_public"
+              color="primary"
+              class="mb-1"
+              right
+              v-bind="attrs"
+              v-on="on">
+              mdi-lock-outline
+            </v-icon>
+            <v-icon
+              v-if="db.is_public"
+              class="mb-1"
+              right
+              v-bind="attrs"
+              v-on="on">
+              mdi-lock-open-outline
+            </v-icon>
+          </template>
+          <span>{{ databaseTooltip }}</span>
+        </v-tooltip>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
@@ -118,6 +138,9 @@ export default {
         headers: this.config.headers,
         progress: false
       }
+    },
+    databaseTooltip () {
+      return this.database.is_public ? 'Public' : 'Private'
     },
     isPublicOrOwner () {
       return this.database.is_public || this.database.creator.username === this.user.username

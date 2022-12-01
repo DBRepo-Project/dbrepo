@@ -78,7 +78,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         try {
             final Connection connection = dataSource.getConnection();
             /* create user */
-            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, root);
+            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
             final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, accessDto);
             preparedStatement2.executeUpdate();
@@ -147,7 +147,9 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         try {
             final Connection connection = dataSource.getConnection();
             /* create user */
-            final PreparedStatement preparedStatement2 = databaseMapper.rawRevokeUserAccessQuery(connection, user);
+            final PreparedStatement preparedStatement1 = databaseMapper.rawRevokeUserAccessQuery(connection, user);
+            preparedStatement1.executeUpdate();
+            final PreparedStatement preparedStatement2 = databaseMapper.userToRawDropUserQuery(connection, user);
             preparedStatement2.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to revoke database access, reason {}", e.getMessage());

@@ -311,7 +311,7 @@ export default {
       } catch (err) {
         console.error('Failed to upload .csv data', err)
         console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data.')
+        this.$toast.error('Could not upload data')
       }
       this.loading = false
     },
@@ -344,7 +344,7 @@ export default {
       } catch (err) {
         console.error('Failed to upload .csv data', err)
         console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data.')
+        this.$toast.error('Could not upload data')
       }
       this.loading = false
     },
@@ -421,9 +421,9 @@ export default {
         this.loading = false
         this.error = true
         if (err.response.status === 409) {
-          this.$toast.error('Table name already exists.')
+          this.$toast.error('Table name already exists')
         } else {
-          this.$toast.error('Could not create table.')
+          this.$toast.error('Could not create table')
         }
         console.error('create table failed', err)
         return
@@ -437,7 +437,7 @@ export default {
         this.loading = false
         this.error = true
         console.error('insert table failed', err)
-        this.$toast.error('Could not insert csv into table.')
+        this.$toast.error('Could not insert csv into table')
         return
       }
       this.loading = false

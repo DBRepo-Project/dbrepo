@@ -14,7 +14,7 @@
           <v-alert
             v-if="modify.type && modify.type === 'revoke'"
             border="left"
-            color="warning">
+            color="error">
             <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
           </v-alert>
           <v-row>
@@ -57,7 +57,7 @@
             id="database"
             class="mb-2 ml-3 mr-2 black--text"
             :disabled="!valid || loading"
-            color="warning"
+            :color="buttonColor"
             type="submit"
             :loading="loading"
             @click="updateAccess">
@@ -121,6 +121,12 @@ export default {
     },
     title () {
       return (!this.isModification ? 'Give' : 'Modify') + ' database access' + (!this.isModification ? '' : ` of ${this.access.user.username}`)
+    },
+    buttonColor () {
+      if (this.modify.type && this.modify.type === 'revoke') {
+        return 'error'
+      }
+      return 'warning'
     },
     isModification () {
       if (this.access == null) {

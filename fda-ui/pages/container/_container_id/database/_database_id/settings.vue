@@ -1,6 +1,6 @@
 <template>
   <div>
-    <DBToolbar />
+    <DBToolbar ref="toolbar" />
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -26,7 +26,7 @@
           <v-card-text>
             <v-btn
               small
-              color="warning"
+              color="info"
               class="black--text"
               @click="giveAccess">
               Give Access
@@ -41,7 +41,7 @@
             <v-alert
               v-if="database.is_public !== modifyVisibility.is_public"
               border="left"
-              color="error">
+              color="warning">
               <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
             </v-alert>
             <v-row dense>
@@ -49,7 +49,7 @@
                 <v-switch
                   id="public"
                   v-model="modifyVisibility.is_public"
-                  color="error"
+                  color="grey"
                   :label="publicLabel"
                   name="public" />
               </v-col>
@@ -57,7 +57,7 @@
             <v-btn
               small
               :disabled="database.is_public === modifyVisibility.is_public"
-              color="error"
+              color="warning"
               @click="updateDatabaseVisibility">
               Modify Visibility
             </v-btn>
@@ -68,7 +68,7 @@
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="editAccessDialog"
-      max-width="860">
+      max-width="640">
       <EditAccess :database="database" :access="access" @close-dialog="closeDialog" />
     </v-dialog>
   </div>
@@ -90,6 +90,7 @@ export default {
       confirm: null,
       loading: false,
       editAccessDialog: false,
+      editVisibilityDialog: false,
       access: null,
       modifyVisibility: {
         is_public: null
@@ -186,7 +187,7 @@ export default {
         this.modifyVisibility.is_public = this.database.is_public
         console.debug('database', res.data)
       } catch (err) {
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     },
@@ -209,11 +210,10 @@ export default {
         const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/transfer`, this.modifyVisibility, this.config)
         this.database = res.data
         console.debug('database', this.database)
-        this.$toast.success('Successfully updated the database.')
+        this.$toast.success('Successfully updated the database')
+        await this.$refs.toolbar.loadDatabase()
       } catch (err) {
-        this.loading = false
-        this.$toast.error('Failed to update database.')
-        return
+        this.$toast.error('Failed to update database')
       }
       this.loading = false
     },
