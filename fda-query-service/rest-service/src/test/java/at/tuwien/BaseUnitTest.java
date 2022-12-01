@@ -1924,6 +1924,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchange(DATABASE_2_EXCHANGE)
+            .creator(USER_1)
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -1935,6 +1936,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchange(DATABASE_3_EXCHANGE)
+            .creator(USER_1)
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;
