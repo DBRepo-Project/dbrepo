@@ -24,6 +24,7 @@ import at.tuwien.service.ViewService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,19 +138,21 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_publicWriteOwn_fails() throws UserNotFoundException, DatabaseConnectionException,
-            ViewMalformedException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException {
+    public void create_publicWriteOwn_fails() {
 
         /* test */
-        create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        });
     }
 
     @Test
-    public void create_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
+    public void create_publicWriteAll_succeeds() {
 
         /* test */
-        create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        });
     }
 
     @Test
@@ -228,12 +231,12 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, ViewMalformedException,
-            QueryMalformedException {
+    public void delete_publicWriteAll_succeeds() {
 
         /* test */
-        delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        });
     }
 
     @Test
@@ -358,19 +361,21 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_privateWriteOwn_fails() throws UserNotFoundException, DatabaseConnectionException,
-            ViewMalformedException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException {
+    public void create_privateWriteOwn_fails() {
 
         /* test */
-        create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+        });
     }
 
     @Test
-    public void create_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
+    public void create_privateWriteAll_succeeds() {
 
         /* test */
-        create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        });
     }
 
     @Test
@@ -449,12 +454,12 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, ViewMalformedException,
-            QueryMalformedException {
+    public void delete_privateWriteAll_succeeds() {
 
         /* test */
-        delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        });
     }
 
     @Test
@@ -515,7 +520,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
     }
-    
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -540,7 +545,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<List<ViewBriefDto>> response = viewEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
+        final ResponseEntity<List<ViewBriefDto>> response = viewEndpoint.findAll(containerId, databaseId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         if (access == null) {

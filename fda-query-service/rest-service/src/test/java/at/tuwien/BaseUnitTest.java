@@ -3,6 +3,7 @@ package at.tuwien;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -44,7 +45,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_PASSWORD = "password";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_1_CREATED = Instant.now().minus(1, HOURS);
-    
+
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -57,7 +58,7 @@ public abstract class BaseUnitTest {
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
             .build();
-    
+
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -773,6 +774,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Container CONTAINER_2 = Container.builder()
@@ -782,6 +784,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Container CONTAINER_3 = Container.builder()
@@ -791,6 +794,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Long QUERY_1_ID = 1L;
@@ -2073,6 +2077,12 @@ public abstract class BaseUnitTest {
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
+            .build();
+
+    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
+            .data(new HashMap<>() {{
+                put("key", "value");
+            }})
             .build();
 
 }
