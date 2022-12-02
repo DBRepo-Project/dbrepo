@@ -53,7 +53,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             UserNotFoundException {
         log.debug("endpoint insert data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -76,7 +76,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             UserNotFoundException {
         log.debug("endpoint update data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_UPDATE", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_UPDATE", principal)) {
             log.error("Missing data update permission");
             throw new NotAllowedException("Missing data update permission");
         }
@@ -99,7 +99,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
         log.debug("endpoint delete data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_DELETE", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_DELETE", principal)) {
             log.error("Missing data delete permission");
             throw new NotAllowedException("Missing data delete permission");
         }
@@ -122,7 +122,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             QueryMalformedException, UserNotFoundException {
         log.debug("endpoint insert data from csv, containerId={}, databaseId={}, tableId={}, data={}, principal={}",
                 containerId, databaseId, tableId, data, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_INSERT", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_INSERT", principal)) {
             log.error("Missing data insert permission");
             throw new NotAllowedException("Missing data insert permission");
         }
@@ -150,7 +150,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
         log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_VIEW", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
             log.error("Missing data view permission");
             throw new NotAllowedException("Missing data view permission");
         }
