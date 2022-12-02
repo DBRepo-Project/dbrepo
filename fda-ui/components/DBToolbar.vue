@@ -34,7 +34,7 @@
         <v-btn v-if="!loading && canRead" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="!loading && canModify" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
+        <v-btn v-if="!loading && isOwner" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
           <v-icon left>mdi-view-carousel-outline</v-icon> Create View
         </v-btn>
         <v-btn v-if="!loading && canModify" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">

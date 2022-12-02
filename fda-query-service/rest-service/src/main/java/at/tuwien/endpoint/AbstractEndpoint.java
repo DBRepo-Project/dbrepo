@@ -74,14 +74,6 @@ public abstract class AbstractEndpoint {
             return true;
         }
         /* write permission */
-        if (List.of("CREATE_VIEW").contains(permissionCode) && hasWritePermission(access.getType())) {
-            log.debug("grant permission {} because user has write access {}", permissionCode, access.getType());
-            return true;
-        }
-        if (List.of("DELETE_VIEW").contains(permissionCode) && access.getType().equals(AccessType.WRITE_ALL)) {
-            log.debug("grant permission {} because user has full access {}", permissionCode, access.getType());
-            return true;
-        }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
@@ -89,15 +81,6 @@ public abstract class AbstractEndpoint {
             return false;
         }
         log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
-        return false;
-    }
-
-    protected boolean hasWritePermission(AccessType accessType) {
-        switch (accessType) {
-            case WRITE_OWN:
-            case WRITE_ALL:
-                return true;
-        }
         return false;
     }
 

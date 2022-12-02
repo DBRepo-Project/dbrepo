@@ -34,6 +34,10 @@ public class ViewDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    @NotBlank
+    @Schema(example = "air_quality")
+    private String internalName;
+
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
