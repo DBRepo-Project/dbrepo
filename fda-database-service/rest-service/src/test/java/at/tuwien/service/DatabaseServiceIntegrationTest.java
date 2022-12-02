@@ -74,9 +74,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             .internalName(SEARCH_NAME)
             .build();
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
+    @BeforeEach
+    public void beforeEach() throws InterruptedException {
+        afterEach();
         /* create networks */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -108,11 +108,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         CONTAINER_SEARCH.setHash(search.getId());
         /* start elastic search */
         startContainer(CONTAINER_SEARCH, 30);
-    }
-
-    @Transactional
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
         /* create fda-userdb-u01 */
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
@@ -144,8 +139,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
     }
 
-    @AfterAll
-    public static void afterAll() {
+    @AfterEach
+    public void afterEach() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)
