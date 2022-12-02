@@ -16,6 +16,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "jdoe";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
@@ -31,6 +32,7 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .titlesBefore(USER_1_TITLES_BEFORE)
@@ -45,6 +47,7 @@ public abstract class BaseUnitTest {
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "jdoe2";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_2_VERIFIED = false;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.now()
@@ -56,6 +59,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
