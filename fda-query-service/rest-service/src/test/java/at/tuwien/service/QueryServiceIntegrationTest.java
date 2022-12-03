@@ -107,6 +107,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
                 .withName(CONTAINER_1_INTERNALNAME)
+                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
@@ -125,6 +126,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp")))
                         .withName(CONTAINER_2_INTERNALNAME)
                         .withIpv4Address(CONTAINER_2_IP)
+                        .withHealthcheck(CONTAINER_2_HEALTHCHECK)
                         .withHostName(CONTAINER_2_INTERNALNAME)
                         .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
                                 "MARIADB_DATABASE=zoo")

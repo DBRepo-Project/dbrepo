@@ -72,6 +72,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
+                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
                 .exec();
         /* start */

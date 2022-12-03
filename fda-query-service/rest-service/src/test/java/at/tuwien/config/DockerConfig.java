@@ -43,8 +43,24 @@ public class DockerConfig {
         log.trace("container {} needs to be started", container.getHash());
         dockerClient.startContainerCmd(container.getHash())
                 .exec();
-        Thread.sleep(12 * 1000L);
-        log.debug("container {} was started", container.getHash());
+        int i = 0;
+        final int max = 10;
+        String state;
+        do {
+            final InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getHash())
+                    .exec();
+            state = response.getState().getHealth().getStatus();
+            log.debug("container {} state is {}, attempt {} of {}", container.getHash(), state, i, max);
+            Thread.sleep(10 * 1000L);
+            i++;
+        } while (!state.equals("healthy") && i != max);
+        if (state.equals("healthy")) {
+            log.info("container {} was started", container.getHash());
+        } else {
+            log.error("failed to start container {} as state {} is not healthy after {} tries", container.getHash(),
+                    state, i);
+            throw new RuntimeException("Failed to start container");
+        }
     }
 
     public static void stopContainer(Container container) {
@@ -57,7 +73,7 @@ public class DockerConfig {
         log.trace("container {} needs to be stopped", container.getHash());
         dockerClient.stopContainerCmd(container.getHash())
                 .exec();
-        log.debug("container {} was stopped", container.getHash());
+        log.info("container {} was stopped", container.getHash());
     }
 
 }
