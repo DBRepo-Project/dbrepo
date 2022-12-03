@@ -43,6 +43,15 @@ public interface TokenService {
     Token findOne(String tokenHash) throws TokenNotFoundException;
 
     /**
+     * Finds a token by id.
+     *
+     * @param id The token id.
+     * @return The token, if successful.
+     * @throws TokenNotFoundException The token was not found in the metadata database.
+     */
+    Token findOne(Long id) throws TokenNotFoundException;
+
+    /**
      * Deletes a developer token in the metadata database by hash and user principal.
      *
      * @param tokenHash The token hash.

@@ -82,6 +82,17 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Token findOne(Long id) throws TokenNotFoundException {
+        final Optional<Token> optional = tokenRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to find token with id {}", id);
+            throw new TokenNotFoundException("Failed to find token");
+        }
+        return optional.get();
+    }
+
+    @Override
     @Transactional
     public void delete(String tokenHash, Principal principal) throws TokenNotFoundException, UserNotFoundException {
         final Token token = findOne(tokenHash);

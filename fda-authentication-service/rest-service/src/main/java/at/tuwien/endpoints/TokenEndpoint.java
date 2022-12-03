@@ -84,16 +84,17 @@ public class TokenEndpoint {
                 .body(dto);
     }
 
-    @DeleteMapping("/{hash}")
+    @DeleteMapping("/{id}")
     @Transactional
     @Timed(value = "token.delete", description = "Time needed to delete the developer tokens")
     @Operation(summary = "Delete developer token", security = @SecurityRequirement(name = "bearerAuth"))
-    public void delete(@NotNull @PathVariable("hash") String hash,
+    public void delete(@NotNull @PathVariable("id") Long id,
                        @NotNull Principal principal) throws TokenNotFoundException, UserNotFoundException {
-        log.debug("endpoint delete developer token, hash={}, principal={}", hash, principal);
-        final Token token = tokenService.findOne(hash);
+        log.debug("endpoint delete developer token, id={}, principal={}", id, principal);
+        final Token token = tokenService.findOne(id);
         log.trace("found token {}", token);
         tokenService.delete(token.getTokenHash(), principal);
+        log.info("Deleted token with id {}", id);
     }
 
 }
