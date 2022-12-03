@@ -20,31 +20,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class TokenServiceIntegrationTest extends BaseUnitTest {
+public class TimeSecretUnitTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
 
     @Autowired
-    private TimeSecretService tokenService;
+    private TimeSecretService timeSecretService;
 
     @Autowired
-    private TimeSecretRepository tokenRepository;
+    private TimeSecretRepository timeSecretRepository;
 
     @BeforeEach
     public void beforeEach() {
-        tokenRepository.save(TOKEN_1);
+        timeSecretRepository.save(TIME_SECRET_1);
     }
 
     @Test
     public void updateVerification_succeeds() throws SecretInvalidException {
 
-        /* mock */
-
         /* test */
-        tokenService.invalidate(TOKEN_1_TOKEN);
+        timeSecretService.invalidate(TIME_SECRET_1_TOKEN);
         assertThrows(SecretInvalidException.class, () -> {
-            tokenService.invalidate(TOKEN_1_TOKEN);
+            timeSecretService.invalidate(TIME_SECRET_1_TOKEN);
         });
     }
 

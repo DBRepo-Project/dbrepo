@@ -51,10 +51,10 @@ public class Token {
     @Column(nullable = false, updatable = false)
     private Instant expires;
 
-    @Column(nullable = false, updatable = false)
+    @Column
     private Instant lastUsed;
 
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private Instant deleted;
 
 }
