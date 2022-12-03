@@ -77,7 +77,8 @@ export default {
     sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest',
     logo: process.env.LOGO || '/logo.png',
-    mailVerify: process.env.MAIL_VERIFY || false
+    mailVerify: process.env.MAIL_VERIFY || false,
+    tokenMax: process.env.TOKEN_MAX || 5
   },
 
   proxy: {

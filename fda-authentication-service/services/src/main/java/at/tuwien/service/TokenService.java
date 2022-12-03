@@ -5,7 +5,9 @@ import at.tuwien.exception.TokenNotEligableException;
 import at.tuwien.exception.TokenNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.ServletException;
 import java.security.Principal;
 import java.util.List;
 
@@ -41,6 +43,15 @@ public interface TokenService {
     Token findOne(String tokenHash) throws TokenNotFoundException;
 
     /**
+     * Finds a token by id.
+     *
+     * @param id The token id.
+     * @return The token, if successful.
+     * @throws TokenNotFoundException The token was not found in the metadata database.
+     */
+    Token findOne(Long id) throws TokenNotFoundException;
+
+    /**
      * Deletes a developer token in the metadata database by hash and user principal.
      *
      * @param tokenHash The token hash.
@@ -49,4 +60,11 @@ public interface TokenService {
      * @throws UserNotFoundException  The user does not exist in the metadata database.
      */
     void delete(String tokenHash, Principal principal) throws TokenNotFoundException, UserNotFoundException;
+
+    /**
+     * Checks if the developer token has not been marked as deleted
+     *
+     * @param jwt The token
+     */
+    void check(String jwt) throws ServletException;
 }

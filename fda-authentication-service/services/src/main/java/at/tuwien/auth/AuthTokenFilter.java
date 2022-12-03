@@ -1,5 +1,6 @@
 package at.tuwien.auth;
 
+import at.tuwien.service.TokenService;
 import at.tuwien.service.impl.UserDetailsServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,10 +21,12 @@ import java.io.IOException;
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
+    private final TokenService tokenService;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+    public AuthTokenFilter(JwtUtils jwtUtils, TokenService tokenService, UserDetailsServiceImpl userDetailsService) {
         this.jwtUtils = jwtUtils;
+        this.tokenService = tokenService;
         this.userDetailsService = userDetailsService;
     }
 
@@ -32,6 +35,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final String jwt = parseJwt(request);
         if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
+            tokenService.check(jwt);
             final String username = jwtUtils.getUserNameFromJwtToken(jwt);
             final UserDetails userDetails;
             try {

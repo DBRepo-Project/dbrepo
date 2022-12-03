@@ -96,7 +96,7 @@ export default {
         delete user.token
         this.$store.commit('SET_USER', user)
         this.$toast.success('Welcome back!')
-        this.$router.push(this.$route.query.redirect ?  this.$route.query.redirect : '/container')
+        this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 418) {

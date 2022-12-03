@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -51,10 +52,10 @@ public class Token {
     @Column(nullable = false, updatable = false)
     private Instant expires;
 
-    @Column(nullable = false, updatable = false)
+    @Column
     private Instant lastUsed;
 
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private Instant deleted;
 
 }
