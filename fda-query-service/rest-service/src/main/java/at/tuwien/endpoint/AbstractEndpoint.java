@@ -1,21 +1,25 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.SortType;
+import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.exception.PaginationException;
-import at.tuwien.exception.SortException;
+import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static at.tuwien.entities.identifier.VisibilityType.EVERYONE;
 
@@ -96,6 +100,25 @@ public abstract class AbstractEndpoint {
         if ((sortDirection == null && sortColumn != null) || (sortDirection != null && sortColumn == null)) {
             log.error("Failed to validate sort direction and/or sort column, either both are present or none");
             throw new SortException("Failed to validate sort direction and/or sort column");
+        }
+    }
+
+    protected void validateForbiddenStatements(ExecuteStatementDto data) throws QueryMalformedException,
+            QueryStoreException {
+        final StringBuilder regex = new StringBuilder("[");
+        try {
+            FileUtils.readLines(new File("src/main/resources/forbidden.txt"), Charset.defaultCharset())
+                    .forEach(regex::append);
+        } catch (IOException e) {
+            log.error("Failed to load forbidden keywords list, reason {}", e.getMessage());
+            throw new QueryStoreException("Failed to load forbidden keywords list", e);
+        }
+        final Pattern pattern = Pattern.compile(regex + "]");
+        final Matcher matcher = pattern.matcher(data.getStatement());
+        final boolean found = matcher.find();
+        if (found) {
+            log.error("Query contains blacklisted character");
+            throw new QueryMalformedException("Query contains blacklisted character");
         }
     }
 
