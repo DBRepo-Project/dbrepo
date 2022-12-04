@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
@@ -25,9 +26,9 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
     private final TableService tableService;
 
     @Autowired
-    public TableHistoryEndpoint(TableService tableService, DatabaseService databaseService,
+    public TableHistoryEndpoint(QueryConfig queryConfig, TableService tableService, DatabaseService databaseService,
                                 IdentifierService identifierService) {
-        super(databaseService, identifierService);
+        super(queryConfig, databaseService, identifierService);
         this.tableService = tableService;
     }
 

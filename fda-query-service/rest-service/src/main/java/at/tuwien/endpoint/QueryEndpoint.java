@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Log4j2
 @RestController
@@ -32,9 +31,9 @@ public class QueryEndpoint extends AbstractEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
+    public QueryEndpoint(QueryConfig queryConfig, QueryService queryService, StoreService storeService, DatabaseService databaseService,
                          IdentifierService identifierService) {
-        super(databaseService, identifierService);
+        super(queryConfig, databaseService, identifierService);
         this.queryService = queryService;
         this.storeService = storeService;
     }

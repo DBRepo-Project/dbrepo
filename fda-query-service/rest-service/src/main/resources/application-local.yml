@@ -39,3 +39,4 @@ fda:
   gateway.endpoint: http://localhost:9095
   ready.path: ./ready
   consumers: 2
+  unsupported: \\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--

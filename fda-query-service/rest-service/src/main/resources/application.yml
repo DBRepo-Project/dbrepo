@@ -39,3 +39,4 @@ fda:
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   ready.path: /ready
   consumers: "${BROKER_CONSUMERS}"
+  unsupported: "${NOT_SUPPORTED_KEYWORDS}"

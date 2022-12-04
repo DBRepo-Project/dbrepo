@@ -54,8 +54,6 @@ services:
     image: dbrepo/discovery-service:latest
     networks:
       core:
-    ports:
-      - "9090:9090"
     env_file:
       - .env
     logging:
@@ -86,8 +84,6 @@ services:
     networks:
       userdb:
       core:
-    ports:
-      - "9092:9092"
     env_file:
       - .env
     volumes:
@@ -109,8 +105,6 @@ services:
     image: dbrepo/container-service:latest
     networks:
       core:
-    ports:
-      - "9091:9091"
     env_file:
       - .env
     volumes:
@@ -128,8 +122,6 @@ services:
     image: dbrepo/authentication-service:latest
     networks:
       core:
-    ports:
-      - "9097:9097"
     env_file:
       - .env
     depends_on:
@@ -150,8 +142,6 @@ services:
     networks:
       core:
       userdb:
-    ports:
-      - "9093:9093"
     env_file:
       - .env
     volumes:
@@ -172,8 +162,6 @@ services:
     networks:
       core:
       userdb:
-    ports:
-      - "9094:9094"
     env_file:
       - .env
     volumes:
@@ -196,8 +184,6 @@ services:
     image: dbrepo/identifier-service:latest
     networks:
       core:
-    ports:
-      - "9096:9096"
     env_file:
       - .env
     volumes:
@@ -219,8 +205,6 @@ services:
       core:
     env_file:
       - .env
-    ports:
-      - "9099:9099"
     depends_on:
       metadata-db:
         condition: service_started
@@ -236,8 +220,6 @@ services:
       core:
       userdb:
     command: sh -c "/wait && flask run" # docker-compose should not test the implementation
-    ports:
-      - "5000:5000"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -254,8 +236,6 @@ services:
     image: dbrepo/units-service:latest
     networks:
       core:
-    ports:
-      - "5010:5010"
     volumes:
       - /tmp:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -273,8 +253,6 @@ services:
     networks:
       core:
     ports:
-      - "5672:5672"
-      - "9098:9098"
       - "15672:15672"
     env_file:
       - .env
@@ -301,9 +279,6 @@ services:
     depends_on:
       discovery-service:
         condition: service_healthy
-    ports:
-      - 9200:9200
-      - 9600:9600
     volumes:
       - search-service-data:/usr/share/elasticsearch/data
     logging:
