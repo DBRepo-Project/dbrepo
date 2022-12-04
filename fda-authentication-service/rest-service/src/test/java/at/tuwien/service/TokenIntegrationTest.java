@@ -2,10 +2,9 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.auth.JwtUtils;
+import at.tuwien.config.H2Utils;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.Token;
-import at.tuwien.exception.TokenNotEligableException;
-import at.tuwien.exception.TokenNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repositories.TokenRepository;
 import at.tuwien.repositories.UserRepository;
@@ -21,8 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.servlet.ServletException;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -47,9 +44,13 @@ public class TokenIntegrationTest extends BaseUnitTest {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private H2Utils h2Utils;
+
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
+        h2Utils.runScript("post-init.sql");
     }
 
     @Test
@@ -63,10 +64,18 @@ public class TokenIntegrationTest extends BaseUnitTest {
                 .creator(USER_1_ID)
                 .expires(TOKEN_1_EXPIRES)
                 .build();
-        final Token token = tokenRepository.save(entity);
+        tokenRepository.save(entity) /* mock as invalid by the view script in ./resources/post-init.sql */;
+        final String jwt2 = jwtUtils.generateJwtToken(USER_1_USERNAME, TOKEN_2_EXPIRES);
+        final Token entity2 = Token.builder()
+                .token(jwt2)
+                .tokenHash(JwtUtils.toHash(jwt2))
+                .creator(USER_1_ID)
+                .expires(TOKEN_2_EXPIRES)
+                .build();
+        tokenRepository.save(entity2);
 
         /* test */
-        tokenService.check(jwt);
+        tokenService.check(jwt2);
     }
 
     @Test
@@ -79,9 +88,9 @@ public class TokenIntegrationTest extends BaseUnitTest {
                 .tokenHash(JwtUtils.toHash(jwt))
                 .creator(USER_1_ID)
                 .expires(TOKEN_1_EXPIRES)
-                .deleted(Instant.now().minus(1, ChronoUnit.SECONDS))
                 .build();
         final Token token = tokenRepository.save(entity);
+        tokenRepository.deleteById(token.getId());
 
         /* test */
         assertThrows(ServletException.class, () -> {

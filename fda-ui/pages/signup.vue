@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card>
+      <v-card flat>
         <v-card-title>
           Create Account
         </v-card-title>

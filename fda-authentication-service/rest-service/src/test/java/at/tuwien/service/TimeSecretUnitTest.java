@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.SecretInvalidException;
 import at.tuwien.repositories.TimeSecretRepository;
+import at.tuwien.repositories.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,8 +32,12 @@ public class TimeSecretUnitTest extends BaseUnitTest {
     @Autowired
     private TimeSecretRepository timeSecretRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @BeforeEach
     public void beforeEach() {
+        userRepository.save(USER_1);
         timeSecretRepository.save(TIME_SECRET_1);
     }
 

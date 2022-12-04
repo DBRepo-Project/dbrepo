@@ -23,13 +23,9 @@ public class Creator {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
-    @GeneratedValue(generator = "creator-sequence")
-    @GenericGenerator(
-            name = "creator-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_creators_seq")
-    )
+    @GeneratedValue(generator = "creators-sequence")
+    @GenericGenerator(name = "creators-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -47,7 +43,7 @@ public class Creator {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)
     private Identifier identifier;
 

@@ -11,7 +11,6 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
-import org.jacoco.core.internal.flow.IProbeIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotAllowedException;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,7 +49,7 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
                                                        Principal principal)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint list tables, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
         if (!hasDatabasePermission(containerId, databaseId, "TABLES_VIEW", principal)) {
@@ -75,7 +73,8 @@ public class TableEndpoint extends AbstractEndpoint {
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException {
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
+            NotAllowedException {
         log.debug("endpoint create table, containerId={}, databaseId={}, createDto={}, principal={}", containerId,
                 databaseId, createDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "TABLE_CREATE", principal)) {
@@ -99,7 +98,7 @@ public class TableEndpoint extends AbstractEndpoint {
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, NotAllowedException {
         log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_INFO", principal)) {
@@ -119,7 +118,7 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId,
-                                                @NotNull Principal principal) {
+                                                @NotNull Principal principal) throws NotAllowedException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
@@ -141,7 +140,8 @@ public class TableEndpoint extends AbstractEndpoint {
                        @NotNull @PathVariable("tableId") Long tableId,
                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException,
+            NotAllowedException {
         log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {

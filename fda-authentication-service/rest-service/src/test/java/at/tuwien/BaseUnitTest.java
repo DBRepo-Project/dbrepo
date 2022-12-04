@@ -129,4 +129,12 @@ public abstract class BaseUnitTest {
             .expires(TOKEN_1_EXPIRES)
             .build();
 
+    public final static Long TOKEN_2_ID = 2L;
+    public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_2 = Token.builder()
+            .id(TOKEN_2_ID)
+            .expires(TOKEN_2_EXPIRES)
+            .build();
+
 }

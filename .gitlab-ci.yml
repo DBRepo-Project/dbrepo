@@ -169,6 +169,7 @@ build-docker:
     - build-backend-table
     - build-backend-metadata
   script:
+    - cp .env.unix.example .env
     - make build-docker
 
 build-frontend:

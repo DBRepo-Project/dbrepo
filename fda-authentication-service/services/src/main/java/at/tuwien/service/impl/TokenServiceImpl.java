@@ -109,15 +109,18 @@ public class TokenServiceImpl implements TokenService {
     @Override
     @Transactional
     public void check(String jwt) throws ServletException {
-        final Optional<Token> optional = tokenRepository.findByTokenHash(JwtUtils.toHash(jwt));
-        if (optional.isEmpty()) {
+        final String tokenHash = JwtUtils.toHash(jwt);
+        final Optional<Token> optional = tokenRepository.findByInvalidTokenHash(tokenHash);
+        if (optional.isPresent()) {
+            log.error("Token with hash {} is marked as revoked", tokenHash);
+            throw new ServletException("Token with hash " + tokenHash + " is marked as revoked");
+        }
+        final Optional<Token> optional1 = tokenRepository.findByTokenHash(tokenHash);
+        if (optional1.isEmpty()) {
+            /* not a developer token */
             return;
         }
-        final Token token = optional.get();
-        if (token.getDeleted() != null) {
-            log.error("Token was marked as deleted on {}", token.getDeleted());
-            throw new ServletException("Token was marked as deleted");
-        }
+        final Token token = optional1.get();
         token.setLastUsed(Instant.now());
         tokenRepository.save(token);
     }

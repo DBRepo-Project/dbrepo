@@ -23,8 +23,8 @@ RUN mvn -q clean package -DskipTests > /dev/null
 FROM openjdk:11-jre-slim as runtime
 
 ENV METADATA_DB=fda
-ENV METADATA_USERNAME=postgres
-ENV METADATA_PASSWORD=postgres
+ENV METADATA_USERNAME=root
+ENV METADATA_PASSWORD=dbrepo
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095

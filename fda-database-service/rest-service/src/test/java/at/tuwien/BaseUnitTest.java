@@ -165,6 +165,7 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .created(CONTAINER_1_CREATED)
             .lastModified(CONTAINER_1_UPDATED)
+            .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .build();
 
@@ -175,6 +176,7 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .created(CONTAINER_2_CREATED)
             .lastModified(CONTAINER_2_UPDATED)
+            .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .build();
 

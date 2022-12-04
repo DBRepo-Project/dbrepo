@@ -3,8 +3,6 @@ package at.tuwien.entities.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,21 +15,21 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@SQLDelete(sql = "update mdb_tokens set deleted = NOW() where id = ?")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_tokens")
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "Token.findByInvalidTokenHash",
+                query = "SELECT * FROM `mdb_invalid_tokens` WHERE `token_hash` = :hash",
+                resultClass = Token.class)
+})
 public class Token {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "id", columnDefinition = "numeric(19, 2)")
     @GeneratedValue(generator = "tokens-sequence")
-    @GenericGenerator(
-            name = "tokens-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_tokens_seq")
-    )
+    @GenericGenerator(name = "tokens-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(nullable = false, updatable = false)
@@ -54,8 +52,5 @@ public class Token {
 
     @Column
     private Instant lastUsed;
-
-    @Column(updatable = false)
-    private Instant deleted;
 
 }

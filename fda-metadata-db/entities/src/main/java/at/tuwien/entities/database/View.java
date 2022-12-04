@@ -23,12 +23,9 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "view-sequence")
-    @GenericGenerator(
-            name = "view-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
-    )
+    @GeneratedValue(generator = "views-sequence")
+    @GenericGenerator(name = "views-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -46,7 +43,7 @@ public class View {
     private User creator;
 
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
     private Database database;
 
@@ -62,7 +59,7 @@ public class View {
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
 
     @Column(nullable = false, updatable = false)
@@ -72,8 +69,5 @@ public class View {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

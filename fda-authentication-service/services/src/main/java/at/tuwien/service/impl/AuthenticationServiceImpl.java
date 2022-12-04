@@ -75,7 +75,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     @Transactional
-    public void verifyToken(String authorization) throws TokenRevokedException {
+    public void verifyToken(String authorization) {
         final String hash = authenticationMapper.authorizationToTokenHash(authorization);
         final Optional<Token> optional = tokenRepository.findByTokenHash(hash);
         if (optional.isEmpty()) {
@@ -83,10 +83,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return;
         }
         final Token token = optional.get();
-        if (token.getDeleted() != null) {
-            log.warn("Token with hash {} is marked as revoked", hash);
-            throw new TokenRevokedException("Token is marked as revoked");
-        }
         token.setLastUsed(Instant.now());
         tokenRepository.save(token);
         log.info("Updated token usage of token with hash {}", hash);
