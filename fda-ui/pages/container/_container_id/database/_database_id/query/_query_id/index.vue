@@ -454,7 +454,7 @@ export default {
       return this.identifier.id ? this.identifier.creators : null
     },
     erroneous () {
-      if (this.identifier.result_number) {
+      if (this.identifier) {
         return false
       }
       return !this.query.result_hash
