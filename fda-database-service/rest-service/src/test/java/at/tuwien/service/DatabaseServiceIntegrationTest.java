@@ -1,22 +1,15 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
@@ -30,7 +23,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -75,9 +67,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             .internalName(SEARCH_NAME)
             .build();
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
+    @BeforeEach
+    public void beforeEach() throws InterruptedException {
+        afterEach();
         /* create networks */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -109,11 +101,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         CONTAINER_SEARCH.setHash(search.getId());
         /* start elastic search */
         startContainer(CONTAINER_SEARCH, 30);
-    }
-
-    @Transactional
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
         /* create fda-userdb-u01 */
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
@@ -148,14 +135,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @AfterEach
     public void afterEach() {
-        stopContainer(CONTAINER_1);
-        removeContainer(CONTAINER_1);
-        stopContainer(CONTAINER_2);
-        removeContainer(CONTAINER_2);
-    }
-
-    @AfterAll
-    public static void afterAll() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)
