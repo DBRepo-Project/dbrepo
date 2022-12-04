@@ -19,8 +19,8 @@ import java.time.Instant;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_tokens")
 @NamedNativeQueries({
-        @NamedNativeQuery(name = "Token.findByValidTokenHash",
-                query = "SELECT * FROM `mdb_valid_tokens` WHERE `token_hash` = :hash",
+        @NamedNativeQuery(name = "Token.findByInvalidTokenHash",
+                query = "SELECT * FROM `mdb_invalid_tokens` WHERE `token_hash` = :hash",
                 resultClass = Token.class)
 })
 public class Token {

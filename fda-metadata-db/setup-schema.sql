@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS mdb_data
     Version      TEXT,
     Seperator    TEXT,
     PRIMARY KEY (ID)
-) WITH SYSTEM VERSIONING
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_user_roles
 (
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS mdb_access
     download BOOLEAN,
     created  timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aUserID, aDBID)
-) WITH SYSTEM VERSIONING
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
@@ -426,7 +426,7 @@ CREATE TABLE IF NOT EXISTS mdb_owns
     PRIMARY KEY (oUserID, oDBID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE VIEW IF NOT EXISTS mdb_valid_tokens AS
+CREATE VIEW IF NOT EXISTS mdb_invalid_tokens AS
 (
 SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
 FROM (SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`

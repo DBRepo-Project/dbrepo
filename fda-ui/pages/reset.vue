@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!error && !token">
+      <v-card v-if="!error && !token" flat>
         <v-card-title>
           Reset Password
         </v-card-title>
