@@ -263,8 +263,8 @@ export default {
       }
     },
     login () {
-      let redirect = ![undefined ,'/', '/login'].includes(this.$router.currentRoute.path)
-      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {}})
+      const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
+      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
     navigate (item) {
       this.$router.push(this.metadata(item).link)

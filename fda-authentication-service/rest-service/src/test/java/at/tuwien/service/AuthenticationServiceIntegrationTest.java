@@ -41,10 +41,10 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         final User u1 = userRepository.save(USER_1);
         final User u2 = userRepository.save(USER_2);
-        TOKEN_1.setUser(u1);
-        tokenRepository.save(TOKEN_1);
-        TOKEN_2.setUser(u2);
-        tokenRepository.save(TOKEN_2);
+        TIME_SECRET_1.setUser(u1);
+        tokenRepository.save(TIME_SECRET_1);
+        TIME_SECRET_2.setUser(u2);
+        tokenRepository.save(TIME_SECRET_2);
     }
 
     @Test

@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Log4j2
 @RestController
@@ -63,6 +65,7 @@ public class QueryEndpoint extends AbstractEndpoint {
             log.error("Failed to execute query: is empty");
             throw new QueryMalformedException("Failed to execute query");
         }
+        validateForbiddenStatements(data);
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,

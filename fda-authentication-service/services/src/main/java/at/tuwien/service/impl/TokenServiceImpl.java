@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.ServletException;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -81,6 +82,17 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Token findOne(Long id) throws TokenNotFoundException {
+        final Optional<Token> optional = tokenRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to find token with id {}", id);
+            throw new TokenNotFoundException("Failed to find token");
+        }
+        return optional.get();
+    }
+
+    @Override
     @Transactional
     public void delete(String tokenHash, Principal principal) throws TokenNotFoundException, UserNotFoundException {
         final Token token = findOne(tokenHash);
@@ -92,6 +104,20 @@ public class TokenServiceImpl implements TokenService {
         tokenRepository.deleteById(token.getId());
         log.info("Deleted token with id {}", token.getId());
         log.debug("deleted token {}", token);
+    }
+
+    @Override
+    @Transactional
+    public void check(String jwt) throws ServletException {
+        final String tokenHash = JwtUtils.toHash(jwt);
+        final Optional<Token> optional = tokenRepository.findByValidTokenHash(tokenHash);
+        if (optional.isEmpty()) {
+            log.error("Token with hash {} is marked as revoked", tokenHash);
+            throw new ServletException("Token with hash " + tokenHash + " is marked as revoked");
+        }
+        final Token token = optional.get();
+        token.setLastUsed(Instant.now());
+        tokenRepository.save(token);
     }
 
 }

@@ -3,7 +3,6 @@ package at.tuwien.entities.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -19,6 +18,11 @@ import java.time.Instant;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_tokens")
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "Token.findByValidTokenHash",
+                query = "SELECT * FROM `mdb_valid_tokens` WHERE `token_hash` = :hash",
+                resultClass = Token.class)
+})
 public class Token {
 
     @Id
@@ -46,7 +50,7 @@ public class Token {
     @Column(nullable = false, updatable = false)
     private Instant expires;
 
-    @Column(nullable = false, updatable = false)
+    @Column
     private Instant lastUsed;
 
 }

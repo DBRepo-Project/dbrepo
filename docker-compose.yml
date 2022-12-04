@@ -11,7 +11,7 @@ volumes:
 
 networks:
   public:
-    name: core
+    name: public
     driver: bridge
     ipam:
       config:
@@ -23,7 +23,7 @@ networks:
       config:
         - subnet: 172.28.0.0/16
   core:
-    name: public
+    name: core
     driver: bridge
     ipam:
       config:
@@ -361,6 +361,7 @@ services:
     image: fda-ui
     networks:
       core:
+      public:
     ports:
       - "3000:3000"
     env_file:

@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS mdb_users
     UNIQUE (username),
     UNIQUE (Main_Email),
     UNIQUE (OID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE mdb_images
 (
@@ -41,7 +41,7 @@ CREATE TABLE mdb_images
     last_modified timestamp,
     PRIMARY KEY (id),
     UNIQUE (repository, tag)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE mdb_time_secrets
 (
@@ -53,7 +53,7 @@ CREATE TABLE mdb_time_secrets
     valid_to  timestamp              NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE mdb_tokens
 (
@@ -65,7 +65,7 @@ CREATE TABLE mdb_tokens
     last_used  timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE mdb_images_date
 (
@@ -79,7 +79,7 @@ CREATE TABLE mdb_images_date
     PRIMARY KEY (id),
     FOREIGN KEY (iid) REFERENCES mdb_images (id),
     UNIQUE (database_format, unix_format, example)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_containers
 (
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE mdb_images_environment_item
 (
@@ -109,7 +109,7 @@ CREATE TABLE mdb_images_environment_item
     last_modified timestamp,
     PRIMARY KEY (id, iid),
     FOREIGN KEY (iid) REFERENCES mdb_images (id)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_data
 (
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS mdb_data
     Version      TEXT,
     Seperator    TEXT,
     PRIMARY KEY (ID)
-);
+) WITH SYSTEM VERSIONING
 
 CREATE TABLE IF NOT EXISTS mdb_user_roles
 (
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS mdb_user_roles
     PRIMARY KEY (uid),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
     UNIQUE (uid, role)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_licenses
 (
@@ -139,7 +139,7 @@ CREATE TABLE IF NOT EXISTS mdb_licenses
     uri        TEXT                   NOT NULL,
     PRIMARY KEY (identifier),
     UNIQUE (uri)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_databases
 (
@@ -158,14 +158,14 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (UserID),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_databases_subjects
 (
     dbid     BIGINT                 NOT NULL,
     subjects character varying(255) NOT NULL,
     PRIMARY KEY (dbid, subjects)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_tables
 (
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     PRIMARY KEY (ID, tDBID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns
 (
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns
     FOREIGN KEY (cDBID, tID) REFERENCES mdb_tables (tDBID, ID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (ID, cDBID, tID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_enums
 (
@@ -228,7 +228,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_enums
     last_modified timestamp,
     FOREIGN KEY (eDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (ID, eDBID, tID, cID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_nom
 (
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_nom
     created       timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_num
 (
@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_num
     created       timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_cat
 (
@@ -271,7 +271,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
     created       timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     PRIMARY KEY (cDBID, tID, cID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_concepts
 (
@@ -282,7 +282,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (id)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 (
@@ -295,7 +295,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_concepts
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
     FOREIGN KEY (concept_id) REFERENCES mdb_concepts (id),
     PRIMARY KEY (cDBID, tID, cID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_view
 (
@@ -315,7 +315,7 @@ CREATE TABLE IF NOT EXISTS mdb_view
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
     PRIMARY KEY (id, vdbid)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers
 (
@@ -348,7 +348,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     UNIQUE (cid, dbid, qid)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 (
@@ -363,7 +363,7 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
     PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_creators
 (
@@ -378,7 +378,7 @@ CREATE TABLE IF NOT EXISTS mdb_creators
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (id, pid),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_feed
 (
@@ -389,7 +389,7 @@ CREATE TABLE IF NOT EXISTS mdb_feed
     created timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
     PRIMARY KEY (fDBID, fID, fUserId, fDataID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_update
 (
@@ -397,7 +397,7 @@ CREATE TABLE IF NOT EXISTS mdb_update
     uDBID   bigint REFERENCES mdb_databases (id),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (uUserID, uDBID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_access
 (
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS mdb_access
     download BOOLEAN,
     created  timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aUserID, aDBID)
-);
+) WITH SYSTEM VERSIONING
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
@@ -416,7 +416,7 @@ CREATE TABLE IF NOT EXISTS mdb_have_access
     hType   ENUM ('R', 'W'),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (hUserID, hDBID)
-);
+) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_owns
 (
@@ -424,7 +424,18 @@ CREATE TABLE IF NOT EXISTS mdb_owns
     oDBID   bigint REFERENCES mdb_databases (ID),
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (oUserID, oDBID)
-);
+) WITH SYSTEM VERSIONING;
+
+CREATE VIEW IF NOT EXISTS mdb_valid_tokens AS
+(
+SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
+FROM (SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
+      FROM `mdb_tokens` FOR SYSTEM_TIME ALL) as t
+WHERE NOT EXISTS(SELECT `token_hash`
+             FROM mdb_tokens AS tt
+             WHERE ROW_END > NOW()
+               AND tt.`token_hash` = t.`token_hash`)
+GROUP BY `id`);
 
 COMMIT;
 
