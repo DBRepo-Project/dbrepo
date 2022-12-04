@@ -450,7 +450,7 @@ public interface QueryMapper {
 
     default PreparedStatement tableCsvDtoToRawDeleteQuery(Connection connection, Table table, TableCsvDeleteDto data)
             throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
-        log.debug("table csv to delete query, table={}, data={}", table, data);
+        log.trace("table csv to delete query, table={}, data={}", table, data);
         int i = 1;
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
@@ -497,7 +497,7 @@ public interface QueryMapper {
 
     default PreparedStatement tableCsvDtoToRawUpdateQuery(Connection connection, Table table, TableCsvUpdateDto data)
             throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
-        log.debug("mapping table csv to update query, table={}, data={}", table, data);
+        log.trace("mapping table csv to update query, table={}, data={}", table, data);
         int i = 1;
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
@@ -570,7 +570,7 @@ public interface QueryMapper {
 
     default PreparedStatement tableToRawCountAllQuery(Connection connection, Table table, Instant timestamp)
             throws ImageNotSupportedException, QueryMalformedException {
-        log.debug("mapping table to raw count query, table={}, timestamp={}", table, timestamp);
+        log.trace("mapping table to raw count query, table={}, timestamp={}", table, timestamp);
         /* check image */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
@@ -599,7 +599,7 @@ public interface QueryMapper {
                                                          Instant timestamp, Boolean selection, Long page, Long size)
             throws ImageNotSupportedException,
             QueryMalformedException {
-        log.debug("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
+        log.trace("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
                 query, database, timestamp, selection, page, size);
         /* param check */
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -669,9 +669,8 @@ public interface QueryMapper {
                     + "' ");
         }
         try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped timestamped query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
+            log.debug("mapped timestamped query: {}", statement);
+            return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
@@ -680,7 +679,7 @@ public interface QueryMapper {
 
     default PreparedStatement tableToRawFindAllQuery(Connection connection, Table table, Instant timestamp, Long size, Long page)
             throws ImageNotSupportedException, QueryMalformedException {
-        log.debug("mapping table to find all query, table={}, timestamp={}, size={}, page={}",
+        log.trace("mapping table to find all query, table={}, timestamp={}, size={}, page={}",
                 table, timestamp, size, page);
         /* param check */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {

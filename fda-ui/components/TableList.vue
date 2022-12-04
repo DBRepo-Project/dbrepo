@@ -96,7 +96,7 @@
               disable-sort
               :loading="loadingDetails"
               hide-default-footer
-              items-per-page="-1"
+              :items-per-page="-1"
               :headers="headers"
               :items="tableDetails.columns">
               <template v-slot:item.is_null_allowed="{ item }">
