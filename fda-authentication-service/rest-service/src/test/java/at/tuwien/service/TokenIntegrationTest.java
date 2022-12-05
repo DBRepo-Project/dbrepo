@@ -70,11 +70,10 @@ public class TokenIntegrationTest extends BaseUnitTest {
 
         /* mock */
         final Token token = tokenService.create(USER_1_PRINCIPAL);
-        tokenService.create(USER_1_PRINCIPAL);
 
         /* test */
         assertThrows(ServletException.class, () -> {
-            tokenService.check(token.getToken());
+            tokenService.check(jwt);
         });
     }
 

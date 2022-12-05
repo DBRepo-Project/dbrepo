@@ -200,6 +200,7 @@ test-identifier-service: build-backend-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
 test-container-service: build-backend-metadata-db
+	docker system prune -f
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
 test-database-service: build-backend-metadata-db

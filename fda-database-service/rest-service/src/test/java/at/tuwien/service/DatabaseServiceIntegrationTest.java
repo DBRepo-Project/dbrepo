@@ -6,12 +6,12 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
+import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -28,6 +28,8 @@ import java.security.Principal;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -40,6 +42,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexInitializer indexInitializer;
+
+    @MockBean
+    private DatabaseidxRepository databaseidxRepository;
 
     @MockBean
     private Channel channel;
@@ -85,22 +90,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-
-        /* create elastic search */
-        final CreateContainerResponse search = dockerClient.createContainerCmd(SEARCH_IMAGE + ":" + SEARCH_TAG)
-                .withHostConfig(
-                        hostConfig
-                                .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("9200:9200"), PortBinding.parse("9300:9300"))
-                )
-                .withName(SEARCH_NAME)
-                .withIpv4Address(SEARCH_IP)
-                .withHostName(SEARCH_HOSTNAME)
-                .withEnv("discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN")
-                .exec();
-        CONTAINER_SEARCH.setHash(search.getId());
-        /* start elastic search */
-        startContainer(CONTAINER_SEARCH, 30);
         /* create fda-userdb-u01 */
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
@@ -166,6 +155,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
         /* test */
         databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
     }
@@ -175,6 +168,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
 
         /* test */
         final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
