@@ -5,6 +5,7 @@ import at.tuwien.auth.JwtUtils;
 import at.tuwien.config.H2Utils;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.Token;
+import at.tuwien.exception.TokenNotEligableException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repositories.TokenRepository;
 import at.tuwien.repositories.UserRepository;
@@ -54,47 +55,25 @@ public class TokenIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void check_succeeds() throws ServletException {
+    public void check_succeeds() throws ServletException, UserNotFoundException, TokenNotEligableException {
 
         /* mock */
-        final String jwt = jwtUtils.generateJwtToken(USER_1_USERNAME, TOKEN_1_EXPIRES);
-        final Token entity = Token.builder()
-                .token(jwt)
-                .tokenHash(JwtUtils.toHash(jwt))
-                .creator(USER_1_ID)
-                .expires(TOKEN_1_EXPIRES)
-                .build();
-        tokenRepository.save(entity) /* mock as invalid by the view script in ./resources/post-init.sql */;
-        final String jwt2 = jwtUtils.generateJwtToken(USER_1_USERNAME, TOKEN_2_EXPIRES);
-        final Token entity2 = Token.builder()
-                .token(jwt2)
-                .tokenHash(JwtUtils.toHash(jwt2))
-                .creator(USER_1_ID)
-                .expires(TOKEN_2_EXPIRES)
-                .build();
-        tokenRepository.save(entity2);
+        tokenService.create(USER_1_PRINCIPAL);
+        final Token token = tokenService.create(USER_1_PRINCIPAL);
 
         /* test */
-        tokenService.check(jwt2);
+        tokenService.check(token.getToken());
     }
 
     @Test
-    public void check_revoked_fails() {
+    public void check_revoked_fails() throws UserNotFoundException, TokenNotEligableException {
 
         /* mock */
-        final String jwt = jwtUtils.generateJwtToken(USER_1_USERNAME, TOKEN_1_EXPIRES);
-        final Token entity = Token.builder()
-                .token(jwt)
-                .tokenHash(JwtUtils.toHash(jwt))
-                .creator(USER_1_ID)
-                .expires(TOKEN_1_EXPIRES)
-                .build();
-        final Token token = tokenRepository.save(entity);
-        tokenRepository.deleteById(token.getId());
+        final Token token = tokenService.create(USER_1_PRINCIPAL);
 
         /* test */
         assertThrows(ServletException.class, () -> {
-            tokenService.check(jwt);
+            tokenService.check(token.getToken());
         });
     }
 

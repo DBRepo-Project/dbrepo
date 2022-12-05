@@ -29,6 +29,7 @@ public class JwtUtils {
                 .withSubject(username)
                 .withIssuedAt(new Date())
                 .withExpiresAt(Date.from(expire))
+                .withClaim("rnd", Instant.now().getNano())
                 .sign(algorithm);
     }
 
