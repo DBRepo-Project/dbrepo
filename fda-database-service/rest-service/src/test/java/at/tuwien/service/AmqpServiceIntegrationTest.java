@@ -4,9 +4,9 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
+import at.tuwien.utils.AmqpUtils;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
@@ -22,17 +22,15 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Profile;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Log4j2
 @SpringBootTest
@@ -53,6 +51,9 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private AmqpUtils amqpUtils;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -120,16 +121,12 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createExchange_succeeds() throws AmqpException, IOException {
+    public void createExchange_succeeds() throws AmqpException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
-        /* mock */
-        amqpService.createExchange(DATABASE_1, principal);
-        channel.queueDeclare(TABLE_1_TOPIC, false, false, false, null);
-        channel.queueBind(TABLE_1_TOPIC, DATABASE_1_EXCHANGE, TABLE_1_TOPIC);
-
         /* test */
-        rabbitTemplate.convertAndSend(DATABASE_1_EXCHANGE, TABLE_1_TOPIC, "message");
+        amqpService.createExchange(DATABASE_1, principal);
+        assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
     }
 
     @Test
@@ -137,6 +134,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         amqpService.deleteExchange(DATABASE_1);
+        assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
     }
 
 }

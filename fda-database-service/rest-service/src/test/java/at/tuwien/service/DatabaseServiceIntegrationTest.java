@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
@@ -66,11 +65,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    private static final Container CONTAINER_SEARCH = Container.builder()
-            .name(SEARCH_NAME)
-            .internalName(SEARCH_NAME)
-            .build();
 
     @BeforeEach
     public void beforeEach() throws InterruptedException {

@@ -1,7 +1,6 @@
 package at.tuwien;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -24,6 +23,7 @@ public abstract class BaseUnitTest {
     public final static String BROKER_NAME = "fda-broker-service";
     public final static String BROKER_IP = "172.29.0.2";
     public final static String BROKER_HOSTNAME = "broker-service";
+    public final static Integer BROKER_MANAGEMENT_PORT = 15672;
     public final static String BROKER_IMAGE = "fda-broker-service";
     public final static String BROKER_TAG = "latest";
 
