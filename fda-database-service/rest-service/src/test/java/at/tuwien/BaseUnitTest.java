@@ -24,8 +24,8 @@ public abstract class BaseUnitTest {
     public final static String BROKER_IP = "172.29.0.2";
     public final static String BROKER_HOSTNAME = "broker-service";
     public final static Integer BROKER_MANAGEMENT_PORT = 15672;
-    public final static String BROKER_IMAGE = "fda-broker-service";
-    public final static String BROKER_TAG = "latest";
+    public final static String BROKER_IMAGE = "rabbitmq";
+    public final static String BROKER_TAG = "3-management-alpine";
 
     public final static String SEARCH_NAME = "fda-search-mock-service";
     public final static String SEARCH_IP = "172.29.0.3";
