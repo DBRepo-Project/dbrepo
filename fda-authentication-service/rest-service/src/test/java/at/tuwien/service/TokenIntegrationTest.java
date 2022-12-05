@@ -73,7 +73,7 @@ public class TokenIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ServletException.class, () -> {
-            tokenService.check(jwt);
+            tokenService.check(token.getToken());
         });
     }
 
