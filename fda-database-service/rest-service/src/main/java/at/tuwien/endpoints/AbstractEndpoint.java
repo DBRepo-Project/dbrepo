@@ -8,6 +8,7 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
 import java.util.List;
@@ -83,6 +84,12 @@ public abstract class AbstractEndpoint {
             log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
                     container.getCreator().getUsername());
             return true;
+        }
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+                    permissionCode);
+            return false;
         }
         log.error("Failed to grant permission {} because container is not owner by the current user", permissionCode);
         return false;

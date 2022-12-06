@@ -42,7 +42,6 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -70,7 +69,6 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{username}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -93,7 +91,6 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
                                                   @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -113,7 +110,6 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{username}")
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,

@@ -134,7 +134,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .username(USER_2_USERNAME)
                 .build();
 
@@ -142,7 +142,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
-        assertEquals(DATABASE_1_ACCESS_TYPE, response.get(0).getType());
+        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.get(0).getType());
         assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
     }
 
@@ -150,7 +150,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void create_multiple_fails() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .username(USER_2_USERNAME)
                 .build();
 
@@ -164,7 +164,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_creator_fails() {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .username(USER_1_USERNAME)
                 .build();
 
@@ -178,14 +178,14 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_same_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .build();
 
         /* test */
         accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
-        assertEquals(DATABASE_1_ACCESS_TYPE, response.get(0).getType());
+        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.get(0).getType());
         assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
         assertEquals(USER_2_ID, response.get(0).getHuserid());
     }
@@ -194,14 +194,14 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_writeOwn_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_2_ACCESS_TYPE_DTO)
+                .type(DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO)
                 .build();
 
         /* test */
         accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
-        assertEquals(DATABASE_2_ACCESS_TYPE, response.get(0).getType());
+        assertEquals(DATABASE_2_WRITE_OWN_ACCESS_TYPE, response.get(0).getType());
         assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
         assertEquals(USER_2_ID, response.get(0).getHuserid());
     }
@@ -210,14 +210,14 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_writeAll_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_3_ACCESS_TYPE_DTO)
+                .type(DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO)
                 .build();
 
         /* test */
         accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
-        assertEquals(DATABASE_3_ACCESS_TYPE, response.get(0).getType());
+        assertEquals(DATABASE_3_WRITE_ALL_ACCESS_TYPE, response.get(0).getType());
         assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
         assertEquals(USER_2_ID, response.get(0).getHuserid());
     }
@@ -225,7 +225,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void update_userNotFound_fails() {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .build();
 
         /* test */
@@ -237,7 +237,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void update_databaseNotFound_fails() {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_ACCESS_TYPE_DTO)
+                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
                 .build();
 
         /* test */

@@ -6,12 +6,8 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,11 +17,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -77,11 +71,11 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
-                .thenReturn(List.of(DATABASE_1_ACCESS, DATABASE_2_ACCESS, DATABASE_3_ACCESS));
+                .thenReturn(List.of(DATABASE_1_READ_ACCESS, DATABASE_2_READ_ACCESS));
 
         /* test */
         final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
-        assertEquals(3, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test
@@ -101,11 +95,11 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(Optional.of(DATABASE_1_ACCESS));
+                .thenReturn(Optional.of(DATABASE_1_READ_ACCESS));
 
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
-        assertEquals(DATABASE_1_ACCESS_TYPE, response.getType());
+        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.getType());
     }
 
     @Test
