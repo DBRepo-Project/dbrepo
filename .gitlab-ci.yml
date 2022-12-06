@@ -4,7 +4,7 @@ before_script:
   - "docker system prune -f"
   - "mvn --version"
   - "df / -h"
-  - "grep -rnw "@Test" | wc -l"
+  - "grep -rnw '@Test' | wc -l"
 
 variables:
   HOSTALIASES: ./hosts
