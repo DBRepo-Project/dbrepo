@@ -186,6 +186,7 @@ release-latest:
     refs:
       - dev
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=latest make release
 
@@ -197,6 +198,7 @@ release-version:
     refs:
       - master
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.1 make release
 
