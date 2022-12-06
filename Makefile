@@ -205,8 +205,8 @@ test-container-service: build-backend-metadata-db
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
 test-database-service: build-backend-metadata-db
-    docker system prune -f
-    docker pull rabbitmq:3-management-alpine
+	docker system prune -f
+	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
 test-discovery-service: build-backend-metadata-db
