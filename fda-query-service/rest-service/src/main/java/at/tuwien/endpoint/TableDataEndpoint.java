@@ -6,12 +6,14 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
     @Autowired
     public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
                              IdentifierService identifierService, TableService tableService,
-                             AccessService accessService) {
+                             AccessService accessService, QueryConfig queryConfig) {
         super(tableService, accessService, databaseService, identifierService);
         this.queryService = queryService;
     }

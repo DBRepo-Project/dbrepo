@@ -71,7 +71,7 @@ public class ContainerServiceImpl implements ContainerService {
         /* entity */
         final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         Container container = new Container();
-        container.setImage(image.get());
+        container.setImageId(image.get().getId());
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));

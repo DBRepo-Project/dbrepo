@@ -1,12 +1,14 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -28,8 +30,8 @@ public class ExportEndpoint extends AbstractEndpoint {
 
     @Autowired
     public ExportEndpoint(QueryService queryService, DatabaseService databaseService, AccessService accessService,
-                          IdentifierService identifierService, TableService tableService) {
-        super(tableService, accessService, databaseService, identifierService);
+                          IdentifierService identifierService, TableService tableService, QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.queryService = queryService;
     }
 

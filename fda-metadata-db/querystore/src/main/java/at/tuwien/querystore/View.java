@@ -55,9 +55,6 @@ public class View implements Serializable {
     @Column(nullable = false)
     private String query;
 
-    @Column
-    private Instant deleted;
-
     @Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;

@@ -112,7 +112,6 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         } finally {
             dataSource.close();
         }
-        database.setDeleted(Instant.now()) /* method has void, only for debug logs */;
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {}", databaseId);
@@ -130,7 +129,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
         final Container container = containerService.find(containerId);
-        if (container.getDatabases().size() != 0) {
+        if (container.getDatabase() != null) {
             log.error("Currently we only support one database per container.");
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }

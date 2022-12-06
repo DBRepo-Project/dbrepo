@@ -24,9 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(indexName = "databaseindex", createIndex = false)
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_databases set deleted = NOW() where id = ?")
 @javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
 })
@@ -34,23 +32,20 @@ public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "database-sequence")
-    @GenericGenerator(
-            name = "database-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_databases_seq")
-    )
+    @GeneratedValue(generator = "databases-sequence")
+    @GenericGenerator(name = "databases-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "Creator", referencedColumnName = "UserID")
+            @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
     private User creator;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -65,15 +60,16 @@ public class Database {
     @Column(nullable = false)
     private String exchange;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "Contactperson", referencedColumnName = "UserID")
+            @JoinColumn(name = "contact_person", referencedColumnName = "UserID")
     })
     private User contact;
 
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
@@ -90,8 +86,5 @@ public class Database {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

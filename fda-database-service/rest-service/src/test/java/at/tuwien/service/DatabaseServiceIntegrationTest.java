@@ -24,7 +24,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
@@ -132,6 +131,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         startContainer(CONTAINER_2);
         /* metadata db */
         licenseRepository.save(LICENSE_1);
+        imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
         USER_1.setPassword(passwordEncoder.encode(USER_1_PASSWORD));

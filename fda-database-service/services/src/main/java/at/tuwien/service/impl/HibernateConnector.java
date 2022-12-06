@@ -19,6 +19,9 @@ public abstract class HibernateConnector {
     protected static ComboPooledDataSource getDataSource(ContainerImage image, Container container, Database database,
                                                          User user) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        log.trace("jdbc method: {}", image.getJdbcMethod());
+        log.trace("jdbc url: {}", container.getInternalName());
+        log.trace("jdbc resource: {}", database != null ? database.getInternalName() : "");
         final String url = "jdbc:" + image.getJdbcMethod() + "://" + container.getInternalName() + "/" + (database != null ? database.getInternalName() : "");
         log.debug("connecting via jdbc, url={}", url);
         dataSource.setJdbcUrl(url);

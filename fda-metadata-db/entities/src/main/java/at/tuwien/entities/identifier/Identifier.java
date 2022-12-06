@@ -23,9 +23,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "update mdb_identifiers set deleted = NOW() where id = ?")
 @javax.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
 })
@@ -33,13 +31,9 @@ public class Identifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
-    @GeneratedValue(generator = "database-sequence")
-    @GenericGenerator(
-            name = "database-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_identifiers_seq")
-    )
+    @GeneratedValue(generator = "identifiers-sequence")
+    @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "cid", nullable = false)
@@ -60,7 +54,7 @@ public class Identifier {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @NotBlank
@@ -81,10 +75,10 @@ public class Identifier {
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String query;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
     @Column
@@ -127,7 +121,7 @@ public class Identifier {
     @Column
     private String doi;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "identifier")
     private List<Creator> creators;
 
     @Column(nullable = false, updatable = false)
@@ -137,9 +131,6 @@ public class Identifier {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }
 

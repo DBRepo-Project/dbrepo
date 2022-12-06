@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -10,6 +11,7 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -31,8 +33,9 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService, TableService tableService, AccessService accessService) {
-        super(tableService, accessService, databaseService, identifierService);
+                         IdentifierService identifierService, TableService tableService, AccessService accessService,
+                         QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.queryService = queryService;
         this.storeService = storeService;
     }
@@ -63,6 +66,7 @@ public class QueryEndpoint extends AbstractEndpoint {
             log.error("Failed to execute query: is empty");
             throw new QueryMalformedException("Failed to execute query");
         }
+        validateForbiddenStatements(data);
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,

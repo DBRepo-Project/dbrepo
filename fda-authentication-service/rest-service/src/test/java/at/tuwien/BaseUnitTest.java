@@ -1,13 +1,19 @@
 package at.tuwien;
 
-import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.TimeSecret;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
@@ -40,8 +46,20 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
             .created(USER_1_CREATED)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .lastModified(USER_1_LAST_MODIFIED)
             .build();
+
+    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .password(USER_1_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+            USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
 
     public final static Long USER_2_ID = 2L;
     public final static String USER_2_EMAIL = "jane.doe@example.com";
@@ -63,37 +81,64 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .lastModified(USER_2_LAST_MODIFIED)
             .build();
 
-    public final static Long TOKEN_1_ID = 1L;
-    public final static Boolean TOKEN_1_PROCESSED = false;
-    public final static String TOKEN_1_TOKEN = "mysecrettokenrandomlygenerated";
-    public final static Instant TOKEN_1_VALID_TO = Instant.now()
-            .plus(1, ChronoUnit.DAYS);
-
-    public final static Long TOKEN_2_ID = 2L;
-    public final static Boolean TOKEN_2_PROCESSED = true;
-    public final static String TOKEN_2_TOKEN = "blahblahblah";
-    public final static Instant TOKEN_2_VALID_TO = Instant.now()
-            .plus(1, ChronoUnit.DAYS);
-
-    public final static TimeSecret TOKEN_1 = TimeSecret.builder()
-            .id(TOKEN_1_ID)
-            .uid(USER_1_ID)
-            .user(USER_1)
-            .token(TOKEN_1_TOKEN)
-            .processed(TOKEN_1_PROCESSED)
-            .validTo(TOKEN_1_VALID_TO)
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
 
-    public final static TimeSecret TOKEN_2 = TimeSecret.builder()
-            .id(TOKEN_2_ID)
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
+
+    public final static Long TIME_SECRET_1_ID = 1L;
+    public final static Boolean TIME_SECRET_1_PROCESSED = false;
+    public final static String TIME_SECRET_1_TOKEN = "mysecrettokenrandomlygenerated";
+    public final static Instant TIME_SECRET_1_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
+    public final static Long TIME_SECRET_2_ID = 2L;
+    public final static Boolean TIME_SECRET_2_PROCESSED = true;
+    public final static String TIME_SECRET_2_TOKEN = "blahblahblah";
+    public final static Instant TIME_SECRET_2_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
+    public final static TimeSecret TIME_SECRET_1 = TimeSecret.builder()
+            .id(TIME_SECRET_1_ID)
+            .uid(USER_1_ID)
+            .user(USER_1)
+            .token(TIME_SECRET_1_TOKEN)
+            .processed(TIME_SECRET_1_PROCESSED)
+            .validTo(TIME_SECRET_1_VALID_TO)
+            .build();
+
+    public final static TimeSecret TIME_SECRET_2 = TimeSecret.builder()
+            .id(TIME_SECRET_2_ID)
             .uid(USER_2_ID)
             .user(USER_2)
-            .token(TOKEN_2_TOKEN)
-            .processed(TOKEN_2_PROCESSED)
-            .validTo(TOKEN_2_VALID_TO)
+            .token(TIME_SECRET_2_TOKEN)
+            .processed(TIME_SECRET_2_PROCESSED)
+            .validTo(TIME_SECRET_2_VALID_TO)
+            .build();
+
+    public final static Long TOKEN_1_ID = 1L;
+    public final static Instant TOKEN_1_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_1 = Token.builder()
+            .id(TOKEN_1_ID)
+            .expires(TOKEN_1_EXPIRES)
+            .build();
+
+    public final static Long TOKEN_2_ID = 2L;
+    public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_2 = Token.builder()
+            .id(TOKEN_2_ID)
+            .expires(TOKEN_2_EXPIRES)
             .build();
 
 }

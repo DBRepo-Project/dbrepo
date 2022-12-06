@@ -1,12 +1,14 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +28,9 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableHistoryEndpoint(TableService tableService, DatabaseService databaseService,
-                                IdentifierService identifierService, AccessService accessService) {
-        super(tableService, accessService, databaseService, identifierService);
+                                IdentifierService identifierService, AccessService accessService,
+                                QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.tableService = tableService;
     }
 

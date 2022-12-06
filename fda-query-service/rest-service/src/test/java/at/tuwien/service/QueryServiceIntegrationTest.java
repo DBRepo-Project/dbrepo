@@ -84,6 +84,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ConceptRepository conceptRepository;
 
+    @Autowired
+    private ContainerRepository containerRepository;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
@@ -174,6 +177,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* image dates */
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
         imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+        containerRepository.save(CONTAINER_3);
         /* create databases */
         databaseRepository.save(DATABASE_1);
         databaseRepository.save(DATABASE_2);

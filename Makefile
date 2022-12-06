@@ -200,9 +200,13 @@ test-identifier-service: build-backend-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
 test-container-service: build-backend-metadata-db
+	docker system prune -f
+	docker pull mysql:8.0
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
 test-database-service: build-backend-metadata-db
+	docker system prune -f
+	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
 test-discovery-service: build-backend-metadata-db

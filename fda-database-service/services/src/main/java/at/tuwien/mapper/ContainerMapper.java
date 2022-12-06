@@ -11,7 +11,7 @@ public interface ContainerMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
-            @Mapping(target = "databases", source = "databases", ignore = true),
+            @Mapping(target = "database", source = "database", ignore = true),
     })
     ContainerDto containerToContainerDto(Container data);
 

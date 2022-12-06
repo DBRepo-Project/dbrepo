@@ -16,27 +16,24 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Data
 @Entity
 @Builder
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Where(clause = "deleted is null")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@SQLDelete(sql = "update mdb_containers set deleted = NOW() where id = ?")
 @Table(name = "mdb_containers")
 public class Container {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "container-sequence")
-    @GenericGenerator(
-            name = "container-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_containers_seq")
-    )
+    @GeneratedValue(generator = "containers-sequence")
+    @GenericGenerator(name = "containers-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -54,18 +51,25 @@ public class Container {
     @Column(nullable = false)
     private String hash;
 
+    @Column(name = "image_id", nullable = false, updatable = false)
+    private Long imageId;
+
     @Column
     private Integer port;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
-    private List<Database> databases;
+    private Database database;
 
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "image_id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private ContainerImage image;
 
     @Column
@@ -78,8 +82,5 @@ public class Container {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

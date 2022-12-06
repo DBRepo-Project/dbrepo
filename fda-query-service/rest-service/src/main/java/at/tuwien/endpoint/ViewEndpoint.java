@@ -6,6 +6,7 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.QueryTypeDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -16,6 +17,7 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +44,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     @Autowired
     public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
                         ViewMapper viewMapper, QueryService queryService, TableService tableService,
-                        AccessService accessService) {
+                        AccessService accessService, QueryConfig queryConfig) {
         super(tableService, accessService, databaseService, identifierService);
         this.viewService = viewService;
         this.databaseService = databaseService;

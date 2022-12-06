@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
@@ -35,10 +36,10 @@ public class StoreEndpoint extends AbstractEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper,
+    public StoreEndpoint(QueryConfig queryConfig, UserMapper userMapper, QueryMapper queryMapper,
                          UserService userService, StoreService storeService, DatabaseService databaseService,
                          IdentifierService identifierService, TableService tableService, AccessService accessService) {
-        super(tableService, accessService, databaseService, identifierService);
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;

@@ -5,6 +5,8 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.AccessType;
@@ -22,6 +24,9 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -776,6 +781,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
@@ -786,6 +792,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
@@ -796,6 +803,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
             .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
@@ -2089,5 +2097,25 @@ public abstract class BaseUnitTest {
                 put("key", "value");
             }})
             .build();
+
+    public final static Long QUERY_1_RESULT_ID = 1L;
+    public final static Long QUERY_1_RESULT_NUMBER = 2L;
+    public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(
+            new HashMap<>() {{
+                put("location", "Albury");
+                put("lat", -36.0653583);
+                put("lng", 146.9112214);
+            }}, new HashMap<>() {{
+                put("location", "Sydney");
+                put("lat", -33.847927);
+                put("lng", 150.6517942);
+            }});
+
+    public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
+            .id(QUERY_1_RESULT_ID)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
+            .result(QUERY_1_RESULT_RESULT)
+            .build();
+
 
 }

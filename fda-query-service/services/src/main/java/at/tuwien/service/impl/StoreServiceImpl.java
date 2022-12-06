@@ -65,7 +65,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
             log.error("Failed to find queries in container with id {} and database with id {}, reason: {}", containerId, databaseId, e.getMessage());
-            throw new QueryStoreException("Failed to find queries");
+            throw new QueryStoreException("Failed to find queries: " + e.getMessage());
         } finally {
             dataSource.close();
         }
@@ -130,7 +130,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.trace("insert into database id {}, metadata {}", databaseId, metadata);
+        log.debug("insert into database id {}, metadata {}", databaseId, metadata);
         /* user */
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         final User creator = userService.findByUsername(principal.getName());
