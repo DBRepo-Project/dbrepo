@@ -14,12 +14,12 @@ CREATE TABLE IF NOT EXISTS mdb_users
     orcid                VARCHAR(16),
     theme_dark           BOOLEAN      NOT NULL DEFAULT false,
     affiliation          VARCHAR(255),
-    Main_Email           VARCHAR(255)                not null,
-    main_email_verified  bool                        not null default false,
-    password             VARCHAR(255)                not null,
-    database_password    VARCHAR(255)                not null,
-    created              timestamp without time zone NOT NULL DEFAULT NOW(),
-    last_modified        timestamp without time zone,
+    Main_Email           VARCHAR(255) not null,
+    main_email_verified  bool         not null default false,
+    password             VARCHAR(255) not null,
+    database_password    VARCHAR(255) not null,
+    created              timestamp    NOT NULL DEFAULT NOW(),
+    last_modified        timestamp,
     PRIMARY KEY (UserID),
     UNIQUE (username),
     UNIQUE (Main_Email),
@@ -433,9 +433,9 @@ SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
 FROM (SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
       FROM `mdb_tokens` FOR SYSTEM_TIME ALL) as t
 WHERE NOT EXISTS(SELECT `token_hash`
-             FROM mdb_tokens AS tt
-             WHERE ROW_END > NOW()
-               AND tt.`token_hash` = t.`token_hash`)
+                 FROM mdb_tokens AS tt
+                 WHERE ROW_END > NOW()
+                   AND tt.`token_hash` = t.`token_hash`)
 GROUP BY `id`);
 
 COMMIT;

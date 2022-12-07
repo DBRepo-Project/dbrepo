@@ -29,9 +29,7 @@ ENV MARIADB_ROOT_PASSWORD="${METADATA_PASSWORD}"
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
 
-WORKDIR /docker-entrypoint-initdb.d
-
-COPY ./setup-schema.sql ./setup-schema.sql
+COPY ./setup-schema.sql /docker-entrypoint-initdb.d/setup-schema.sql
 
 WORKDIR /app
 
