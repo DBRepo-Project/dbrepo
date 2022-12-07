@@ -858,7 +858,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT * FROM `weather`;";
+    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather`;";
     public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";

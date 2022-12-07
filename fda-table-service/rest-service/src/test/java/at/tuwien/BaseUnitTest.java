@@ -25,9 +25,11 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
-    public final static long USER_1_ID = 1;
+    public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@example.com";
+    public final static String USER_1_PASSWORD = "password";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_1_CREATED = Instant.now().minus(1, HOURS);
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
@@ -35,7 +37,8 @@ public abstract class BaseUnitTest {
             .email(USER_1_EMAIL)
             .emailVerified(true)
             .themeDark(false)
-            .password("password")
+            .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
@@ -49,9 +52,11 @@ public abstract class BaseUnitTest {
             .password("password")
             .build();
 
-    public final static long USER_2_ID = 2;
+    public final static Long USER_2_ID = 2L;
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_EMAIL = "junit2@example.com";
+    public final static String USER_2_PASSWORD = "password";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_2_CREATED = Instant.now().minus(1, HOURS);
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
@@ -59,7 +64,8 @@ public abstract class BaseUnitTest {
             .email(USER_2_EMAIL)
             .emailVerified(true)
             .themeDark(false)
-            .password("password")
+            .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_2_CREATED)
             .lastModified(USER_2_CREATED)
