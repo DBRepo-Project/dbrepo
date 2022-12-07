@@ -13,7 +13,6 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
-import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +36,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
     public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
                              IdentifierService identifierService, TableService tableService,
                              AccessService accessService, QueryConfig queryConfig) {
-        super(tableService, accessService, databaseService, identifierService);
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.queryService = queryService;
     }
 

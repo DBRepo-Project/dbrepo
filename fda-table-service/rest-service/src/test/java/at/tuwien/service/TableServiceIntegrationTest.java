@@ -5,7 +5,6 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnidxRepository;
 import at.tuwien.repository.elastic.TableidxRepository;
@@ -163,30 +162,27 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final List<Table> response = tableService.findAll(CONTAINER_1_ID, DATABASE_1_ID, principal);
+        final List<Table> response = tableService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
         assertEquals(2, response.size());
     }
 
     @Test
     public void findAll_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findAll(CONTAINER_2_ID, DATABASE_2_ID, principal);
+            tableService.findAll(CONTAINER_2_ID, DATABASE_2_ID);
         });
     }
 
     @Test
     public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
             ContainerNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final Table response = tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal);
+        final Table response = tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
         assertEquals(TABLE_1_ID, response.getId());
         assertEquals(TABLE_1_NAME, response.getName());
         assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
@@ -194,31 +190,28 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findById_tableNotFound_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_ID, principal);
+            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_ID);
         });
     }
 
     @Test
     public void findById_databaseNotFound_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_2_ID, DATABASE_3_ID, TABLE_3_ID, principal);
+            tableService.findById(CONTAINER_2_ID, DATABASE_3_ID, TABLE_3_ID);
         });
     }
 
     @Test
     public void findById_containerNotFound_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_3_ID, principal);
+            tableService.findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_3_ID);
         });
     }
 
@@ -241,7 +234,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void delete_succeeds() throws TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, ContainerNotFoundException, TableNotFoundException, DataProcessingException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         doNothing()
@@ -249,7 +241,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
                 .delete(any(Table.class));
 
         /* test */
-        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, principal);
+        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
     }
 
 }

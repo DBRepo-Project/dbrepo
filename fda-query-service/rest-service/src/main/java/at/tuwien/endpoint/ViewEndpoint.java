@@ -11,13 +11,11 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
-import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +43,7 @@ public class ViewEndpoint extends AbstractEndpoint {
     public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
                         ViewMapper viewMapper, QueryService queryService, TableService tableService,
                         AccessService accessService, QueryConfig queryConfig) {
-        super(tableService, accessService, databaseService, identifierService);
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.viewService = viewService;
         this.databaseService = databaseService;
         this.viewMapper = viewMapper;

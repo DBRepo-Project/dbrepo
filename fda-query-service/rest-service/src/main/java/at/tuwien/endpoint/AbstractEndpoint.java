@@ -14,11 +14,9 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.TableService;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.ml.dataframe.QueryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedList;

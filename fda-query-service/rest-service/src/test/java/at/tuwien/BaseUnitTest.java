@@ -2098,24 +2098,5 @@ public abstract class BaseUnitTest {
             }})
             .build();
 
-    public final static Long QUERY_1_RESULT_ID = 1L;
-    public final static Long QUERY_1_RESULT_NUMBER = 2L;
-    public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(
-            new HashMap<>() {{
-                put("location", "Albury");
-                put("lat", -36.0653583);
-                put("lng", 146.9112214);
-            }}, new HashMap<>() {{
-                put("location", "Sydney");
-                put("lat", -33.847927);
-                put("lng", 150.6517942);
-            }});
-
-    public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
-            .id(QUERY_1_RESULT_ID)
-            .resultNumber(QUERY_1_RESULT_NUMBER)
-            .result(QUERY_1_RESULT_RESULT)
-            .build();
-
 
 }

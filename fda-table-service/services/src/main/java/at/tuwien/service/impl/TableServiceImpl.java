@@ -93,7 +93,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional(readOnly = true)
     public Table findById(Long containerId, Long databaseId, Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
         final Container container = containerService.find(containerId);
         final Database database = databaseService.find(containerId, databaseId);
         final Optional<Table> optional = tableRepository.findByDatabaseAndId(database, tableId);
