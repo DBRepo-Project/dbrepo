@@ -62,15 +62,15 @@ export default {
     async executeFirstTime (parent, sql) {
       this.loading = true
       try {
-        const res = await this.$axios.put(this.executeUrl, { statement: sql }, this.config)
+        const res = await this.$axios.post(this.executeUrl, { statement: sql }, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
         this.loading = false
         parent.resultId = res.data.id
       } catch (err) {
-        console.error('failed to execute query', err)
-        this.$toast.error('Failed to execute query: ' + err.response.data.message)
+        console.error('Failed to execute query', err.response.data)
+        this.$toast.error(err.response.data.message)
         this.loading = false
       }
     },

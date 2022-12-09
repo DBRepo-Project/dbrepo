@@ -99,7 +99,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             columns = parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
-            throw new ColumnParseException("Failed to map/parse columns", e);
+            throw new ColumnParseException(e.getMessage(), e);
         }
         final QueryResultDto dto;
         try {
@@ -422,7 +422,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
                 log.error("Table with name {} does not exist, available names: {}", tableName,
                         database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Table does not exist");
+                throw new JSQLParserException("Table " + tableName + " does not exist");
             }
         }
 
@@ -445,7 +445,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             if (i) {
                 log.error("Column {} does not exist, available columns are {}", item,
                         allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Column does not exist");
+                throw new JSQLParserException("Column " + item + " does not exist");
             }
         }
         return columns;

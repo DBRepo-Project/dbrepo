@@ -1,24 +1,16 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -30,12 +22,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -48,6 +41,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexInitializer indexInitializer;
+
+    @MockBean
+    private DatabaseidxRepository databaseidxRepository;
 
     @MockBean
     private Channel channel;
@@ -70,14 +66,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private static final Container CONTAINER_SEARCH = Container.builder()
-            .name(SEARCH_NAME)
-            .internalName(SEARCH_NAME)
-            .build();
-
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
+    @BeforeEach
+    public void beforeEach() throws InterruptedException {
+        afterEach();
         /* create networks */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -93,27 +84,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-
-        /* create elastic search */
-        final CreateContainerResponse search = dockerClient.createContainerCmd(SEARCH_IMAGE + ":" + SEARCH_TAG)
-                .withHostConfig(
-                        hostConfig
-                                .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("9200:9200"), PortBinding.parse("9300:9300"))
-                )
-                .withName(SEARCH_NAME)
-                .withIpv4Address(SEARCH_IP)
-                .withHostName(SEARCH_HOSTNAME)
-                .withEnv("discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN")
-                .exec();
-        CONTAINER_SEARCH.setHash(search.getId());
-        /* start elastic search */
-        startContainer(CONTAINER_SEARCH, 30);
-    }
-
-    @Transactional
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
         /* create fda-userdb-u01 */
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
@@ -138,6 +108,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         startContainer(CONTAINER_2);
         /* metadata db */
         licenseRepository.save(LICENSE_1);
+        imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
         USER_1.setPassword(passwordEncoder.encode(USER_1_PASSWORD));
@@ -147,14 +118,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @AfterEach
     public void afterEach() {
-        stopContainer(CONTAINER_1);
-        removeContainer(CONTAINER_1);
-        stopContainer(CONTAINER_2);
-        removeContainer(CONTAINER_2);
-    }
-
-    @AfterAll
-    public static void afterAll() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)
@@ -186,6 +149,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+
         /* test */
         databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
     }
@@ -195,6 +162,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
 
         /* test */
         final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);

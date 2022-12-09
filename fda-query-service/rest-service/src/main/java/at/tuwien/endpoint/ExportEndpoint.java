@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
@@ -29,9 +30,9 @@ public class ExportEndpoint extends AbstractEndpoint {
     private final QueryService queryService;
 
     @Autowired
-    public ExportEndpoint(QueryService queryService, DatabaseService databaseService,
+    public ExportEndpoint(QueryConfig queryConfig, QueryService queryService, DatabaseService databaseService,
                           IdentifierService identifierService) {
-        super(databaseService, identifierService);
+        super(queryConfig, databaseService, identifierService);
         this.queryService = queryService;
     }
 

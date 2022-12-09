@@ -6,6 +6,7 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.QueryTypeDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -38,9 +39,9 @@ public class ViewEndpoint extends AbstractEndpoint {
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
+    public ViewEndpoint(QueryConfig queryConfig, ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
                         ViewMapper viewMapper, QueryService queryService) {
-        super(databaseService, identifierService);
+        super(queryConfig, databaseService, identifierService);
         this.viewService = viewService;
         this.databaseService = databaseService;
         this.viewMapper = viewMapper;

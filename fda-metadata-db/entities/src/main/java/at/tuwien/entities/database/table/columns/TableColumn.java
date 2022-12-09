@@ -32,12 +32,9 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "column-sequence")
-    @GenericGenerator(
-            name = "column-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_columns_seq")
-    )
+    @GeneratedValue(generator = "columns-sequence")
+    @GenericGenerator(name = "columns-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -52,13 +49,13 @@ public class TableColumn implements Comparable<TableColumn> {
     private Long dfid;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
@@ -117,14 +114,14 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "concept_id", referencedColumnName = "id"))
     private Concept concept;
 
     @Column

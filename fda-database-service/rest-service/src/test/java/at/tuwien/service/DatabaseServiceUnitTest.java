@@ -11,29 +11,20 @@ import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.hibernate.Session;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -135,15 +126,5 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
             databaseService.create(CONTAINER_1_ID, request, principal);
         });
     }
-
-//    @Test
-//    public void getSession_fails() {
-//        /* no mock needed since unit test */
-//
-//        /* test */
-//        assertThrows(ContainerConnectionException.class, () -> {
-//            databaseService.getSession(DATABASE_1);
-//        });
-//    }
 
 }

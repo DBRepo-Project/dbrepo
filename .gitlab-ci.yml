@@ -1,8 +1,10 @@
 before_script: 
   - "docker version"
   - "docker compose version"
+  - "docker system prune -f"
   - "mvn --version"
   - "df / -h"
+  - "grep -rnw '@Test' | wc -l"
 
 variables:
   HOSTALIASES: ./hosts
@@ -168,6 +170,7 @@ build-docker:
     - build-backend-table
     - build-backend-metadata
   script:
+    - cp .env.unix.example .env
     - make build-docker
 
 build-frontend:
@@ -183,6 +186,7 @@ release-latest:
     refs:
       - dev
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=latest make release
 
@@ -194,6 +198,7 @@ release-version:
     refs:
       - master
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.1 make release
 

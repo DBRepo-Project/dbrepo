@@ -17,6 +17,9 @@ import java.time.Instant;
 public class ConceptDto {
 
     @NotNull
+    private String id;
+
+    @NotNull
     private String uri;
 
     @NotNull

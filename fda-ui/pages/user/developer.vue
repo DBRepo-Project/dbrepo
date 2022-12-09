@@ -9,9 +9,10 @@
           <v-card-text>
             <v-list-item v-for="(item, i) in tokens" :key="i" three-line>
               <v-list-item-content>
-                <v-list-item-title>sha256:{{ item.token_hash }}</v-list-item-title>
-                <v-list-item-subtitle v-if="!item.token">
-                  Created on {{ format(item.created) }}, Valid until: {{ format(item.expires) }}</v-list-item-subtitle>
+                <v-list-item-title :class="tokenClass(item)">sha256:{{ item.token_hash }}</v-list-item-title>
+                <v-list-item-subtitle v-if="!item.token" :class="tokenClass(item)">
+                  Last used: <span v-if="item.last_used">{{ format(item.last_used) }}</span><span v-if="!item.last_used">Never</span> &mdash; valid until: {{ format(item.expires) }}
+                </v-list-item-subtitle>
                 <v-list-item-subtitle v-if="item.token">
                   <v-text-field
                     v-model="item.token"
@@ -23,12 +24,12 @@
                     @click:append-outer="copy(item)" />
                 </v-list-item-subtitle>
                 <v-list-item-subtitle v-if="!item.token">
-                  <a @click="revokeToken(item.token_hash)">Revoke Token</a>
+                  <a @click="revokeToken(item.id)">Revoke Token</a>
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
-            <v-btn class="mt-4" x-small @click="mintToken">
-              Mint Token
+            <v-btn :disabled="tokens.length >= tokenMax" class="mt-4" color="secondary" small @click="mintToken">
+              Create Token
             </v-btn>
           </v-card-text>
         </v-card>
@@ -59,6 +60,9 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    tokenMax () {
+      return this.$config.tokenMax
     }
   },
   mounted () {
@@ -73,6 +77,9 @@ export default {
     },
     format (timestamp) {
       return formatTimestamp(timestamp)
+    },
+    tokenClass (token) {
+      return token.last_used ? '' : 'token-not_used'
     },
     async loadTokens () {
       this.loading = true
@@ -102,10 +109,10 @@ export default {
       }
       this.loading = false
     },
-    async revokeToken (hash) {
+    async revokeToken (id) {
       this.loading = true
       try {
-        await this.$axios.delete(`/api/user/token/${hash}`, this.config)
+        await this.$axios.delete(`/api/user/token/${id}`, this.config)
         await this.loadTokens()
       } catch (err) {
         this.$toast.error('Could not delete token')
@@ -115,3 +122,8 @@ export default {
   }
 }
 </script>
+<style>
+.token-not_used {
+  opacity: 0.4;
+}
+</style>

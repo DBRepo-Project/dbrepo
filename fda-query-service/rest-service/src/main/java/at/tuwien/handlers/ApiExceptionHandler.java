@@ -158,13 +158,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
     @ExceptionHandler(QueryStoreException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryStoreException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.GATEWAY_TIMEOUT)
                 .message(e.getLocalizedMessage())
-                .code("error.query.storeexists")
+                .code("error.query.store")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

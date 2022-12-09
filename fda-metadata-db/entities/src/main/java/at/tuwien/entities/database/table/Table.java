@@ -31,12 +31,9 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "table-sequence")
-    @GenericGenerator(
-            name = "table-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_tables_seq")
-    )
+    @GeneratedValue(generator = "tables-sequence")
+    @GenericGenerator(name = "tables-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -58,16 +55,16 @@ public class Table {
     @Column(nullable = false, updatable = false)
     private String topic;
 
-    @Column(name = "tdescription")
+    @Column(name = "tdescription", columnDefinition = "TEXT")
     private String description;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH, mappedBy = "table")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 

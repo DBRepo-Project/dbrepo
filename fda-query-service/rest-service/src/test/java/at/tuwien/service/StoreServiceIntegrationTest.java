@@ -8,6 +8,9 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -54,6 +57,15 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private TableRepository tableRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
+    private DatabaseRepository databaseRepository;
 
     @BeforeAll
     public static void beforeAll() {
@@ -109,9 +121,12 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     @Transactional
     public void beforeEach() {
+        imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
         TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_1);
+        TABLE_2.setDatabase(DATABASE_2);
         tableRepository.save(TABLE_2);
     }
 

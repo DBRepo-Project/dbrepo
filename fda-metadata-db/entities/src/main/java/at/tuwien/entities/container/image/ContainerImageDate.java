@@ -1,6 +1,5 @@
 package at.tuwien.entities.container.image;
 
-import at.tuwien.entities.database.table.columns.TableColumn;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -23,12 +22,9 @@ public class ContainerImageDate {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "images-date-sequence")
-    @GenericGenerator(
-            name = "images-date-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_date_seq")
-    )
+    @GeneratedValue(generator = "dates-sequence")
+    @GenericGenerator(name = "dates-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "iid")
@@ -36,7 +32,7 @@ public class ContainerImageDate {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "iid", insertable = false, updatable = false)
     private ContainerImage image;
 

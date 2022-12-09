@@ -90,12 +90,13 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
     public final static String IMAGE_1_HASH = "83b40f2726e5";
-    public final static Integer IMAGE_1_PORT = 5432;
+    public final static Integer IMAGE_1_PORT = 3306;
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
     public final static Long IMAGE_1_SIZE = 12000L;
-    public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
+    public final static Instant IMAGE_1_BUILT = Instant.now().minus(38, HOURS);
+
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
                     .key("MARIADB_USER")
@@ -144,6 +145,7 @@ public abstract class BaseUnitTest {
             .driverClass(IMAGE_1_DRIVER)
             .compiled(IMAGE_1_BUILT)
             .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
             .build();
 
@@ -152,50 +154,24 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_2_TAG = "8.0";
     public final static String IMAGE_2_HASH = "83b40f2726e5";
     public final static Integer IMAGE_2_PORT = 3306;
-    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MysqlDBDialect";
-    public final static String IMAGE_2_DRIVER = "org.mysql.jdbc.Driver";
+    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
+    public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
     public final static String IMAGE_2_JDBC = "mysql";
     public final static Long IMAGE_2_SIZE = 12000L;
     public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
-    public final static List<ContainerImageEnvironmentItem> IMAGE_2_ENV = List.of(ContainerImageEnvironmentItem.builder()
+
+    public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
                     .iid(IMAGE_2_ID)
                     .key("MYSQL_USER")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.USERNAME)
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.USERNAME)
                     .build(),
-            ContainerImageEnvironmentItem.builder()
+            ImageEnvItemDto.builder()
                     .iid(IMAGE_2_ID)
                     .key("MYSQL_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MYSQL_ROOT_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("UZERNAME")
-                    .value("root")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.PASSWORD)
                     .build());
-    public final static ContainerImageEnvironmentItem[] IMAGE_2_ENV_ARR = IMAGE_2_ENV.toArray(new ContainerImageEnvironmentItem[0]);
-
-    public final static ContainerImage IMAGE_2 = ContainerImage.builder()
-            .id(IMAGE_2_ID)
-            .repository(IMAGE_2_REPOSITORY)
-            .tag(IMAGE_2_TAG)
-            .hash(IMAGE_2_HASH)
-            .jdbcMethod(IMAGE_2_JDBC)
-            .dialect(IMAGE_2_DIALECT)
-            .driverClass(IMAGE_2_DRIVER)
-            .compiled(IMAGE_2_BUILT)
-            .size(IMAGE_2_SIZE)
-            .environment(IMAGE_2_ENV)
-            .defaultPort(IMAGE_2_PORT)
-            .build();
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
@@ -209,6 +185,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .hash(CONTAINER_1_HASH)
             .ipAddress(CONTAINER_1_IP)
@@ -227,6 +204,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .hash(CONTAINER_2_HASH)
             .ipAddress(CONTAINER_2_IP)
@@ -245,6 +223,7 @@ public abstract class BaseUnitTest {
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
             .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .hash(CONTAINER_3_HASH)
             .ipAddress(CONTAINER_3_IP)

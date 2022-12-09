@@ -67,10 +67,7 @@ public class TokenEndpoint {
             TokenNotEligableException {
         log.debug("endpoint create developer token, principal={}", principal);
         /* check */
-        final List<Token> tokens = tokenService.findAll(principal)
-                .stream()
-                .filter(t -> Objects.isNull(t.getDeleted()))
-                .collect(Collectors.toList());
+        final List<Token> tokens = tokenService.findAll(principal);
         log.trace("found all tokens {}", tokens);
         if (tokens.size() >= authenticationConfig.getTokenCount()) {
             log.error("Failed to create token, already exceeded maximum quota of {}", authenticationConfig.getTokenCount());
@@ -84,16 +81,17 @@ public class TokenEndpoint {
                 .body(dto);
     }
 
-    @DeleteMapping("/{hash}")
+    @DeleteMapping("/{id}")
     @Transactional
     @Timed(value = "token.delete", description = "Time needed to delete the developer tokens")
     @Operation(summary = "Delete developer token", security = @SecurityRequirement(name = "bearerAuth"))
-    public void delete(@NotNull @PathVariable("hash") String hash,
+    public void delete(@NotNull @PathVariable("id") Long id,
                        @NotNull Principal principal) throws TokenNotFoundException, UserNotFoundException {
-        log.debug("endpoint delete developer token, hash={}, principal={}", hash, principal);
-        final Token token = tokenService.findOne(hash);
+        log.debug("endpoint delete developer token, id={}, principal={}", id, principal);
+        final Token token = tokenService.findOne(id);
         log.trace("found token {}", token);
         tokenService.delete(token.getTokenHash(), principal);
+        log.info("Deleted token with id {}", id);
     }
 
 }

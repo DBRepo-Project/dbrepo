@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -30,14 +31,14 @@ public class QueryEndpoint extends AbstractEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
+    public QueryEndpoint(QueryConfig queryConfig, QueryService queryService, StoreService storeService, DatabaseService databaseService,
                          IdentifierService identifierService) {
-        super(databaseService, identifierService);
+        super(queryConfig, databaseService, identifierService);
         this.queryService = queryService;
         this.storeService = storeService;
     }
 
-    @PutMapping
+    @PostMapping
     @Transactional(readOnly = true)
     @Timed(value = "query.execute", description = "Time needed to execute a query")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
@@ -63,6 +64,7 @@ public class QueryEndpoint extends AbstractEndpoint {
             log.error("Failed to execute query: is empty");
             throw new QueryMalformedException("Failed to execute query");
         }
+        validateForbiddenStatements(data);
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,

@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
@@ -10,6 +11,7 @@ import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.elastic.TableColumnidxRepository;
 import at.tuwien.repository.elastic.TableidxRepository;
 import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.UserService;
@@ -34,17 +36,19 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final UserService userService;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
+    private final ContainerService containerService;
     private final TableidxRepository tableidxRepository;
     private final TableColumnidxRepository tableColumnidxRepository;
 
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
-                            DatabaseService databaseService, TableidxRepository tableidxRepository,
-                            TableColumnidxRepository tableColumnidxRepository) {
+                            DatabaseService databaseService, ContainerService containerService,
+                            TableidxRepository tableidxRepository, TableColumnidxRepository tableColumnidxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
+        this.containerService = containerService;
         this.tableidxRepository = tableidxRepository;
         this.tableColumnidxRepository = tableColumnidxRepository;
     }
@@ -61,7 +65,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public void deleteTable(Long containerId, Long databaseId, Long tableId, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException {
+            TableMalformedException, QueryMalformedException, ContainerNotFoundException {
         /* find */
         final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Table table = findById(containerId, databaseId, tableId, principal);
@@ -90,7 +94,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional(readOnly = true)
     public Table findById(Long containerId, Long databaseId, Long tableId, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
+        final Container container = containerService.find(containerId);
         final Database database = databaseService.findPublicOrMineById(containerId, databaseId, principal);
         final Optional<Table> optional = tableRepository.findByDatabaseAndId(database, tableId);
         if (optional.isEmpty()) {

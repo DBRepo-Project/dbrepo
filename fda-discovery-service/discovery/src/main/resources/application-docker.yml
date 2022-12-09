@@ -7,7 +7,7 @@ spring:
     password: postgres
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
     open-in-view: false

@@ -71,7 +71,7 @@ public class ContainerServiceImpl implements ContainerService {
         /* entity */
         final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         Container container = new Container();
-        container.setImage(image.get());
+        container.setImageId(image.get().getId());
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
@@ -110,7 +110,7 @@ public class ContainerServiceImpl implements ContainerService {
                     .exec();
         } catch (ConflictException e) {
             log.error("Conflicting names {}, reason: {}", createDto.getName(), e.getMessage());
-            throw new ContainerAlreadyExistsException("Unexpected behavior", e);
+            throw new ContainerAlreadyExistsException("Conflicting names", e);
         } catch (NotFoundException e) {
             log.error("The image {}:{} not available on the container service", createDto.getRepository(),
                     createDto.getTag());

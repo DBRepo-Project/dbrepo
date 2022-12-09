@@ -42,9 +42,9 @@ public class ContainerDto {
     @Schema(example = "running")
     private ContainerStateDto state;
 
-    @ToString.Exclude
     @Schema
-    private List<DatabaseDto> databases;
+    @ToString.Exclude
+    private DatabaseDto database;
 
     @JsonProperty("ip_address")
     private String ipAddress;

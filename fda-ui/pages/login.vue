@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!token">
+      <v-card v-if="!token" flat>
         <v-card-title>
           Login
         </v-card-title>
@@ -96,7 +96,7 @@ export default {
         delete user.token
         this.$store.commit('SET_USER', user)
         this.$toast.success('Welcome back!')
-        this.$router.push('/container')
+        this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 418) {

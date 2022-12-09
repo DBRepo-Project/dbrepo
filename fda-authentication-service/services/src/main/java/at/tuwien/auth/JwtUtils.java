@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +29,7 @@ public class JwtUtils {
                 .withSubject(username)
                 .withIssuedAt(new Date())
                 .withExpiresAt(Date.from(expire))
+                .withClaim("rnd", Instant.now().getNano()) /* increase hash entropy */
                 .sign(algorithm);
     }
 
@@ -38,6 +40,10 @@ public class JwtUtils {
     public String getUserNameFromJwtToken(String token) {
         return JWT.decode(token)
                 .getSubject();
+    }
+
+    public static String toHash(String token) {
+        return DigestUtils.sha256Hex(token);
     }
 
     public boolean validateJwtToken(String authToken) {

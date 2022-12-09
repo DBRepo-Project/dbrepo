@@ -59,7 +59,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             return storeMapper.resultSetToQueryList(resultSet);
         } catch (SQLException e) {
             log.error("Failed to find queries: {}", e.getMessage());
-            throw new QueryStoreException("Failed to find queries");
+            throw new QueryStoreException("Failed to find queries: " + e.getMessage());
         } finally {
             dataSource.close();
         }
@@ -145,7 +145,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawInsertQuery(connection, query);
             final ResultSet resultSet = preparedStatement.executeQuery();
             query.setId(storeMapper.resultSetToId(resultSet));
-            log.error("Inserted query {} into the query store of database with id {}", query.getQuery(), databaseId);
+            log.info("Inserted query {} into the query store of database with id {}", query.getQuery(), databaseId);
             log.trace("inserted query {} into the query store of database {}", query, database);
             return query;
         } catch (SQLException e) {

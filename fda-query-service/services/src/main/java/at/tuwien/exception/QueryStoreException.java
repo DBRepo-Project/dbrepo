@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.CONFLICT)
+@ResponseStatus(code = HttpStatus.GATEWAY_TIMEOUT)
 public class QueryStoreException  extends Exception {
 
     public QueryStoreException(String msg) {

@@ -75,7 +75,7 @@
         v-if="!token"
         class="mr-2"
         color="secondary"
-        to="/login">
+        @click="login">
         <v-icon left>mdi-login</v-icon> Login
       </v-btn>
       <v-btn
@@ -261,6 +261,10 @@ export default {
         title: item.item.name,
         subtitle: item.item.description
       }
+    },
+    login () {
+      const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
+      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
     navigate (item) {
       this.$router.push(this.metadata(item).link)

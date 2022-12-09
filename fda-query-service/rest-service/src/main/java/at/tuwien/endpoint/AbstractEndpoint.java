@@ -1,32 +1,38 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.SortType;
+import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.exception.PaginationException;
-import at.tuwien.exception.SortException;
+import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 
+import java.io.IOException;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static at.tuwien.entities.identifier.VisibilityType.EVERYONE;
 
 @Slf4j
 public abstract class AbstractEndpoint {
 
+    private final QueryConfig queryConfig;
     private final DatabaseService databaseService;
     private final IdentifierService identifierService;
 
     @Autowired
-    protected AbstractEndpoint(DatabaseService databaseService, IdentifierService identifierService) {
+    protected AbstractEndpoint(QueryConfig queryConfig, DatabaseService databaseService,
+                               IdentifierService identifierService) {
+        this.queryConfig = queryConfig;
         this.databaseService = databaseService;
         this.identifierService = identifierService;
     }
@@ -97,6 +103,29 @@ public abstract class AbstractEndpoint {
             log.error("Failed to validate sort direction and/or sort column, either both are present or none");
             throw new SortException("Failed to validate sort direction and/or sort column");
         }
+    }
+
+    /**
+     * Do not allow aggregate functions and comments
+     * https://mariadb.com/kb/en/aggregate-functions/
+     */
+    protected void validateForbiddenStatements(ExecuteStatementDto data) throws QueryMalformedException {
+        final List<String> words = new LinkedList<>();
+        Arrays.stream(queryConfig.getNotSupportedKeywords())
+                .forEach(keyword -> {
+                    final Pattern pattern = Pattern.compile(keyword);
+                    final Matcher matcher = pattern.matcher(data.getStatement());
+                    final boolean found = matcher.find();
+                    if (found) {
+                        words.add(keyword);
+                    }
+                });
+        if (words.size() == 0) {
+            return;
+        }
+        log.error("Query contains forbidden keyword(s): {}", words);
+        log.debug("forbidden keywords: {}", words);
+        throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
     }
 
     protected Boolean hasQueuePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
