@@ -21,20 +21,22 @@ public class DatabaseAccess {
 
     @Id
     @EqualsAndHashCode.Include
+    @Column(name = "user_id", updatable = false)
     private Long huserid;
 
     @Id
     @EqualsAndHashCode.Include
+    @Column(name = "database_id", updatable = false)
     private Long hdbid;
 
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE})
     @JoinColumns({
-            @JoinColumn(name = "huserid", referencedColumnName = "userid", updatable = false, insertable = false)
+            @JoinColumn(name = "user_id", referencedColumnName = "userid", updatable = false, insertable = false)
     })
     private User user;
 
-    @Column(nullable = false, name = "htype", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
+    @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     @Enumerated(EnumType.STRING)
     private AccessType type;
 

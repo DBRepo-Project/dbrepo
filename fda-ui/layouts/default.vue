@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" fixed app>
+    <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
       <v-list-item>
         <v-list-item-content>
           <v-list-item-subtitle>
@@ -41,10 +41,9 @@
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
       <v-autocomplete
         v-model="model"
-        class="ml-1"
         :items="searchResults"
         :loading="loadingSearch"
         :search-input.sync="query"

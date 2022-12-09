@@ -412,11 +412,11 @@ CREATE TABLE IF NOT EXISTS mdb_access
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
-    hUserID bigint REFERENCES mdb_users (UserID),
-    hDBID   bigint REFERENCES mdb_databases (id),
-    hType   ENUM ('R', 'W'),
-    created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (hUserID, hDBID)
+    user_id     bigint REFERENCES mdb_users (UserID),
+    database_id bigint REFERENCES mdb_databases (id),
+    access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
+    created     timestamp                               NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (user_id, database_id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_owns

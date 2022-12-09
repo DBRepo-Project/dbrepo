@@ -212,11 +212,9 @@ export default {
     async updateDatabaseVisibility () {
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/transfer`, this.modifyVisibility, this.config)
-        this.database = res.data
-        console.debug('database', this.database)
+        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/transfer`, this.modifyVisibility, this.config)
         this.$toast.success('Successfully updated the database')
-        await this.$refs.toolbar.loadDatabase()
+        location.reload()
       } catch (err) {
         this.$toast.error('Failed to update database')
       }

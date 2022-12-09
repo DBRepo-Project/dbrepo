@@ -9,7 +9,19 @@
     <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion flat>
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
-          {{ item.name }}
+          <span>{{ item.name }}</span>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-if="is_owner(item)"
+                class="pid-icon"
+                v-bind="attrs"
+                v-on="on">
+                mdi-account
+              </v-icon>
+            </template>
+            <span>Created by you</span>
+          </v-tooltip>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
           <v-row v-if="loadingDetails" dense>
@@ -70,10 +82,7 @@
                       Table Creator
                     </v-list-item-title>
                     <v-list-item-content>
-                      <span>{{ formatCreator(item.creator) }}</span>
-                      <sup>
-                        <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-                      </sup>
+                      <span :class="is_owner(item) ? 'primary--text' : ''">{{ formatCreator(item.creator) }}</span>
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -389,6 +398,9 @@ export default {
         }
         this.loadingDetails = false
       }
+    },
+    is_owner (table) {
+      return table.creator.username === this.user.username
     },
     closed (data) {
       console.debug('closed dialog', data)
