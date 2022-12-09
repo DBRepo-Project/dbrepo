@@ -1,6 +1,8 @@
 FROM python:3.8-slim
 MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
+RUN apt-get update && apt-get install -y python3-dev libmariadb3 libmariadb-dev gcc
+
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV PORT_APP=5010
@@ -9,6 +11,9 @@ ENV HOSTNAME=units-service
 ENV EUREKA_SERVER=http://discovery-service:9090/eureka/
 ENV READY_FILE=/ready
 ENV LOG_LEVEL=debug
+ENV METADATA_DB=fda
+ENV METADATA_USERNAME=root
+ENV METADATA_PASSWORD=dbrepo
 
 WORKDIR /app
 

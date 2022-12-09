@@ -275,25 +275,23 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
 
 CREATE TABLE IF NOT EXISTS mdb_concepts
 (
-    id         bigint    not null AUTO_INCREMENT,
-    URI        TEXT,
+    uri        text      not null,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
     created_by bigint,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    PRIMARY KEY (id)
+    PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
 (
-    cDBID      bigint    NOT NULL,
-    tID        bigint    NOT NULL,
-    cID        bigint    NOT NULL,
-    concept_id bigint    NOT NULL,
-    uri        text,
-    created    timestamp NOT NULL DEFAULT NOW(),
+    cDBID   bigint    NOT NULL,
+    tID     bigint    NOT NULL,
+    cID     bigint    NOT NULL,
+    uri     text      NOT NULL,
+    created timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    FOREIGN KEY (concept_id) REFERENCES mdb_concepts (id),
+    #FOREIGN KEY (uri) REFERENCES mdb_concepts (uri), -- does not work in MariaDB as of 10.5+
     PRIMARY KEY (cDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
@@ -432,9 +430,9 @@ SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
 FROM (SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
       FROM `mdb_tokens` FOR SYSTEM_TIME ALL) as t
 WHERE NOT EXISTS(SELECT `token_hash`
-             FROM mdb_tokens AS tt
-             WHERE ROW_END > NOW()
-               AND tt.`token_hash` = t.`token_hash`)
+                 FROM mdb_tokens AS tt
+                 WHERE ROW_END > NOW()
+                   AND tt.`token_hash` = t.`token_hash`)
 GROUP BY `id`);
 
 COMMIT;

@@ -2,9 +2,9 @@ flask==2.1.2
 flasgger==0.9.5
 py-eureka-client==0.9.1
 docker==5.0.0
-gevent==21.8.0
+gevent==22.10.2
 rdflib==6.0.2
-psycopg2-binary==2.8.6
+mariadb==1.0.10
 itsdangerous==2.0.1
 Jinja2==3.0.3
 werkzeug==2.0.2

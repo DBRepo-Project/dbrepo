@@ -5,11 +5,11 @@ from logging.config import dictConfig
 import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
-from flasgger import LazyString, LazyJSONEncoder
+from flasgger import LazyJSONEncoder
 from list import list_units, get_uri as list_get_uri
 from validate import validator, stringmapper
 from gevent.pywsgi import WSGIServer
-from save import insert_mdb_concepts, insert_mdb_columns_concepts
+from save import insert_mdb_concepts, insert_mdb_columns_concepts, delete_mdb_columns_concepts
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, \
@@ -87,7 +87,7 @@ def suggest():
         unit = str(input_json['ustring'])
         offset = int(input_json['offset'])
         res = list_units(stringmapper(unit), offset)
-        logging.debug('suggest unit result in units: %s', res)
+        logging.info('suggest unit result in units: %s', res)
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to suggest units: %s', e)
@@ -101,7 +101,7 @@ def validate(unit):
     logging.debug('endpoint validate unit, unit=%s, body=%s', unit, request)
     try:
         res = validator(unit)
-        logging.debug('validate unit resulted in unit: %s', res)
+        logging.info('validate unit resulted in unit: %s', res)
         return str(res), 200
     except Exception as e:
         logging.error(e)
@@ -115,7 +115,7 @@ def get_uri(uname):
     logging.debug('endpoint get uri, uname=%s, body=%s', uname, request)
     try:
         res = list_get_uri(uname)
-        logging.debug('get uri resulted in uri: %s', res)
+        logging.info('get uri resulted in uri: %s', res)
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to get uri: %s', e)
@@ -147,16 +147,35 @@ def save_column_concept():
     logging.debug('endpoint save column concept, body=%s', request)
     input_json = request.get_json()
     try:
-        uri = str(input_json['uri'])
+        uri = input_json['uri']
         cid = int(input_json['cid'])
         tid = int(input_json['tid'])
         cdbid = int(input_json['cdbid'])
         if insert_mdb_columns_concepts(cdbid, tid, cid, uri) > 0:
-            return jsonify({'uri': uri}), 201
+            return jsonify(), 201
         else:
             return jsonify({'status': 'error'}), 409
     except Exception as e:
         logging.error('Failed to save column concept: %s', e)
+        res = {"success": False, "message": str(e)}
+        return jsonify(res), 500
+
+
+@app.route('/api/units/deletecolumnsconcept', methods=["POST"], endpoint='units_deletecolumnsconcept')
+@swag_from('deletecolumnsconcept.yml')
+def save_column_concept():
+    logging.debug('endpoint delete column concept, body=%s', request)
+    input_json = request.get_json()
+    try:
+        cid = int(input_json['cid'])
+        tid = int(input_json['tid'])
+        cdbid = int(input_json['cdbid'])
+        if delete_mdb_columns_concepts(cdbid, tid, cid) > 0:
+            return jsonify(), 202
+        else:
+            return jsonify({'status': 'error'}), 409
+    except Exception as e:
+        logging.error('Failed to delete column concept: %s', e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
@@ -167,7 +186,7 @@ def get_concept(cname):
     logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
     try:
         res = search_ontologies(cname)
-        logging.debug('get concept resulted in concept: %s', res)
+        logging.info('get concept resulted in concept: %s', res)
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to get concept: %s', e)
@@ -192,7 +211,7 @@ def post_ontologies():
             return "ontology name already exists", 409
         setup_ontology_dir()
         file.save(os.path.join(ONTOLOGIES_DIRECTORY, filename))
-        logging.debug('created ontology: %s', filename)
+        logging.info('created ontology: %s', filename)
         return "created", 201
 
 
@@ -212,8 +231,8 @@ def get_ontologies(o_name):
     return ontology
 
 
-rest_server_port = int(os.getenv('PORT_APP'))
-rest_server_host = os.getenv('FLASK_RUN_HOST')
+rest_server_port = int(os.getenv('PORT_APP', 5010))
+rest_server_host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
                    app_name=os.getenv('HOSTNAME', 'fda-units-service'),
                    instance_ip=os.getenv('HOSTNAME', 'fda-units-service'),
