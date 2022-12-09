@@ -33,4 +33,5 @@ responses:
     description: "Invalid input"
   409:
     description: "Concept already assigned"
-
+tags:
+  - units-endpoint

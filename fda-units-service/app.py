@@ -1,7 +1,7 @@
 import os
-import rdflib
 from flask import Flask, request, jsonify
 import logging
+from logging.config import dictConfig
 import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
@@ -12,16 +12,13 @@ from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_columns_concepts
 from werkzeug.utils import secure_filename
 from pathlib import Path
-from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, allowed_file
-
-logging.basicConfig(level=logging.DEBUG)
-
-from logging.config import dictConfig
+from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, \
+    allowed_file
 
 dictConfig({
     'version': 1,
     'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+        'format': '%(asctime)s %(levelname)-6s %(message)s',
     }},
     'handlers': {'wsgi': {
         'class': 'logging.StreamHandler',
@@ -41,17 +38,11 @@ swagger_config = {
     "headers": [],
     "specs": [
         {
-            "endpoint": "api-units",
-            "route": "/api-units.json",
-            "rule_filter": lambda rule: rule.endpoint.startswith('units'),
+            "endpoint": "api",
+            "route": "/api.json",
+            "rule_filter": lambda rule: True,
             "model_filter": lambda tag: True,  # all in
-        },
-        {
-            "endpoint": "api-ontologies",
-            "route": "/api-ontologies.json",
-            "rule_filter": lambda rule: rule.endpoint.startswith('ontologies'),
-            "model_filter": lambda tag: True,  # all in
-        },
+        }
     ],
     "static_url_path": "/flasgger_static",
     "swagger_ui": True,
@@ -76,7 +67,11 @@ template = {
     "servers": [{
         "url": "http://localhost:5010",
         "description": "Generated server url"
-    }]
+    },
+        {
+            "url": "https://dbrepo1.ec.tuwien.ac.at/api/units",
+            "description": "DBRepo Production Server"
+        }]
 }
 
 app.json_encoder = LazyJSONEncoder
@@ -165,6 +160,7 @@ def save_column_concept():
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
+
 @app.route('/api/ontologies/getconcept/<cname>', methods=["GET"], endpoint='ontologies_get_concept')
 @swag_from('getconcept.yml')
 def get_concept(cname):
@@ -178,7 +174,9 @@ def get_concept(cname):
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
+
 ONTOLOGIES_DIRECTORY = 'ontologies'
+
 
 @app.route('/api/ontologies/upload', methods=["POST"], endpoint='ontologies_upload_onto')
 @swag_from('ontologies.yml')
@@ -197,11 +195,13 @@ def post_ontologies():
         logging.debug('created ontology: %s', filename)
         return "created", 201
 
+
 @app.route('/api/ontologies/listontologies', methods=["GET"], endpoint='ontologies_get_ontos')
 @swag_from('ontology.yml')
 def get_ontologies():
     print(list_ontologies())
     return jsonify(list_ontologies())
+
 
 @app.route('/api/ontologies/<o_name>', methods=["GET"], endpoint='ontologies_get_onto')
 @swag_from('ontologybyname.yml')
@@ -211,7 +211,9 @@ def get_ontologies(o_name):
         return "ontology does not exist", 404
     return ontology
 
-rest_server_port = 5010
+
+rest_server_port = int(os.getenv('PORT_APP'))
+rest_server_host = os.getenv('FLASK_RUN_HOST')
 eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
                    app_name=os.getenv('HOSTNAME', 'fda-units-service'),
                    instance_ip=os.getenv('HOSTNAME', 'fda-units-service'),
@@ -219,5 +221,5 @@ eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:90
                    instance_port=rest_server_port)
 
 if __name__ == '__main__':
-    http_server = WSGIServer(('', rest_server_port), app)
+    http_server = WSGIServer((rest_server_host, rest_server_port), app)
     http_server.serve_forever()

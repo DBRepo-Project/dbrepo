@@ -4,6 +4,8 @@ Suggest and validates units of measurements defined in Ontology of Units of Meas
 
 [1] https://github.com/HajoRijgersberg/OM
 
+Swagger UI: http://localhost:5010/swagger-ui/
+
 ## `POST /api/units/suggest`
 Autosuggests user typed in terms. 
 

@@ -8,6 +8,7 @@ ENV FLASK_ENV=production
 ENV HOSTNAME=units-service
 ENV EUREKA_SERVER=http://discovery-service:9090/eureka/
 ENV READY_FILE=/ready
+ENV LOG_LEVEL=debug
 
 WORKDIR /app
 
@@ -26,5 +27,4 @@ COPY ./us-yml/*.yml ./
 COPY ./ontologies/* ./ontologies/
 COPY ./*.py ./
 
-ENTRYPOINT [ "python", "./pywsgi.py" ]
-CMD ["flask", "run"]
+ENTRYPOINT [ "python", "-u", "./pywsgi.py" ]

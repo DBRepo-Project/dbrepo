@@ -27,3 +27,5 @@ responses:
     description: "Invalid input"
   409:
     description: "Concept already present"
+tags:
+  - units-endpoint

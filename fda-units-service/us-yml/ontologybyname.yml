@@ -18,3 +18,5 @@ responses:
     description: "Not found"
   405:
     description: "Invalid input"
+tags:
+  - ontologies-endpoint

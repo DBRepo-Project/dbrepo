@@ -16,3 +16,5 @@ responses:
     description: "OK"
   405:
     description: "Invalid input"
+tags:
+  - units-endpoint
