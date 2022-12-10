@@ -23,7 +23,7 @@ public class Concept {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(nullable = false, columnDefinition = "TEXT(200)")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
     @Column(name = "name", nullable = false)
