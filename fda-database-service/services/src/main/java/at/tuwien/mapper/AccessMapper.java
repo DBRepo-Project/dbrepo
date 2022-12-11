@@ -7,8 +7,6 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface AccessMapper {
 
-    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AccessMapper.class);
-
     AccessTypeDto accessType(AccessType data);
 
     AccessType accessType(AccessTypeDto data);

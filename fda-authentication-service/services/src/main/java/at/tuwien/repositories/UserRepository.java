@@ -11,8 +11,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    @Query("select u from User u order by u.username asc")
-    List<User> findAllSorted();
+    List<User> findAllOrderByUsername();
 
     Optional<User> findByUsername(String username);
 
