@@ -18,6 +18,7 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -41,7 +42,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            executeQuery(connection, "USE  `" + database.getInternalName() + "`");
+            executeQuery(connection, "USE  ?", database.getInternalName());
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_tables_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`");
@@ -60,10 +61,19 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         log.trace("created query store in database {}", database);
     }
 
-    private void executeQuery(Connection connection, String statement) throws SQLException {
+    private void executeQuery(Connection connection, String statement, String... data) throws SQLException {
         log.debug("execute query, statement={}", statement);
         final PreparedStatement pstmt = connection.prepareStatement(statement);
+        if (data.length > 0) {
+            for (int i = 0; i < data.length; i++) {
+                pstmt.setString(i, data[i]);
+            }
+        }
         pstmt.executeUpdate();
+    }
+
+    private void executeQuery(Connection connection, String statement) throws SQLException {
+        executeQuery(connection, statement, new String[]{});
     }
 
 }
