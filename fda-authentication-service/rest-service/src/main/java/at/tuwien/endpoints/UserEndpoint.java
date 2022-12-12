@@ -124,7 +124,6 @@ public class UserEndpoint {
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);
-        queueService.modifyUserPassword(user, userPasswordDto);
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         mailService.send(user, "Password Reset Successful!", "reset-mail.txt", context);
@@ -204,7 +203,6 @@ public class UserEndpoint {
             throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException {
         log.debug("endpoint update user password, id={}, data={}", id, data);
         final User entity = userService.updatePassword(id, data);
-        queueService.modifyUserPassword(entity, data);
         final UserDto dto = userMapper.userToUserDto(entity);
         log.trace("update user password resulted in user {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
