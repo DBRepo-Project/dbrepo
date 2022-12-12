@@ -38,6 +38,6 @@ public class ColumnConcept implements Serializable {
     private Long cdbid;
 
     @EqualsAndHashCode.Include
-    @Column(name = "concept_id")
-    private Long conceptId;
+    @Column(columnDefinition = "TEXT")
+    private String uri;
 }

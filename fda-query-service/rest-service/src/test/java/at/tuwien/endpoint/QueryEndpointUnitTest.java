@@ -20,21 +20,14 @@ import at.tuwien.service.StoreService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.auth.BasicUserPrincipal;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
@@ -81,12 +74,32 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     private QueryEndpoint queryEndpoint;
 
     @Test
+    public void execute_forbiddenKeyword_fails() {
+        final String statement = "SELECT w.* FROM `weather_aus` w";
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, null, USER_2_PRINCIPAL, DATABASE_1, null);
+        });
+    }
+
+    @Test
+    public void execute_forbiddenKeyword2_fails() {
+        final String statement = "SELECT * FROM `weather_aus` w";
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, null, USER_2_PRINCIPAL, DATABASE_1, null);
+        });
+    }
+
+    @Test
     public void execute_publicAnonymized_fails() {
         final Principal principal = null;
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, null, principal, DATABASE_1, null);
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, null, principal, DATABASE_1, null);
         });
     }
 
@@ -97,7 +110,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
     }
 
     @Test
@@ -107,7 +120,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS);
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -117,7 +130,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -127,7 +140,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1, DATABASE_1_OWNER_ACCESS);
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1, DATABASE_1_OWNER_ACCESS);
     }
 
     @Test
@@ -250,7 +263,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_execute(CONTAINER_2_ID, DATABASE_2_ID, null, principal, DATABASE_2, null);
+            generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, null, principal, DATABASE_2, null);
         });
     }
 
@@ -261,7 +274,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_READ_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_READ_ACCESS);
     }
 
     @Test
@@ -271,7 +284,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_OWN_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -281,7 +294,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -291,7 +304,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_OWNER_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_OWNER_ACCESS);
     }
 
     @Test
@@ -405,13 +418,13 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_execute(Long containerId, Long databaseId, String username, Principal principal,
-                                   Database database, DatabaseAccess access)
+    protected void generic_execute(Long containerId, Long databaseId, String statement, String username,
+                                   Principal principal, Database database, DatabaseAccess access)
             throws UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException,
             QueryMalformedException, ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, SortException, NotAllowedException, PaginationException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
+                .statement(statement)
                 .build();
         final Long page = 0L;
         final Long size = 2L;
@@ -421,16 +434,20 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
                 .thenReturn(Optional.of(database));
+        log.trace("mock database for container with id {} and database id {}", containerId, databaseId);
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.empty());
+            log.trace("mock no access for database with id {} and username {}", databaseId, username);
         } else {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.of(access));
+            log.trace("mock access {} for database with id {} and username {}", access.getType(), databaseId, username);
         }
         when(queryService.execute(containerId, databaseId, request, QueryTypeDto.QUERY,
                 principal, page, size, sortDirection, sortColumn))
                 .thenReturn(QUERY_1_RESULT_DTO);
+        log.trace("mock query service for container with id {} and database with id {}", containerId, databaseId);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(containerId, databaseId, request,

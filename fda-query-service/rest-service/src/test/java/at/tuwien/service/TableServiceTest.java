@@ -1,52 +1,23 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import net.sf.jsqlparser.JSQLParserException;
-import org.junit.Rule;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PersistenceException;
-import java.io.File;
-import java.math.BigInteger;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -81,7 +52,6 @@ public class TableServiceTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @BeforeEach
-    @Transactional
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
         IMAGE_1.setDateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2));
@@ -95,7 +65,6 @@ public class TableServiceTest extends BaseUnitTest {
     }
 
     @Test
-    @Transactional
     public void findAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */

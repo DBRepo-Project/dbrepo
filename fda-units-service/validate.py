@@ -8,7 +8,7 @@ Created on Thu Dec  2 23:31:39 2021
 import rdflib
 g = rdflib.Graph()
 g.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
-g.parse('onto/om-2.ttl', format='turtle')
+g.parse('ontologies/om-2.ttl', format='turtle')
 
 om = rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
 _exhausted = object()

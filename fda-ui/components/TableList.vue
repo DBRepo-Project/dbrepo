@@ -161,7 +161,7 @@
     <v-dialog
       v-model="unitDialog"
       max-width="600px">
-      <DialogsColumnUnit :column="column" :table-id="tableDetails.id" @close="closed" />
+      <DialogsColumnUnit :column="column" :table-id="tableDetails.id" :database-id="database.id" @close="closed" />
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="640">
       <v-card>
@@ -209,6 +209,7 @@ export default {
         username: null
       },
       database: {
+        id: null,
         exchange: null,
         is_public: null,
         tables: [],
@@ -329,7 +330,6 @@ export default {
     pickUnit (item) {
       this.column = item
       this.unitDialog = true
-      console.debug('select', this.unit)
     },
     loadUser () {
       if (!this.token) {
@@ -405,6 +405,10 @@ export default {
     closed (data) {
       console.debug('closed dialog', data)
       this.unitDialog = false
+      if (data.success && data.action === 'remove') {
+        const { cid } = data.data
+        this.tableDetails.columns.filter(column => column.id === cid)[0].column_concept = null
+      }
     },
     /**
      * if tableId is given, open the table after refresh

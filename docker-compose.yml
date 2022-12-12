@@ -301,6 +301,8 @@ services:
     depends_on:
       fda-discovery-service:
         condition: service_healthy
+      fda-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 

@@ -63,6 +63,12 @@
           </v-list>
         </v-expand-transition>
         <v-card-actions>
+          <v-btn
+            class="mb-2 ml-2"
+            color="error"
+            @click="remove">
+            Remove
+          </v-btn>
           <v-spacer />
           <v-btn
             class="mb-2"
@@ -89,10 +95,13 @@ export default {
       type: Object,
       default: () => ({})
     },
+    databaseId: { type: Number, default: () => -1 },
     tableId: { type: Number, default: () => -1 }
   },
   data () {
     return {
+      cid: null,
+      dbid: null,
       dialog: false,
       isLoading: false,
       saved: false,
@@ -124,11 +133,11 @@ export default {
   },
   watch: {
     concept (newVal, oldVal) {
-      this.loadConcept(newVal)
+      this.loadConcept({ column_concept: newVal })
     },
     model (newVal, oldVal) {
       console.debug('selected concept', newVal)
-      this.loadConcept(newVal)
+      this.loadConcept({ column_concept: newVal })
     },
     async search (val) {
       if (!val) {
@@ -159,28 +168,50 @@ export default {
   methods: {
     cancel () {
       this.$emit('close', {
-        success: false
+        success: false,
+        action: 'cancel'
       })
     },
-    async loadConcept (concept) {
-      if (!concept) {
+    async loadConcept (column) {
+      if (!column.column_concept) {
+        console.warn('column concept is null')
         return
       }
-      this.model = concept
-      console.debug('loading concept', concept)
-      try {
-        const res = await this.$axios.get(`/api/units/uri/${concept.name}`)
-        if (!res.data) {
-          console.warn('concept', concept.name, 'returned invalid data')
-          console.debug('concept', concept, 'returned', res.data)
-          return
-        }
-        this.uri = res.data.URI
-        console.debug('uri loaded', this.uri)
-      } catch (err) {
-        this.$toast.error(`Could not load URI of unit "${concept.name}"`)
-        console.error('load concept', err)
+      if (!column.column_concept.name) {
+        console.warn('column concept name is null')
+        return
       }
+      this.cid = column.id
+      this.dbid = column.id
+      try {
+        const res = await this.$axios.get(`/api/units/uri/${column.column_concept.name}`)
+        this.uri = res.data.uri
+        console.debug('concept uri loaded', this.uri)
+      } catch (err) {
+        this.$toast.error('Failed to concept')
+        console.error('Failed to concept', err)
+      }
+    },
+    async remove () {
+      /* delete assignment */
+      const payload = {
+        cid: this.column.id,
+        tid: this.tableId,
+        cdbid: this.databaseId
+      }
+      try {
+        await this.$axios.post('/api/units/deletecolumnsconcept', payload)
+        this.$toast.success('Deleted concept assignment')
+        console.info('Deleted concept assignment')
+      } catch (error) {
+        this.$toast.error('Could not delete')
+        console.error('Failed to delete', error)
+      }
+      this.$emit('close', {
+        success: true,
+        action: 'remove',
+        data: payload
+      })
     },
     async save () {
       const payload = {
@@ -217,6 +248,7 @@ export default {
         this.$toast.success(`Assigned unit ${this.model.name}`)
         this.$emit('close', {
           success: true,
+          action: 'assign',
           concept: res.data
         })
         console.debug('column', this.column)

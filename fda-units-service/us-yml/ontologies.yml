@@ -1,0 +1,28 @@
+summary: "Create ontology"
+description: "This is a simple API for uploading and posting ontologies (.nt, .ttl files) to DBRepo."
+consumes:
+- "application/json"
+produces:
+- "application/json"
+requestBody:
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        properties:
+          file:
+            type: string
+            format: binary
+responses:
+  200:
+    description: "OK"
+  201:
+    description: "Created"
+  400:
+    description: "Bad request"
+  405:
+    description: "Invalid input"
+  409:
+    description: "Conflict"
+tags:
+  - ontologies-endpoint

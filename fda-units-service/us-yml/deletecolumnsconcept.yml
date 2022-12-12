@@ -1,5 +1,5 @@
-summary: "Save concepts to MDB"
-description: "This is a simple API for saving units and concepts."
+summary: "Delete concepts to MDB"
+description: "This is a simple API for delete units and concepts."
 consumes:
 - "application/json"
 produces:
@@ -27,8 +27,8 @@ parameters:
 responses:
   200: 
     description: "OK"
-  201:
-    description: "Created"
+  202:
+    description: "Accepted"
   405:
     description: "Invalid input"
   409:

@@ -757,16 +757,6 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_3_IP = "172.28.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
 
-    public final static Long CONTAINER_NGINX_ID = 4L;
-    public final static String CONTAINER_NGINX_HASH = "deadbeef";
-    public final static String CONTAINER_NGINX_IMAGE = "nginx";
-    public final static String CONTAINER_NGINX_TAG = "1.20-alpine";
-    public final static String CONTAINER_NGINX_NET = "fda-public";
-    public final static String CONTAINER_NGINX_NAME = "file-service";
-    public final static String CONTAINER_NGINX_INTERNALNAME = "fda-test-file-service";
-    public final static String CONTAINER_NGINX_IP = "172.29.0.3";
-    public final static Instant CONTAINER_NGINX_CREATED = Instant.now().minus(3, HOURS);
-
     public final static Long CONCEPT_1_ID = 1L;
     public final static String CONCEPT_1_NAME = "Temperature";
     public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);

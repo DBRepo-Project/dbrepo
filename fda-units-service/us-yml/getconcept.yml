@@ -1,13 +1,13 @@
-summary: "Get URI of units"
-description: "This is a simple API for getting the URI of a certain unit in OM."
+summary: "Get a list of concepts"
+description: "This is a simple API for returning a list of concepts contained in various ontologies."
 consumes:
 - "application/json"
 produces:
 - "application/json"
 parameters:
 - in: "path"
-  name: "uname"
-  description: "Name of a unit in OM"
+  name: "cname"
+  description: "Enter a concept name."
   required: true
   schema:
     type: "string"
@@ -17,4 +17,4 @@ responses:
   405:
     description: "Invalid input"
 tags:
-  - units-endpoint
+  - ontologies-endpoint

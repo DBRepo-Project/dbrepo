@@ -6,12 +6,16 @@ produces:
 - "application/json"
 parameters:
 - in: "path"
-  type: "string"
   name: "unit"
-  description: "to-do description"
+  description: "Validates unit against om-2."
   required: true
+  schema:
+    type: "string"
+    example: "metre"
 responses:
   200: 
     description: "OK"
   405:
     description: "Invalid input"
+tags:
+  - units-endpoint
