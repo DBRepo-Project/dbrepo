@@ -75,6 +75,7 @@ public class ContainerEndpoint {
         log.debug("endpoint find container, id={}", containerId);
         final Container container = containerService.inspect(containerId);
         final ContainerDto dto = containerMapper.containerToContainerDto(container);
+        dto.setState(ContainerStateDto.RUNNING);
         log.trace("find container resulted in container {}", dto);
         return ResponseEntity.ok()
                 .body(dto);
@@ -87,7 +88,7 @@ public class ContainerEndpoint {
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
                                                     @Valid @RequestBody ContainerChangeDto changeDto)
-            throws ContainerNotFoundException, DockerClientException {
+            throws ContainerNotFoundException, ContainerAlreadyRunningException, ContainerAlreadyStoppedException {
         log.debug("endpoint modify container, containerId={}, changeDto={}", containerId, changeDto);
         final Container container;
         if (changeDto.getAction().equals(ContainerActionTypeDto.START)) {
@@ -109,7 +110,7 @@ public class ContainerEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER') and hasPermission(#containerId, 'DELETE_CONTAINER')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId) throws ContainerNotFoundException,
-            DockerClientException, ContainerStillRunningException {
+            ContainerStillRunningException, ContainerAlreadyRemovedException {
         log.debug("endpoint delete container, containerId={}", containerId);
         containerService.remove(containerId);
         return ResponseEntity.status(HttpStatus.OK)

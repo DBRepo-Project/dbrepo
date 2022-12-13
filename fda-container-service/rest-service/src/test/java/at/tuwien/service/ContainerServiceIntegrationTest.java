@@ -215,7 +215,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
+    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException,
+            ContainerAlreadyRunningException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
@@ -250,7 +251,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
+    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException,
+            ContainerAlreadyStoppedException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
@@ -404,7 +406,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
+    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException,
+            ContainerNotFoundException, ContainerAlreadyRemovedException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
