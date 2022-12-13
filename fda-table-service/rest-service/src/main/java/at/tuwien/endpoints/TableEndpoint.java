@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.*;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
@@ -35,8 +36,8 @@ public class TableEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService,
-                         DatabaseService databaseService) {
-        super(databaseService);
+                         DatabaseService databaseService, AccessService accessService) {
+        super(accessService, databaseService);
         this.tableMapper = tableMapper;
         this.amqpService = amqpService;
         this.tableService = tableService;
@@ -56,7 +57,7 @@ public class TableEndpoint extends AbstractEndpoint {
             log.error("Missing table view permission");
             throw new NotAllowedException("Missing table view permission");
         }
-        final List<TableBriefDto> dto = tableService.findAll(containerId, databaseId, principal)
+        final List<TableBriefDto> dto = tableService.findAll(containerId, databaseId)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
                 .collect(Collectors.toList());
@@ -98,14 +99,15 @@ public class TableEndpoint extends AbstractEndpoint {
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, NotAllowedException {
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_INFO", principal)) {
             log.error("Missing table view permission");
             throw new NotAllowedException("Missing table view permission");
         }
-        final Table table = tableService.findById(containerId, databaseId, tableId, principal);
+        final Table table = tableService.findById(containerId, databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);
         return ResponseEntity.ok(dto);
@@ -118,7 +120,8 @@ public class TableEndpoint extends AbstractEndpoint {
     public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @PathVariable("tableId") Long tableId,
-                                                @NotNull Principal principal) throws NotAllowedException {
+                                                @NotNull Principal principal) throws NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
@@ -141,14 +144,14 @@ public class TableEndpoint extends AbstractEndpoint {
                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_DELETE", principal)) {
             log.error("Missing table delete permission");
             throw new NotAllowedException("Missing table delete permission");
         }
-        tableService.deleteTable(containerId, databaseId, tableId, principal);
+        tableService.deleteTable(containerId, databaseId, tableId);
     }
 
 }

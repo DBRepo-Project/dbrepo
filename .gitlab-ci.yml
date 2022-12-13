@@ -119,6 +119,7 @@ test-backend-database:
   needs:
     - build-backend-database
   script:
+    - "docker pull elasticsearch:7.13.4"
     - "make test-database-service"
 
 test-backend-discovery:

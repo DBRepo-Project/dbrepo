@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +40,10 @@ public class ViewEndpoint extends AbstractEndpoint {
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewEndpoint(QueryConfig queryConfig, ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
-                        ViewMapper viewMapper, QueryService queryService) {
-        super(queryConfig, databaseService, identifierService);
+    public ViewEndpoint(ViewService viewService, DatabaseService databaseService, IdentifierService identifierService,
+                        ViewMapper viewMapper, QueryService queryService, TableService tableService,
+                        AccessService accessService, QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.viewService = viewService;
         this.databaseService = databaseService;
         this.viewMapper = viewMapper;
@@ -92,14 +94,15 @@ public class ViewEndpoint extends AbstractEndpoint {
         log.trace("create view for database {}", database);
         final ViewBriefDto view = viewMapper.viewToViewBriefDto(viewService.create(containerId, databaseId, data, principal));
         log.trace("create view resulted in view {}", view);
-        return ResponseEntity.ok(view);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(view);
     }
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
     @Timed(value = "view.find", description = "Time needed to find a view")
     @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ViewDto> findAll(@NotNull @PathVariable("id") Long containerId,
+    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("id") Long containerId,
                                            @NotNull @PathVariable("databaseId") Long databaseId,
                                            @NotNull @PathVariable("viewId") Long viewId,
                                            Principal principal) throws DatabaseNotFoundException,

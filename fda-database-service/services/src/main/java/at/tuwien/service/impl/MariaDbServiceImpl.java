@@ -8,6 +8,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.ContainerService;
@@ -36,17 +37,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
     private final DatabaseidxRepository databaseidxRepository;
+    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, DatabaseMapper databaseMapper,
                               ContainerService containerService, DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository) {
+                              DatabaseidxRepository databaseidxRepository,
+                              DatabaseAccessRepository databaseAccessRepository) {
         this.amqpMapper = amqpMapper;
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
         this.databaseidxRepository = databaseidxRepository;
+        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     @Override
@@ -88,15 +92,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Transactional
     public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, ContainerNotFoundException,
-            QueryMalformedException {
+            DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
         final Container container = containerService.find(containerId);
         final Database database = findPublicOrMineById(containerId, databaseId, principal);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
+        final User root = databaseMapper.containerToPrivilegedUser(container);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);
@@ -128,24 +133,32 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             log.error("Currently we only support one database per container.");
             throw new DatabaseMalformedException("Currently only one database per container is supported");
         }
+        final User root = databaseMapper.containerToPrivilegedUser(container);
+        final User user = userService.findByUsername(principal.getName());
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         database.setContainer(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
-            /* create database */
             final Connection connection = dataSource.getConnection();
+            /* create database */
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawCreateDatabaseQuery(connection, database);
             preparedStatement.executeUpdate();
-            /* grant read-only access */
-            final PreparedStatement preparedStatement1 = databaseMapper.imageToRawGrantReadonlyAccessQuery(connection);
+            /* create user */
+            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
+            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantCreatorAccessQuery(connection, user);
+            preparedStatement2.executeUpdate();
+            /* grant read-only access */
+            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
+            preparedStatement3.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create database {}, reason: {}", database, e.getMessage());
             throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();
         }
+        log.info("Created user {} on database with creator access", user.getUsername());
         /* save in metadata database */
         database.setExchange(amqpMapper.exchangeName(database));
         database.setIsPublic(createDto.getIsPublic());

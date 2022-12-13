@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit">
+    <v-form ref="form" v-model="valid" @submit.prevent="submit" autocomplete="off">
       <v-card>
         <v-card-title>
           Create Database

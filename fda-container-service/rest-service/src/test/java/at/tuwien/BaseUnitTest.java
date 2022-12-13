@@ -25,6 +25,7 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_1_EMAIL_VERIFIED = false;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static String USER_1_PASSWORD = "p455w0rdh45h";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static RoleType USER_1_ROLE_TYPE = RoleType.ROLE_RESEARCHER;
     public final static GrantedAuthority USER_1_AUTHORITY = new SimpleGrantedAuthority("ROLE_RESEARCHER");
 
@@ -34,6 +35,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_1_EMAIL_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
             .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .roles(List.of(USER_1_ROLE_TYPE))
             .build();
 
@@ -42,6 +44,7 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_2_EMAIL_VERIFIED = false;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static String USER_2_PASSWORD = "p455w0rdh45";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static RoleType USER_2_ROLE_TYPE = RoleType.ROLE_DEVELOPER;
     public final static GrantedAuthority USER_2_AUTHORITY = new SimpleGrantedAuthority("ROLE_DEVELOPER");
 
@@ -51,6 +54,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_EMAIL_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .roles(List.of(USER_2_ROLE_TYPE))
             .build();
 
@@ -59,6 +63,7 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_3_EMAIL_VERIFIED = false;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static String USER_3_PASSWORD = "p455w0rdh45";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static RoleType USER_3_ROLE_TYPE = RoleType.ROLE_DATA_STEWARD;
     public final static GrantedAuthority USER_3_AUTHORITY = new SimpleGrantedAuthority("ROLE_DATA_STEWARD");
 
@@ -68,6 +73,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_3_EMAIL_VERIFIED)
             .themeDark(USER_3_THEME_DARK)
             .password(USER_3_PASSWORD)
+            .databasePassword(USER_3_DATABASE_PASSWORD)
             .roles(List.of(USER_3_ROLE_TYPE))
             .build();
 
@@ -76,6 +82,7 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_4_EMAIL_VERIFIED = false;
     public final static Boolean USER_4_THEME_DARK = false;
     public final static String USER_4_PASSWORD = "p455w0rdh45";
+    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
 
     public final static User USER_4 = User.builder()
             .username(USER_4_USERNAME)
@@ -83,6 +90,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_4_EMAIL_VERIFIED)
             .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
+            .databasePassword(USER_4_DATABASE_PASSWORD)
             .roles(List.of())
             .build();
 

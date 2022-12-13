@@ -1,8 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
@@ -18,6 +16,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
@@ -86,6 +84,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
+                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
                 .exec();
         /* start */
@@ -132,12 +131,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findOne_notFound_fails() throws InterruptedException, SQLException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("key", "val")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
@@ -145,7 +139,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         });
     }
 

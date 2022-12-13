@@ -3,9 +3,15 @@ package at.tuwien;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.AccessType;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
@@ -18,6 +24,10 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,11 +45,11 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
-    public final static long USER_1_ID = 1;
+    public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
-
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Instant USER_1_CREATED = Instant.now().minus(1, HOURS);
 
     public final static User USER_1 = User.builder()
@@ -49,6 +59,7 @@ public abstract class BaseUnitTest {
             .emailVerified(true)
             .themeDark(false)
             .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
@@ -72,6 +83,36 @@ public abstract class BaseUnitTest {
 
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
+    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_USERNAME = "junit2";
+    public final static String USER_2_EMAIL = "junit2@example.com";
+    public final static String USER_2_PASSWORD = "password";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static Instant USER_2_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(true)
+            .themeDark(false)
+            .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
+            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
+            .created(USER_2_CREATED)
+            .lastModified(USER_2_CREATED)
+            .build();
+
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static String DATABASE_NET = "fda-userdb";
 
@@ -695,6 +736,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
     public final static String CONTAINER_1_IP = "172.28.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static String CONTAINER_2_HASH = "deadbeef";
@@ -703,6 +746,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
     public final static String CONTAINER_2_IP = "172.28.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static Long CONTAINER_3_ID = 3L;
     public final static String CONTAINER_3_HASH = "deadbeef";
@@ -730,6 +775,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Container CONTAINER_2 = Container.builder()
@@ -740,6 +786,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Container CONTAINER_3 = Container.builder()
@@ -750,6 +797,7 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Long QUERY_1_ID = 1L;
@@ -761,14 +809,7 @@ public abstract class BaseUnitTest {
     public final static String QUERY_1_RESULT_HASH = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
     public final static Instant QUERY_1_CREATED = Instant.now();
     public final static Instant QUERY_1_EXECUTION = Instant.now();
-
-    public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT * FROM `weather`;";
-    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
-    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
-    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
-    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Boolean QUERY_1_PERSISTED = false;
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
@@ -779,6 +820,7 @@ public abstract class BaseUnitTest {
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
+            .isPersisted(QUERY_1_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -803,6 +845,27 @@ public abstract class BaseUnitTest {
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
             .creator(USER_1_DTO)
+            .build();
+
+    public final static Long QUERY_2_ID = 2L;
+    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather`;";
+    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
+    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
+    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
+    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Boolean QUERY_2_PERSISTED = true;
+
+    public final static Query QUERY_2 = Query.builder()
+            .id(QUERY_2_ID)
+            .cid(QUERY_2_CONTAINER_ID)
+            .dbid(QUERY_2_DATABASE_ID)
+            .query(QUERY_2_STATEMENT)
+            .resultHash(QUERY_2_RESULT_HASH)
+            .created(QUERY_2_CREATED)
+            .execution(QUERY_2_EXECUTION)
+            .createdBy(USER_1_ID)
+            .isPersisted(QUERY_2_PERSISTED)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
@@ -1825,6 +1888,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_1_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -1836,6 +1900,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_2_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_3 = Table.builder()
@@ -1847,6 +1912,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_4 = Table.builder()
@@ -1858,6 +1924,7 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_4_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_4_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Table TABLE_5 = Table.builder()
@@ -1869,13 +1936,14 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_5_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_5_TOPIC)
+            .creator(USER_1)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
             .created(Instant.now().minus(1, HOURS))
             .lastModified(Instant.now())
-            .isPublic(false)
+            .isPublic(true)
             .name(DATABASE_1_NAME)
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
@@ -1892,6 +1960,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchange(DATABASE_2_EXCHANGE)
+            .creator(USER_1)
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -1903,6 +1972,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchange(DATABASE_3_EXCHANGE)
+            .creator(USER_1)
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;
@@ -1922,6 +1992,100 @@ public abstract class BaseUnitTest {
             .id(QUERY_1_RESULT_ID)
             .resultNumber(QUERY_1_RESULT_NUMBER)
             .result(QUERY_1_RESULT_RESULT)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static Long VIEW_1_ID = 1L;
+    public final static Boolean VIEW_1_INITIAL_VIEW = false;
+    public final static String VIEW_1_NAME = "JUnit";
+    public final static String VIEW_1_INTERNAL_NAME = "junit";
+    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_1_PUBLIC = true;
+    public final static String VIEW_1_QUERY = "select `location` from `weather`";
+
+    public final static View VIEW_1 = View.builder()
+            .id(VIEW_1_ID)
+            .isInitialView(VIEW_1_INITIAL_VIEW)
+            .name(VIEW_1_NAME)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .vcid(VIEW_1_CONTAINER_ID)
+            .vdbid(VIEW_1_DATABASE_ID)
+            .isPublic(VIEW_1_PUBLIC)
+            .query(VIEW_1_QUERY)
+            .build();
+
+    public final static Long VIEW_2_ID = 2L;
+    public final static Boolean VIEW_2_INITIAL_VIEW = false;
+    public final static String VIEW_2_NAME = "JUnit";
+    public final static String VIEW_2_INTERNAL_NAME = "junit";
+    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_2_PUBLIC = true;
+    public final static String VIEW_2_QUERY = "select `location` from `weather`";
+
+    public final static View VIEW_2 = View.builder()
+            .id(VIEW_2_ID)
+            .isInitialView(VIEW_2_INITIAL_VIEW)
+            .name(VIEW_2_NAME)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .vcid(VIEW_2_CONTAINER_ID)
+            .vdbid(VIEW_2_DATABASE_ID)
+            .isPublic(VIEW_2_PUBLIC)
+            .query(VIEW_2_QUERY)
+            .build();
+
+    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
+            .data(new HashMap<>() {{
+                put("key", "value");
+            }})
             .build();
 
 

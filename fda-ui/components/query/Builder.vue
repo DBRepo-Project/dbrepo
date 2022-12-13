@@ -58,7 +58,7 @@
                 <v-col cols="6">
                   <v-select
                     v-model="table"
-                    :disabled="isExecuted"
+                    :disabled="isExecuted || loadingTables"
                     :items="tables"
                     item-text="name"
                     :loading="loadingTables"
@@ -71,7 +71,7 @@
                   <v-select
                     v-model="select"
                     item-text="name"
-                    :disabled="!table || isExecuted"
+                    :disabled="!table || isExecuted || loadingTables"
                     :items="selectItems"
                     :loading="loadingColumns"
                     label="Columns"
@@ -268,7 +268,7 @@ export default {
         this.tables = res.data
         console.debug('tables', this.tables)
       } catch (err) {
-        this.$toast.error('Could not list table.')
+        this.$toast.error('Could not list table')
       }
       this.loadingTables = false
     },
@@ -360,7 +360,7 @@ export default {
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
-        this.$toast.error('Could not get table details.')
+        this.$toast.error('Could not get table details')
       }
       this.loadingColumns = false
     }

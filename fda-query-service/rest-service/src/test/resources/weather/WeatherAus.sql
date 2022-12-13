@@ -1,3 +1,6 @@
+CREATE USER `junit`@`%`;
+GRANT CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE ON *.* TO `junit`@`%`;
+
 /* https://www.kaggle.com/jsphyg/weather-dataset-rattle-package */
 CREATE TABLE weather_location
 (

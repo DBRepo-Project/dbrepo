@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.sql.DataSource;
 import java.io.File;
 import java.math.BigInteger;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -107,6 +110,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
                 .withName(CONTAINER_1_INTERNALNAME)
+                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
@@ -125,6 +129,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp")))
                         .withName(CONTAINER_2_INTERNALNAME)
                         .withIpv4Address(CONTAINER_2_IP)
+                        .withHealthcheck(CONTAINER_2_HEALTHCHECK)
                         .withHostName(CONTAINER_2_INTERNALNAME)
                         .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
                                 "MARIADB_DATABASE=zoo")
@@ -197,13 +202,15 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, TableNotFoundException, DatabaseConnectionException,
-            PaginationException, ContainerNotFoundException, QueryMalformedException {
+            PaginationException, ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
         final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
-                null, null);
+                null, null, principal);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
         assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(COLUMN_1_2_INTERNAL_NAME));
@@ -223,67 +230,79 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, SQLException {
+            ContainerNotFoundException, QueryMalformedException, SQLException, UserNotFoundException {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, principal);
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void selectAll_noTable_fails() {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, -1L, Instant.now(), page, size);
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, -1L, Instant.now(), page, size, principal);
         });
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void selectAll_noDatabase_fails() {
         final Long page = 0L;
         final Long size = 10L;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, -1L, TABLE_1_ID, Instant.now(), page, size);
+            queryService.findAll(CONTAINER_1_ID, -1L, TABLE_1_ID, Instant.now(), page, size, principal);
         });
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void insert_columns_fails() {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "some_value"))
                 .build();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, principal);
         });
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException {
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, principal);
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = "RESEARCHER")
     public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException {
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, principal);
     }
 
     @SneakyThrows

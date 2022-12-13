@@ -1,17 +1,25 @@
 package at.tuwien;
 
+import at.tuwien.api.database.*;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -36,6 +44,7 @@ public abstract class BaseUnitTest {
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_PASSWORD = "junit";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_EMAIL = "junit@ossdip.at";
     public final static Boolean USER_1_VERIFIED = true;
     public final static Boolean USER_1_THEME = false;
@@ -46,6 +55,64 @@ public abstract class BaseUnitTest {
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME)
+            .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .password(USER_1_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+            USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
+    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_USERNAME = "junit2";
+    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_2_EMAIL = "junit2@ossdip.at";
+    public final static Boolean USER_2_VERIFIED = true;
+    public final static Boolean USER_2_THEME = false;
+
+    public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME)
+            .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
+
+    public final static Long USER_3_ID = 2L;
+    public final static String USER_3_USERNAME = "junit3";
+    public final static String USER_3_PASSWORD = "junit3";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_3_EMAIL = "junit3@ossdip.at";
+    public final static Boolean USER_3_VERIFIED = true;
+    public final static Boolean USER_3_THEME = false;
+
+    public final static User USER_3 = User.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(USER_3_VERIFIED)
+            .themeDark(USER_3_THEME)
+            .password(USER_3_PASSWORD)
+            .databasePassword(USER_3_DATABASE_PASSWORD)
             .build();
 
     public final static Long IMAGE_1_ID = 1L;
@@ -187,6 +254,7 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_1_PUBLIC)
             .container(CONTAINER_1)
             .created(DATABASE_1_CREATED)
+            .creator(USER_1)
             .tables(List.of())
             .lastModified(DATABASE_1_UPDATED)
             .container(CONTAINER_1)
@@ -214,6 +282,7 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_2_PUBLIC)
             .container(CONTAINER_2)
             .created(DATABASE_2_CREATED)
+            .creator(USER_1)
             .tables(List.of())
             .lastModified(DATABASE_2_UPDATED)
             .container(CONTAINER_2)
@@ -223,4 +292,65 @@ public abstract class BaseUnitTest {
     public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb");
 
     public final static List<String> IMAGE_2_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather_at");
+
+    public final static AccessType DATABASE_1_READ_ACCESS_TYPE = AccessType.READ;
+
+    public final static AccessTypeDto DATABASE_1_READ_ACCESS_TYPE_DTO = AccessTypeDto.READ;
+
+    public final static AccessType DATABASE_2_WRITE_OWN_ACCESS_TYPE = AccessType.WRITE_OWN;
+
+    public final static AccessTypeDto DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_OWN;
+
+    public final static AccessType DATABASE_3_WRITE_ALL_ACCESS_TYPE = AccessType.WRITE_ALL;
+
+    public final static AccessTypeDto DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO = AccessTypeDto.WRITE_ALL;
+
+    public final static DatabaseAccess DATABASE_1_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
 }

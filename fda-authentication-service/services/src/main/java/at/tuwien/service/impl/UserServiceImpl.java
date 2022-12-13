@@ -1,7 +1,10 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.auth.MariaDbPassword;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -10,7 +13,9 @@ import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repositories.UserRepository;
+import at.tuwien.service.QueueService;
 import at.tuwien.service.UserService;
+import joptsimple.internal.Strings;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -28,12 +33,15 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final QueueService queueService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserMapper userMapper, QueueService queueService, UserRepository userRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userMapper = userMapper;
+        this.queueService = queueService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -100,6 +108,7 @@ public class UserServiceImpl implements UserService {
         user.setRoles(List.of(RoleType.ROLE_RESEARCHER));
         user.setThemeDark(false);
         user.setPassword(passwordEncoder.encode(data.getPassword()));
+        user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         final User entity;
         try {
             entity = userRepository.save(user);
@@ -223,16 +232,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException {
+    public User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException,
+            BrokerUserCreationException {
         /* check */
         final User user = find(id);
+        /* modify */
+        final UserDetailsDto details = queueService.findUser(user.getUsername());
+        final CreateUserDto modifyDto = userMapper.userPasswordDtoToCreateUserDto(data);
+        if (details.getTags().length > 0) {
+            final String tags = Strings.join(details.getTags(), ",");
+            log.debug("found tags, setting the tags={}", tags);
+            modifyDto.setTags(tags);
+        }
+        queueService.modifyUserPassword(user, modifyDto);
+        log.info("Updated broker service password for user with id {}", user.getId());
         /* save */
         final String passwd = passwordEncoder.encode(data.getPassword());
-        log.debug("encoded updated user password {}", passwd);
+        log.trace("encoded updated user password {}", passwd);
         user.setPassword(passwd);
+        user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
+        log.trace("mapped password {} to updated user {}", passwd, user);
         final User entity = userRepository.save(user);
         log.info("Updated user with id {}", entity.getId());
-        log.trace("updated user {}", entity);
         return entity;
     }
 

@@ -1,26 +1,38 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.File;
+import java.io.IOException;
+import java.security.Principal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,6 +53,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     private RabbitMqListenerImpl rabbitMqListener;
 
     @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
+
+    @MockBean
     private ImageRepository imageRepository;
 
     @MockBean
@@ -59,37 +74,357 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     private QueryEndpoint queryEndpoint;
 
     @Test
-    public void execute_forbiddenKeyword_fails() throws UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException, ColumnParseException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
-        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT w.* FROM `weather_aus` w")
-                .build();
-        final Long page = 0L;
-        final Long size = 2L;
-        final SortType sortDirection = SortType.ASC;
-        final String sortColumn = "location";
-
-        /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
-                USER_1_PRINCIPAL, page, size, sortDirection, sortColumn))
-                .thenReturn(QUERY_1_RESULT_DTO);
+    public void execute_forbiddenKeyword_fails() {
+        final String statement = "SELECT w.* FROM `weather_aus` w";
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request, page, size, USER_1_PRINCIPAL, sortDirection,
-                    sortColumn);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, null, USER_2_PRINCIPAL, DATABASE_1, null);
         });
     }
 
     @Test
-    public void execute_forbiddenKeyword2_fails() throws UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException, ColumnParseException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+    public void execute_forbiddenKeyword2_fails() {
+        final String statement = "SELECT * FROM `weather_aus` w";
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, null, USER_2_PRINCIPAL, DATABASE_1, null);
+        });
+    }
+
+    @Test
+    public void execute_publicAnonymized_fails() {
+        final Principal principal = null;
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, null, principal, DATABASE_1, null);
+        });
+    }
+
+    @Test
+    public void execute_publicRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+    }
+
+    @Test
+    public void execute_publicWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void execute_publicWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void execute_publicOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1, DATABASE_1_OWNER_ACCESS);
+    }
+
+    @Test
+    public void reExecute_publicAnonymized_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, null, null, DATABASE_1, null);
+    }
+
+    @Test
+    public void reExecute_publicRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+    }
+
+    @Test
+    public void reExecute_publicWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void reExecute_publicWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void reExecute_publicOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1, DATABASE_1_OWNER_ACCESS);
+    }
+
+    @Test
+    public void export_publicAnonymized_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, null, null, DATABASE_1, null, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_publicAnonymized_fails() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, null, null, DATABASE_1, null, "application/json", HttpStatus.NOT_IMPLEMENTED);
+    }
+
+    @Test
+    public void export_publicRead_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_publicWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_publicWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_publicOwner_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1, DATABASE_1_OWNER_ACCESS, null, HttpStatus.OK);
+    }
+
+    /* ################################################################################################### */
+    /* ## PRIVATE DATABASES                                                                             ## */
+    /* ################################################################################################### */
+
+    @Test
+    public void execute_privateAnonymized_fails() {
+        final Principal principal = null;
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, null, principal, DATABASE_2, null);
+        });
+    }
+
+    @Test
+    public void execute_privateRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_READ_ACCESS);
+    }
+
+    @Test
+    public void execute_privateWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void execute_privateWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void execute_privateOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, SortException, NotAllowedException,
+            PaginationException {
+
+        /* test */
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_OWNER_ACCESS);
+    }
+
+    @Test
+    public void reExecute_privateAnonymized_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, null, null, DATABASE_2, null);
+        });
+    }
+
+    @Test
+    public void reExecute_privateRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_READ_ACCESS);
+    }
+
+    @Test
+    public void reExecute_privateWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void reExecute_privateWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void reExecute_privateOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
+            ImageNotSupportedException, SortException, NotAllowedException,
+            PaginationException, QueryNotFoundException {
+
+        /* test */
+        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_OWNER_ACCESS);
+    }
+
+    @Test
+    public void export_privateAnonymized_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, null, null, DATABASE_2, null, null, HttpStatus.OK);
+        });
+    }
+
+    @Test
+    public void export_privateAnonymized2_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, null, null, DATABASE_2, null, "application/json", HttpStatus.NOT_IMPLEMENTED);
+        });
+    }
+
+    @Test
+    public void export_privateRead_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_READ_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_privateWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_privateWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+    }
+
+    @Test
+    public void export_privateOwner_succeeds() throws UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, NotAllowedException, QueryNotFoundException, FileStorageException,
+            ContainerNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_OWNER_ACCESS, null, HttpStatus.OK);
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void generic_execute(Long containerId, Long databaseId, String statement, String username,
+                                   Principal principal, Database database, DatabaseAccess access)
+            throws UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException,
+            QueryMalformedException, ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, SortException, NotAllowedException, PaginationException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT * FROM `weather_aus` w")
+                .statement(statement)
                 .build();
         final Long page = 0L;
         final Long size = 2L;
@@ -97,18 +432,101 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final String sortColumn = "location";
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, QueryTypeDto.QUERY,
-                USER_1_PRINCIPAL, page, size, sortDirection, sortColumn))
+        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+                .thenReturn(Optional.of(database));
+        log.trace("mock database for container with id {} and database id {}", containerId, databaseId);
+        if (access == null) {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
+            log.trace("mock no access for database with id {} and username {}", databaseId, username);
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.of(access));
+            log.trace("mock access {} for database with id {} and username {}", access.getType(), databaseId, username);
+        }
+        when(queryService.execute(containerId, databaseId, request, QueryTypeDto.QUERY,
+                principal, page, size, sortDirection, sortColumn))
+                .thenReturn(QUERY_1_RESULT_DTO);
+        log.trace("mock query service for container with id {} and database with id {}", containerId, databaseId);
+
+        /* test */
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(containerId, databaseId, request,
+                page, size, principal, sortDirection, sortColumn);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+    }
+
+    protected void generic_reExecute(Long containerId, Long databaseId, Long queryId, String username,
+                                     Principal principal, Database database, DatabaseAccess access)
+            throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, QueryMalformedException,
+            ColumnParseException, SortException, NotAllowedException, PaginationException {
+        final Long page = 0L;
+        final Long size = 2L;
+        final SortType sortDirection = SortType.ASC;
+        final String sortColumn = "location";
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+                .thenReturn(Optional.of(database));
+        when(storeService.findOne(containerId, databaseId, queryId, principal))
+                .thenReturn(QUERY_1);
+        if (access == null) {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.of(access));
+        }
+        when(queryService.reExecute(containerId, databaseId, QUERY_1, page, size, sortDirection, sortColumn, principal))
                 .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
-        assertThrows(QueryMalformedException.class, () -> {
-            queryEndpoint.execute(CONTAINER_1_ID, DATABASE_1_ID, request, page, size, USER_1_PRINCIPAL, sortDirection,
-                    sortColumn);
-        });
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.reExecute(containerId, databaseId, queryId,
+                principal, page, size, sortDirection, sortColumn);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
     }
 
+    protected void export_generic(Long containerId, Long databaseId, Long queryId, String username, Principal principal,
+                                  Database database, DatabaseAccess access, String accept, HttpStatus status) throws IOException,
+            UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, QueryMalformedException,
+            FileStorageException, ContainerNotFoundException, NotAllowedException {
+        final ExportResource resource = ExportResource.builder()
+                .filename("location.csv")
+                .resource(new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/weather/location.csv"))))
+                .build();
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+                .thenReturn(Optional.of(database));
+        if (access == null) {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.of(access));
+        }
+        when(storeService.findOne(containerId, databaseId, queryId, principal))
+                .thenReturn(QUERY_1);
+        when(queryService.findOne(containerId, databaseId, queryId, principal))
+                .thenReturn(resource);
+
+        /* test */
+        final ResponseEntity<?> response = queryEndpoint.export(containerId, databaseId, queryId, accept, principal);
+        assertEquals(status, response.getStatusCode());
+        if (status.equals(HttpStatus.OK)) {
+            assertNotNull(response.getBody());
+        }
+    }
 
 }

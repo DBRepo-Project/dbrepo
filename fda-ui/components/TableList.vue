@@ -9,10 +9,25 @@
     <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion flat>
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
-          {{ item.name }}
+          <span>{{ item.name }}</span>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-if="is_owner(item)"
+                class="pid-icon"
+                v-bind="attrs"
+                v-on="on">
+                mdi-account
+              </v-icon>
+            </template>
+            <span>Created by you</span>
+          </v-tooltip>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
-          <v-row dense>
+          <v-row v-if="loadingDetails" dense>
+            <v-progress-linear color="primary" indeterminate />
+          </v-row>
+          <v-row v-if="!loadingDetails" dense>
             <v-col>
               <v-list dense>
                 <v-list-item>
@@ -47,7 +62,7 @@
                     <v-list-item-content v-text="tableDetails.topic" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item v-if="isPublicOrOwner">
+                <v-list-item v-if="hasReadAccess">
                   <v-list-item-content>
                     <v-list-item-title>
                       AMQP Consumer(s)
@@ -58,6 +73,16 @@
                         class="ml-1"
                         :color="consumersState"
                         :content="`${consumersUp}/${consumersTotal} up`" />
+                    </v-list-item-content>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Table Creator
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      <span :class="is_owner(item) ? 'primary--text' : ''">{{ formatCreator(item.creator) }}</span>
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -72,7 +97,7 @@
               </v-list>
             </v-col>
           </v-row>
-          <v-row v-if="isPublicOrOwner" dense>
+          <v-row v-if="hasReadAccess" dense>
             <v-col>
               <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
                 View Data
@@ -90,7 +115,7 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-if="isPublicOrOwner && tableDetails.columns">
+          <v-row v-if="hasReadAccess && tableDetails.columns">
             <v-data-table
               class="full-width"
               disable-sort
@@ -161,7 +186,7 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
@@ -177,6 +202,9 @@ export default {
       unitDialog: false,
       consumers: [],
       attemptedLoadingConsumers: false,
+      access: {
+        type: null
+      },
       user: {
         username: null
       },
@@ -195,7 +223,10 @@ export default {
         description: null,
         topic: null,
         columns: [],
-        created: null
+        created: null,
+        creator: {
+          username: null
+        }
       },
       dialogDelete: false,
       headers: [
@@ -247,8 +278,20 @@ export default {
       }
       return formatTimestampUTCLabel(this.tableDetails.created)
     },
-    isPublicOrOwner () {
-      return this.database.is_public || this.database.creator.username === this.user.username
+    hasReadAccess () {
+      if (this.database.is_public) {
+        /* database is public */
+        return true
+      }
+      if (this.database.creator.username === this.user.username) {
+        /* user is creator of database */
+        return true
+      }
+      if (this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all') {
+        /* user has some level of access */
+        return true
+      }
+      return false
     },
     consumersState () {
       if (this.consumersTotal === 0) {
@@ -275,11 +318,15 @@ export default {
   },
   mounted () {
     this.$root.$on('table-create', this.refresh)
-    this.loadDatabase()
     this.loadUser()
+    this.loadAccess()
+    this.loadDatabase()
     this.pollConsumerStatus()
   },
   methods: {
+    formatCreator (creator) {
+      return formatUser(creator)
+    },
     pickUnit (item) {
       this.column = item
       this.unitDialog = true
@@ -300,7 +347,22 @@ export default {
         console.debug('tables', this.tables)
       } catch (err) {
         this.error = true
-        this.$toast.error('Could not get database details.')
+        this.$toast.error('Could not get database details')
+      }
+      this.loading = false
+    },
+    async loadAccess () {
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('access', this.access)
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Could not get database access permissions')
       }
       this.loading = false
     },
@@ -320,7 +382,7 @@ export default {
       /* use cache */
       this.tableDetails = table
       /* load remaining info */
-      if (this.isPublicOrOwner) {
+      if (this.hasReadAccess) {
         try {
           this.loadingDetails = true
           const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)
@@ -336,6 +398,9 @@ export default {
         }
         this.loadingDetails = false
       }
+    },
+    is_owner (table) {
+      return table.creator.username === this.user.username
     },
     closed (data) {
       console.debug('closed dialog', data)
@@ -357,7 +422,7 @@ export default {
         this.loading = false
         if (tableId) { this.openPanelByTableId(tableId) }
       } catch (err) {
-        this.$toast.error('Could not load tables.')
+        this.$toast.error('Could not load tables')
       }
       this.$store.commit('SET_TABLE', null)
     },
@@ -368,7 +433,7 @@ export default {
         this.loading = false
         this.refresh()
       } catch (err) {
-        this.$toast.error('Could not delete table.')
+        this.$toast.error('Could not delete table')
       }
       this.dialogDelete = false
     },

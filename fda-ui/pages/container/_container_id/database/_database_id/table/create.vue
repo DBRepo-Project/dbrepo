@@ -142,7 +142,7 @@ export default {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, this.config)
         if (res.status === 201) {
           this.error = false
-          this.$toast.success('Table created.')
+          this.$toast.success('Table created')
           this.$root.$emit('table-create', res.data)
           await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${res.data.id}`)
         } else {
