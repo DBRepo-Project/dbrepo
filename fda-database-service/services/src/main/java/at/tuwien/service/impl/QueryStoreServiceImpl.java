@@ -42,7 +42,6 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            executeQuery(connection, "USE  ?", database.getInternalName());
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_queries_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_tables_seq`");
             executeQuery(connection, "CREATE SEQUENCE IF NOT EXISTS `qs_columns_seq`");

@@ -152,10 +152,6 @@ export default {
       this.loading = false
     },
     async createContainer () {
-      if (this.container.id !== null) {
-        console.warn('container id already present', this.container.id)
-        return
-      }
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
       try {
@@ -163,6 +159,7 @@ export default {
         const res = await this.$axios.post('/api/container', this.createContainerDto, this.config)
         this.container = res.data
         console.debug('created container', this.container)
+        this.error = false
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to create container')
@@ -178,6 +175,7 @@ export default {
         this.loading = true
         const res = await this.$axios.put(`/api/container/${this.container.id}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
+        this.error = false
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to start container')
@@ -197,6 +195,7 @@ export default {
         if (state !== 'running') {
           console.warn('Container is not running')
         }
+        this.error = false
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to start container')
@@ -219,6 +218,7 @@ export default {
         this.database = res.data
         console.debug('created database', this.database)
         await this.$router.push(`/container/${this.container.id}/database/${this.database.id}/info`)
+        this.error = false
         this.$emit('close', { success: true })
       } catch (err) {
         this.error = true

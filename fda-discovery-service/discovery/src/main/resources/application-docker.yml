@@ -1,10 +1,10 @@
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://metadata-db:5432/fda
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    url: jdbc:mariadb://metadata-db:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect

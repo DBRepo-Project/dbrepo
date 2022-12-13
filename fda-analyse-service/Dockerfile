@@ -25,3 +25,5 @@ RUN chmod +x ./service_ready
 EXPOSE $PORT_APP
 
 ENTRYPOINT [ "python", "./pywsgi.py" ]
+
+CMD sh -c /wait && flask run
