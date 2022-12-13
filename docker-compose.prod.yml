@@ -41,7 +41,7 @@ services:
     volumes:
       - metadata-db-data:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3306:3306"
     env_file:
       - .env
     logging:
