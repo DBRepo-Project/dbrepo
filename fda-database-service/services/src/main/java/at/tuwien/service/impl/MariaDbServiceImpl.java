@@ -160,17 +160,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         log.info("Created user {} on database with creator access", user.getUsername());
         /* save in metadata database */
-        database.setExchange(amqpMapper.exchangeName(database));
         database.setIsPublic(createDto.getIsPublic());
         final User creator = userService.findByUsername(principal.getName());
         database.setCreator(creator);
-        final Database dbdb = databaseRepository.save(database);
+        final Database tmp = databaseRepository.save(database);
+        tmp.setExchange("" + containerId + "/" + database.getId());
+        final Database dbdb = databaseRepository.save(tmp);
         log.info("Created database with id {}", dbdb.getId());
-        log.trace("created database {}", dbdb);
         /* save in database_index - elastic search */
         final Database edb = databaseidxRepository.save(database);
         log.info("Saved database in elastic search with id {}", edb.getId());
-        log.trace("saved database in elastic search {}", edb);
         return dbdb;
     }
 

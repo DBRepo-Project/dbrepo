@@ -52,7 +52,7 @@ public class Table {
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     private String topic;
 
     @Column(name = "tdescription", columnDefinition = "TEXT")

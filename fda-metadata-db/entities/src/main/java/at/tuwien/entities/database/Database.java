@@ -57,7 +57,7 @@ public class Database {
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false)
+    @Column(updatable = false)
     private String exchange;
 
     @Column(columnDefinition = "TEXT")
