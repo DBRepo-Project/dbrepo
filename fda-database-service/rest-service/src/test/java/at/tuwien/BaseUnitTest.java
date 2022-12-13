@@ -194,6 +194,32 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_2_PUBLIC)
             .build();
 
+    public final static Long DATABASE_3_ID = 3L;
+    public final static String DATABASE_3_NAME = "Weather AT";
+    public final static Boolean DATABASE_3_PUBLIC = false;
+    public final static String DATABASE_3_INTERNALNAME = "weather_at";
+    public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
+    public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_3_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_3_NAME)
+            .isPublic(DATABASE_3_PUBLIC)
+            .build();
+
+    public final static Long DATABASE_4_ID = 4L;
+    public final static String DATABASE_4_NAME = "Weather AT";
+    public final static Boolean DATABASE_4_PUBLIC = false;
+    public final static String DATABASE_4_INTERNALNAME = "weather_at";
+    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
+    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_4_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_4_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_4_NAME)
+            .isPublic(DATABASE_4_PUBLIC)
+            .build();
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_IP = "172.28.0.5";
@@ -209,6 +235,22 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_2_UPDATED = Instant.now();
+
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_3_UPDATED = Instant.now();
+
+    public final static Long CONTAINER_4_ID = 4L;
+    public final static String CONTAINER_4_HASH = "deadbeef";
+    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static String CONTAINER_4_NAME = "fda-userdb-u04";
+    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
+    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_4_UPDATED = Instant.now();
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
@@ -232,6 +274,7 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .created(CONTAINER_1_CREATED)
             .lastModified(CONTAINER_1_UPDATED)
+            .ipAddress(CONTAINER_1_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .build();
@@ -243,6 +286,31 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .created(CONTAINER_2_CREATED)
             .lastModified(CONTAINER_2_UPDATED)
+            .ipAddress(CONTAINER_2_IP)
+            .imageId(IMAGE_1_ID)
+            .image(IMAGE_1)
+            .build();
+
+    public final static Container CONTAINER_3 = Container.builder()
+            .id(CONTAINER_3_ID)
+            .name(CONTAINER_3_NAME)
+            .hash(CONTAINER_3_HASH)
+            .internalName(CONTAINER_3_INTERNALNAME)
+            .created(CONTAINER_3_CREATED)
+            .lastModified(CONTAINER_3_UPDATED)
+            .ipAddress(CONTAINER_3_IP)
+            .imageId(IMAGE_1_ID)
+            .image(IMAGE_1)
+            .build();
+
+    public final static Container CONTAINER_4 = Container.builder()
+            .id(CONTAINER_4_ID)
+            .name(CONTAINER_4_NAME)
+            .hash(CONTAINER_4_HASH)
+            .internalName(CONTAINER_4_INTERNALNAME)
+            .created(CONTAINER_4_CREATED)
+            .lastModified(CONTAINER_4_UPDATED)
+            .ipAddress(CONTAINER_4_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .build();
@@ -261,20 +329,6 @@ public abstract class BaseUnitTest {
             .exchange(DATABASE_1_EXCHANGE)
             .build();
 
-    public final static Long TABLE_1_ID = 1L;
-    public final static String TABLE_1_NAME = "NYSE";
-    public final static String TABLE_1_INTERNALNAME = "nyse";
-    public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
-
-    public final static Table TABLE_1 = Table.builder()
-            .id(TABLE_1_ID)
-            .name(TABLE_1_NAME)
-            .internalName(TABLE_1_INTERNALNAME)
-            .topic(TABLE_1_TOPIC)
-            .tdbid(DATABASE_1_ID)
-            .database(DATABASE_1)
-            .build();
-
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
             .name(DATABASE_2_NAME)
@@ -287,6 +341,48 @@ public abstract class BaseUnitTest {
             .lastModified(DATABASE_2_UPDATED)
             .container(CONTAINER_2)
             .exchange(DATABASE_2_EXCHANGE)
+            .build();
+
+    public final static Database DATABASE_3 = Database.builder()
+            .id(DATABASE_3_ID)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .isPublic(DATABASE_3_PUBLIC)
+            .container(CONTAINER_3)
+            .created(DATABASE_3_CREATED)
+            .creator(USER_1)
+            .tables(List.of())
+            .lastModified(DATABASE_3_UPDATED)
+            .container(CONTAINER_3)
+            .exchange(DATABASE_3_EXCHANGE)
+            .build();
+
+    public final static Database DATABASE_4 = Database.builder()
+            .id(DATABASE_4_ID)
+            .name(DATABASE_4_NAME)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .isPublic(DATABASE_4_PUBLIC)
+            .container(CONTAINER_4)
+            .created(DATABASE_4_CREATED)
+            .creator(USER_1)
+            .tables(List.of())
+            .lastModified(DATABASE_4_UPDATED)
+            .container(CONTAINER_4)
+            .exchange(DATABASE_4_EXCHANGE)
+            .build();
+
+    public final static Long TABLE_1_ID = 1L;
+    public final static String TABLE_1_NAME = "NYSE";
+    public final static String TABLE_1_INTERNALNAME = "nyse";
+    public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
+
+    public final static Table TABLE_1 = Table.builder()
+            .id(TABLE_1_ID)
+            .name(TABLE_1_NAME)
+            .internalName(TABLE_1_INTERNALNAME)
+            .topic(TABLE_1_TOPIC)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .build();
 
     public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb");

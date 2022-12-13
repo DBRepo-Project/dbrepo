@@ -107,27 +107,11 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         CONTAINER_SEARCH.setHash(search.getId());
         /* start elastic search */
         startContainer(CONTAINER_SEARCH, 30);
-        /* create fda-userdb-u01 */
-        final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
-                .withName(CONTAINER_1_NAME)
-                .withIpv4Address(CONTAINER_1_IP)
-                .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
-                .exec();
-        CONTAINER_1.setHash(response1.getId());
-        /* create fda-userdb-u02 */
-        final CreateContainerResponse response2 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
-                .withName(CONTAINER_2_NAME)
-                .withIpv4Address(CONTAINER_2_IP)
-                .withHostName(CONTAINER_2_INTERNALNAME)
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
-                .exec();
-        CONTAINER_2.setHash(response2.getId());
-        /* start fda-userdb-u01 */
+        /* create containers */
+        createContainer(CONTAINER_1, "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
+        createContainer(CONTAINER_2, "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
+        /* start containers */
         startContainer(CONTAINER_1);
-        /* start fda-userdb-u02 */
         startContainer(CONTAINER_2);
         /* metadata db */
         licenseRepository.save(LICENSE_1);
@@ -199,6 +183,32 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         final Database database2 = databaseService.create(CONTAINER_2_ID, DATABASE_2_CREATE, principal);
         assertEquals(DATABASE_2_NAME, database2.getName());
         assertEquals(1, userRepository.findAll().size());
+    }
+
+    @Test
+    public void create_databaseAfterAnother_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
+            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
+            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException, InterruptedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_4);
+        createContainer(CONTAINER_3, "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
+        containerRepository.save(CONTAINER_3);
+        createContainer(CONTAINER_4, "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
+        containerRepository.save(CONTAINER_4);
+        startContainer(CONTAINER_3);
+        startContainer(CONTAINER_4);
+
+
+        /* test */
+        final Database database4 = databaseService.create(CONTAINER_4_ID, DATABASE_4_CREATE, principal);
+        assertEquals(DATABASE_4_NAME, database4.getName());
+        final Database database3 = databaseService.create(CONTAINER_3_ID, DATABASE_3_CREATE, principal);
+        assertEquals(DATABASE_3_NAME, database3.getName());
     }
 
 }
