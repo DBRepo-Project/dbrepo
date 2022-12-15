@@ -40,13 +40,15 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         final List<Table> tables = tableService.findAll();
         final List<ConsumerDto> consumers = brokerServiceGateway.findAllConsumers();
         for (Table table : tables) {
-            final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getTopic())).count();
+            final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getQueueName())).count();
             if (consumerCount >= amqpConfig.getAmqpConsumers()) {
-                log.trace("listener table with name {} already has {} consumers (max. {})", table.getName(), consumerCount, amqpConfig.getAmqpConsumers());
+                log.trace("listener table with name {} already has {} consumers (max. {})", table.getName(),
+                        consumerCount, amqpConfig.getAmqpConsumers());
                 continue;
             }
-            log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount, amqpConfig.getAmqpConsumers());
-            messageQueueService.createConsumer(table.getTopic(), table.getDatabase().getContainer().getId(),
+            log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount,
+                    amqpConfig.getAmqpConsumers());
+            messageQueueService.createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
                     table.getDatabase().getId(), table.getId());
         }
     }

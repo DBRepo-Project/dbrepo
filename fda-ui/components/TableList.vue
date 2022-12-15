@@ -10,18 +10,6 @@
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
           <span>{{ item.name }}</span>
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-if="is_owner(item)"
-                class="pid-icon"
-                v-bind="attrs"
-                v-on="on">
-                mdi-account
-              </v-icon>
-            </template>
-            <span>Created by you</span>
-          </v-tooltip>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
           <v-row v-if="loadingDetails" dense>
@@ -49,17 +37,27 @@
                 <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
-                      AMQP Exchange
+                      Exchange Name (AMQP/MQTT)
                     </v-list-item-title>
-                    <v-list-item-content v-text="database.exchange" />
+                    <v-list-item-content v-text="database.exchange_name" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item v-if="tableDetails.topic">
+                <v-list-item>
                   <v-list-item-content>
                     <v-list-item-title>
-                      AMQP Routing Key
+                      Queue Name (AMQP/MQTT)
                     </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.topic" />
+                    <v-list-item-content v-text="tableDetails.queue_name" />
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>
+                      Routing Key (AMQP/MQTT)
+                    </v-list-item-title>
+                    <v-list-item-content>
+                      <span v-text="tableDetails.routing_key" />
+                    </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="hasReadAccess">
@@ -68,11 +66,12 @@
                       AMQP Consumer(s)
                     </v-list-item-title>
                     <v-list-item-content class="amqp-consumer">
+                      <span v-text="`${consumersUp}/${consumersTotal}`" />
                       <v-badge
                         v-if="attemptedLoadingConsumers"
                         class="ml-1"
-                        :color="consumersState"
-                        :content="`${consumersUp}/${consumersTotal} up`" />
+                        :color="consumersState.color"
+                        :content="consumersState.text" />
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -82,7 +81,10 @@
                       Table Creator
                     </v-list-item-title>
                     <v-list-item-content>
-                      <span :class="is_owner(item) ? 'primary--text' : ''">{{ formatCreator(item.creator) }}</span>
+                      <span>
+                        {{ formatCreator(item.creator) }}
+                        <span v-if="item.creator.username === user.username">(you)</span>
+                      </span>
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -210,7 +212,7 @@ export default {
       },
       database: {
         id: null,
-        exchange: null,
+        exchange_name: null,
         is_public: null,
         tables: [],
         creator: {
@@ -221,7 +223,8 @@ export default {
         id: null,
         internal_name: null,
         description: null,
-        topic: null,
+        queue_name: null,
+        routing_key: null,
         columns: [],
         created: null,
         creator: {
@@ -295,12 +298,12 @@ export default {
     },
     consumersState () {
       if (this.consumersTotal === 0) {
-        return 'error'
+        return { color: 'error', text: 'down' }
       }
       if (this.consumersTotal - this.consumersUp > 0) {
-        return 'warning'
+        return { color: 'warning', text: 'up' }
       }
-      return 'success'
+      return { color: 'success', text: 'up' }
     },
     consumersTotal () {
       return this.consumers.length
@@ -390,7 +393,7 @@ export default {
           console.debug('table details', this.tableDetails)
           if (table.id) {
             this.openPanelByTableId(table.id)
-            await this.consumerDetails(this.tableDetails.topic)
+            await this.consumerDetails(this.tableDetails.queue_name)
           }
         } catch (err) {
           this.$toast.error('Failed to load table details')
@@ -437,12 +440,12 @@ export default {
       }
       this.dialogDelete = false
     },
-    async consumerDetails (topic) {
+    async consumerDetails (queueName) {
       try {
         this.attemptedLoadingConsumers = true
         this.loadingConsumers = true
         const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
-        const consumers = res.data.filter(c => c.queue.name === topic)
+        const consumers = res.data.filter(c => c.queue.name === queueName)
         console.debug('consumers', consumers)
         this.consumers = consumers
       } catch (err) {
@@ -451,10 +454,10 @@ export default {
       this.loadingConsumers = false
     },
     pollConsumerStatus () {
-      if (this.tableDetails === undefined || this.tableDetails.topic === undefined) {
+      if (this.tableDetails === undefined || this.tableDetails.queue_name === undefined) {
         return
       }
-      this.consumerDetails(this.tableDetails.topic)
+      this.consumerDetails(this.tableDetails.queue_name)
     },
     showDeleteTableDialog (id) {
       this.deleteTableId = id
@@ -470,7 +473,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .colTable thead th {
   text-align: initial;
 }

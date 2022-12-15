@@ -165,61 +165,6 @@ public abstract class BaseUnitTest {
             .uri(LICENSE_1_URI)
             .build();
 
-    public final static Long DATABASE_1_ID = 1L;
-    public final static String DATABASE_1_NAME = "Weather";
-    public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
-    public final static String DATABASE_1_PUBLISHER = "TU Wien";
-    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
-    public final static Boolean DATABASE_1_PUBLIC = false;
-    public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
-    public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
-    public final static Instant DATABASE_1_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_1_NAME)
-            .isPublic(DATABASE_1_PUBLIC)
-            .build();
-
-    public final static Long DATABASE_2_ID = 2L;
-    public final static String DATABASE_2_NAME = "Weather AT";
-    public final static Boolean DATABASE_2_PUBLIC = false;
-    public final static String DATABASE_2_INTERNALNAME = "weather_at";
-    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
-    public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_2_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_2_NAME)
-            .isPublic(DATABASE_2_PUBLIC)
-            .build();
-
-    public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "Weather AT";
-    public final static Boolean DATABASE_3_PUBLIC = false;
-    public final static String DATABASE_3_INTERNALNAME = "weather_at";
-    public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
-    public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_3_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_3_NAME)
-            .isPublic(DATABASE_3_PUBLIC)
-            .build();
-
-    public final static Long DATABASE_4_ID = 4L;
-    public final static String DATABASE_4_NAME = "Weather AT";
-    public final static Boolean DATABASE_4_PUBLIC = false;
-    public final static String DATABASE_4_INTERNALNAME = "weather_at";
-    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
-    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_4_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_4_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_4_NAME)
-            .isPublic(DATABASE_4_PUBLIC)
-            .build();
-
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_IP = "172.28.0.5";
@@ -315,6 +260,61 @@ public abstract class BaseUnitTest {
             .image(IMAGE_1)
             .build();
 
+    public final static Long DATABASE_1_ID = 1L;
+    public final static String DATABASE_1_NAME = "Weather";
+    public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
+    public final static String DATABASE_1_PUBLISHER = "TU Wien";
+    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
+    public final static Boolean DATABASE_1_PUBLIC = false;
+    public final static String DATABASE_1_INTERNALNAME = "weather";
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
+    public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant DATABASE_1_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_1_NAME)
+            .isPublic(DATABASE_1_PUBLIC)
+            .build();
+
+    public final static Long DATABASE_2_ID = 2L;
+    public final static String DATABASE_2_NAME = "Weather AT";
+    public final static Boolean DATABASE_2_PUBLIC = false;
+    public final static String DATABASE_2_INTERNALNAME = "weather_at";
+    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
+    public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_2_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
+            .build();
+
+    public final static Long DATABASE_3_ID = 3L;
+    public final static String DATABASE_3_NAME = "Weather AT";
+    public final static Boolean DATABASE_3_PUBLIC = false;
+    public final static String DATABASE_3_INTERNALNAME = "weather_at";
+    public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
+    public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_3_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_3_NAME)
+            .isPublic(DATABASE_3_PUBLIC)
+            .build();
+
+    public final static Long DATABASE_4_ID = 4L;
+    public final static String DATABASE_4_NAME = "Weather AT";
+    public final static Boolean DATABASE_4_PUBLIC = false;
+    public final static String DATABASE_4_INTERNALNAME = "weather_at";
+    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
+    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_4_UPDATED = Instant.now();
+
+    public final static DatabaseCreateDto DATABASE_4_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_4_NAME)
+            .isPublic(DATABASE_4_PUBLIC)
+            .build();
+
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
             .name(DATABASE_1_NAME)
@@ -326,7 +326,7 @@ public abstract class BaseUnitTest {
             .tables(List.of())
             .lastModified(DATABASE_1_UPDATED)
             .container(CONTAINER_1)
-            .exchange(DATABASE_1_EXCHANGE)
+            .exchangeName(DATABASE_1_EXCHANGE)
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
@@ -340,7 +340,7 @@ public abstract class BaseUnitTest {
             .tables(List.of())
             .lastModified(DATABASE_2_UPDATED)
             .container(CONTAINER_2)
-            .exchange(DATABASE_2_EXCHANGE)
+            .exchangeName(DATABASE_2_EXCHANGE)
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -354,7 +354,7 @@ public abstract class BaseUnitTest {
             .tables(List.of())
             .lastModified(DATABASE_3_UPDATED)
             .container(CONTAINER_3)
-            .exchange(DATABASE_3_EXCHANGE)
+            .exchangeName(DATABASE_3_EXCHANGE)
             .build();
 
     public final static Database DATABASE_4 = Database.builder()
@@ -368,19 +368,21 @@ public abstract class BaseUnitTest {
             .tables(List.of())
             .lastModified(DATABASE_4_UPDATED)
             .container(CONTAINER_4)
-            .exchange(DATABASE_4_EXCHANGE)
+            .exchangeName(DATABASE_4_EXCHANGE)
             .build();
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "NYSE";
     public final static String TABLE_1_INTERNALNAME = "nyse";
-    public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_ROUTING_KEY = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID + "/1";
 
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .name(TABLE_1_NAME)
             .internalName(TABLE_1_INTERNALNAME)
-            .topic(TABLE_1_TOPIC)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
             .tdbid(DATABASE_1_ID)
             .database(DATABASE_1)
             .build();

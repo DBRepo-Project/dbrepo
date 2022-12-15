@@ -32,8 +32,9 @@ public class DatabaseDto {
     private String name;
 
     @NotBlank
-    @Schema(example = "air_quality")
-    private String exchange;
+    @JsonProperty("exchange_name")
+    @Schema(example = "dbrepo/4/4")
+    private String exchangeName;
 
     @NotNull
     private UserBriefDto creator;

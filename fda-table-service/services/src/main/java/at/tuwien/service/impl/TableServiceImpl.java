@@ -141,6 +141,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
         tmp.setInternalName(tableMapper.nameToInternalName(tmp.getName()));
+        tmp.setQueueName(database.getExchangeName() + "/" + tmp.getInternalName());
+        tmp.setRoutingKey(tmp.getQueueName() + "/1");
         tmp.setTdbid(databaseId);
         tmp.setDatabase(database);
         tmp.setColumns(List.of());
@@ -158,8 +160,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 .forEach(column -> {
                     column.setOrdinalPosition(idx[0]++);
                 });
-        final String queueName = "" + containerId + "/" + databaseId + "/" + entity.getId();
-        entity.setTopic(queueName);
         /* create history view */
         final ComboPooledDataSource dataSource1 = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {

@@ -18,7 +18,7 @@ public interface AmqpMapper {
             permissions = "";
         } else {
             permissions = "^(" + databases.stream()
-                    .map(Database::getExchange)
+                    .map(Database::getExchangeName)
                     .collect(Collectors.joining("|")) + ")$";
         }
         log.trace("mapped database count {} to permissions '{}'", databases.size(), permissions);

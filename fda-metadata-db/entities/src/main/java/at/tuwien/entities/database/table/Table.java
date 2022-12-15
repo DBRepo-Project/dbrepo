@@ -52,8 +52,11 @@ public class Table {
     @Column(nullable = false)
     private String internalName;
 
-    @Column(updatable = false)
-    private String topic;
+    @Column(name = "queue_name", nullable = false, updatable = false)
+    private String queueName;
+
+    @Column(name = "routing_key", nullable = false, updatable = false)
+    private String routingKey;
 
     @Column(name = "tdescription", columnDefinition = "TEXT")
     private String description;

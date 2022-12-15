@@ -53,10 +53,10 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
-            channel.exchangeDeclare(database.getExchange(), BuiltinExchangeType.FANOUT, true);
-            log.info("Declared exchange {}", database.getExchange());
+            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.FANOUT, true);
+            log.info("Declared exchange {}", database.getExchangeName());
         } catch (IOException e) {
-            log.error("Failed to declare exchange {}", database.getExchange());
+            log.error("Failed to declare exchange {}", database.getExchangeName());
             throw new AmqpException("Failed to declare exchange", e);
         }
     }
@@ -72,10 +72,10 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void deleteExchange(Database database) throws AmqpException {
         try {
-            channel.exchangeDelete(database.getExchange());
-            log.info("Deleted exchange {}", database.getExchange());
+            channel.exchangeDelete(database.getExchangeName());
+            log.info("Deleted exchange {}", database.getExchangeName());
         } catch (IOException e) {
-            log.error("Failed to delete exchange {}", database.getExchange());
+            log.error("Failed to delete exchange {}", database.getExchangeName());
             throw new AmqpException("Failed to delete exchange", e);
         }
     }

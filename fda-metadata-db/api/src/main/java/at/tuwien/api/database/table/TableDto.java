@@ -38,8 +38,14 @@ public class TableDto {
     private UserBriefDto creator;
 
     @NotBlank
-    @Schema(example = "air_quality")
-    private String topic;
+    @JsonProperty("queue_name")
+    @Schema(example = "dbrepo/4/4/2")
+    private String queueName;
+
+    @NotBlank
+    @JsonProperty("routing_key")
+    @Schema(example = "dbrepo/4/4/2/1")
+    private String routingKey;
 
     @NotBlank
     @Schema(example = "Air Quality in Austria")

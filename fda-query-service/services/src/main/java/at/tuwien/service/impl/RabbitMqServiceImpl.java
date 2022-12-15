@@ -34,9 +34,9 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
     @Override
     @Transactional(readOnly = true)
-    public void createConsumer(String routingKey, Long containerId, Long databaseId, Long tableId) throws AmqpException {
+    public void createConsumer(String queueName, Long containerId, Long databaseId, Long tableId) throws AmqpException {
         try {
-            final String consumerTag = channel.basicConsume(routingKey, true, new Consumer() {
+            final String consumerTag = channel.basicConsume(queueName, true, new Consumer() {
                 @Override
                 public void handleConsumeOk(String consumerTag) {
                     //
@@ -64,7 +64,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
 
                 @Override
                 public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) {
-                    log.debug("handle delivery of tuple, consumerTag={}, envelope={}, properties={}, body=(bytes)",
+                    log.trace("handle delivery of tuple, consumerTag={}, envelope={}, properties={}, body=(bytes)",
                             consumerTag, envelope, properties);
                     final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
                     };
@@ -72,7 +72,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                         final TableCsvDto data = TableCsvDto.builder()
                                 .data(objectMapper.readValue(body, payloadReference))
                                 .build();
-                        log.debug("received tuple data {}", data);
+                        log.trace("received tuple data {}", data);
                         queryService.insert(containerId, databaseId, tableId, data, new BasicUserPrincipal(properties.getUserId()));
                     } catch (IOException e) {
                         log.error("Failed to parse for table with id {}, reason: {}", tableId, e.getMessage());
@@ -107,7 +107,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                     }
                 }
             });
-            log.debug("declared consumer for table topic {} with tag {}", routingKey, consumerTag);
+            log.debug("declared consumer for queue name {} with tag {}", queueName, consumerTag);
         } catch (IOException e) {
             log.error("Failed to create consumer for table with id {}, reason: {}", tableId, e.getMessage());
             throw new AmqpException("Failed to create consumer", e);
