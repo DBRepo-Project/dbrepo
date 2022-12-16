@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
 import lombok.*;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -61,6 +62,24 @@ public class View {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
+
+    /**
+     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
+     * Custom equality function implementation.
+     *
+     * @param other The other view
+     * @return True if views are equal, false otherwise
+     */
+    public boolean equals(FromItem other) {
+        final String name = other.toString()
+                .replace("`", "");
+        if (other.getAlias() != null) {
+            final int idx = name.indexOf(' ');
+            return this.getInternalName()
+                    .equals(name.substring(0, idx));
+        }
+        return this.getInternalName().equals(name);
+    }
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

@@ -1,7 +1,5 @@
 create sequence seq_zoo_id;
-
 create sequence seq_names_id;
-
 create table zoo
 (
     id          bigint       not null default nextval(`seq_zoo_id`),
@@ -34,6 +32,15 @@ create table names
     primary key (id),
     unique key (firstname, lastname)
 ) with system versioning;
+
+create table likes
+(
+    name_id bigint not null,
+    zoo_id  bigint not null,
+    primary key (name_id, zoo_id),
+    foreign key (name_id) references names (id),
+    foreign key (zoo_id) references zoo (id)
+);
 
 INSERT INTO zoo (id, animal_name, hair, feathers, eggs, milk, airborne, aquatic, predator, toothed, backbone, breathes,
                  venomous, fins, legs, tail, domestic, catsize, class_type)
@@ -145,3 +152,39 @@ VALUES ('Moritz', 'Staudinger'),
        ('Eva', 'Gergely'),
        ('Cornelia', 'Michlits'),
        ('Kirill', 'Stytsenko');
+
+INSERT INTO likes (name_id, zoo_id)
+VALUES (1, 5),
+       (1, 10),
+       (2, 3),
+       (2, 80),
+       (3, 4),
+       (4, 4),
+       (5, 100);
+
+########################################################################################################################
+## TEST CASE PRE-REQUISITE                                                                                            ##
+########################################################################################################################
+
+CREATE VIEW mock_view AS
+(
+SELECT `animal_name`,
+       `hair`,
+       `feathers`,
+       `eggs`,
+       `milk`,
+       `airborne`,
+       `aquatic`,
+       `predator`,
+       `toothed`,
+       `backbone`,
+       `breathes`,
+       `venomous`,
+       `fins`,
+       `legs`,
+       `tail`,
+       `domestic`,
+       `catsize`,
+       `class_type`
+FROM `zoo`
+WHERE `class_type` = 1);

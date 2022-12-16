@@ -143,11 +143,6 @@ public abstract class BaseUnitTest {
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
-    public final static Long TABLE_1_SKIP_HEADERS = 1L;
-    public final static String TABLE_1_NULL_ELEMENT = "NA";
-    public final static Character TABLE_1_SEPARATOR = ',';
-    public final static String TABLE_1_TRUE_ELEMENT = null;
-    public final static String TABLE_1_FALSE_ELEMENT = null;
 
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
@@ -155,11 +150,6 @@ public abstract class BaseUnitTest {
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_2_INTERNALNAME;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
-    public final static Long TABLE_2_SKIP_HEADERS = 1L;
-    public final static String TABLE_2_NULL_ELEMENT = null;
-    public final static Character TABLE_2_SEPARATOR = ';';
-    public final static String TABLE_2_TRUE_ELEMENT = null;
-    public final static String TABLE_2_FALSE_ELEMENT = null;
 
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
@@ -167,35 +157,27 @@ public abstract class BaseUnitTest {
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_TOPIC = DATABASE_3_EXCHANGE + "." + TABLE_3_INTERNALNAME;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
-    public final static Long TABLE_3_SKIP_HEADERS = 1L;
-    public final static String TABLE_3_NULL_ELEMENT = null;
-    public final static Character TABLE_3_SEPARATOR = ',';
-    public final static String TABLE_3_TRUE_ELEMENT = null;
-    public final static String TABLE_3_FALSE_ELEMENT = null;
 
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_4_INTERNALNAME;
+    public final static String TABLE_4_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
-    public final static Long TABLE_4_SKIP_HEADERS = 1L;
-    public final static String TABLE_4_NULL_ELEMENT = null;
-    public final static Character TABLE_4_SEPARATOR = '\t';
-    public final static String TABLE_4_TRUE_ELEMENT = null;
-    public final static String TABLE_4_FALSE_ELEMENT = null;
 
     public final static Long TABLE_5_ID = 5L;
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_5_INTERNALNAME;
+    public final static String TABLE_5_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_5_INTERNALNAME;
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
-    public final static Long TABLE_5_SKIP_HEADERS = 1L;
-    public final static String TABLE_5_NULL_ELEMENT = null;
-    public final static Character TABLE_5_SEPARATOR = ',';
-    public final static String TABLE_5_TRUE_ELEMENT = null;
-    public final static String TABLE_5_FALSE_ELEMENT = null;
+
+    public final static Long TABLE_6_ID = 6L;
+    public final static String TABLE_6_NAME = "likes";
+    public final static String TABLE_6_INTERNALNAME = "likes";
+    public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
+    public final static String TABLE_6_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNALNAME;
+    public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -1879,6 +1861,65 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_5_3_ENUM_VALUES)
                     .build());
 
+    public final static Long COLUMN_6_1_ID = 26L;
+    public final static Integer COLUMN_6_1_ORDINALPOS = 0;
+    public final static Boolean COLUMN_6_1_PRIMARY = true;
+    public final static String COLUMN_6_1_NAME = "name_id";
+    public final static String COLUMN_6_1_INTERNAL_NAME = "name_id";
+    public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_6_1_DATE_FORMAT = null;
+    public final static Boolean COLUMN_6_1_NULL = false;
+    public final static Boolean COLUMN_6_1_UNIQUE = false;
+    public final static Boolean COLUMN_6_1_AUTO_GENERATED = false;
+    public final static String COLUMN_6_1_FOREIGN_KEY = null;
+    public final static String COLUMN_6_1_CHECK = null;
+    public final static List<String> COLUMN_6_1_ENUM_VALUES = null;
+
+    public final static Long COLUMN_6_2_ID = 27L;
+    public final static Integer COLUMN_6_2_ORDINALPOS = 1;
+    public final static Boolean COLUMN_6_2_PRIMARY = true;
+    public final static String COLUMN_6_2_NAME = "zoo_id";
+    public final static String COLUMN_6_2_INTERNAL_NAME = "zoo_id";
+    public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_6_2_DATE_FORMAT = null;
+    public final static Boolean COLUMN_6_2_NULL = false;
+    public final static Boolean COLUMN_6_2_UNIQUE = false;
+    public final static Boolean COLUMN_6_2_AUTO_GENERATED = false;
+    public final static String COLUMN_6_2_FOREIGN_KEY = null;
+    public final static String COLUMN_6_2_CHECK = null;
+    public final static List<String> COLUMN_6_2_ENUM_VALUES = null;
+
+    public final static List<TableColumn> TABLE_6_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_6_1_ID)
+                    .ordinalPosition(COLUMN_6_1_ORDINALPOS)
+                    .cdbid(DATABASE_2_ID)
+                    .tid(TABLE_6_ID)
+                    .name(COLUMN_6_1_NAME)
+                    .internalName(COLUMN_6_1_INTERNAL_NAME)
+                    .columnType(COLUMN_6_1_TYPE)
+                    .dfid(COLUMN_6_1_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_6_1_NULL)
+                    .isUnique(COLUMN_6_1_UNIQUE)
+                    .autoGenerated(COLUMN_6_1_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_6_1_PRIMARY)
+                    .enumValues(COLUMN_6_1_ENUM_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_6_2_ID)
+                    .ordinalPosition(COLUMN_6_2_ORDINALPOS)
+                    .cdbid(DATABASE_2_ID)
+                    .tid(TABLE_6_ID)
+                    .name(COLUMN_6_2_NAME)
+                    .internalName(COLUMN_6_2_INTERNAL_NAME)
+                    .columnType(COLUMN_6_2_TYPE)
+                    .dfid(COLUMN_6_2_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_6_2_NULL)
+                    .isUnique(COLUMN_6_2_UNIQUE)
+                    .autoGenerated(COLUMN_6_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_6_2_PRIMARY)
+                    .enumValues(COLUMN_6_2_ENUM_VALUES)
+                    .build());
+
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .created(Instant.now())
@@ -1889,6 +1930,7 @@ public abstract class BaseUnitTest {
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_1_TOPIC)
             .creator(USER_1)
+            .columns(TABLE_1_COLUMNS)
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -1901,6 +1943,7 @@ public abstract class BaseUnitTest {
             .tdbid(DATABASE_1_ID)
             .topic(TABLE_2_TOPIC)
             .creator(USER_1)
+            .columns(TABLE_2_COLUMNS)
             .build();
 
     public final static Table TABLE_3 = Table.builder()
@@ -1913,6 +1956,7 @@ public abstract class BaseUnitTest {
             .tdbid(DATABASE_3_ID)
             .topic(TABLE_3_TOPIC)
             .creator(USER_1)
+            .columns(TABLE_3_COLUMNS)
             .build();
 
     public final static Table TABLE_4 = Table.builder()
@@ -1925,6 +1969,7 @@ public abstract class BaseUnitTest {
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_4_TOPIC)
             .creator(USER_1)
+            .columns(TABLE_4_COLUMNS)
             .build();
 
     public final static Table TABLE_5 = Table.builder()
@@ -1937,6 +1982,106 @@ public abstract class BaseUnitTest {
             .tdbid(DATABASE_2_ID)
             .topic(TABLE_5_TOPIC)
             .creator(USER_1)
+            .columns(TABLE_5_COLUMNS)
+            .build();
+
+    public final static Table TABLE_6 = Table.builder()
+            .id(TABLE_6_ID)
+            .created(Instant.now())
+            .internalName(TABLE_6_INTERNALNAME)
+            .description(TABLE_6_DESCRIPTION)
+            .name(TABLE_6_NAME)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .topic(TABLE_6_TOPIC)
+            .creator(USER_1)
+            .columns(TABLE_6_COLUMNS)
+            .build();
+
+    public final static Long VIEW_1_ID = 1L;
+    public final static Boolean VIEW_1_INITIAL_VIEW = false;
+    public final static String VIEW_1_NAME = "JUnit";
+    public final static String VIEW_1_INTERNAL_NAME = "junit";
+    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_1_PUBLIC = true;
+    public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
+
+    public final static View VIEW_1 = View.builder()
+            .id(VIEW_1_ID)
+            .isInitialView(VIEW_1_INITIAL_VIEW)
+            .name(VIEW_1_NAME)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .vcid(VIEW_1_CONTAINER_ID)
+            .vdbid(VIEW_1_DATABASE_ID)
+            .isPublic(VIEW_1_PUBLIC)
+            .query(VIEW_1_QUERY)
+            .build();
+
+    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
+            .data(new HashMap<>() {{
+                put("key", "value");
+            }})
+            .build();
+
+    public final static Long VIEW_2_ID = 2L;
+    public final static Boolean VIEW_2_INITIAL_VIEW = false;
+    public final static String VIEW_2_NAME = "JUnit2";
+    public final static String VIEW_2_INTERNAL_NAME = "junit2";
+    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_2_PUBLIC = true;
+    public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus`";
+
+    public final static View VIEW_2 = View.builder()
+            .id(VIEW_2_ID)
+            .isInitialView(VIEW_2_INITIAL_VIEW)
+            .name(VIEW_2_NAME)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .vcid(VIEW_2_CONTAINER_ID)
+            .vdbid(VIEW_2_DATABASE_ID)
+            .isPublic(VIEW_2_PUBLIC)
+            .query(VIEW_2_QUERY)
+            .build();
+
+    public final static Long VIEW_3_ID = 3L;
+    public final static Boolean VIEW_3_INITIAL_VIEW = false;
+    public final static String VIEW_3_NAME = "JUnit3";
+    public final static String VIEW_3_INTERNAL_NAME = "junit3";
+    public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
+    public final static Boolean VIEW_3_PUBLIC = true;
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `mock_view` m on m.`location` = w.`location`";
+
+    public final static View VIEW_3 = View.builder()
+            .id(VIEW_3_ID)
+            .isInitialView(VIEW_3_INITIAL_VIEW)
+            .name(VIEW_3_NAME)
+            .internalName(VIEW_3_INTERNAL_NAME)
+            .vcid(VIEW_3_CONTAINER_ID)
+            .vdbid(VIEW_3_DATABASE_ID)
+            .isPublic(VIEW_3_PUBLIC)
+            .query(VIEW_3_QUERY)
+            .build();
+
+    public final static Long VIEW_4_ID = 4L;
+    public final static Boolean VIEW_4_INITIAL_VIEW = false;
+    public final static String VIEW_4_NAME = "Mock View";
+    public final static String VIEW_4_INTERNAL_NAME = "mock_view";
+    public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
+    public final static Boolean VIEW_4_PUBLIC = true;
+    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `toothed`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type`FROM `zoo`WHERE `class_type` = 1";
+
+    public final static View VIEW_4 = View.builder()
+            .id(VIEW_4_ID)
+            .isInitialView(VIEW_4_INITIAL_VIEW)
+            .name(VIEW_4_NAME)
+            .internalName(VIEW_4_INTERNAL_NAME)
+            .vcid(VIEW_4_CONTAINER_ID)
+            .vdbid(VIEW_4_DATABASE_ID)
+            .isPublic(VIEW_4_PUBLIC)
+            .query(VIEW_4_QUERY)
             .build();
 
     public final static Database DATABASE_1 = Database.builder()
@@ -1949,6 +2094,8 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_1_INTERNALNAME)
             .exchange(DATABASE_1_EXCHANGE)
             .creator(USER_1)
+            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
+            .views(List.of())
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
@@ -1961,6 +2108,8 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_2_INTERNALNAME)
             .exchange(DATABASE_2_EXCHANGE)
             .creator(USER_1)
+            .tables(List.of(TABLE_4, TABLE_5, TABLE_6))
+            .views(List.of(VIEW_4))
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -1973,6 +2122,8 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_3_INTERNALNAME)
             .exchange(DATABASE_3_EXCHANGE)
             .creator(USER_1)
+            .tables(List.of())
+            .views(List.of())
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;
@@ -2041,52 +2192,4 @@ public abstract class BaseUnitTest {
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
-
-    public final static Long VIEW_1_ID = 1L;
-    public final static Boolean VIEW_1_INITIAL_VIEW = false;
-    public final static String VIEW_1_NAME = "JUnit";
-    public final static String VIEW_1_INTERNAL_NAME = "junit";
-    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_1_PUBLIC = true;
-    public final static String VIEW_1_QUERY = "select `location` from `weather`";
-
-    public final static View VIEW_1 = View.builder()
-            .id(VIEW_1_ID)
-            .isInitialView(VIEW_1_INITIAL_VIEW)
-            .name(VIEW_1_NAME)
-            .internalName(VIEW_1_INTERNAL_NAME)
-            .vcid(VIEW_1_CONTAINER_ID)
-            .vdbid(VIEW_1_DATABASE_ID)
-            .isPublic(VIEW_1_PUBLIC)
-            .query(VIEW_1_QUERY)
-            .build();
-
-    public final static Long VIEW_2_ID = 2L;
-    public final static Boolean VIEW_2_INITIAL_VIEW = false;
-    public final static String VIEW_2_NAME = "JUnit";
-    public final static String VIEW_2_INTERNAL_NAME = "junit";
-    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_2_PUBLIC = true;
-    public final static String VIEW_2_QUERY = "select `location` from `weather`";
-
-    public final static View VIEW_2 = View.builder()
-            .id(VIEW_2_ID)
-            .isInitialView(VIEW_2_INITIAL_VIEW)
-            .name(VIEW_2_NAME)
-            .internalName(VIEW_2_INTERNAL_NAME)
-            .vcid(VIEW_2_CONTAINER_ID)
-            .vdbid(VIEW_2_DATABASE_ID)
-            .isPublic(VIEW_2_PUBLIC)
-            .query(VIEW_2_QUERY)
-            .build();
-
-    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
-            .data(new HashMap<>() {{
-                put("key", "value");
-            }})
-            .build();
-
-
 }
