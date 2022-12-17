@@ -305,7 +305,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT n.`firstname`, n.`lastname`, z.`animal_name` FROM `names` n JOIN `likes` l ON l.`user_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
+                .statement("SELECT n.`firstname`, n.`lastname`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
 
         /* mock */
@@ -317,7 +317,25 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, QueryTypeDto.QUERY,
                 USER_1_PRINCIPAL, 0L, 100L, null, null);
-        assertEquals(5L, response.getResultNumber());
+        assertEquals(4L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals(BigInteger.valueOf(4L), result.get(0).get("legs"));
+        assertEquals("boar", result.get(0).get("animal_name"));
+        assertEquals("Moritz", result.get(0).get("firstname"));
+        assertEquals("Staudinger", result.get(0).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(1).get("legs"));
+        assertEquals("cavy", result.get(1).get("animal_name"));
+        assertEquals("Moritz", result.get(1).get("firstname"));
+        assertEquals("Staudinger", result.get(1).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(2).get("legs"));
+        assertEquals("bear", result.get(2).get("animal_name"));
+        assertEquals("Eva", result.get(2).get("firstname"));
+        assertEquals("Gergely", result.get(2).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(3).get("legs"));
+        assertEquals("bear", result.get(3).get("animal_name"));
+        assertEquals("Cornelia", result.get(3).get("firstname"));
+        assertEquals("Michlits", result.get(3).get("lastname"));
     }
 
     @SneakyThrows

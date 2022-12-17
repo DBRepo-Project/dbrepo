@@ -564,7 +564,7 @@ public abstract class BaseUnitTest {
     public final static Boolean COLUMN_4_17_PRIMARY = false;
     public final static String COLUMN_4_17_NAME = "Legs";
     public final static String COLUMN_4_17_INTERNAL_NAME = "legs";
-    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.DECIMAL;
+    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.NUMBER;
     public final static Long COLUMN_4_17_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_17_NULL = true;
     public final static Boolean COLUMN_4_17_UNIQUE = false;

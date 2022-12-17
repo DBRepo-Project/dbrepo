@@ -40,7 +40,7 @@ create table likes
     primary key (name_id, zoo_id),
     foreign key (name_id) references names (id),
     foreign key (zoo_id) references zoo (id)
-);
+) with system versioning;
 
 INSERT INTO zoo (id, animal_name, hair, feathers, eggs, milk, airborne, aquatic, predator, toothed, backbone, breathes,
                  venomous, fins, legs, tail, domestic, catsize, class_type)
@@ -168,7 +168,8 @@ VALUES (1, 5),
 
 CREATE VIEW mock_view AS
 (
-SELECT `animal_name`,
+SELECT `id`,
+       `animal_name`,
        `hair`,
        `feathers`,
        `eggs`,

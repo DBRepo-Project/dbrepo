@@ -436,9 +436,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             boolean foundTable = false;
             boolean foundView = false;
             for (Table table : database.getTables()) {
+                allColumns.addAll(table.getColumns());
                 if (table.equals(fromItem)) {
                     log.trace("table {} equals from item {}", table.getInternalName(), fromItem);
-                    allColumns.addAll(table.getColumns());
                     foundTable = true;
                     break;
                 }
