@@ -75,8 +75,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Override
     @Transactional(readOnly = true)
     public Query findOne(Long containerId, Long databaseId, Long queryId, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryNotFoundException, QueryStoreException,
-            UserNotFoundException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryNotFoundException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
