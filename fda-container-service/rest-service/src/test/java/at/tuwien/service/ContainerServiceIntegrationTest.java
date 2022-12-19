@@ -318,7 +318,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.start(CONTAINER_1_ID);
         });
     }
@@ -354,7 +354,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.remove(CONTAINER_1_ID);
         });
     }
@@ -522,7 +522,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyRunningException.class, () -> {
             containerService.start(CONTAINER_1_ID);
         });
     }
@@ -597,7 +597,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyStoppedException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
@@ -634,7 +634,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyStoppedException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
@@ -670,7 +670,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
