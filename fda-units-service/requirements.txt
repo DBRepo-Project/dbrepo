@@ -8,3 +8,4 @@ mariadb==1.0.10
 itsdangerous==2.0.1
 Jinja2==3.0.3
 werkzeug==2.0.2
+prometheus_flask_exporter==0.21.0
