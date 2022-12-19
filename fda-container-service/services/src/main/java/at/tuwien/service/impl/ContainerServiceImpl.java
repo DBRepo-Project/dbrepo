@@ -125,42 +125,41 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container stop(Long containerId) throws ContainerNotFoundException, DockerClientException {
+    public Container stop(Long containerId) throws ContainerNotFoundException,
+            ContainerAlreadyStoppedException {
         final Container container = find(containerId);
         try {
             dockerClient.stopContainerCmd(container.getHash()).exec();
         } catch (NotFoundException e) {
             log.error("Failed to stop container: {}", e.getMessage());
-            throw new DockerClientException("Failed to stop container", e);
+            throw new ContainerNotFoundException("Failed to stop container", e);
         } catch (NotModifiedException e) {
             log.warn("Failed to stop container: {}", e.getMessage());
-            throw new DockerClientException("Failed to stop container", e);
+            throw new ContainerAlreadyStoppedException("Failed to stop container", e);
         }
         log.info("Stopped container with id {}", containerId);
-        log.trace("stopped container {}", container);
         return container;
     }
 
     @Override
     @Transactional
-    public void remove(Long containerId) throws ContainerNotFoundException, DockerClientException,
-            ContainerStillRunningException {
+    public void remove(Long containerId) throws ContainerNotFoundException,
+            ContainerStillRunningException, ContainerAlreadyRemovedException {
         final Container container = find(containerId);
         try {
             dockerClient.removeContainerCmd(container.getHash()).exec();
         } catch (NotFoundException e) {
             log.error("Failed to remove container: {}", e.getMessage());
-            throw new DockerClientException("Failed to remove container", e);
+            throw new ContainerNotFoundException("Failed to remove container", e);
         } catch (NotModifiedException e) {
             log.warn("Failed to remove container: {}", e.getMessage());
-            throw new DockerClientException("Failed to remove container", e);
+            throw new ContainerAlreadyRemovedException("Failed to remove container", e);
         } catch (ConflictException e) {
             log.error("Failed to remove container: {}", e.getMessage());
             throw new ContainerStillRunningException("Failed to remove container", e);
         }
         containerRepository.deleteById(containerId);
         log.info("Removed container with id {}", containerId);
-        log.trace("removed container {}", container);
     }
 
     @Override
@@ -207,7 +206,6 @@ public class ContainerServiceImpl implements ContainerService {
                     container.setIpAddress(network.getIpAddress());
                 });
         log.info("Inspect container with id {}", id);
-        log.trace("inspect container {}", container);
         return container;
     }
 
@@ -222,17 +220,18 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container start(Long containerId) throws ContainerNotFoundException, DockerClientException {
+    public Container start(Long containerId) throws ContainerNotFoundException,
+            ContainerAlreadyRunningException {
         final Container container = find(containerId);
         try {
             dockerClient.startContainerCmd(container.getHash())
                     .exec();
         } catch (NotFoundException e) {
-            log.error("Failed to start container: {}", e.getMessage());
-            throw new DockerClientException("Failed to start container", e);
+            log.error("Failed to start container, not found: {}", e.getMessage());
+            throw new ContainerNotFoundException("Failed to start container", e);
         } catch (NotModifiedException e) {
-            log.warn("Failed to start container: {}", e.getMessage());
-            throw new DockerClientException("Failed to start container", e);
+            log.warn("Failed to start container, already running: {}", e.getMessage());
+            throw new ContainerAlreadyRunningException("Failed to start container", e);
         }
         log.info("Started container with id {}", containerId);
         log.trace("started container {}", container);

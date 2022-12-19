@@ -29,20 +29,6 @@
             :rules="[v => !!v || $t('Required')]"
             return-object
             required />
-          <v-switch
-            id="public"
-            v-model="createDatabaseDto.is_public"
-            color="primary"
-            :label="publicLabel"
-            name="public" />
-          <p v-if="createDatabaseDto.is_public">
-            Your database tables will be <strong>publicly visible</strong>. The metadata is also publicly visible to the
-            world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
-          </p>
-          <p v-if="!createDatabaseDto.is_public">
-            Your database tables will be <strong>private</strong>. The metadata will still be <strong>publicly visible</strong>
-            to the world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
-          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -58,7 +44,7 @@
             color="primary"
             type="submit"
             :loading="loading"
-            @click="create">
+            @click="createContainer">
             Create
           </v-btn>
         </v-card-actions>
@@ -97,10 +83,6 @@ export default {
       },
       database: {
         id: null
-      },
-      createDatabaseDto: {
-        name: null,
-        is_public: true
       }
     }
   },
@@ -121,9 +103,6 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` },
         progress: false
       }
-    },
-    publicLabel () {
-      return this.createDatabaseDto.is_public ? 'Public' : 'Private'
     }
   },
   mounted () {
@@ -160,79 +139,14 @@ export default {
         this.container = res.data
         console.debug('created container', this.container)
         this.error = false
+        this.$emit('close', { success: true })
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to create container')
       }
       this.loading = false
     },
-    async startContainer () {
-      if (this.error) {
-        console.warn('will not attempt to start container, error in previous step')
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.container.id}`, { action: 'start' }, this.config)
-        console.debug('started container', res.data)
-        this.error = false
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to start container')
-      }
-      this.loading = false
-    },
-    async inspectContainer () {
-      if (this.error) {
-        console.warn('will not attempt to inspect container, error in previous step')
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.container.id}`, this.config)
-        const { state } = res.data
-        console.debug('inspected container', res.data)
-        if (state !== 'running') {
-          console.warn('Container is not running')
-        }
-        this.error = false
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to start container')
-      }
-      this.loading = false
-    },
-    async createDatabase () {
-      if (this.error) {
-        console.warn('will not attempt to create database, error in previous step')
-        return
-      }
-      if (this.database.id !== null) {
-        console.warn('database id already present', this.database.id)
-        return
-      }
-      try {
-        this.loading = true
-        this.createDatabaseDto.name = this.container.name
-        const res = await this.$axios.post(`/api/container/${this.container.id}/database`, this.createDatabaseDto, this.config)
-        this.database = res.data
-        console.debug('created database', this.database)
-        await this.$router.push(`/container/${this.container.id}/database/${this.database.id}/info`)
-        this.error = false
-        this.$emit('close', { success: true })
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to create database')
-      }
-      this.loading = false
-    },
     notEmpty,
-    create () {
-      this.createContainer()
-        .then(() => this.startContainer()
-          .then(() => this.inspectContainer()
-            .then(() => this.createDatabase())))
-    },
     loadUser () {
       if (!this.token) {
         return
