@@ -43,16 +43,17 @@ public class ColumnCreateDto {
     private Boolean unique;
 
     @JsonProperty("check_expression")
+    @Schema(description = "check constraint", example = "id > 0")
     private String checkExpression;
 
     @JsonProperty("foreign_key")
     private String foreignKey = null;
 
-    @Parameter(description = "foreign key reference, only considered when foreignKey != null")
+    @Schema(description = "foreign key reference, only considered when foreignKey != null")
     private String references = null;
 
     @JsonProperty("enum_values")
-    @Parameter(description = "enum values, only considered when type = ENUM")
+    @Schema(description = "enum values, only considered when type = ENUM")
     private String[] enumValues = null;
 
 }

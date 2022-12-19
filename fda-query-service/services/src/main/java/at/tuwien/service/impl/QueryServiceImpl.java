@@ -10,6 +10,7 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
@@ -429,25 +430,34 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         log.debug("tables referenced: {}", tables);
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
 
-        /* Checking if all tables exist */
+        /* Checking if all tables or views exist */
         final List<TableColumn> allColumns = new ArrayList<>();
         for (FromItem fromItem : tables) {
-            boolean i = false;
-            for (final Table table : database.getTables()) {
+            boolean foundTable = false;
+            boolean foundView = false;
+            for (Table table : database.getTables()) {
+                allColumns.addAll(table.getColumns());
                 if (table.equals(fromItem)) {
                     log.trace("table {} equals from item {}", table.getInternalName(), fromItem);
-                    allColumns.addAll(table.getColumns());
-                    i = false;
+                    foundTable = true;
                     break;
                 }
                 log.trace("table {} did not equal from item {}", table.getInternalName(), fromItem);
-                i = true;
             }
-            if (i) {
+            for (View view : database.getViews()) {
+                if (view.equals(fromItem)) {
+                    log.trace("view {} equals from item {}", view.getInternalName(), fromItem);
+                    foundView = true;
+                    break;
+                }
+                log.trace("view {} did not equal from item {}", view.getInternalName(), fromItem);
+            }
+            if (!foundView && !foundTable) {
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table with name {} does not exist, available names: {}", tableName,
-                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Table " + tableName + " does not exist");
+                log.error("Table or view {} does not exist", tableName);
+                log.trace("available tables are {}", database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
+                log.trace("available views are {}", database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
+                throw new JSQLParserException("Table or view " + tableName + " does not exist");
             }
         }
 
@@ -457,19 +467,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 log.error("Do not use * in queries");
                 continue;
             }
-            final String clause = queryMapper.selectItemToEscapedString(item);
-            boolean i = false;
-            for (TableColumn tc : allColumns) {
-                if (tc.equals(item)) {
-                    i = false;
-                    columns.add(tc);
+            boolean foundColumn = false;
+            for (TableColumn column : allColumns) {
+                if (column.equals(item)) {
+                    columns.add(column);
+                    foundColumn = true;
                     break;
                 }
-                i = true;
             }
-            if (i) {
-                log.error("Column {} does not exist, available columns are {}", item,
-                        allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
+            if (!foundColumn) {
+                log.error("Column {} does not exist", item);
+                log.trace("available columns are {}", allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
                 throw new JSQLParserException("Column " + item + " does not exist");
             }
         }

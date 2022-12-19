@@ -30,10 +30,12 @@ import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -50,20 +52,25 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
+    @MockBean
+    private TableRepository tableRepository;
+
+    @MockBean
+    private ImageRepository imageRepository;
+
+    @MockBean
+    private ContainerRepository containerRepository;
+
+    @MockBean
+    private DatabaseRepository databaseRepository;
+
     @Autowired
     private StoreService storeService;
 
-    @Autowired
-    private TableRepository tableRepository;
-
-    @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
-    private DatabaseRepository databaseRepository;
+    @BeforeEach
+    public void beforeEach() {
+        TABLE_1.setDatabase(DATABASE_1);
+    }
 
     @BeforeAll
     public static void beforeAll() {
@@ -117,18 +124,6 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 });
     }
 
-    @BeforeEach
-    @Transactional
-    public void beforeEach() {
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-        TABLE_1.setDatabase(DATABASE_1);
-        tableRepository.save(TABLE_1);
-        TABLE_2.setDatabase(DATABASE_2);
-        tableRepository.save(TABLE_2);
-    }
-
     @Test
     public void findOne_notFound_fails() throws InterruptedException, SQLException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
@@ -136,6 +131,8 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
         MariaDbConfig.clearQueryStore(TABLE_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
