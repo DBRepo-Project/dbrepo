@@ -28,11 +28,7 @@ echo "Deploy DBRepo ..."
 docker compose up -d
 
 # clone tuw specific deployment
-if [ -d "/home/gitlab-runner/dbrepo-tuw" ]; then
-    echo "Skip."
-else
-    git clone ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git || exit 2
-fi
+git -C "/home/demo/dbrepo-tuw" pull || git clone ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git "/home/demo/dbrepo-tuw"
 
 # build tuw specific deployment
 docker compose -f ./dbrepo-tuw/docker-compose.yml build || exit 3
