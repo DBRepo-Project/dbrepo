@@ -1,30 +1,30 @@
-# before_script:
-#   - "docker version"
-#   - "docker compose version"
-#   - "docker system prune -f"
-#   - "mvn --version"
-#   - "df / -h"
-#   - "grep -rnw '@Test' | wc -l"
-#
-# variables:
-#   HOSTALIASES: ./hosts
-#   DOCKER_TLS_CERTDIR: /certs
-#   TAG: ${TAG:-latest}
-#
-# cache:
-#   paths:
-#     - /root/.m2/repository/
-#     - /root/.npm/
-#
-# image: "docker/compose:latest"
+before_script:
+  - "docker version"
+  - "docker compose version"
+  - "docker system prune -f"
+  - "mvn --version"
+  - "df / -h"
+  - "grep -rnw '@Test' | wc -l"
+
+variables:
+  HOSTALIASES: ./hosts
+  DOCKER_TLS_CERTDIR: /certs
+  TAG: ${TAG:-latest}
+
+cache:
+  paths:
+    - /root/.m2/repository/
+    - /root/.npm/
+
+image: "docker/compose:latest"
 #
  stages:
+   - deploy
 #   - build-backend
 #   - build-frontend
 #   - test-backend
 #   - build-docker
 #   - release
-   - deploy
 #
 # build-backend-metadata-db:
 #   stage: build-backend
