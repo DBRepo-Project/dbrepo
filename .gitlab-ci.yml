@@ -24,6 +24,7 @@ stages:
   - test-backend
   - build-docker
   - release
+  - deploy
 
 build-backend-metadata-db:
   stage: build-backend
@@ -203,4 +204,16 @@ release-version:
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.1 make release
 
-
+deploy-dbrepo2:
+  stage: deploy
+  needs:
+    - release-latest
+  only:
+    refs:
+      - 261-automatically-deploy-dev-pipeline-to-dbrepo2
+  script:
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash docker container stop $(docker container ls -aq)'"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash docker container rm $(docker container ls -aq)'"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at 'docker system prune -f --volumes'"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at 'docker compose -f ./docker-compose.dbrepo2.yml up -d"
