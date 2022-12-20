@@ -10,18 +10,6 @@
       <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
         <v-expansion-panel-header>
           <span>{{ item.name }}</span>
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-if="is_owner(item)"
-                class="pid-icon"
-                v-bind="attrs"
-                v-on="on">
-                mdi-account
-              </v-icon>
-            </template>
-            <span>Created by you</span>
-          </v-tooltip>
         </v-expansion-panel-header>
         <v-expansion-panel-content class="mb-2">
           <v-row v-if="loadingDetails" dense>
@@ -82,7 +70,8 @@
                       Table Creator
                     </v-list-item-title>
                     <v-list-item-content>
-                      <span :class="is_owner(item) ? 'primary--text' : ''">{{ formatCreator(item.creator) }}</span>
+                      {{ formatCreator(item.creator) }}
+                      <span v-if="is_owner(item)" style="flex:none;">&nbsp;(you)</span>
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -361,8 +350,11 @@ export default {
         this.access = res.data
         console.debug('access', this.access)
       } catch (err) {
-        this.error = true
-        this.$toast.error('Could not get database access permissions')
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          this.error = true
+          this.$toast.error('Could not get database access permissions')
+        }
       }
       this.loading = false
     },

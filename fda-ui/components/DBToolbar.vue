@@ -185,7 +185,8 @@ export default {
         this.access = res.data
         console.debug('access', this.access)
       } catch (err) {
-        if (!err.response.status === 401) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
           console.error('Failed to check access', err)
           this.$toast.error('Failed to check access')
         }

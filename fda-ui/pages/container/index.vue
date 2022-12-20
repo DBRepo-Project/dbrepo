@@ -29,10 +29,31 @@
       <v-data-table
         :headers="headers"
         :items="filter(containers)"
+        :loading="loadingDatabases"
         @click:row="loadDatabase">
         <template v-slot:item.visibility="{ item }">
-          <v-icon v-if="!item.visibility" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
-          <v-icon v-if="item.visibility" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-if="item.visibility"
+                color="primary"
+                class="private-icon"
+                right
+                v-bind="attrs"
+                v-on="on">
+                mdi-lock-outline
+              </v-icon>
+              <v-icon
+                v-if="!item.visibility"
+                class="private-icon"
+                right
+                v-bind="attrs"
+                v-on="on">
+                mdi-lock-open-outline
+              </v-icon>
+            </template>
+            <span>{{ tooltip(item) }}</span>
+          </v-tooltip>
         </template>
         <template v-slot:item.created="{ item }">
           <span>{{ formatTimestamp(item.created) }}</span>
@@ -157,6 +178,9 @@ export default {
     },
     notInit (container) {
       return !container.database.id
+    },
+    tooltip (item) {
+      return item.is_public ? 'Public' : 'Private'
     },
     async initDatabase (container) {
       await this.startContainer(container)
