@@ -208,7 +208,7 @@ deploy-dbrepo2:
   stage: deploy
   script:
     - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
-    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/"
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container stop $(docker container ls -aq)"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container rm $(docker container ls -aq)"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at docker system prune -f --volumes"
