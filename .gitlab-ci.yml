@@ -206,11 +206,6 @@ release-version:
 
 deploy-dbrepo2:
   stage: deploy
-  needs:
-    - release-latest
-  only:
-    refs:
-      - 261-automatically-deploy-dev-pipeline-to-dbrepo2
   script:
     - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash docker container stop $(docker container ls -aq)'"
