@@ -18,6 +18,7 @@ spring:
   application:
     name: gateway-service
 springdoc.swagger-ui.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9095
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
