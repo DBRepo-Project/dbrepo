@@ -4,7 +4,10 @@
 TAG=latest
 
 # tear everything down
+echo "Removing all data ..."
 /bin/bash teardown
+docker system prune -f --volumes || true
+
 echo "Pulling new images ..."
 docker pull "dbrepo/analyse-service:${TAG}"
 docker pull "dbrepo/authentication-service:${TAG}"
