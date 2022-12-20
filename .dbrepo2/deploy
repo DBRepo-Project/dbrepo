@@ -29,7 +29,7 @@ docker compose -f ./docker-compose.dbrepo2.yml up -d
 
 # clone tuw specific deployment
 git -C "/home/demo/dbrepo-tuw" pull || git clone ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git "/home/demo/dbrepo-tuw"
-git checkout dev
+cd /home/demo/dbrepo-tuw && git checkout dev
 
 # build tuw specific deployment
 docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build || exit 3
