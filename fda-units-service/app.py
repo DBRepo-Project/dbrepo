@@ -14,6 +14,7 @@ from werkzeug.utils import secure_filename
 from pathlib import Path
 from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, \
     allowed_file
+from prometheus_flask_exporter import PrometheusMetrics
 
 dictConfig({
     'version': 1,
@@ -32,6 +33,8 @@ dictConfig({
 })
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.3')
 app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {

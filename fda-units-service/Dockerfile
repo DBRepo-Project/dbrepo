@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
 RUN apt-get update && apt-get install -y python3-dev libmariadb3 libmariadb-dev gcc

@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
 ENV FLASK_APP=app.py

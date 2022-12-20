@@ -17,6 +17,7 @@ spring:
           time_zone: UTC
   application:
     name: discovery-service
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9090
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
