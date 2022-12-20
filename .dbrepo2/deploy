@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# tear everything down
+/bin/bash teardown
+
+# deploy dbrepo
+docker compose -f ./docker-compose.yml up -d
+
+# clone tuw specific deployment
+if [ ! -d "/home/gitlab-runner/dbrepo-tuw" ]; then
+    ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git
+fi
+
+# build tuw specific deployment
+docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build
+docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml up -d
+echo "Deployed TU Wien specific deployment"

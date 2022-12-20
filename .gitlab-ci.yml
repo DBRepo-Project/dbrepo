@@ -209,8 +209,7 @@ deploy-dbrepo2:
   script:
     - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
     - "scp ./Makefile demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "ssh demo@dbrepo2.ec.tuwien.ac.at 'mkdir -p /home/demo/.dbrepo2'"
-    - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo/.dbrepo2"
-    - "ssh demo@dbrepo2.ec.tuwien.ac.at 'make teardown'"
-    - "ssh demo@dbrepo2.ec.tuwien.ac.at 'docker compose -f ./docker-compose.dbrepo2.yml up -d'"
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.yml"
+    - "scp ./.dbrepo2/deploy demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
+    - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash deploy'"
