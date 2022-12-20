@@ -25,7 +25,7 @@ echo "Pulled new images"
 
 # deploy dbrepo
 echo "Deploy DBRepo ..."
-docker compose -f ./docker-compose.yml up -d
+docker compose up -d
 
 # clone tuw specific deployment
 if [ -d "/home/gitlab-runner/dbrepo-tuw" ]; then
@@ -35,6 +35,6 @@ else
 fi
 
 # build tuw specific deployment
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build || exit 3
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml up -d || exit 4
+docker compose -f ./dbrepo-tuw/docker-compose.yml build || exit 3
+docker compose -f ./dbrepo-tuw/docker-compose.yml up -d || exit 4
 echo "Deployed TU Wien specific deployment"
