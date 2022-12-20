@@ -32,6 +32,6 @@ git -C "/home/demo/dbrepo-tuw" pull || git clone ssh://git@gitlab.tuwien.ac.at:8
 cd /home/demo/dbrepo-tuw && git checkout dev
 
 # build tuw specific deployment
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build || exit 3
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml up -d || exit 4
+docker compose -f /home/demo/dbrepo-tuw/docker-compose.dbrepo2.yml build || exit 3
+docker compose -f /home/demo/dbrepo-tuw/docker-compose.dbrepo2.yml up -d || exit 4
 echo "Deployed TU Wien specific deployment"
