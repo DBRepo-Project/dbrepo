@@ -29,10 +29,10 @@ docker compose -f ./docker-compose.yml up -d
 
 # clone tuw specific deployment
 if [ ! -d "/home/gitlab-runner/dbrepo-tuw" ]; then
-    git clone ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git
+    git clone ssh://git@gitlab.tuwien.ac.at:822/martin.weise/dbrepo-tuw.git || exit 2
 fi
 
 # build tuw specific deployment
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build
-docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml up -d
+docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml build || exit 3
+docker compose -f ./dbrepo-tuw/docker-compose.dbrepo2.yml up -d || exit 4
 echo "Deployed TU Wien specific deployment"
