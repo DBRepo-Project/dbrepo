@@ -210,7 +210,7 @@ deploy-dbrepo2:
     - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
     - "scp ./.dbrepo2/known_hosts demo@dbrepo2.ec.tuwien.ac.at:/home/demo/.ssh/known_hosts"
     - "scp ./Makefile demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.yml"
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.dbrepo2.yml"
     - "scp ./.dbrepo2/deploy demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
     - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash deploy'"
