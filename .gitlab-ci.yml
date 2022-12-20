@@ -1,212 +1,213 @@
-before_script: 
-  - "docker version"
-  - "docker compose version"
-  - "docker system prune -f"
-  - "mvn --version"
-  - "df / -h"
-  - "grep -rnw '@Test' | wc -l"
-
-variables:
-  HOSTALIASES: ./hosts
-  DOCKER_TLS_CERTDIR: /certs
-  TAG: ${TAG:-latest}
-
-cache:
-  paths: 
-    - /root/.m2/repository/
-    - /root/.npm/
-
-image: "docker/compose:latest"
-
-stages:
-  - build-backend
-  - build-frontend
-  - test-backend
-  - build-docker
-  - release
-  - deploy
-
-build-backend-metadata-db:
-  stage: build-backend
-  script:
-    - "make build-backend-metadata-db"
-
-build-backend-authentication:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-authentication"
-
-build-backend-identifier:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-identifier"
-
-build-backend-container:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-container"
-
-build-backend-database:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-database"
-
-build-backend-discovery:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-discovery"
-
-build-backend-gateway:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-gateway"
-
-build-backend-query:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-query"
-
-build-backend-table:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-table"
-
-build-backend-metadata:
-  stage: build-backend
-  needs:
-    - build-backend-metadata-db
-  script:
-    - "make build-backend-metadata"
-
-test-backend-authentication:
-  stage: test-backend
-  needs:
-    - build-backend-authentication
-  script:
-    - "make test-authentication-service"
-
-test-backend-identifier:
-  stage: test-backend
-  needs:
-    - build-backend-authentication
-  script:
-    - "make test-identifier-service"
-
-test-backend-container:
-  stage: test-backend
-  needs:
-    - build-backend-container
-  script:
-    - "make test-container-service"
-
-test-backend-database:
-  stage: test-backend
-  needs:
-    - build-backend-database
-  script:
-    - "docker pull elasticsearch:7.13.4"
-    - "make test-database-service"
-
-test-backend-discovery:
-  stage: test-backend
-  needs:
-    - build-backend-discovery
-  script:
-    - "make test-discovery-service"
-
-test-backend-query:
-  stage: test-backend
-  needs:
-    - build-backend-query
-  script:
-    - "make test-query-service"
-
-test-backend-table:
-  stage: test-backend
-  needs:
-    - build-backend-table
-  script:
-    - "make test-table-service"
-
-test-backend-metadata:
-  stage: test-backend
-  needs:
-    - build-backend-metadata
-  script:
-    - "make test-metadata-service"
-
-test-backend-gateway:
-  stage: test-backend
-  needs:
-    - build-backend-gateway
-  script:
-    - "make test-gateway-service"
-
-build-docker:
-  stage: build-docker
-  needs:
-    - build-backend-metadata-db
-    - build-backend-authentication
-    - build-backend-identifier
-    - build-backend-container
-    - build-backend-database
-    - build-backend-discovery
-    - build-backend-gateway
-    - build-backend-query
-    - build-backend-table
-    - build-backend-metadata
-  script:
-    - cp .env.unix.example .env
-    - make build-docker
-
-build-frontend:
-  stage: build-frontend
-  script:
-    - make build-frontend
-
-release-latest:
-  stage: release
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-  script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - TAG=latest make release
-
-release-version:
-  stage: release
-  needs:
-    - build-docker
-  only:
-    refs:
-      - master
-  script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - TAG=1.1 make release
+# before_script:
+#   - "docker version"
+#   - "docker compose version"
+#   - "docker system prune -f"
+#   - "mvn --version"
+#   - "df / -h"
+#   - "grep -rnw '@Test' | wc -l"
+#
+# variables:
+#   HOSTALIASES: ./hosts
+#   DOCKER_TLS_CERTDIR: /certs
+#   TAG: ${TAG:-latest}
+#
+# cache:
+#   paths:
+#     - /root/.m2/repository/
+#     - /root/.npm/
+#
+# image: "docker/compose:latest"
+#
+ stages:
+#   - build-backend
+#   - build-frontend
+#   - test-backend
+#   - build-docker
+#   - release
+   - deploy
+#
+# build-backend-metadata-db:
+#   stage: build-backend
+#   script:
+#     - "make build-backend-metadata-db"
+#
+# build-backend-authentication:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-authentication"
+#
+# build-backend-identifier:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-identifier"
+#
+# build-backend-container:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-container"
+#
+# build-backend-database:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-database"
+#
+# build-backend-discovery:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-discovery"
+#
+# build-backend-gateway:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-gateway"
+#
+# build-backend-query:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-query"
+#
+# build-backend-table:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-table"
+#
+# build-backend-metadata:
+#   stage: build-backend
+#   needs:
+#     - build-backend-metadata-db
+#   script:
+#     - "make build-backend-metadata"
+#
+# test-backend-authentication:
+#   stage: test-backend
+#   needs:
+#     - build-backend-authentication
+#   script:
+#     - "make test-authentication-service"
+#
+# test-backend-identifier:
+#   stage: test-backend
+#   needs:
+#     - build-backend-authentication
+#   script:
+#     - "make test-identifier-service"
+#
+# test-backend-container:
+#   stage: test-backend
+#   needs:
+#     - build-backend-container
+#   script:
+#     - "make test-container-service"
+#
+# test-backend-database:
+#   stage: test-backend
+#   needs:
+#     - build-backend-database
+#   script:
+#     - "docker pull elasticsearch:7.13.4"
+#     - "make test-database-service"
+#
+# test-backend-discovery:
+#   stage: test-backend
+#   needs:
+#     - build-backend-discovery
+#   script:
+#     - "make test-discovery-service"
+#
+# test-backend-query:
+#   stage: test-backend
+#   needs:
+#     - build-backend-query
+#   script:
+#     - "make test-query-service"
+#
+# test-backend-table:
+#   stage: test-backend
+#   needs:
+#     - build-backend-table
+#   script:
+#     - "make test-table-service"
+#
+# test-backend-metadata:
+#   stage: test-backend
+#   needs:
+#     - build-backend-metadata
+#   script:
+#     - "make test-metadata-service"
+#
+# test-backend-gateway:
+#   stage: test-backend
+#   needs:
+#     - build-backend-gateway
+#   script:
+#     - "make test-gateway-service"
+#
+# build-docker:
+#   stage: build-docker
+#   needs:
+#     - build-backend-metadata-db
+#     - build-backend-authentication
+#     - build-backend-identifier
+#     - build-backend-container
+#     - build-backend-database
+#     - build-backend-discovery
+#     - build-backend-gateway
+#     - build-backend-query
+#     - build-backend-table
+#     - build-backend-metadata
+#   script:
+#     - cp .env.unix.example .env
+#     - make build-docker
+#
+# build-frontend:
+#   stage: build-frontend
+#   script:
+#     - make build-frontend
+#
+# release-latest:
+#   stage: release
+#   needs:
+#     - build-docker
+#   only:
+#     refs:
+#       - dev
+#   script:
+#     - cp .env.unix.example .env
+#     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+#     - TAG=latest make release
+#
+# release-version:
+#   stage: release
+#   needs:
+#     - build-docker
+#   only:
+#     refs:
+#       - master
+#   script:
+#     - cp .env.unix.example .env
+#     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+#     - TAG=1.1 make release
 
 deploy-dbrepo2:
   stage: deploy
   script:
+    - "cat ./.dbrepo2/known_hosts > /home/gitlab-runner/.ssh/known_hosts"
     - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash docker container stop $(docker container ls -aq)'"
     - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash docker container rm $(docker container ls -aq)'"
