@@ -207,9 +207,9 @@ stages:
 deploy-dbrepo2:
   stage: deploy
   script:
-    - "cat ./.dbrepo2/known_hosts > /home/gitlab-runner/.ssh/known_hosts"
-    - "scp -i /home/gitlab-runner/.ssh/id_rsa ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:"
-    - "ssh -i /home/gitlab-runner/.ssh/id_rsa demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container stop $(docker container ls -aq)"
-    - "ssh -i /home/gitlab-runner/.ssh/id_rsa demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container rm $(docker container ls -aq)"
-    - "ssh -i /home/gitlab-runner/.ssh/id_rsa demo@dbrepo2.ec.tuwien.ac.at docker system prune -f --volumes"
-    - "ssh -i /home/gitlab-runner/.ssh/id_rsa demo@dbrepo2.ec.tuwien.ac.at docker compose -f ./docker-compose.dbrepo2.yml up -d"
+    - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container stop $(docker container ls -aq)"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at /bin/bash docker container rm $(docker container ls -aq)"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at docker system prune -f --volumes"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at docker compose -f ./docker-compose.dbrepo2.yml up -d"
