@@ -17,8 +17,8 @@ cache:
     - /root/.npm/
 
 image: "docker/compose:latest"
-#
- stages:
+
+stages:
    - deploy
 #   - build-backend
 #   - build-frontend
