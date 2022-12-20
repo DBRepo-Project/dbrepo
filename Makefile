@@ -246,4 +246,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.fda-deployment/teardown
+	./.dbrepo2/teardown
