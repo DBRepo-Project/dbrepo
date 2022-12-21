@@ -28,7 +28,7 @@ public interface ContainerService {
      * @throws ContainerNotFoundException
      * @throws DockerClientException
      */
-    Container stop(Long containerId) throws ContainerNotFoundException, DockerClientException;
+    Container stop(Long containerId) throws ContainerNotFoundException, DockerClientException, ContainerAlreadyStoppedException;
 
     /**
      * @param containerId
@@ -37,7 +37,7 @@ public interface ContainerService {
      * @throws ContainerStillRunningException
      */
     void remove(Long containerId) throws ContainerNotFoundException, DockerClientException,
-            ContainerStillRunningException;
+            ContainerStillRunningException, ContainerAlreadyRemovedException;
 
     /**
      * @param id
@@ -66,5 +66,5 @@ public interface ContainerService {
      * @throws ContainerNotFoundException
      * @throws DockerClientException
      */
-    Container start(Long containerId) throws ContainerNotFoundException, DockerClientException;
+    Container start(Long containerId) throws ContainerNotFoundException, DockerClientException, ContainerAlreadyRunningException;
 }

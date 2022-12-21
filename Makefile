@@ -195,6 +195,7 @@ test-backend: test-authentication-service test-container-service test-database-s
 
 test-authentication-service: build-backend-metadata-db
 	docker system prune -f --volumes
+	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
 test-identifier-service: build-backend-metadata-db
@@ -245,4 +246,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.fda-deployment/teardown
+	./.dbrepo2/teardown

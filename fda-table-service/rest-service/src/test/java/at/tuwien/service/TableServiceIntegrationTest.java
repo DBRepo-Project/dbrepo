@@ -26,6 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.security.Principal;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -229,6 +230,27 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, principal);
+    }
+
+    @Test
+    public void create_failedBefore_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
+            ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(tableidxRepository.save(any(Table.class)))
+                .thenReturn(TABLE_1);
+        when(tableColumnidxRepository.saveAll(anyList()))
+                .thenReturn(List.of());
+
+        /* test */
+        try {
+            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_INVALID_CREATE_DTO, principal);
+        } catch (TableMalformedException e) {
+            /* ignore */
+        }
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, principal);
     }
 
     @Test

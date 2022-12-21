@@ -75,7 +75,7 @@ public interface ViewMapper {
     default PreparedStatement viewCreateDtoToRawCreateViewQuery(Connection connection, ViewCreateDto data)
             throws QueryMalformedException {
         log.debug("mapping create view, data={}", data);
-        final StringBuilder statement = new StringBuilder("CREATE VIEW `v_")
+        final StringBuilder statement = new StringBuilder("CREATE VIEW `")
                 .append(nameToInternalName(data.getName()))
                 .append("` AS (")
                 .append(data.getQuery())

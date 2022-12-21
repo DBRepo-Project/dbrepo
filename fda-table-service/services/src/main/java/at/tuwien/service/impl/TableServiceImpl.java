@@ -114,8 +114,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
-            log.error("Table name exists");
-            throw new TableNameExistsException("Table name exists");
+            log.error("Table '{}' exists in metadata database", optional.get().getInternalName());
+            throw new TableNameExistsException("Table exists in metadata database");
         }
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
@@ -132,7 +132,15 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final PreparedStatement preparedStatement11 = query.getPreparedStatement();
             preparedStatement11.executeUpdate();
         } catch (SQLException e) {
-            log.error("failed to create table, reason: {}", e.getMessage());
+            try {
+                final Connection connection = dataSource.getConnection();
+                final PreparedStatement preparedStatement11 = tableMapper.tableToDropSequenceRawQuery(connection, database, createDto);
+                preparedStatement11.executeUpdate();
+                log.debug("successfully rolled back creation of id sequence");
+            } catch (SQLException ex) {
+                log.error("Failed to rollback creation of id sequence");
+            }
+            log.error("Failed to create table, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
         } finally {
             dataSource.close();

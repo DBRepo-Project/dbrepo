@@ -82,10 +82,8 @@
                       Table Creator
                     </v-list-item-title>
                     <v-list-item-content>
-                      <span>
-                        {{ formatCreator(item.creator) }}
-                        <span v-if="item.creator.username === user.username">(you)</span>
-                      </span>
+                      {{ formatCreator(item.creator) }}
+                      <span v-if="is_owner(item)" style="flex:none;">&nbsp;(you)</span>
                     </v-list-item-content>
                   </v-list-item-content>
                 </v-list-item>
@@ -367,8 +365,11 @@ export default {
         this.access = res.data
         console.debug('access', this.access)
       } catch (err) {
-        this.error = true
-        this.$toast.error('Could not get database access permissions')
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          this.error = true
+          this.$toast.error('Could not get database access permissions')
+        }
       }
       this.loading = false
     },

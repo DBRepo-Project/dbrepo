@@ -298,6 +298,25 @@ public interface TableMapper {
         }
     }
 
+    default PreparedStatement tableToDropSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
+            throws ImageNotSupportedException, QueryMalformedException {
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        final StringBuilder statement = new StringBuilder("DROP SEQUENCE `")
+                .append(tableCreateDtoToSequenceName(data))
+                .append("`;");
+        try {
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("prepared drop sequence statement {}", statement);
+            return pstmt;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
     default PreparedStatement tableToCreateHistoryViewRawQuery(Connection connection, Table data) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("CREATE VIEW `hs_")
                 .append(data.getInternalName())

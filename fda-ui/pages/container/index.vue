@@ -28,24 +28,59 @@
     <v-card flat>
       <v-data-table
         :headers="headers"
-        :items="filter(databases)"
+        :items="filter(containers)"
+        :loading="loadingDatabases"
         @click:row="loadDatabase">
         <template v-slot:item.visibility="{ item }">
-          <v-icon v-if="!item.visibility" color="primary" title="Private" class="private-icon" right>mdi-lock-outline</v-icon>
-          <v-icon v-if="item.visibility" class="private-icon" title="Public" right>mdi-lock-open-outline</v-icon>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                v-if="item.visibility"
+                color="primary"
+                class="private-icon"
+                right
+                v-bind="attrs"
+                v-on="on">
+                mdi-lock-outline
+              </v-icon>
+              <v-icon
+                v-if="!item.visibility"
+                class="private-icon"
+                right
+                v-bind="attrs"
+                v-on="on">
+                mdi-lock-open-outline
+              </v-icon>
+            </template>
+            <span>{{ tooltip(item) }}</span>
+          </v-tooltip>
+        </template>
+        <template v-slot:item.created="{ item }">
+          <span>{{ formatTimestamp(item.created) }}</span>
         </template>
         <template v-slot:item.creator="{ item }">
           <span>{{ formatCreator(item.creator) }}</span>
-          <sup>
-            <v-icon v-if="item.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-          </sup>
+        </template>
+        <template v-slot:item.status="{ item }">
+          <span
+            v-if="notInit(item) && !canInit(item)">
+            Not Initialized
+          </span>
+          <v-btn
+            v-if="canInit(item)"
+            color="secondary"
+            :loading="loadingCreate"
+            small
+            @click.stop="initDatabase(item)">
+            Start
+          </v-btn>
         </template>
       </v-data-table>
       <v-dialog
         v-model="createDbDialog"
         persistent
         max-width="640">
-        <CreateDB @close="createDbDialog = false" />
+        <CreateDB @close="closed" />
       </v-dialog>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -64,19 +99,24 @@ export default {
   data () {
     return {
       loadingContainers: false,
+      loadingCreate: false,
       createDbDialog: false,
       databases: [],
       containers: [],
       filterPrivate: false,
       filterMine: false,
       searchQuery: null,
+      createDatabaseDto: {
+        name: null,
+        is_public: true
+      },
       user: {
         username: null
       },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
-      loading: false,
+      loadingDatabases: false,
       error: false,
       iconSelect: mdiDatabaseArrowRightOutline
     }
@@ -111,6 +151,10 @@ export default {
       }, {
         text: 'Created',
         value: 'created'
+      }, {
+        text: 'Status',
+        value: 'status',
+        sortable: false
       }]
     }
   },
@@ -122,6 +166,25 @@ export default {
   methods: {
     formatCreator (creator) {
       return formatUser(creator)
+    },
+    canInit (container) {
+      if (!this.token) {
+        return false
+      }
+      if (container.creator.username !== this.user.username) {
+        return false
+      }
+      return !container.database.id && !this.loadingDatabases
+    },
+    notInit (container) {
+      return !container.database.id
+    },
+    tooltip (item) {
+      return item.is_public ? 'Public' : 'Private'
+    },
+    async initDatabase (container) {
+      await this.startContainer(container)
+        .then(() => this.createDatabase(container))
     },
     filter (databases) {
       let filtered = databases
@@ -138,7 +201,12 @@ export default {
       try {
         this.loadingContainers = true
         const res = await this.$axios.get('/api/container/')
-        this.containers = res.data
+        this.containers = res.data.map((container) => {
+          container.database = {
+            id: null
+          }
+          return container
+        })
         console.debug('containers', this.containers)
         this.error = false
       } catch (err) {
@@ -151,7 +219,7 @@ export default {
       if (this.containers.length === 0) {
         return
       }
-      this.loading = true
+      this.loadingDatabases = true
       for (const container of this.containers) {
         try {
           const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
@@ -159,7 +227,8 @@ export default {
             info.container_id = container.id
             info.visibility = info.is_public
             info.created = formatTimestampUTCLabel(info.created)
-            this.databases.push(info)
+            const filtered = this.containers.filter(c => c.id === container.id)[0]
+            filtered.database = info
           }
         } catch (err) {
           if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
@@ -167,20 +236,60 @@ export default {
           }
         }
       }
-      this.loading = false
-      console.debug('databases', this.databases)
+      this.loadingDatabases = false
+      console.debug('containers with databases', this.containers)
     },
-    createdUTC (str) {
+    formatTimestamp (str) {
       return formatTimestampUTCLabel(str)
     },
-    loadDatabase (database) {
-      this.$router.push(`/container/${database.container_id}/database/${database.id}`)
+    loadDatabase (container) {
+      if (this.notInit(container)) {
+        console.warn('Container', container.id, 'not initialized')
+        return
+      }
+      this.$router.push(`/container/${container.id}/database/${container.database.id}`)
     },
     loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+    },
+    async startContainer (container) {
+      try {
+        this.loadingCreate = true
+        const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
+        console.debug('started container', res.data)
+        this.error = false
+      } catch (error) {
+        const { status } = error.response
+        if (status !== 409) {
+          this.error = true
+          this.$toast.error('Failed to start container')
+        }
+      }
+      this.loadingCreate = false
+    },
+    async createDatabase (container) {
+      try {
+        this.loadingCreate = true
+        this.createDatabaseDto.name = container.name
+        const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
+        container.database = res.data
+        console.debug('created database', container.database)
+        this.error = false
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to create database')
+      }
+      this.loadingCreate = false
+    },
+    closed (event) {
+      this.createDbDialog = false
+      if (event.success) {
+        this.loadContainers()
+          .then(() => this.loadDatabases())
+      }
     }
   }
 }

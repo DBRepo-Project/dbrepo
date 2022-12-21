@@ -8,6 +8,7 @@ from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyJSONEncoder
 from gevent.pywsgi import WSGIServer
+from prometheus_flask_exporter import PrometheusMetrics
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -30,6 +31,8 @@ dictConfig({
 })
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
+metrics.info('app_info', 'Application info', version='1.0.3')
 app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {

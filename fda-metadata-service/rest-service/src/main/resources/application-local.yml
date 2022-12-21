@@ -22,6 +22,7 @@ spring:
     name: metadata-service
   cloud:
     loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9099
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"

@@ -1,18 +1,18 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
@@ -22,21 +22,13 @@ import org.junit.rules.Timeout;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.math.BigInteger;
-import java.security.Principal;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -45,8 +37,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
+import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -72,6 +63,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private TableRepository tableRepository;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private QueryService queryService;
 
@@ -81,7 +75,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
-
         /* create network */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -90,7 +83,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.28.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-
         /* create container */
         final String bind = new File(
                 "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
@@ -104,7 +96,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .withEnv(CONTAINER_1_ENV)
                 .exec();
         CONTAINER_1.setHash(response.getId());
-        DockerConfig.startContainer(CONTAINER_1);
+        startContainer(CONTAINER_1);
 
         /* create container */
         final String bind2 = new File(
@@ -154,6 +146,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_1);
+        TABLE_3.setDatabase(DATABASE_1);
     }
 
     @Test
@@ -284,6 +278,45 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void execute_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT n.`firstname`, n.`lastname`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
+                .build();
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_2_ID, DATABASE_2_ID))
+                .thenReturn(Optional.of(DATABASE_2));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, QueryTypeDto.QUERY,
+                USER_1_PRINCIPAL, 0L, 100L, null, null);
+        assertEquals(4L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals(BigInteger.valueOf(4L), result.get(0).get("legs"));
+        assertEquals("boar", result.get(0).get("animal_name"));
+        assertEquals("Moritz", result.get(0).get("firstname"));
+        assertEquals("Staudinger", result.get(0).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(1).get("legs"));
+        assertEquals("cavy", result.get(1).get("animal_name"));
+        assertEquals("Moritz", result.get(1).get("firstname"));
+        assertEquals("Staudinger", result.get(1).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(2).get("legs"));
+        assertEquals("bear", result.get(2).get("animal_name"));
+        assertEquals("Eva", result.get(2).get("firstname"));
+        assertEquals("Gergely", result.get(2).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(3).get("legs"));
+        assertEquals("bear", result.get(3).get("animal_name"));
+        assertEquals("Cornelia", result.get(3).get("firstname"));
+        assertEquals("Michlits", result.get(3).get("lastname"));
     }
 
     @SneakyThrows
