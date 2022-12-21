@@ -7,14 +7,12 @@ import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
@@ -24,21 +22,13 @@ import org.junit.rules.Timeout;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.math.BigInteger;
-import java.security.Principal;
-import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -68,16 +58,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private RabbitMqListenerImpl rabbitMqListener;
 
     @MockBean
-    private ImageRepository imageRepository;
-
-    @MockBean
     private DatabaseRepository databaseRepository;
 
     @MockBean
     private TableRepository tableRepository;
-
-    @MockBean
-    private ContainerRepository containerRepository;
 
     @MockBean
     private UserRepository userRepository;
@@ -109,8 +93,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-                        "MARIADB_DATABASE=weather")
+                .withEnv(CONTAINER_1_ENV)
                 .exec();
         CONTAINER_1.setHash(response.getId());
         startContainer(CONTAINER_1);
@@ -126,13 +109,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         .withIpv4Address(CONTAINER_2_IP)
                         .withHealthcheck(CONTAINER_2_HEALTHCHECK)
                         .withHostName(CONTAINER_2_INTERNALNAME)
-                        .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-                                "MARIADB_DATABASE=zoo")
+                        .withEnv(CONTAINER_2_ENV)
                         .exec();
         CONTAINER_1.setHash(response.getId());
         CONTAINER_2.setHash(response2.getId());
-        startContainer(CONTAINER_1);
-        startContainer(CONTAINER_2);
+        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.startContainer(CONTAINER_2);
     }
 
     @AfterAll
@@ -170,8 +152,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, TableNotFoundException, DatabaseConnectionException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+            TableMalformedException, TableNotFoundException, DatabaseConnectionException,
+            PaginationException, ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
@@ -226,11 +208,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+                .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, -1L, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
@@ -241,13 +223,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+                .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, -1L, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
@@ -297,6 +277,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
+        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
         queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
     }
 

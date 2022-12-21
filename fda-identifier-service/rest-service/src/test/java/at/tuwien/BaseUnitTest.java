@@ -46,55 +46,6 @@ public abstract class BaseUnitTest {
             .lastModified(USER_1_LAST_MODIFIED)
             .build();
 
-    public final static Long DATABASE_1_ID = 1L;
-    public final static String DATABASE_1_NAME = "Test Database";
-    public final static String DATABASE_1_INTERNAL_NAME = "test_database";
-    public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNAL_NAME;
-    public final static Boolean DATABASE_1_PUBLIC = true;
-
-    public final static Long DATABASE_2_ID = 2L;
-    public final static String DATABASE_2_NAME = "Test Database 2";
-    public final static String DATABASE_2_INTERNAL_NAME = "test_database_2";
-    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNAL_NAME;
-    public final static Boolean DATABASE_2_PUBLIC = false;
-
-    public final static Long TABLE_1_ID = 1L;
-    public final static String TABLE_1_NAME = "Rainfall";
-    public final static String TABLE_1_INTERNAL_NAME = "rainfall";
-    public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNAL_NAME;
-
-    public final static Long CREATOR_1_ID = 1L;
-    public final static Long CREATOR_1_QUERY_ID = 1L;
-    public final static String CREATOR_1_ORCID = "00000-00000-00000";
-    public final static String CREATOR_1_AFFIL = "TU Graz";
-    public final static String CREATOR_1_NAME = "Mustermann, Max";
-    public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
-
-    public final static Long CREATOR_3_ID = 3L;
-    public final static Long CREATOR_3_QUERY_ID = 1L;
-    public final static String CREATOR_3_ORCID = "00000-00000-00000";
-    public final static String CREATOR_3_AFFIL = "TU Graz";
-    public final static String CREATOR_3_NAME = "Mustermann, Max";
-    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
-
-    public final static Long CREATOR_2_ID = 2L;
-    public final static Long CREATOR_2_QUERY_ID = 1L;
-    public final static String CREATOR_2_ORCID = "00000-00000-00000";
-    public final static String CREATOR_2_AFFIL = "TU Wien";
-    public final static String CREATOR_2_NAME = "Mustermann, Martina";
-    public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352);
-
-    public final static Long CREATOR_4_ID = 4L;
-    public final static Long CREATOR_4_QUERY_ID = 1L;
-    public final static String CREATOR_4_ORCID = "00000-00000-00000";
-    public final static String CREATOR_4_AFFIL = "TU Wien";
-    public final static String CREATOR_4_NAME = "Mustermann, Martina";
-    public final static Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352);
-
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "postgres";
     public final static String IMAGE_1_TAG = "13-alpine";
@@ -106,6 +57,7 @@ public abstract class BaseUnitTest {
     public final static Long IMAGE_1_SIZE = 12000L;
     public final static String IMAGE_1_LOGO = "AAAA";
     public final static Instant IMAGE_1_BUILT = Instant.ofEpochSecond(1441588352);
+
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
             ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
@@ -171,11 +123,29 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_2_HASH)
             .build();
 
+    public final static Long DATABASE_1_ID = 1L;
+    public final static String DATABASE_1_NAME = "Test Database";
+    public final static String DATABASE_1_INTERNAL_NAME = "test_database";
+    public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNAL_NAME;
+    public final static Boolean DATABASE_1_PUBLIC = true;
+
+    public final static Long DATABASE_2_ID = 2L;
+    public final static String DATABASE_2_NAME = "Test Database 2";
+    public final static String DATABASE_2_INTERNAL_NAME = "test_database_2";
+    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNAL_NAME;
+    public final static Boolean DATABASE_2_PUBLIC = false;
+
+    public final static Long TABLE_1_ID = 1L;
+    public final static String TABLE_1_NAME = "Rainfall";
+    public final static String TABLE_1_INTERNAL_NAME = "rainfall";
+    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
+
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
             .name(DATABASE_1_NAME)
             .internalName(DATABASE_1_INTERNAL_NAME)
-            .exchange(DATABASE_1_EXCHANGE)
+            .exchangeName(DATABASE_1_EXCHANGE)
             .tables(List.of())
             .isPublic(DATABASE_1_PUBLIC)
             .build();
@@ -184,7 +154,7 @@ public abstract class BaseUnitTest {
             .id(DATABASE_2_ID)
             .name(DATABASE_2_NAME)
             .internalName(DATABASE_2_INTERNAL_NAME)
-            .exchange(DATABASE_2_EXCHANGE)
+            .exchangeName(DATABASE_2_EXCHANGE)
             .tables(List.of())
             .isPublic(DATABASE_2_PUBLIC)
             .build();
@@ -193,9 +163,42 @@ public abstract class BaseUnitTest {
             .id(TABLE_1_ID)
             .name(TABLE_1_NAME)
             .internalName(TABLE_1_INTERNAL_NAME)
-            .topic(TABLE_1_TOPIC)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
             .tdbid(DATABASE_1_ID)
             .build();
+
+    public final static Long CREATOR_1_ID = 1L;
+    public final static Long CREATOR_1_QUERY_ID = 1L;
+    public final static String CREATOR_1_ORCID = "00000-00000-00000";
+    public final static String CREATOR_1_AFFIL = "TU Graz";
+    public final static String CREATOR_1_NAME = "Mustermann, Max";
+    public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static Long CREATOR_3_ID = 3L;
+    public final static Long CREATOR_3_QUERY_ID = 1L;
+    public final static String CREATOR_3_ORCID = "00000-00000-00000";
+    public final static String CREATOR_3_AFFIL = "TU Graz";
+    public final static String CREATOR_3_NAME = "Mustermann, Max";
+    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static Long CREATOR_2_ID = 2L;
+    public final static Long CREATOR_2_QUERY_ID = 1L;
+    public final static String CREATOR_2_ORCID = "00000-00000-00000";
+    public final static String CREATOR_2_AFFIL = "TU Wien";
+    public final static String CREATOR_2_NAME = "Mustermann, Martina";
+    public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static Long CREATOR_4_ID = 4L;
+    public final static Long CREATOR_4_QUERY_ID = 1L;
+    public final static String CREATOR_4_ORCID = "00000-00000-00000";
+    public final static String CREATOR_4_AFFIL = "TU Wien";
+    public final static String CREATOR_4_NAME = "Mustermann, Martina";
+    public final static Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Long QUERY_1_ID = 1L;
     public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;

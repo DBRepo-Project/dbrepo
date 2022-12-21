@@ -6,9 +6,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.ContainerService;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.sql.*;
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,26 +28,21 @@ import java.util.Optional;
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
-    private final AmqpMapper amqpMapper;
     private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
     private final DatabaseidxRepository databaseidxRepository;
-    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public MariaDbServiceImpl(AmqpMapper amqpMapper, UserService userService, DatabaseMapper databaseMapper,
+    public MariaDbServiceImpl(UserService userService, DatabaseMapper databaseMapper,
                               ContainerService containerService, DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository,
-                              DatabaseAccessRepository databaseAccessRepository) {
-        this.amqpMapper = amqpMapper;
+                              DatabaseidxRepository databaseidxRepository) {
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
         this.databaseidxRepository = databaseidxRepository;
-        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     @Override
@@ -138,6 +130,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         database.setContainer(container);
+        final User creator = userService.findByUsername(principal.getName());
+        database.setCreator(creator);
+        database.setExchangeName("dbrepo/" + database.getInternalName());
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
             final Connection connection = dataSource.getConnection();
@@ -160,17 +155,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         log.info("Created user {} on database with creator access", user.getUsername());
         /* save in metadata database */
-        database.setExchange(amqpMapper.exchangeName(database));
-        database.setIsPublic(createDto.getIsPublic());
-        final User creator = userService.findByUsername(principal.getName());
-        database.setCreator(creator);
         final Database dbdb = databaseRepository.save(database);
         log.info("Created database with id {}", dbdb.getId());
-        log.trace("created database {}", dbdb);
         /* save in database_index - elastic search */
         final Database edb = databaseidxRepository.save(database);
         log.info("Saved database in elastic search with id {}", edb.getId());
-        log.trace("saved database in elastic search {}", edb);
         return dbdb;
     }
 

@@ -49,6 +49,10 @@ public class DockerConfig {
         do {
             final InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getHash())
                     .exec();
+            if (response.getState().getHealth() == null) {
+                log.error("Container does not have a healthcheck configuration");
+                throw new InterruptedException("Container does not have a healthcheck configuration");
+            }
             state = response.getState().getHealth().getStatus();
             log.debug("container {} state is {}, attempt {} of {}", container.getHash(), state, i, max);
             Thread.sleep(10 * 1000L);

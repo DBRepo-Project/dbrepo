@@ -5,8 +5,6 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.AccessType;
@@ -28,9 +26,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import com.github.dockerjava.api.model.HealthCheck;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
 import java.security.Principal;
@@ -46,7 +41,7 @@ import static java.time.temporal.ChronoUnit.*;
 public abstract class BaseUnitTest {
 
     public final static Long USER_1_ID = 1L;
-    public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_USERNAME = "guest";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -121,55 +116,220 @@ public abstract class BaseUnitTest {
     public final static String BROKER_NET = "fda-public";
     public final static String BROKER_IP = "172.29.0.2";
 
+    public final static Long IMAGE_1_ID = 1L;
+    public final static String IMAGE_1_REPOSITORY = "mariadb";
+    public final static String IMAGE_1_TAG = "10.5";
+    public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_1_JDBC = "mariadb";
+    public final static Integer IMAGE_1_PORT = 3306;
+    public final static Long IMAGE_1_SIZE = 12000L;
+    public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
+
+    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("UZERNAME")
+                    .value("root")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_ROOT_PASSWORD")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_USER")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.USERNAME)
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_PASSWORD")
+                    .value("mariadb")
+                    .type(ContainerImageEnvironmentItemType.PASSWORD)
+                    .build());
+
+    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .compiled(IMAGE_1_BUILT)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENV)
+            .defaultPort(IMAGE_1_PORT)
+            .build();
+
+    public final static Long IMAGE_BROKER_ID = 2L;
+    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
+    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
+    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_BROKER_JDBC = "mariadb";
+    public final static Integer IMAGE_BROKER_PORT = 15672;
+    public final static Long IMAGE_BROKER_SIZE = 12000L;
+    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
+    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
+
+    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
+            .id(IMAGE_BROKER_ID)
+            .repository(IMAGE_BROKER_REPOSITORY)
+            .tag(IMAGE_BROKER_TAG)
+            .hash(IMAGE_BROKER_HASH)
+            .compiled(IMAGE_BROKER_BUILT)
+            .dialect(IMAGE_BROKER_DIALECT)
+            .jdbcMethod(IMAGE_BROKER_JDBC)
+            .driverClass(IMAGE_BROKER_DRIVER)
+            .size(IMAGE_BROKER_SIZE)
+            .defaultPort(IMAGE_BROKER_PORT)
+            .build();
+
+    public final static Long CONTAINER_1_ID = 1L;
+    public final static String CONTAINER_1_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
+    public final static String CONTAINER_1_NAME = "u01";
+    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=weather"};
+    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_1 = Container.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_1_IMAGE)
+            .hash(CONTAINER_1_HASH)
+            .created(CONTAINER_1_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_2_ID = 2L;
+    public final static String CONTAINER_2_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public final static String CONTAINER_2_NAME = "u02";
+    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=zoo"};
+    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_2 = Container.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_2_IMAGE)
+            .hash(CONTAINER_2_HASH)
+            .created(CONTAINER_2_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
+    public final static String CONTAINER_3_NAME = "u03";
+    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Container CONTAINER_3 = Container.builder()
+            .id(CONTAINER_3_ID)
+            .name(CONTAINER_3_NAME)
+            .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_3_IMAGE)
+            .hash(CONTAINER_3_HASH)
+            .created(CONTAINER_3_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_BROKER_ID = 4L;
+    public final static String CONTAINER_BROKER_NAME = "fda-broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_HASH = "deadbeef";
+    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Container CONTAINER_BROKER = Container.builder()
+            .id(CONTAINER_BROKER_ID)
+            .name(CONTAINER_BROKER_NAME)
+            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
+            .imageId(IMAGE_BROKER_ID)
+            .image(IMAGE_BROKER)
+            .hash(CONTAINER_BROKER_HASH)
+            .created(CONTAINER_BROKER_CREATED)
+            .creator(USER_1)
+            .build();
+
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_ID + "/" + DATABASE_2_ID;
 
     public final static Long DATABASE_3_ID = 3L;
     public final static String DATABASE_3_NAME = "traffic";
     public final static String DATABASE_3_INTERNALNAME = "traffic";
-    public final static String DATABASE_3_EXCHANGE = "fda." + DATABASE_3_INTERNALNAME;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_ID + "/" + DATABASE_3_ID;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_TOPIC = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_2_INTERNALNAME;
+    public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
     public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_TOPIC = DATABASE_3_EXCHANGE + "." + TABLE_3_INTERNALNAME;
+    public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
+    public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_5_ID = 5L;
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_5_INTERNALNAME;
+    public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_6_ID = 6L;
@@ -178,18 +338,6 @@ public abstract class BaseUnitTest {
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
     public final static String TABLE_6_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNALNAME;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
-
-    public final static Long IMAGE_1_ID = 1L;
-    public final static String IMAGE_1_REPOSITORY = "mariadb";
-    public final static String IMAGE_1_TAG = "10.5";
-    public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
-    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_1_JDBC = "mariadb";
-    public final static String IMAGE_1_LOGO = "AAAA";
-    public final static Integer IMAGE_1_PORT = 3306;
-    public final static Long IMAGE_1_SIZE = 12000L;
-    public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
 
     public final static Long IMAGE_DATE_1_ID = 1L;
     public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
@@ -671,74 +819,6 @@ public abstract class BaseUnitTest {
     public final static String COLUMN_5_3_CHECK = null;
     public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
 
-    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("UZERNAME")
-                    .value("root")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_ROOT_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_USER")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.USERNAME)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PASSWORD)
-                    .build());
-
-    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
-            .id(IMAGE_1_ID)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
-            .hash(IMAGE_1_HASH)
-            .compiled(IMAGE_1_BUILT)
-            .dialect(IMAGE_1_DIALECT)
-            .jdbcMethod(IMAGE_1_JDBC)
-            .driverClass(IMAGE_1_DRIVER)
-            .size(IMAGE_1_SIZE)
-            .environment(IMAGE_1_ENV)
-            .defaultPort(IMAGE_1_PORT)
-            .build();
-
-    public final static Long CONTAINER_1_ID = 1L;
-    public final static String CONTAINER_1_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
-    public final static String CONTAINER_1_NAME = "u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
-    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
-    public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
-    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
-    public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
-
     public final static Long CONCEPT_1_ID = 1L;
     public final static String CONCEPT_1_NAME = "Temperature";
     public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
@@ -747,39 +827,6 @@ public abstract class BaseUnitTest {
             .name(CONCEPT_1_NAME)
             .created(CONCEPT_1_CREATED)
             .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
-            .build();
-
-    public final static Container CONTAINER_1 = Container.builder()
-            .id(CONTAINER_1_ID)
-            .name(CONTAINER_1_NAME)
-            .internalName(CONTAINER_1_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_1_IMAGE)
-            .hash(CONTAINER_1_HASH)
-            .created(CONTAINER_1_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Container CONTAINER_2 = Container.builder()
-            .id(CONTAINER_2_ID)
-            .name(CONTAINER_2_NAME)
-            .internalName(CONTAINER_2_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_2_IMAGE)
-            .hash(CONTAINER_2_HASH)
-            .created(CONTAINER_2_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Container CONTAINER_3 = Container.builder()
-            .id(CONTAINER_3_ID)
-            .name(CONTAINER_3_NAME)
-            .internalName(CONTAINER_3_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_3_IMAGE)
-            .hash(CONTAINER_3_HASH)
-            .created(CONTAINER_3_CREATED)
-            .creator(USER_1)
             .build();
 
     public final static Long QUERY_1_ID = 1L;
@@ -1928,7 +1975,9 @@ public abstract class BaseUnitTest {
             .name(TABLE_1_NAME)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
-            .topic(TABLE_1_TOPIC)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(TABLE_1_COLUMNS)
             .creator(USER_1)
             .columns(TABLE_1_COLUMNS)
             .build();
@@ -1941,7 +1990,9 @@ public abstract class BaseUnitTest {
             .name(TABLE_2_NAME)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
-            .topic(TABLE_2_TOPIC)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
             .columns(TABLE_2_COLUMNS)
             .build();
@@ -1954,7 +2005,9 @@ public abstract class BaseUnitTest {
             .name(TABLE_3_NAME)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
-            .topic(TABLE_3_TOPIC)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(TABLE_3_COLUMNS)
             .creator(USER_1)
             .columns(TABLE_3_COLUMNS)
             .build();
@@ -1967,7 +2020,9 @@ public abstract class BaseUnitTest {
             .name(TABLE_4_NAME)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
-            .topic(TABLE_4_TOPIC)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(TABLE_4_COLUMNS)
             .creator(USER_1)
             .columns(TABLE_4_COLUMNS)
             .build();
@@ -1980,7 +2035,9 @@ public abstract class BaseUnitTest {
             .name(TABLE_5_NAME)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
-            .topic(TABLE_5_TOPIC)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(TABLE_5_COLUMNS)
             .creator(USER_1)
             .columns(TABLE_5_COLUMNS)
             .build();
@@ -1993,9 +2050,10 @@ public abstract class BaseUnitTest {
             .name(TABLE_6_NAME)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
-            .topic(TABLE_6_TOPIC)
-            .creator(USER_1)
+            .queueName(TABLE_6_TOPIC)
+            .routingKey(TABLE_6_TOPIC)
             .columns(TABLE_6_COLUMNS)
+            .creator(USER_1)
             .build();
 
     public final static Long VIEW_1_ID = 1L;
@@ -2016,12 +2074,6 @@ public abstract class BaseUnitTest {
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .query(VIEW_1_QUERY)
-            .build();
-
-    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
-            .data(new HashMap<>() {{
-                put("key", "value");
-            }})
             .build();
 
     public final static Long VIEW_2_ID = 2L;
@@ -2092,7 +2144,7 @@ public abstract class BaseUnitTest {
             .name(DATABASE_1_NAME)
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
-            .exchange(DATABASE_1_EXCHANGE)
+            .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
             .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
             .views(List.of())
@@ -2106,7 +2158,7 @@ public abstract class BaseUnitTest {
             .name(DATABASE_2_NAME)
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
-            .exchange(DATABASE_2_EXCHANGE)
+            .exchangeName(DATABASE_2_EXCHANGE)
             .creator(USER_1)
             .tables(List.of(TABLE_4, TABLE_5, TABLE_6))
             .views(List.of(VIEW_4))
@@ -2120,7 +2172,7 @@ public abstract class BaseUnitTest {
             .name(DATABASE_3_NAME)
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
-            .exchange(DATABASE_3_EXCHANGE)
+            .exchangeName(DATABASE_3_EXCHANGE)
             .creator(USER_1)
             .tables(List.of())
             .views(List.of())
@@ -2192,4 +2244,16 @@ public abstract class BaseUnitTest {
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
+
+    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
+            .data(new HashMap<>() {{
+                put("id", 1);
+                put("date", "2022-12-20");
+                put("location", "Vienna");
+                put("mintemp", -2.3);
+                put("rainfall", 34.3);
+            }})
+            .build();
+
+
 }

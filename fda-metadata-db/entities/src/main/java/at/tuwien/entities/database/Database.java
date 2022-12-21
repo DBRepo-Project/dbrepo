@@ -58,8 +58,8 @@ public class Database {
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false)
-    private String exchange;
+    @Column(name = "exchange_name", nullable = false, updatable = false)
+    private String exchangeName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
