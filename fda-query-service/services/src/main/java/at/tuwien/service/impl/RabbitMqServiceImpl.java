@@ -34,8 +34,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public void createConsumer(String queueName, Table table) throws AmqpException {
+    public void createConsumer(String queueName, Long containerId, Long databaseId, Long tableId) throws AmqpException {
         try {
             if (!this.channel.isOpen()) {
                 log.warn("Channel with id {} is closed", this.channel.getChannelNumber());
@@ -43,10 +42,11 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 this.channel = tmp.createChannel();
                 log.info("Opened channel with id {}", this.channel.getChannelNumber());
             }
-            final String consumerTag = this.channel.basicConsume(queueName, true, new RabbitMqConsumer(table, objectMapper, queryService));
+            final String consumerTag = this.channel.basicConsume(queueName, true, new RabbitMqConsumer(containerId,
+                    databaseId, tableId, objectMapper, queryService));
             log.debug("declared consumer for queue name {} with tag {}", queueName, consumerTag);
         } catch (IOException e) {
-            log.error("Failed to create consumer for table with id {}, reason: {}", table.getId(), e.getMessage());
+            log.error("Failed to create consumer for table with id {}, reason: {}", tableId, e.getMessage());
             throw new AmqpException("Failed to create consumer", e);
         } catch (Exception e) {
             log.error("Failed unknown: {}", e.getMessage());

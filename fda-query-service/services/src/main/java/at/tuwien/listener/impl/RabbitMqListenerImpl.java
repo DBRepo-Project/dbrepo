@@ -49,7 +49,8 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
             }
             log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount,
                     amqpConfig.getAmqpConsumers());
-            messageQueueService.createConsumer(table.getQueueName(), table);
+            messageQueueService.createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
+                    table.getDatabase().getId(), table.getId());
         }
     }
 

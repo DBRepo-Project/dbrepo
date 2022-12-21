@@ -12,6 +12,7 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
@@ -20,12 +21,17 @@ import java.util.HashMap;
 @Log4j2
 public class RabbitMqConsumer implements Consumer {
 
-    private final Table table;
+    private final Long containerId;
+    private final Long databaseId;
+    private final Long tableId;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
 
-    public RabbitMqConsumer(Table table, ObjectMapper objectMapper, QueryService queryService) {
-        this.table = table;
+    public RabbitMqConsumer(Long containerId, Long databaseId, Long tableId, ObjectMapper objectMapper, 
+                            QueryService queryService) {
+        this.containerId = containerId;
+        this.databaseId = databaseId;
+        this.tableId = tableId;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
     }
@@ -56,8 +62,9 @@ public class RabbitMqConsumer implements Consumer {
     }
 
     @Override
-    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws
-            IOException {
+    @Transactional(readOnly = true)
+    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+            throws IOException {
         log.trace("handle delivery of tuple, consumerTag={}, envelope={}, properties={}, body=(bytes)",
                 consumerTag, envelope, properties);
         final TypeReference<HashMap<String, Object>> payloadReference = new TypeReference<>() {
@@ -67,32 +74,31 @@ public class RabbitMqConsumer implements Consumer {
                 .build();
         log.trace("received tuple data {}", data);
         try {
-            queryService.insert(table.getDatabase().getContainer().getId(), table.getDatabase().getId(),
-                    table.getId(), data, new BasicUserPrincipal(properties.getUserId()));
+            queryService.insert(containerId, databaseId, tableId, data, new BasicUserPrincipal(properties.getUserId()));
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.error("Failed to authenticate for table with id {}, reason: {}", table.getId(), e.getMessage());
+            log.error("Failed to authenticate for table with id {}, reason: {}", tableId, e.getMessage());
             throw new IOException("Failed to authenticate for table", e);
         } catch (HttpClientErrorException.BadRequest e) {
-            log.error("Failed to insert for table with id {}, reason: {}", table.getId(), e.getMessage());
+            log.error("Failed to insert for table with id {}, reason: {}", tableId, e.getMessage());
             throw new IOException("Failed to insert for table", e);
         } catch (TableNotFoundException e) {
-            log.error("Failed to find table with id {}, reason: {}", table.getId(), e.getMessage());
+            log.error("Failed to find table with id {}, reason: {}", tableId, e.getMessage());
             throw new IOException("Failed to find table", e);
         } catch (TableMalformedException e) {
-            log.error("Tuple columns do not math table columns with table id {}, reason: {}", table.getId(),
+            log.error("Tuple columns do not math table columns with table id {}, reason: {}", tableId,
                     e.getMessage());
             throw new IOException("Tuple columns do not math table columns", e);
         } catch (DatabaseNotFoundException e) {
-            log.error("Failed to find database with id {}, reason: {}", table.getDatabase().getId(), e.getMessage());
+            log.error("Failed to find database with id {}, reason: {}", databaseId, e.getMessage());
             throw new IOException("Failed to find database", e);
         } catch (ImageNotSupportedException e) {
             log.error("Image is not supported");
             throw new IOException("Image is not supported", e);
         } catch (ContainerNotFoundException e) {
-            log.error("Failed to find container with id {}, reason: {}", table.getDatabase().getContainer().getId(), e.getMessage());
+            log.error("Failed to find container with id {}, reason: {}", containerId, e.getMessage());
             throw new IOException("Failed to find container", e);
         } catch (DatabaseConnectionException e) {
-            log.error("Failed to connect to container with id {}, reason: {}", table.getDatabase().getContainer().getId(), e.getMessage());
+            log.error("Failed to connect to container with id {}, reason: {}", containerId, e.getMessage());
             throw new IOException("Failed to connect to container", e);
         } catch (UserNotFoundException e) {
             log.error("Failed to find user with id {}", properties.getUserId());

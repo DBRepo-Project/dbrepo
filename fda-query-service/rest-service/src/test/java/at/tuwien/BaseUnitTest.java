@@ -195,7 +195,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
     public final static String CONTAINER_1_IP = "172.28.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_1_ENV = new String[] {"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
             "MARIADB_DATABASE=weather"};
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -218,7 +218,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
     public final static String CONTAINER_2_IP = "172.28.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_2_ENV = new String[] {"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
             "MARIADB_DATABASE=zoo"};
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -2136,7 +2136,11 @@ public abstract class BaseUnitTest {
 
     public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
             .data(new HashMap<>() {{
-                put("key", "value");
+                put("id", 1);
+                put("date", "2022-12-20");
+                put("location", "Vienna");
+                put("mintemp", -2.3);
+                put("rainfall", 34.3);
             }})
             .build();
 
