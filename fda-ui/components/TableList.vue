@@ -66,9 +66,10 @@
                       AMQP Consumer(s)
                     </v-list-item-title>
                     <v-list-item-content class="amqp-consumer">
-                      <span v-text="`${consumersUp}/${consumersTotal}`" />
+                      <span v-if="justCreated">Creating consumers ...</span>
+                      <span v-if="!justCreated" v-text="`${consumersUp}/${consumersTotal}`" />
                       <v-badge
-                        v-if="attemptedLoadingConsumers"
+                        v-if="!justCreated"
                         class="ml-1"
                         :color="consumersState.color"
                         :content="consumersState.text" />
@@ -203,7 +204,6 @@ export default {
       column: null,
       unitDialog: false,
       consumers: [],
-      attemptedLoadingConsumers: false,
       access: {
         type: null
       },
@@ -274,6 +274,9 @@ export default {
         headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
         progress: false
       }
+    },
+    justCreated () {
+      return new Date().getTime() - new Date(this.tableDetails.created).getTime() <= 60000
     },
     createdUTC () {
       if (this.tableDetails.created === undefined || this.tableDetails.created === null) {
@@ -381,7 +384,6 @@ export default {
         /* prevent weird glitch of opening and collapsing simultaneously */
         return
       }
-      this.attemptedLoadingConsumers = false
       /* use cache */
       this.tableDetails = table
       /* load remaining info */
@@ -442,7 +444,6 @@ export default {
     },
     async consumerDetails (queueName) {
       try {
-        this.attemptedLoadingConsumers = true
         this.loadingConsumers = true
         const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
         const consumers = res.data.filter(c => c.queue.name === queueName)

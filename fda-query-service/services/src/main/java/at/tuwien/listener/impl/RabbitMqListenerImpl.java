@@ -34,7 +34,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
-    @Scheduled(fixedDelay = 30000)
+    @Scheduled(fixedDelay = 5000)
     @Transactional(readOnly = true)
     public void updateConsumers() throws AmqpException {
         final List<Table> tables = tableService.findAll();

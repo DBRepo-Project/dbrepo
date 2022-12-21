@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.config.AmqpConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryService;
@@ -21,13 +22,16 @@ import java.util.HashMap;
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private final Channel channel;
+    private Channel channel;
+    private final AmqpConfig amqpConfig;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
 
     @Autowired
-    public RabbitMqServiceImpl(Channel channel, ObjectMapper objectMapper, QueryService queryService) {
+    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, ObjectMapper objectMapper,
+                               QueryService queryService) {
         this.channel = channel;
+        this.amqpConfig = amqpConfig;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
     }
@@ -36,7 +40,13 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Transactional(readOnly = true)
     public void createConsumer(String queueName, Long containerId, Long databaseId, Long tableId) throws AmqpException {
         try {
-            final String consumerTag = channel.basicConsume(queueName, true, new Consumer() {
+            if (!this.channel.isOpen()) {
+                log.warn("Channel with id {} is closed", this.channel.getChannelNumber());
+                final Connection tmp = this.amqpConfig.connectionFactory().newConnection();
+                this.channel = tmp.createChannel();
+                log.info("Opened channel with id {}", this.channel.getChannelNumber());
+            }
+            final String consumerTag = this.channel.basicConsume(queueName, true, new Consumer() {
                 @Override
                 public void handleConsumeOk(String consumerTag) {
                     //
