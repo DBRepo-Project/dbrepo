@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Log4j2
@@ -48,8 +49,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
             }
             log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount,
                     amqpConfig.getAmqpConsumers());
-            messageQueueService.createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
-                    table.getDatabase().getId(), table.getId());
+            messageQueueService.createConsumer(table.getQueueName(), table);
         }
     }
 

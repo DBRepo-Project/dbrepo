@@ -41,7 +41,7 @@ import static java.time.temporal.ChronoUnit.*;
 public abstract class BaseUnitTest {
 
     public final static Long USER_1_ID = 1L;
-    public final static String USER_1_USERNAME = "junit";
+    public final static String USER_1_USERNAME = "guest";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -111,11 +111,6 @@ public abstract class BaseUnitTest {
 
     public final static String DATABASE_NET = "fda-userdb";
 
-    public final static String BROKER_IMAGE = "fda-broker-service:latest";
-    public final static String BROKER_INTERNALNAME = "fda-broker-service";
-    public final static String BROKER_NET = "fda-public";
-    public final static String BROKER_IP = "172.29.0.2";
-
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
@@ -123,7 +118,6 @@ public abstract class BaseUnitTest {
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
-    public final static String IMAGE_1_LOGO = "AAAA";
     public final static Integer IMAGE_1_PORT = 3306;
     public final static Long IMAGE_1_SIZE = 12000L;
     public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
@@ -168,6 +162,32 @@ public abstract class BaseUnitTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
+    public final static Long IMAGE_BROKER_ID = 2L;
+    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
+    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
+    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_BROKER_JDBC = "mariadb";
+    public final static Integer IMAGE_BROKER_PORT = 15672;
+    public final static Long IMAGE_BROKER_SIZE = 12000L;
+    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
+    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
+
+    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
+            .id(IMAGE_BROKER_ID)
+            .repository(IMAGE_BROKER_REPOSITORY)
+            .tag(IMAGE_BROKER_TAG)
+            .hash(IMAGE_BROKER_HASH)
+            .compiled(IMAGE_BROKER_BUILT)
+            .dialect(IMAGE_BROKER_DIALECT)
+            .jdbcMethod(IMAGE_BROKER_JDBC)
+            .driverClass(IMAGE_BROKER_DRIVER)
+            .size(IMAGE_BROKER_SIZE)
+            .defaultPort(IMAGE_BROKER_PORT)
+            .build();
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
@@ -175,26 +195,10 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
     public final static String CONTAINER_1_IP = "172.28.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_1_ENV = new String[] {"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=weather"};
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
-    public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
-    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
-    public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -207,6 +211,18 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Long CONTAINER_2_ID = 2L;
+    public final static String CONTAINER_2_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public final static String CONTAINER_2_NAME = "u02";
+    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_2_ENV = new String[] {"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=zoo"};
+    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
@@ -218,6 +234,14 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
+    public final static String CONTAINER_3_NAME = "u03";
+    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
+
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
@@ -226,6 +250,24 @@ public abstract class BaseUnitTest {
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_BROKER_ID = 4L;
+    public final static String CONTAINER_BROKER_NAME = "fda-broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_HASH = "deadbeef";
+    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Container CONTAINER_BROKER = Container.builder()
+            .id(CONTAINER_BROKER_ID)
+            .name(CONTAINER_BROKER_NAME)
+            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
+            .imageId(IMAGE_BROKER_ID)
+            .image(IMAGE_BROKER)
+            .hash(CONTAINER_BROKER_HASH)
+            .created(CONTAINER_BROKER_CREATED)
             .creator(USER_1)
             .build();
 
@@ -250,6 +292,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_1_SKIP_HEADERS = 1L;
     public final static String TABLE_1_NULL_ELEMENT = "NA";
@@ -262,6 +305,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_2_SKIP_HEADERS = 1L;
     public final static String TABLE_2_NULL_ELEMENT = null;
@@ -274,6 +318,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_3_SKIP_HEADERS = 1L;
     public final static String TABLE_3_NULL_ELEMENT = null;
@@ -286,6 +331,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_4_SKIP_HEADERS = 1L;
     public final static String TABLE_4_NULL_ELEMENT = null;
@@ -298,6 +344,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
     public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_5_SKIP_HEADERS = 1L;
     public final static String TABLE_5_NULL_ELEMENT = null;
@@ -1883,7 +1930,8 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_1_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(TABLE_1_COLUMNS)
             .creator(USER_1)
             .build();
 
@@ -1896,7 +1944,8 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_2_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
             .build();
 
@@ -1909,7 +1958,8 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_3_LAST_MODIFIED)
             .tdbid(DATABASE_3_ID)
             .queueName(TABLE_3_QUEUE_NAME)
-            .routingKey(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(TABLE_3_COLUMNS)
             .creator(USER_1)
             .build();
 
@@ -1922,7 +1972,8 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_4_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(TABLE_4_COLUMNS)
             .creator(USER_1)
             .build();
 
@@ -1935,7 +1986,8 @@ public abstract class BaseUnitTest {
             .lastModified(TABLE_5_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(TABLE_5_COLUMNS)
             .creator(USER_1)
             .build();
 
