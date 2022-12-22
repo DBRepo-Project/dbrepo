@@ -85,23 +85,4 @@ public interface StoreService {
     Query persist(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 
-    /**
-     * Updates a query.
-     *
-     * @param containerId  The container id.
-     * @param databaseId   The database id.
-     * @param result       The query result.
-     * @param resultNumber The query result number.
-     * @param metadata     The metadata to the query.
-     * @param principal    The user principal.
-     * @return The stored query.
-     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
-     * @throws ImageNotSupportedException  The image is not supported
-     * @throws DatabaseConnectionException The database connection to the remote container failed.
-     * @throws QueryStoreException         The query store raised some error
-     */
-    Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata,
-                 Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException;
 }
