@@ -149,9 +149,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* map table */
         final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
         tmp.setInternalName(tableMapper.nameToInternalName(tmp.getName()));
+        tmp.setQueueName(database.getExchangeName() + "/" + tmp.getInternalName());
+        tmp.setRoutingKey(tmp.getQueueName() + "/1");
         tmp.setTdbid(databaseId);
         tmp.setDatabase(database);
-        tmp.setTopic(tmp.getInternalName());
         tmp.setColumns(List.of());
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);

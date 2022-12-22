@@ -30,7 +30,7 @@ public class AmqpConfig {
     private Integer amqpConsumers;
 
     @Bean
-    public Channel getChannel() throws IOException, TimeoutException {
+    public ConnectionFactory connectionFactory() {
         final ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(ampqHost);
         factory.setUsername(amqpUsername);
@@ -38,7 +38,12 @@ public class AmqpConfig {
         factory.setAutomaticRecoveryEnabled(true);
         factory.setTopologyRecoveryEnabled(true);
         factory.setNetworkRecoveryInterval(10000) /* attempt recovery every 10 seconds */;
-        final Connection connection = factory.newConnection();
+        return factory;
+    }
+
+    @Bean
+    public Channel getChannel() throws IOException, TimeoutException {
+        final Connection connection = connectionFactory().newConnection();
         return connection.createChannel();
     }
 

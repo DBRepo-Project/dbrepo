@@ -42,7 +42,8 @@ public interface TableMapper {
             @Mapping(source = "id", target = "id"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
-            @Mapping(target = "topic", expression = "java(data.getTopic())"),
+            @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
+            @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
     })
     TableDto tableToTableDto(Table data);
