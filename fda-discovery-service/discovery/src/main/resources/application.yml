@@ -1,8 +1,8 @@
 spring:
   main.banner-mode: off
   datasource:
-    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:mariadb://metadata-db:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME}"
     password: "${METADATA_PASSWORD}"
   jpa:
@@ -17,6 +17,7 @@ spring:
           time_zone: UTC
   application:
     name: discovery-service
+management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9090
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"

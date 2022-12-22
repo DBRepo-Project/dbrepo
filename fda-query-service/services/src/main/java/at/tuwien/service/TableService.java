@@ -5,6 +5,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface TableService {
@@ -34,11 +35,12 @@ public interface TableService {
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param tableId     The table id.
+     * @param principal   The user principal.
      * @return The history as a list, if successful.
      * @throws QueryMalformedException   The query is malformed.
      * @throws DatabaseNotFoundException The database is not found.
      * @throws TableNotFoundException    The table is not found.
      */
-    List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId)
-            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException, DatabaseConnectionException, QueryStoreException;
+    List<TableHistoryDto> findHistory(Long containerId, Long databaseId, Long tableId, Principal principal)
+            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 }

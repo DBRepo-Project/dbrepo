@@ -26,8 +26,8 @@ public class RabbitMqService implements MessageQueueService {
     @Transactional(readOnly = true)
     public void create(Table table) throws AmqpException {
         try {
-            channel.queueDeclare(table.getTopic(), true, false, false, null);
-            channel.queueBind(table.getTopic(), table.getDatabase().getExchange(), table.getTopic());
+            channel.queueDeclare(table.getQueueName(), true, false, false, null);
+            channel.queueBind(table.getQueueName(), table.getDatabase().getExchangeName(), table.getRoutingKey());
         } catch (IOException e) {
             log.error("Failed to create queue and bind for table with id {}", table.getId());
             throw new AmqpException("Failed to create", e);

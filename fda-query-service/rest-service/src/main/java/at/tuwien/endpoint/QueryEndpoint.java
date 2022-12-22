@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Log4j2
 @RestController
@@ -33,8 +32,9 @@ public class QueryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                         IdentifierService identifierService, TableService tableService, AccessService accessService,
+                         QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.queryService = queryService;
         this.storeService = storeService;
     }
@@ -89,7 +89,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, SortException, PaginationException {
+            DatabaseConnectionException, SortException, PaginationException, UserNotFoundException {
         log.debug("endpoint re-execute query, containerId={}, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         /* check */
@@ -99,9 +99,9 @@ public class QueryEndpoint extends AbstractEndpoint {
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
-        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size,
-                sortDirection, sortColumn);
+                sortDirection, sortColumn, principal);
         result.setId(queryId);
         log.trace("re-execute query resulted in result {}", result);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -119,7 +119,7 @@ public class QueryEndpoint extends AbstractEndpoint {
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
-            QueryMalformedException, DatabaseConnectionException {
+            QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
         log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, accept={}, principal={}",
                 containerId, databaseId, queryId, accept, principal);
         if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_EXPORT", principal)) {
@@ -127,10 +127,10 @@ public class QueryEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing export query permission");
         }
         log.trace("checking if query exists in the query store");
-        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         log.trace("querystore returned query {}", query);
-        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId);
-        if (accept.equals("text/csv")) {
+        final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);
+        if (accept == null || accept.equals("text/csv")) {
             final HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
             log.trace("export query resulted in resource {}", resource);

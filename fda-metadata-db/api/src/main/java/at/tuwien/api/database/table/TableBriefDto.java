@@ -23,6 +23,10 @@ public class TableBriefDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    @NotBlank(message = "description is required")
+    @Schema(example = "Air Quality in Austria")
+    private String description;
+
     @NotBlank(message = "internal name is required")
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")

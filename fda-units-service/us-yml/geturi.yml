@@ -6,12 +6,15 @@ produces:
 - "application/json"
 parameters:
 - in: "path"
-  type: "string"
   name: "uname"
-  description: "to-do description"
+  description: "Name of a unit in OM"
   required: true
+  schema:
+    type: "string"
 responses:
   200: 
     description: "OK"
   405:
     description: "Invalid input"
+tags:
+  - units-endpoint

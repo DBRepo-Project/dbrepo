@@ -42,7 +42,8 @@ public interface TableMapper {
             @Mapping(source = "id", target = "id"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
-            @Mapping(target = "topic", expression = "java(data.getTopic())"),
+            @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
+            @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
     })
     TableDto tableToTableDto(Table data);
@@ -290,6 +291,25 @@ public interface TableMapper {
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
             log.trace("prepared create sequence statement {}", statement);
+            return pstmt;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement tableToDropSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
+            throws ImageNotSupportedException, QueryMalformedException {
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        final StringBuilder statement = new StringBuilder("DROP SEQUENCE `")
+                .append(tableCreateDtoToSequenceName(data))
+                .append("`;");
+        try {
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("prepared drop sequence statement {}", statement);
             return pstmt;
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());

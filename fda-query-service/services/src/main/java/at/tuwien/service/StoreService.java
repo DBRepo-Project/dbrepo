@@ -20,28 +20,30 @@ public interface StoreService {
      *
      * @param databaseId The database id.
      * @param persisted  Optional filter to only display persisted queries, or non-persisted queries.
+     * @param principal  The user principal.
      * @return The list of queries.
      * @throws ImageNotSupportedException The image is not supported
      * @throws DatabaseNotFoundException  The database was not found in the metadata database
      * @throws QueryStoreException        The query store produced an invalid result
      */
-    List<Query> findAll(Long containerId, Long databaseId, Boolean persisted) throws DatabaseNotFoundException,
+    List<Query> findAll(Long containerId, Long databaseId, Boolean persisted, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
-            TableMalformedException;
+            TableMalformedException, UserNotFoundException;
 
     /**
      * Finds a query in the query store of the given database id and query id.
      *
      * @param databaseId The database id.
      * @param queryId    The query id.
+     * @param principal  The user principal.
      * @return The query.
      * @throws ImageNotSupportedException The image is not supported
      * @throws DatabaseNotFoundException  The database was not found in the metadata database
      * @throws QueryStoreException        The query store produced an invalid result
      * @throws QueryNotFoundException     The query store did not return a query
      */
-    Query findOne(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException;
+    Query findOne(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException, UserNotFoundException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id
@@ -51,6 +53,7 @@ public interface StoreService {
      * @param result      The query.
      * @param metadata    The statement.
      * @param type        The statement type.
+     * @param principal   The user principal.
      * @param execution   The execution time.
      * @return The stored query on success
      * @throws QueryStoreException         The query store raised some error
@@ -67,33 +70,38 @@ public interface StoreService {
             DatabaseConnectionException, TableMalformedException;
 
     /**
-     * Perists a query to be displayed in the frontend
+     * Persists a query to be displayed in the frontend
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
      * @param queryId     The query id.
+     * @param principal   The user principal.
      * @return The stored query on success.
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
-     * @throws DatabaseConnectionException
-     * @throws QueryStoreException
+     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
+     * @throws ImageNotSupportedException  The image is not supported
+     * @throws DatabaseConnectionException The database connection to the remote container failed.
+     * @throws QueryStoreException         The query store raised some error
      */
-    Query persist(Long containerId, Long databaseId, Long queryId) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException;
+    Query persist(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 
     /**
-     * @param containerId
-     * @param databaseId
-     * @param result
-     * @param resultNumber
-     * @param metadata
-     * @return
-     * @throws QueryStoreException
-     * @throws DatabaseNotFoundException
-     * @throws ImageNotSupportedException
-     * @throws ContainerNotFoundException
+     * Updates a query.
+     *
+     * @param containerId  The container id.
+     * @param databaseId   The database id.
+     * @param result       The query result.
+     * @param resultNumber The query result number.
+     * @param metadata     The metadata to the query.
+     * @param principal    The user principal.
+     * @return The stored query.
+     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
+     * @throws ImageNotSupportedException  The image is not supported
+     * @throws DatabaseConnectionException The database connection to the remote container failed.
+     * @throws QueryStoreException         The query store raised some error
      */
-    Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata)
+    Query update(Long containerId, Long databaseId, QueryResultDto result, Long resultNumber, Query metadata,
+                 Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseConnectionException;
+            ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException;
 }

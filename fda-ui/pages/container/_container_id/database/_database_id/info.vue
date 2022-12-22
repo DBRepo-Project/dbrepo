@@ -30,7 +30,17 @@
                   <v-list-item-content>
                     <span v-for="(person_or_org, i) in database.identifier.creators" :key="`c-${i}`" class="mt-1">
                       <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
+                      <v-tooltip
+                        top>
+                        <template v-slot:activator="{ on, attrs }">
+                          <span
+                            v-bind="attrs"
+                            v-on="on">
+                            {{ person_or_org.name }}
+                          </span>
+                        </template>
+                        <span v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</span>
+                      </v-tooltip>
                     </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="language" class="mt-2">
@@ -152,13 +162,6 @@
                     <span v-if="!loading">{{ description }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
-                    Created
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="createdUTC" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
                     Database Creator
                   </v-list-item-title>
                   <v-list-item-content>
@@ -168,6 +171,20 @@
                         <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
                       </sup>
                     </span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Database Creation
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="createdUTC" />
+                  </v-list-item-content>
+                  <v-list-item-title v-if="access.type" class="mt-2">
+                    Database Access
+                  </v-list-item-title>
+                  <v-list-item-content v-if="access.type">
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    {{ accessDescription.text }}
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
@@ -194,26 +211,6 @@
                 max-width="860">
                 <Persist type="database" @close="closeDialog" />
               </v-dialog>
-              <v-dialog
-                v-model="editVisibilityDialog"
-                max-width="860">
-                <EditVisibility :database="database" @close-dialog="closeDialog" />
-              </v-dialog>
-            </v-card-actions>
-          </v-card-text>
-        </v-card>
-        <v-divider />
-        <v-card v-if="isCreator" flat tile>
-          <v-card-title>Modify visibility</v-card-title>
-          <v-card-subtitle>Dangerous operation</v-card-subtitle>
-          <v-card-text>
-            <v-card-actions>
-              <v-btn
-                small
-                color="error"
-                @click="editVisibilityDialog = true">
-                Modify
-              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
@@ -226,14 +223,12 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
-import EditVisibility from '@/components/dialogs/EditVisibility'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
   components: {
-    EditVisibility,
     DBToolbar,
     Persist,
     OrcidIcon
@@ -242,7 +237,12 @@ export default {
     return {
       loading: false,
       editDbDialog: false,
-      editVisibilityDialog: false,
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
+      },
       metadataLoading: false,
       user: {
         username: null
@@ -368,6 +368,21 @@ export default {
         return false
       }
       return this.database.identifier.id !== null
+    },
+    accessDescription () {
+      if (!this.access.type) {
+        return
+      }
+      switch (this.access.type) {
+        case 'read':
+          return { text: 'You can read all contents' }
+        case 'write_own':
+          return { text: 'You can write own tables and read all contents' }
+        case 'write_all':
+          return { text: 'You have full access' }
+        default:
+          return { text: null, class: null }
+      }
     }
   },
   mounted () {
@@ -382,7 +397,7 @@ export default {
         this.database = res.data
         console.debug('database', res.data)
       } catch (err) {
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     },
@@ -413,11 +428,24 @@ export default {
       }
       this.metadataLoading = false
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('check access', this.access)
+      } catch (err) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

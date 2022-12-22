@@ -1,0 +1,3 @@
+CREATE USER `junit`@`%`;
+GRANT CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE ON *.* TO `junit`@`%`;
+CREATE USER `junit2`@`%`;

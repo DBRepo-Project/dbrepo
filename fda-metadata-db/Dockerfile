@@ -20,6 +20,9 @@ RUN mvn -q clean install > /dev/null
 ###### SECOND STAGE ######
 FROM mariadb:10.5 as runtime
 
+RUN apt-get update && apt-get install -y curl
+RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
@@ -29,9 +32,11 @@ ENV MARIADB_ROOT_PASSWORD="${METADATA_PASSWORD}"
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
 
-WORKDIR /docker-entrypoint-initdb.d
+COPY ./setup-schema.sql /docker-entrypoint-initdb.d/setup-schema.sql
+COPY ./setup-node-exporter.sh /docker-entrypoint-initdb.d/setup-node-exporter.sh
+RUN chmod +x /docker-entrypoint-initdb.d/setup-node-exporter.sh
 
-COPY ./setup-schema.sql ./setup-schema.sql
+EXPOSE 9100
 
 WORKDIR /app
 

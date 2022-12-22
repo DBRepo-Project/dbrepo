@@ -64,6 +64,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @ToString.Exclude
+    @Column(nullable = false)
+    private String databasePassword;
+
     @ElementCollection(targetClass = RoleType.class)
     @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {
             @UniqueConstraint(columnNames = {"uid", "role"})

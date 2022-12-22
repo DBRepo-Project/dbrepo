@@ -12,10 +12,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !query.is_persisted && is_owner" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
+        <v-btn v-if="token && !query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
@@ -34,6 +34,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
+    <v-progress-linear v-if="loadingQuery || loadingIdentifier || loadingDatabase || error" :color="loadingColor" :value="loadProgress" />
     <v-card flat tile>
       <v-card-title>
         Subset Information
@@ -158,22 +159,22 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-large" />
-                <pre v-if="!loadingQuery">{{ query_statement }}</pre>
+                <v-skeleton-loader v-if="!query_statement" type="text" class="skeleton-large" />
+                <pre v-if="query_statement">{{ query_statement }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-medium" />
-                <pre v-if="!loadingQuery">{{ query_hash }}</pre>
+                <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-medium" />
+                <pre v-if="query_hash">{{ query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Creator
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">
+                <v-skeleton-loader v-if="!creator" type="text" class="skeleton-small" />
+                <span v-if="creator">
                   {{ creator }} <sup>
                     <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
                   </sup>
@@ -183,8 +184,8 @@
                 Subset Creation
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ executionUTC }}</span>
+                <v-skeleton-loader v-if="!executionUTC" type="text" class="skeleton-small" />
+                <span v-if="executionUTC">{{ executionUTC }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -287,6 +288,12 @@ export default {
       user: {
         username: null
       },
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
+      },
       loadingSave: false,
       identifier: {
         id: null,
@@ -300,11 +307,16 @@ export default {
         query_normalized: null,
         query_hash: null,
         result_number: null,
+        result_hash: null,
         execution: null,
         publication_year: null,
         publication_month: null,
         publication_day: null,
         related: [],
+        creator: {
+          username: null,
+          id: null
+        },
         doi: null,
         creators: []
       },
@@ -330,6 +342,7 @@ export default {
       metadataLoading: false,
       downloadLoading: false,
       error: false,
+      loadProgress: 0,
       promises: []
     }
   },
@@ -341,7 +354,7 @@ export default {
       return location.protocol + '//' + location.host
     },
     loadingColor () {
-      return this.error ? 'red' : 'primary'
+      return this.error ? 'error' : 'primary'
     },
     token () {
       return this.$store.state.token
@@ -373,9 +386,6 @@ export default {
     database_visibility () {
       return this.database.is_public !== null ? this.database.is_public : false
     },
-    is_owner () {
-      return this.token && this.query.creator.username === this.user.username
-    },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
     },
@@ -393,6 +403,15 @@ export default {
         return true
       }
       return this.identifier.visibility === 'everyone'
+    },
+    canWrite () {
+      if (!this.access.type) {
+        return false
+      }
+      if (this.access.type === 'write_own' || this.access.type === 'write_all') {
+        return true
+      }
+      return false
     },
     result_visibility_icon () {
       if (this.erroneous) {
@@ -428,6 +447,13 @@ export default {
       return this.identifier.id ? formatTimestampUTCLabel(this.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
     },
     creator () {
+      if (this.identifier.creator.username !== null) {
+        if (this.identifier.creator.firstname === null || this.identifier.creator.lastname === null) {
+          return this.identifier.creator.username
+        } else {
+          return this.identifier.creator.firstname + ' ' + this.identifier.creator.lastname
+        }
+      }
       if (this.query.creator.username === null) {
         return null
       }
@@ -440,15 +466,21 @@ export default {
       return this.identifier.id ? this.identifier.creators : null
     },
     erroneous () {
+      if (this.identifier) {
+        return false
+      }
       return !this.query.result_hash
     }
   },
   mounted () {
     this.loadUser()
     this.loadDatabase()
-      .then(() => this.loadQuery())
-      .then(() => this.loadResult())
       .then(() => this.loadMetadata())
+      .then(() => {
+        this.simulateProgress()
+        this.loadQuery()
+      })
+      .then(() => this.loadResult())
   },
   methods: {
     loadResult () {
@@ -482,6 +514,20 @@ export default {
       }
       this.downloadLoading = false
       this.metadataLoading = false
+    },
+    simulateProgress () {
+      if (this.loadProgress !== 0) {
+        return
+      }
+      const timeout = 30 * 1000 /* ms */
+      const ticks = 100 /* ms */
+      let i = 0
+      setInterval(() => {
+        if (i++ >= timeout && !this.error) {
+          return
+        }
+        this.loadProgress = ((i * 100) / timeout) * 100
+      }, ticks)
     },
     async downloadData () {
       this.downloadLoading = true
@@ -575,11 +621,24 @@ export default {
         this.loadMetadata()
       }
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('check access', this.access)
+      } catch (err) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

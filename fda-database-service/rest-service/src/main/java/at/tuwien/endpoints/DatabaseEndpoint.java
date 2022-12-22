@@ -2,11 +2,14 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.micrometer.core.annotation.Timed;
@@ -34,25 +37,32 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/container/{id}/database")
 public class DatabaseEndpoint extends AbstractEndpoint {
 
+    private final UserService userService;
+    private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
+    private final IdentifierMapper identifierMapper;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final IdentifierService identifierService;
-    private final IdentifierMapper identifierMapper;
     private final MessageQueueService messageQueueService;
+    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
-                            MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            UserService userService, MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
                             IdentifierService identifierService, IdentifierMapper identifierMapper,
-                            MessageQueueService messageQueueService) {
+                            MessageQueueService messageQueueService, AccessService accessService,
+                            DatabaseAccessRepository databaseAccessRepository) {
         super(databaseService, containerService);
+        this.userService = userService;
+        this.accessService = accessService;
         this.databaseMapper = databaseMapper;
+        this.identifierMapper = identifierMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
         this.identifierService = identifierService;
-        this.identifierMapper = identifierMapper;
         this.messageQueueService = messageQueueService;
+        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     @GetMapping
@@ -80,11 +90,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @PostMapping
     @Transactional
     @Timed(value = "database.create", description = "Time needed to create a database")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
-                                                   Principal principal)
+                                                   @NotNull Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
@@ -96,9 +105,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing database create permission");
         }
         final Database database = databaseService.create(containerId, createDto, principal);
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.createExchange(database, principal);
-        queryStoreService.create(containerId, database.getId());
+        queryStoreService.create(containerId, database.getId(), principal);
         messageQueueService.updatePermissions(principal);
+        databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -108,7 +119,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @PutMapping("/{databaseId}/transfer")
     @Transactional
     @Timed(value = "database.transfer", description = "Time needed to transfer a database visibility")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotBlank @PathVariable("id") Long containerId,
                                                 @NotBlank @PathVariable Long databaseId,
@@ -133,8 +143,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
-                                                @NotBlank @PathVariable Long databaseId)
-            throws DatabaseNotFoundException {
+                                                @NotBlank @PathVariable Long databaseId,
+                                                Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -144,6 +155,13 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         } catch (IdentifierNotFoundException e) {
             // ignore
         }
+        if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
+            /* only creator sees the access rights */
+            final List<DatabaseAccess> accesses = accessService.list(databaseId);
+            dto.setAccesses(accesses.stream()
+                    .map(databaseMapper::databaseAccessToDatabaseAccessDto)
+                    .collect(Collectors.toList()));
+        }
         log.trace("find database resulted in database {}", database);
         return ResponseEntity.ok(dto);
     }
@@ -151,13 +169,12 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @DeleteMapping("/{databaseId}")
     @Transactional
     @Timed(value = "database.delete", description = "Time needed to delete a database")
-    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            QueryMalformedException, BrokerVirtualHostCreationException {
+            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException, DatabaseConnectionException {
         log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
         final Database database = databaseService.findById(containerId, databaseId);

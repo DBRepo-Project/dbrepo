@@ -51,7 +51,7 @@ eureka:
 fda:
   ready.path: ./ready
   website: localhost:3000
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: http://localhost:9095/api/broker
   token.max: 100
   mail:
     prefix: /

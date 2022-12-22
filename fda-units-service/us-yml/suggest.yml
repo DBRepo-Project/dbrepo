@@ -7,7 +7,7 @@ produces:
 parameters:
 - in: "body"
   name: "body"
-  description: "to-do description"
+  description: "Json containing ustring, i.e., string of a unit, and an offset."
   required: true
   schema:
     type: "object"
@@ -23,3 +23,5 @@ responses:
     description: "OK"
   405:
     description: "Invalid input"
+tags:
+  - units-endpoint

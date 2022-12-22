@@ -60,8 +60,6 @@ services:
       - "9090:9090"
     env_file:
       - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     logging:
       driver: json-file
 
@@ -73,8 +71,6 @@ services:
     image: fda-gateway-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9095:9095"
     env_file:
@@ -94,8 +90,6 @@ services:
     networks:
       userdb:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9092:9092"
     env_file:
@@ -120,8 +114,6 @@ services:
     image: fda-container-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9091:9091"
     env_file:
@@ -142,8 +134,6 @@ services:
     build: ./fda-authentication-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9097:9097"
     env_file:
@@ -171,8 +161,6 @@ services:
       - "9093:9093"
     env_file:
       - .env
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     volumes:
       - "/tmp:/tmp"
     depends_on:
@@ -192,11 +180,6 @@ services:
     networks:
       core:
       userdb:
-    environment:
-      GATEWAY_ENDPOINT: http://gateway-service:9095
-      SEARCH_ENDPOINT: search-service:9200
-      SPRING_PROFILES_ACTIVE: docker
-      multipart.location: /tmp
     ports:
       - "9094:9094"
     env_file:
@@ -222,19 +205,17 @@ services:
     image: fda-identifier-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     ports:
       - "9096:9096"
     env_file:
       - .env
-    volumes:
-      - "/tmp:/tmp"
     depends_on:
       fda-query-service:
         condition: service_healthy
       fda-authentication-service:
         condition: service_healthy
+    volumes:
+      - /tmp:/tmp
     logging:
       driver: json-file
 
@@ -246,12 +227,10 @@ services:
     image: fda-metadata-service
     networks:
       core:
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-    ports:
-      - "9099:9099"
     env_file:
       - .env
+    ports:
+      - "9099:9099"
     depends_on:
       fda-metadata-db:
         condition: service_started
@@ -267,9 +246,6 @@ services:
     networks:
       core:
       userdb:
-    command: sh -c "/wait && flask run" # docker-compose should not test the implementation
-    environment:
-      hostname: analyse-service
     ports:
       - "5000:5000"
     env_file:
@@ -301,6 +277,8 @@ services:
     depends_on:
       fda-discovery-service:
         condition: service_healthy
+      fda-metadata-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -310,8 +288,6 @@ services:
     hostname: broker-service
     build: ./fda-broker-service
     image: fda-broker-service
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
     networks:
       core:
     ports:
@@ -338,7 +314,6 @@ services:
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - ELASTIC_PASSWORD=elastic
       - logger.level=WARN
     depends_on:
       fda-discovery-service:

@@ -1,12 +1,11 @@
 package at.tuwien.api.database;
 
-import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
@@ -24,8 +23,13 @@ public class ViewBriefDto {
     @NotNull
     private Long vdbid;
 
+    @NotBlank
     @Schema(example = "Air Quality")
     private String name;
+
+    @NotBlank
+    @Schema(example = "air_quality")
+    private String internalName;
 
     @JsonProperty("is_public")
     @Schema(example = "true")

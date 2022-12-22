@@ -7,14 +7,14 @@ produces:
 parameters:
 - in: "body"
   name: "body"
-  description: "to-do description"
+  description: "JSON containing cdbid (database ID), cid (column ID), tid (table ID), uri (URI of the concept). Make sure the concept already exists in the MDB. "
   required: true
   schema:
     type: "object"
     properties:
-      uri:
-        type: "string"
-        example: "http://www.ontology-of-units-of-measure.org/resource/om-2/metre"
+      concept_id:
+        type: "integer"
+        example: "1"
       cid:
         type: "integer"
         example: "1"
@@ -33,4 +33,5 @@ responses:
     description: "Invalid input"
   409:
     description: "Concept already assigned"
-
+tags:
+  - units-endpoint

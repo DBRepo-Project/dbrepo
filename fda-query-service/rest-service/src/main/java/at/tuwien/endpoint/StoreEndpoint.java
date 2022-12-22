@@ -2,7 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
@@ -36,10 +36,10 @@ public class StoreEndpoint extends AbstractEndpoint {
     private final StoreService storeService;
 
     @Autowired
-    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper,
+    public StoreEndpoint(QueryConfig queryConfig, UserMapper userMapper, QueryMapper queryMapper,
                          UserService userService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                         IdentifierService identifierService, TableService tableService, AccessService accessService) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
@@ -55,14 +55,14 @@ public class StoreEndpoint extends AbstractEndpoint {
                                                        @RequestParam(value = "persisted", required = false) Boolean persisted,
                                                        Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException,
-            DatabaseConnectionException, TableMalformedException {
+            DatabaseConnectionException, TableMalformedException, UserNotFoundException {
         log.debug("endpoint list queries, containerId={}, databaseId={}, persisted={}, principal={}", containerId,
                 databaseId, persisted, principal);
         if (!hasDatabasePermission(containerId, databaseId, "QUERY_VIEW_ALL", principal)) {
             log.error("Missing view all queries permission");
             throw new NotAllowedException("Missing view all queries permission");
         }
-        final List<Query> queries = storeService.findAll(containerId, databaseId, persisted);
+        final List<Query> queries = storeService.findAll(containerId, databaseId, persisted, principal);
         final List<User> users = userService.findAll();
         final List<QueryBriefDto> dto = queries.stream()
                 .map(q -> {
@@ -93,7 +93,7 @@ public class StoreEndpoint extends AbstractEndpoint {
             log.error("Missing view query permission");
             throw new NotAllowedException("Missing view query permission");
         }
-        final Query query = storeService.findOne(containerId, databaseId, queryId);
+        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.find(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
@@ -117,12 +117,12 @@ public class StoreEndpoint extends AbstractEndpoint {
             log.error("Missing query persist permission");
             throw new NotAllowedException("Missing query persist permission");
         }
-        final Query check = storeService.findOne(containerId, databaseId, queryId);
+        final Query check = storeService.findOne(containerId, databaseId, queryId, principal);
         if (check.getIsPersisted()) {
             log.error("Failed to persist, is already persisted");
             throw new QueryAlreadyPersistedException("Failed to persist");
         }
-        final Query query = storeService.persist(containerId, databaseId, queryId);
+        final Query query = storeService.persist(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.find(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));

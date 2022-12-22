@@ -1,5 +1,7 @@
 package at.tuwien.service;
 
+import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface QueueService {
+
+    UserDetailsDto findUser(String username) throws BrokerUserCreationException;
 
     /**
      * Creates a user at the Broker Service
@@ -24,5 +28,5 @@ public interface QueueService {
      * @param data The user password..
      * @throws BrokerUserCreationException The broker did not modify the user.
      */
-    void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException;
+    void modifyUserPassword(User user, CreateUserDto data) throws BrokerUserCreationException;
 }

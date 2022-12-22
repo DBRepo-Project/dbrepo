@@ -1,10 +1,9 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.IdentifierService;
-import at.tuwien.service.QueryService;
+import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,9 +28,9 @@ public class ExportEndpoint extends AbstractEndpoint {
     private final QueryService queryService;
 
     @Autowired
-    public ExportEndpoint(QueryService queryService, DatabaseService databaseService,
-                          IdentifierService identifierService) {
-        super(databaseService, identifierService);
+    public ExportEndpoint(QueryService queryService, DatabaseService databaseService, AccessService accessService,
+                          IdentifierService identifierService, TableService tableService, QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.queryService = queryService;
     }
 
@@ -46,15 +45,15 @@ public class ExportEndpoint extends AbstractEndpoint {
                                                       Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, NotAllowedException, QueryMalformedException {
+            FileStorageException, NotAllowedException, QueryMalformedException, UserNotFoundException {
         log.debug("endpoint export table, id={}, databaseId={}, tableId={}, timestamp={}, principal={}", containerId, databaseId,
                 tableId, timestamp, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "TABLE_EXPORT", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_EXPORT", principal)) {
             log.error("Missing data export permission");
             throw new NotAllowedException("Missing data export permission");
         }
         final HttpHeaders headers = new HttpHeaders();
-        final ExportResource resource = queryService.findAll(containerId, databaseId, tableId, timestamp);
+        final ExportResource resource = queryService.findAll(containerId, databaseId, tableId, timestamp, principal);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
         log.trace("export table resulted in resource {}", resource);
         return ResponseEntity.ok()

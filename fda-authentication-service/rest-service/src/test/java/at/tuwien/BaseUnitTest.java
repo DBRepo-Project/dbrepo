@@ -1,6 +1,10 @@
 package at.tuwien;
 
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
+import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.TimeSecret;
 import at.tuwien.entities.user.Token;
@@ -15,6 +19,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.HOURS;
+
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
@@ -22,6 +28,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "jdoe";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
@@ -37,6 +44,7 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .titlesBefore(USER_1_TITLES_BEFORE)
@@ -63,6 +71,7 @@ public abstract class BaseUnitTest {
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "jdoe2";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_2_VERIFIED = false;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.now()
@@ -74,6 +83,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
@@ -135,6 +145,73 @@ public abstract class BaseUnitTest {
     public final static Token TOKEN_2 = Token.builder()
             .id(TOKEN_2_ID)
             .expires(TOKEN_2_EXPIRES)
+            .build();
+
+    public final static String IMAGE_BROKER_IMAGE = "rabbitmq";
+    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
+
+    public final static Long CONTAINER_BROKER_ID = 1L;
+    public final static String CONTAINER_BROKER_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+
+    public final static Container CONTAINER_BROKER = Container.builder()
+            .id(CONTAINER_BROKER_ID)
+            .name(CONTAINER_BROKER_NAME)
+            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
+            .ipAddress(CONTAINER_BROKER_IP)
+            .build();
+
+    public final static Long IMAGE_1_ID = 1L;
+    public final static String IMAGE_1_REPOSITORY = "mariadb";
+    public final static String IMAGE_1_TAG = "10.5";
+    public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_1_JDBC = "mariadb";
+    public final static String IMAGE_1_LOGO = "AAAA";
+    public final static Integer IMAGE_1_PORT = 3306;
+    public final static Long IMAGE_1_SIZE = 12000L;
+    public final static Instant IMAGE_1_CREATED = Instant.now().minus(40, HOURS);
+    public final static Instant IMAGE_1_UPDATED = Instant.now().minus(39, HOURS);
+    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENVIRONMENT = List.of(ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
+                    .key("MARIADB_ROOT_PASSWORD")
+                    .value("mariadb")
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
+                    .key("UZERNAME")
+                    .value("root")
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .type(ContainerImageEnvironmentItemType.USERNAME)
+                    .key("MARIADB_USER")
+                    .value("mariadb")
+                    .build(),
+            ContainerImageEnvironmentItem.builder()
+                    .iid(IMAGE_1_ID)
+                    .type(ContainerImageEnvironmentItemType.PASSWORD)
+                    .key("MARIADB_PASSWORD")
+                    .value("mariadb")
+                    .build());
+
+    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENVIRONMENT)
+            .dialect(IMAGE_1_DIALECT)
+            .driverClass(IMAGE_1_DRIVER)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .created(IMAGE_1_CREATED)
+            .defaultPort(IMAGE_1_PORT)
+            .compiled(IMAGE_1_UPDATED)
             .build();
 
 }

@@ -1,3 +1,6 @@
+CREATE USER `junit`@`%`;
+GRANT CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE ON *.* TO `junit`@`%`;
+
 /* https://www.kaggle.com/jsphyg/weather-dataset-rattle-package */
 CREATE TABLE weather_location
 (
@@ -24,3 +27,14 @@ INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall)
 VALUES (1, '2008-12-01', 'Albury', 13.4, 0.6),
        (2, '2008-12-02', 'Albury', 7.4, 0),
        (3, '2008-12-03', 'Albury', 12.9, 0);
+
+########################################################################################################################
+## TEST CASE PRE-REQUISITE                                                                                            ##
+########################################################################################################################
+
+CREATE VIEW mock_view AS
+(
+SELECT `location`, `lat`, `lng`
+FROM `weather_location`
+WHERE `location` = 'Albury');
+

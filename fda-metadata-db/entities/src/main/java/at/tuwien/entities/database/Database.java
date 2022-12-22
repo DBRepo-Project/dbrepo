@@ -5,6 +5,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import lombok.*;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -57,8 +58,8 @@ public class Database {
     @Column(nullable = false)
     private String internalName;
 
-    @Column(nullable = false)
-    private String exchange;
+    @Column(name = "exchange_name", nullable = false, updatable = false)
+    private String exchangeName;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -75,6 +76,13 @@ public class Database {
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private List<Table> tables;
+
+    @org.springframework.data.annotation.Transient
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private List<View> views;
 
     @Column(nullable = false)
     private Boolean isPublic;

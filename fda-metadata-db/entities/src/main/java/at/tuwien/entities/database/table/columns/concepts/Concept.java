@@ -23,12 +23,7 @@ public class Concept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "concepts-sequence")
-    @GenericGenerator(name = "concepts-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
-    private Long id;
-
-    @Column(name = "URI", nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
     @Column(name = "name", nullable = false)
@@ -38,7 +33,7 @@ public class Concept {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "mdb_columns_concepts",
-            joinColumns = @JoinColumn(name = "concept_id", referencedColumnName = "id", insertable = false, updatable = false),
+            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),

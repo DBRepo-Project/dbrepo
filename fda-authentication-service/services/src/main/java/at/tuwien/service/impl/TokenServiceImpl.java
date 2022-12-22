@@ -112,7 +112,7 @@ public class TokenServiceImpl implements TokenService {
         final String tokenHash = JwtUtils.toHash(jwt);
         final Optional<Token> optional = tokenRepository.findByInvalidTokenHash(tokenHash);
         if (optional.isPresent()) {
-            log.error("Token with hash {} is marked as revoked", tokenHash);
+            log.error("Token with hash {} and id {} is marked as revoked", tokenHash, optional.get().getId());
             throw new ServletException("Token with hash " + tokenHash + " is marked as revoked");
         }
         final Optional<Token> optional1 = tokenRepository.findByTokenHash(tokenHash);

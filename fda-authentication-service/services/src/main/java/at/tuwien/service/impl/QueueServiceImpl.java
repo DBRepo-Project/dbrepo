@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.entities.user.User;
@@ -26,6 +27,12 @@ public class QueueServiceImpl implements QueueService {
     }
 
     @Override
+    public UserDetailsDto findUser(String username) throws BrokerUserCreationException {
+        log.debug("broker service find user, username={}", username);
+        return brokerServiceGateway.findUser(username);
+    }
+
+    @Override
     public void createUser(String username, SignupRequestDto data) throws BrokerUserCreationException {
         log.debug("broker service create user, username={}, data={}", username, data);
         final CreateUserDto userDto = CreateUserDto.builder()
@@ -37,13 +44,9 @@ public class QueueServiceImpl implements QueueService {
     }
 
     @Override
-    public void modifyUserPassword(User user, UserPasswordDto data) throws BrokerUserCreationException {
+    public void modifyUserPassword(User user, CreateUserDto data) throws BrokerUserCreationException {
         log.debug("broker service create user, user={}, data={}", user, data);
-        final CreateUserDto userDto = CreateUserDto.builder()
-                .password(data.getPassword())
-                .tags("")
-                .build();
-        brokerServiceGateway.modifyUserPassword(user.getUsername(), userDto);
+        brokerServiceGateway.modifyUserPassword(user.getUsername(), data);
     }
 
 }
