@@ -365,7 +365,7 @@ public interface QueryMapper {
         }
         /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
         final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                .append(mariaDbFormatter.format(query.getExecution()))
+                .append(mariaDbFormatter.format(query.getCreated()))
                 .append("' ");
         final Pattern pattern = Pattern.compile("from `?[a-zA-Z0-9_-]+`?", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
         final Matcher matcher = pattern.matcher(query.getQuery());

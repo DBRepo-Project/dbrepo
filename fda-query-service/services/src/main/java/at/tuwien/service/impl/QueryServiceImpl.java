@@ -52,17 +52,15 @@ import java.util.stream.Collectors;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final QueryMapper queryMapper;
-    private final UserService userService;
     private final TableService tableService;
     private final StoreService storeService;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public QueryServiceImpl(QueryMapper queryMapper, UserService userService, TableService tableService,
+    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService,
                             DatabaseService databaseService, StoreService storeService, DatabaseMapper databaseMapper) {
         this.queryMapper = queryMapper;
-        this.userService = userService;
         this.tableService = tableService;
         this.storeService = storeService;
         this.databaseMapper = databaseMapper;
@@ -77,13 +75,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
         final Query query = storeService.insert(containerId, databaseId, null, statement, type, principal, Instant.now());
-        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size, sortDirection,
-                sortColumn, principal);
-        if (type.equals(QueryTypeDto.QUERY)) {
-            /* view executions are not stored in the query store */
-            storeService.update(containerId, databaseId, result, result.getResultNumber(), query, principal);
-        }
-        return result;
+        return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
     @Override
@@ -113,7 +105,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), true, page, size);
+                    database, query.getCreated(), true, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -497,7 +489,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      */
     @Transactional(readOnly = true)
     protected Long countQueryResults(Long containerId, Long databaseId, Query query, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException, UserNotFoundException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
+            TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
@@ -507,7 +500,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), false, null, null);
+                    database, query.getCreated(), false, null, null);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {

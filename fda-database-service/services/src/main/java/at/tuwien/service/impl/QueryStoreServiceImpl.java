@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.FileUtil;
+import at.tuwien.utils.FileUtil;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -40,7 +40,9 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            executeQuery(connection, FileUtil.loadResource("init/querystore.sql"));
+            for (String query : FileUtil.loadResource("/init/querystore.sql")) {
+                executeQuery(connection, query);
+            }
         } catch (SQLException e) {
             log.error("Failed to create query store {}, reason: {}", database, e.getMessage());
             throw new DatabaseMalformedException("Failed to create database", e);

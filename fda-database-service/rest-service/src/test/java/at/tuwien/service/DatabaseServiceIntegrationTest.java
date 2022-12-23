@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -32,10 +33,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.security.Principal;
+import java.sql.SQLException;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -205,6 +209,22 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         assertEquals(DATABASE_4_NAME, database4.getName());
         final Database database3 = databaseService.create(CONTAINER_3_ID, DATABASE_3_CREATE, principal);
         assertEquals(DATABASE_3_NAME, database3.getName());
+    }
+
+    @Test
+    public void create_queryStore_succeeds() throws SQLException, InterruptedException {
+
+        /* mock */
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        startContainer(CONTAINER_3);
+
+        /* test */
+        final Long response = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, QUERY_1_STATEMENT);
+        assertNotNull(response);
+        assertEquals(1, response);
     }
 
 }
