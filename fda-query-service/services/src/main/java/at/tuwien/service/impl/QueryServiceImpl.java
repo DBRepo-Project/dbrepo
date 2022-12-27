@@ -74,7 +74,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                                   SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        // this can be optimized to run at once
         final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
         return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }

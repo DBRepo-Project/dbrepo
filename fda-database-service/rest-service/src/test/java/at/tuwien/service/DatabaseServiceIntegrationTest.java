@@ -146,94 +146,53 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(databaseidxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        when(databaseRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
-        databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
     }
 
     @Test
     public void create_inSequence_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(databaseidxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        when(containerRepository.findById(CONTAINER_2_ID))
-                .thenReturn(Optional.of(CONTAINER_2));
-        when(databaseRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1)
-                .thenReturn(DATABASE_2);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
-        assertEquals(DATABASE_1_NAME, database1.getName());
-        final Database database2 = databaseService.create(CONTAINER_2_ID, DATABASE_2_CREATE, principal);
-        assertEquals(DATABASE_2_NAME, database2.getName());
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
     }
 
     @Test
     public void create_outOfSequence_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
-            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException, InterruptedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(databaseidxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        when(containerRepository.findById(CONTAINER_2_ID))
-                .thenReturn(Optional.of(CONTAINER_2));
-        when(databaseRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_2)
-                .thenReturn(DATABASE_1);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
+            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
 
         /* test */
-        final Database database2 = databaseService.create(CONTAINER_2_ID, DATABASE_2_CREATE, principal);
-        assertEquals(DATABASE_2_NAME, database2.getName());
-        final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
-        assertEquals(DATABASE_1_NAME, database1.getName());
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
     }
 
     @Test
     public void create_queryStore_succeeds() throws SQLException, InterruptedException {
 
-        /* mock */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        containerRepository.save(CONTAINER_3);
-        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
-        startContainer(CONTAINER_3);
-
         /* test */
-        final Long response = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, QUERY_1_STATEMENT);
-        assertNotNull(response);
-        assertEquals(1, response);
+        generic_create(QUERY_1_STATEMENT, 1L);
     }
 
     @Test
     public void create_queryStoreSameQueryHash_succeeds() throws SQLException, InterruptedException {
 
+        /* test */
+        generic_create(QUERY_1_STATEMENT, 1L);
+        generic_create(QUERY_2_STATEMENT, 2L);
+        generic_create(QUERY_1_STATEMENT, 1L);
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void generic_create(String query, Long assertQueryId) throws InterruptedException, SQLException {
+
         /* mock */
         final String bind = new File(
                 "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
@@ -243,15 +202,30 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         startContainer(CONTAINER_3);
 
         /* test */
-        final Long response1 = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, QUERY_1_STATEMENT);
-        assertNotNull(response1);
-        assertEquals(1, response1);
-        final Long response2 = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, QUERY_2_STATEMENT);
-        assertNotNull(response2);
-        assertEquals(2, response2);
-        final Long response3 = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, QUERY_1_STATEMENT);
-        assertNotNull(response3);
-        assertEquals(1, response3);
+        final Long response = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, query);
+        assertNotNull(response);
+        assertEquals(assertQueryId, response);
+    }
+
+    protected void generic_create(Long containerId, DatabaseCreateDto createDto, Container container, Database database)
+            throws UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
+            QueryMalformedException, ImageNotSupportedException, AmqpException, ContainerNotFoundException,
+            ContainerConnectionException, DatabaseMalformedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(database);
+        when(containerRepository.findById(containerId))
+                .thenReturn(Optional.of(container));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(database);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final Database response = databaseService.create(containerId, createDto, principal);
+        assertEquals(database.getName(), response.getName());
     }
 
 }
