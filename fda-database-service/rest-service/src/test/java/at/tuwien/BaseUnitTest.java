@@ -189,6 +189,9 @@ public abstract class BaseUnitTest {
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
 
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
+
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
@@ -208,6 +211,9 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_2_UPDATED = Instant.now();
+
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -251,6 +257,9 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
     public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_4_UPDATED = Instant.now();
+
+    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -395,7 +404,11 @@ public abstract class BaseUnitTest {
     public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
             "`weather_aus`";
 
-    public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb");
+    public final static Long QUERY_2_ID = 2L;
+    public final static String QUERY_2_STATEMENT = "SELECT `date`, `location`, `mintemp`, `rainfall`, `id` FROM " +
+            "`weather_aus`";
+
+    public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
 
     public final static List<String> IMAGE_2_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather_at");
 
