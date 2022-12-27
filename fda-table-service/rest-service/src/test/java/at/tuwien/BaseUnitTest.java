@@ -805,7 +805,7 @@ public abstract class BaseUnitTest {
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
-            .createdBy(USER_1_ID)
+            .createdBy(USER_1_USERNAME)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()

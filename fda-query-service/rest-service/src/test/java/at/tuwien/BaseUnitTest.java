@@ -845,7 +845,7 @@ public abstract class BaseUnitTest {
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
-            .createdBy(USER_1_ID)
+            .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
             .build();
 
@@ -887,7 +887,7 @@ public abstract class BaseUnitTest {
             .query(QUERY_2_STATEMENT)
             .resultHash(QUERY_2_RESULT_HASH)
             .created(QUERY_2_CREATED)
-            .createdBy(USER_1_ID)
+            .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_2_PERSISTED)
             .build();
 

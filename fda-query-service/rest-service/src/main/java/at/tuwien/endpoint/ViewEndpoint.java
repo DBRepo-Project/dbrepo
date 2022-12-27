@@ -92,10 +92,11 @@ public class ViewEndpoint extends AbstractEndpoint {
         }
         final Database database = databaseService.find(containerId, databaseId);
         log.trace("create view for database {}", database);
-        final ViewBriefDto view = viewMapper.viewToViewBriefDto(viewService.create(containerId, databaseId, data, principal));
-        log.trace("create view resulted in view {}", view);
+        final View view = viewService.create(containerId, databaseId, data, principal);
+        final ViewBriefDto dto = viewMapper.viewToViewBriefDto(view);
+        log.trace("create view resulted in view {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(view);
+                .body(dto);
     }
 
     @GetMapping("/{viewId}")
@@ -103,9 +104,9 @@ public class ViewEndpoint extends AbstractEndpoint {
     @Timed(value = "view.find", description = "Time needed to find a view")
     @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewDto> find(@NotNull @PathVariable("id") Long containerId,
-                                           @NotNull @PathVariable("databaseId") Long databaseId,
-                                           @NotNull @PathVariable("viewId") Long viewId,
-                                           Principal principal) throws DatabaseNotFoundException,
+                                        @NotNull @PathVariable("databaseId") Long databaseId,
+                                        @NotNull @PathVariable("viewId") Long viewId,
+                                        Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, ViewNotFoundException, UserNotFoundException {
         log.debug("endpoint find view, containerId={}, databaseId={}, viewId={}, principal={}", containerId,
                 databaseId, viewId, principal);
@@ -170,8 +171,8 @@ public class ViewEndpoint extends AbstractEndpoint {
                 .statement(view.getQuery())
                 .build();
         log.trace("find view execute statement {}", statement);
-        final QueryResultDto result = queryService.execute(containerId, databaseId, statement,
-                QueryTypeDto.VIEW, principal, page, size, null, null);
+        final QueryResultDto result = queryService.execute(containerId, databaseId, statement, principal, page, size,
+                null, null);
         log.trace("find view data resulted in result {}", result);
         return ResponseEntity.ok()
                 .body(result);

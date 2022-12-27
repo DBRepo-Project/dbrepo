@@ -70,11 +70,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  QueryTypeDto type, Principal principal, Long page, Long size,
+                                  Principal principal, Long page, Long size,
                                   SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        final Query query = storeService.insert(containerId, databaseId, null, statement, type, principal, Instant.now());
+        // this can be optimized to run at once
+        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
         return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
@@ -83,7 +84,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
                                     SortType sortDirection, String sortColumn, Principal principal)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
-            TableMalformedException, QueryStoreException, UserNotFoundException {
+            TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -115,7 +116,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         dto.setId(query.getId());
-        dto.setResultNumber(countQueryResults(containerId, databaseId, query, principal));
+        dto.setResultNumber(query.getResultNumber());
         return dto;
     }
 
@@ -475,40 +476,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         return columns;
 
-    }
-
-    /**
-     * Counts the total number of tuples in the user database with given id for a given query object
-     *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param query       The query object.
-     * @return The number of tuples this query returns.
-     * @throws DatabaseNotFoundException  The user database was not found in the container.
-     * @throws ImageNotSupportedException The database image is not supported.
-     */
-    @Transactional(readOnly = true)
-    protected Long countQueryResults(Long containerId, Long databaseId, Query query, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            TableMalformedException {
-        /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getCreated(), false, null, null);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToNumber(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to count tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count tuples", e);
-        } finally {
-            dataSource.close();
-        }
     }
 
 

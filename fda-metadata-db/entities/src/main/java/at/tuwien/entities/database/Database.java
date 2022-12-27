@@ -77,6 +77,7 @@ public class Database {
     })
     private List<Table> tables;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({

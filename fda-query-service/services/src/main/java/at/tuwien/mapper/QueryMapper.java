@@ -43,16 +43,14 @@ public interface QueryMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.of("UTC"));
 
-    @Deprecated
     @Mappings({
-            @Mapping(source = "query", target = "statement")
+            @Mapping(target = "createdBy", ignore = true)
     })
-    ExecuteStatementDto queryDtoToExecuteStatementDto(QueryDto data);
-
-    ExecuteStatementDto saveStatementDtoToExecuteStatementDto(SaveStatementDto data);
-
     QueryDto queryToQueryDto(Query data);
 
+    @Mappings({
+            @Mapping(target = "createdBy", ignore = true)
+    })
     QueryBriefDto queryToQueryBriefDto(Query data);
 
     @Named("internalMapping")

@@ -63,10 +63,6 @@ public class Query implements Serializable {
     private Instant created;
 
     @javax.persistence.Column(nullable = false)
-    private Long createdBy;
-
-    @javax.persistence.Column(name = "last_modified")
-    @LastModifiedDate
-    private Instant lastModified;
+    private String createdBy;
 
 }

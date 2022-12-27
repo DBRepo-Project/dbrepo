@@ -1,13 +1,25 @@
 <template>
   <div class="mb-5">
     <div v-if="!value.length" class="text-center">
-      <v-btn :disabled="disabled" @click="addFirst">Add filter</v-btn>
+      <v-btn
+        small
+        color="secondary"
+        :disabled="disabled"
+        @click="addFirst">
+        Add filter
+      </v-btn>
     </div>
     <div v-for="(clause, idx) in value" :key="idx">
-      <v-row v-if="clause.type === 'and'" class="connector pt-2" dense>
+      <v-row
+        v-if="clause.type === 'and'"
+        class="connector pt-2"
+        dense>
         and
       </v-row>
-      <v-row v-else-if="clause.type === 'or'" class="connector pt-2" dense>
+      <v-row
+        v-else-if="clause.type === 'or'"
+        class="connector pt-2"
+        dense>
         or
       </v-row>
       <v-row v-else dense>
