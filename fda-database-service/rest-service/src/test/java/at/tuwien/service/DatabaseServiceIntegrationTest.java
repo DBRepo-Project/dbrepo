@@ -2,25 +2,18 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -29,10 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.security.Principal;
@@ -40,8 +31,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -175,34 +165,67 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_queryStore_succeeds() throws SQLException, InterruptedException {
 
         /* test */
-        generic_create(QUERY_1_STATEMENT, 1L);
+        generic_create(QUERY_1_STATEMENT, 1L, true);
     }
 
     @Test
     public void create_queryStoreSameQueryHash_succeeds() throws SQLException, InterruptedException {
 
         /* test */
-        generic_create(QUERY_1_STATEMENT, 1L);
-        generic_create(QUERY_2_STATEMENT, 2L);
-        generic_create(QUERY_1_STATEMENT, 1L);
+        generic_create(QUERY_1_STATEMENT, 1L, true);
+        generic_create(QUERY_2_STATEMENT, 2L, false);
+        generic_create(QUERY_1_STATEMENT, 1L, false);
+    }
+
+    @Test
+    public void create_systemProcedure_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_system_create("root", "mariadb");
+    }
+
+    @Test
+    public void create_systemProcedure_fails() {
+
+        /* test */
+        assertThrows(SQLException.class, () -> {
+            generic_system_create("junit", "junit");
+        });
+    }
+
+    @Test
+    public void create_userProcedureRoot_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_user_create("root", "mariadb");
+    }
+
+    @Test
+    public void create_userProcedureUser_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_user_create("junit", "junit");
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(String query, Long assertQueryId) throws InterruptedException, SQLException {
+    protected void generic_create(String query, Long assertQueryId, boolean create) throws InterruptedException,
+            SQLException {
 
         /* mock */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        containerRepository.save(CONTAINER_3);
-        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
-        startContainer(CONTAINER_3);
+        if (create) {
+            final String bind = new File(
+                    "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+            log.trace("container bind {}", bind);
+            containerRepository.save(CONTAINER_3);
+            createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+            startContainer(CONTAINER_3);
+        }
 
         /* test */
-        final Long response = MariaDbConfig.mockQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, query);
+        final Long response = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, query);
         assertNotNull(response);
         assertEquals(assertQueryId, response);
     }
@@ -226,6 +249,38 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Database response = databaseService.create(containerId, createDto, principal);
         assertEquals(database.getName(), response.getName());
+    }
+
+    protected void generic_system_create(String username, String password) throws InterruptedException, SQLException {
+
+        /* mock */
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        containerRepository.save(CONTAINER_3);
+        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        startContainer(CONTAINER_3);
+
+        /* test */
+        final Long queryId = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,
+                QUERY_1_STATEMENT, username, password);
+        assertEquals(1L, queryId);
+    }
+
+    protected void generic_user_create(String username, String password) throws InterruptedException, SQLException {
+
+        /* mock */
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        containerRepository.save(CONTAINER_3);
+        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        startContainer(CONTAINER_3);
+
+        /* test */
+        final Long queryId = MariaDbConfig.mockUserQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,
+                QUERY_1_STATEMENT, username, password);
+        assertEquals(1L, queryId);
     }
 
 }

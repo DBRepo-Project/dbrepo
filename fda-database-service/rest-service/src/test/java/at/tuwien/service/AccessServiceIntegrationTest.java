@@ -1,10 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
@@ -91,7 +93,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
                 .withVolumes()
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
+                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit2", "MARIADB_PASSWORD=junit2")
                 .exec();
         CONTAINER_1.setHash(response1.getId());
         startContainer(CONTAINER_1);
@@ -133,116 +135,70 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
-        final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .username(USER_2_USERNAME)
-                .build();
 
         /* test */
-        accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
-        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.get(0).getType());
-        assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
+        create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
     public void create_multiple_fails() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
-        final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .username(USER_2_USERNAME)
-                .build();
 
         /* test */
-        accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+        create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         assertThrows(NotAllowedException.class, () -> {
-            accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+            create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         });
     }
 
     @Test
     public void create_creator_fails() {
-        final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .username(USER_1_USERNAME)
-                .build();
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+            create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_1_USERNAME, USER_1_ID);
         });
     }
 
     @Test
     public void update_same_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .build();
 
         /* test */
-        accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
-        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.get(0).getType());
-        assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
-        assertEquals(USER_2_ID, response.get(0).getHuserid());
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
     public void update_writeOwn_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO)
-                .build();
 
         /* test */
-        accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
-        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_2_WRITE_OWN_ACCESS_TYPE, response.get(0).getType());
-        assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
-        assertEquals(USER_2_ID, response.get(0).getHuserid());
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO, DATABASE_2_WRITE_OWN_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
     public void update_writeAll_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO)
-                .build();
 
         /* test */
-        accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME, request);
-        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
-        assertEquals(1, response.size());
-        assertEquals(DATABASE_3_WRITE_ALL_ACCESS_TYPE, response.get(0).getType());
-        assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
-        assertEquals(USER_2_ID, response.get(0).getHuserid());
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO, DATABASE_3_WRITE_ALL_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
     public void update_userNotFound_fails() {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .build();
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            accessService.update(CONTAINER_1_ID, DATABASE_1_ID, "l33tsp34k", request);
+            update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, "l33tsp34k", null);
         });
     }
 
     @Test
     public void update_databaseNotFound_fails() {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(DATABASE_1_READ_ACCESS_TYPE_DTO)
-                .build();
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.update(CONTAINER_2_ID, DATABASE_2_ID, USER_2_USERNAME, request);
+            update_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         });
     }
 
@@ -270,6 +226,43 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         assertThrows(UserNotFoundException.class, () -> {
             accessService.delete(CONTAINER_1_ID, DATABASE_1_ID, "l33tsp34k");
         });
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void create_generic(AccessTypeDto accessTypeDto, AccessType access, String username, Long userId)
+            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
+            DatabaseMalformedException {
+        final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
+                .type(accessTypeDto)
+                .username(username)
+                .build();
+
+        /* test */
+        accessService.create(CONTAINER_1_ID, DATABASE_1_ID, request);
+        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
+        assertEquals(1, response.size());
+        assertEquals(access, response.get(0).getType());
+        assertEquals(DATABASE_1_ID, response.get(0).getHdbid());
+        assertEquals(userId, response.get(0).getHuserid());
+    }
+
+    protected void update_generic(Long containerId, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
+                                  String username, Long userId) throws UserNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
+        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
+                .type(accessTypeDto)
+                .build();
+
+        /* test */
+        accessService.update(containerId, databaseId, username, request);
+        final List<DatabaseAccess> response = databaseAccessRepository.findAll();
+        assertEquals(1, response.size());
+        assertEquals(access, response.get(0).getType());
+        assertEquals(databaseId, response.get(0).getHdbid());
+        assertEquals(userId, response.get(0).getHuserid());
     }
 
 }

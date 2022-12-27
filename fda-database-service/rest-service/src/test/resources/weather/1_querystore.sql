@@ -24,12 +24,12 @@ BEGIN
     INTO _sql;
     PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash;
 END $$
-CREATE PROCEDURE _store_query(IN query TEXT, OUT queryId BIGINT)
+CREATE PROCEDURE store_query(IN query TEXT, OUT queryId BIGINT)
 BEGIN
     DECLARE _username varchar(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', '');
-    CALL store_query(_username, query, queryId);
+    CALL _store_query(_username, query, queryId);
 END $$
-CREATE PROCEDURE store_query(IN _username VARCHAR(255), IN query TEXT, OUT queryId BIGINT)
+CREATE PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, OUT queryId BIGINT)
 BEGIN
     DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256);
     DECLARE _query TEXT DEFAULT CONCAT('CREATE TABLE IF NOT EXISTS _tmp AS (', query, ')'); DROP TABLE IF EXISTS _tmp;
