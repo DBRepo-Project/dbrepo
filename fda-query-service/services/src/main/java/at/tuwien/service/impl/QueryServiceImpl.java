@@ -223,7 +223,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, QueryStoreException, TableMalformedException, UserNotFoundException {
+            QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
@@ -395,19 +395,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final Statement statement = parserRealSql.parse(new StringReader(query));
-
         /* check */
         if (!(statement instanceof Select)) {
             log.error("Query attempts to update the dataset, not a SELECT statement");
             throw new JSQLParserException("Query attempts to update the dataset");
         }
-
         /* start parsing */
         final Select selectStatement = (Select) statement;
         final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
         final List<SelectItem> clauses = ps.getSelectItems();
         log.trace("columns referenced in the from-clause: {}", clauses);
-
         /* Parse all tables */
         final List<FromItem> tables = new ArrayList<>();
         tables.add(ps.getFromItem());
@@ -419,9 +416,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
         }
-        log.debug("tables referenced: {}", tables);
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
-
         /* Checking if all tables or views exist */
         final List<TableColumn> allColumns = new ArrayList<>();
         for (FromItem fromItem : tables) {
@@ -446,13 +441,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             if (!foundView && !foundTable) {
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table or view {} does not exist", tableName);
-                log.trace("available tables are {}", database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
-                log.trace("available views are {}", database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Table or view " + tableName + " does not exist");
+                log.error("Table or view {} does not exist in tables {} or views {}", tableName,
+                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()),
+                        database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
+                throw new JSQLParserException("Table or view does not exist");
             }
         }
-
         /* Checking if all columns exist */
         for (SelectItem item : clauses) {
             if (item.toString().trim().equals("*")) {
@@ -468,13 +462,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
             if (!foundColumn) {
-                log.error("Column {} does not exist", item);
-                log.trace("available columns are {}", allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Column " + item + " does not exist");
+                log.error("Column {} does not exist in columns {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
+                throw new JSQLParserException("Column does not exist");
             }
         }
         return columns;
-
     }
 
 
