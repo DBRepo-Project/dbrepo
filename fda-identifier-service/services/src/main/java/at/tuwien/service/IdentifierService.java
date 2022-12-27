@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.IdentifierDto;
@@ -73,6 +74,17 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
     InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException;
+
+    /**
+     * Export metadata for bibliography for a identifier.
+     *
+     * @param id    The identifier id.
+     * @param style The identifier bibliography style.
+     * @return The export, if successful.
+     * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     * @throws IdentifierRequestException  The identifier style was not found.
+     */
+    InputStreamResource exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Exports an identifier to XML

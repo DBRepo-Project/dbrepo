@@ -1,10 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.*;
@@ -25,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
@@ -190,6 +189,33 @@ public class IdentifierServiceImpl implements IdentifierService {
         context.setVariable("description", identifier.getDescription());
         /* map */
         final String body = templateEngine.process("doi.xml", context);
+        final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
+        log.debug("mapped file stream {}", resource.getDescription());
+        return resource;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InputStreamResource exportBibliography(Long id, BibliographyTypeDto style)
+            throws IdentifierNotFoundException, IdentifierRequestException {
+        /* check */
+        final Identifier identifier = find(id);
+        /* context */
+        final Context context = new Context();
+        context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        context.setVariable("creators", identifier.getCreators());
+        context.setVariable("title", identifier.getTitle());
+        context.setVariable("publisher", identifier.getPublisher());
+        context.setVariable("publicationYear", identifier.getPublicationYear());
+        /* map */
+        final String template = "cite_" + style.name().toLowerCase() + ".txt";
+        final String body;
+        try {
+            body = templateEngine.process(template, context);
+        } catch (TemplateInputException e) {
+            log.error("Failed to load template: {}", e.getMessage());
+            throw new IdentifierRequestException("Failed to load template", e);
+        }
         final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
         log.debug("mapped file stream {}", resource.getDescription());
         return resource;

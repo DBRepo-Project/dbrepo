@@ -188,6 +188,7 @@
                 <includes>
                     <include>**/application*.yml</include>
                     <include>**/templates/*.xml</include>
+                    <include>**/templates/*.txt</include>
                 </includes>
             </resource>
         </resources>

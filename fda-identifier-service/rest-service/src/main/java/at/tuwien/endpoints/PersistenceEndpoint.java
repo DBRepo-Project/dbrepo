@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -45,7 +46,7 @@ public class PersistenceEndpoint {
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
-            QueryNotFoundException, RemoteUnavailableException {
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -73,6 +74,11 @@ public class PersistenceEndpoint {
                     final InputStreamResource resource3 = identifierService.exportMetadata(pid);
                     log.debug("find identifier resulted in resource {}", resource3);
                     return ResponseEntity.ok(resource3);
+                case "text/bibliography":
+                    log.trace("accept header matches bibliography");
+                    final InputStreamResource resource4 = identifierService.exportBibliography(pid, BibliographyTypeDto.APA);
+                    log.debug("find identifier resulted in resource {}", resource4);
+                    return ResponseEntity.ok(resource4);
             }
         } else {
             log.trace("no accept header present");

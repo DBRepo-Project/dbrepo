@@ -1,0 +1,1 @@
+\[1\] [# th:each="creator: ${creators}"] [[${creator.name}]] [/]. "[[${title}]]". [[${publisher}]]. [[${publicationYear}]]. DOI: [[${doi}]]

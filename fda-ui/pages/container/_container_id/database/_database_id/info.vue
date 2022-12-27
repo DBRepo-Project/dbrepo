@@ -92,6 +92,26 @@
                     <a v-if="database.identifier.license" target="_blank" :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
                     <span v-if="!database.identifier.license">(none)</span>
                   </v-list-item-content>
+                  <v-list-item-title v-if="citation" class="mt-2">
+                    Citation
+                  </v-list-item-title>
+                  <v-list-item-content v-if="citation">
+                    <v-row no-gutters>
+                      <v-col lg="11" v-text="citation" />
+                      <v-col lg="1">
+                        <v-select
+                          v-model="style"
+                          :items="styles"
+                          item-text="style"
+                          item-value="accept"
+                          class="cite-style float-right"
+                          dense
+                          outlined
+                          return-object
+                          single-line />
+                      </v-col>
+                    </v-row>
+                  </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -236,7 +256,14 @@ export default {
   data () {
     return {
       loading: false,
+      styles: [
+        { style: 'APA', accept: 'text/bibliography; style=apa' },
+        { style: 'IEEE', accept: 'text/bibliography; style=ieee' },
+        { style: 'BibTeX', accept: 'text/bibliography; style=bibtex' }
+      ],
+      style: null,
       editDbDialog: false,
+      citation: null,
       access: {
         type: null,
         user: {
@@ -385,9 +412,16 @@ export default {
       }
     }
   },
+  watch: {
+    style (newVal, oldVal) {
+      this.loadCitation(newVal)
+    }
+  },
   mounted () {
-    this.loadDatabase()
     this.loadUser()
+    this.loadDatabase()
+      .then(() => this.loadCitation(null))
+    this.style = this.styles[0]
   },
   methods: {
     async loadDatabase () {
@@ -400,6 +434,27 @@ export default {
         this.$toast.error('Could not load database')
       }
       this.loading = false
+    },
+    async loadCitation (style) {
+      if (!this.database.identifier.id) {
+        return
+      }
+      this.metadataLoading = true
+      try {
+        const config = this.config
+        config.headers.Accept = 'text/bibliography'
+        if (style != null) {
+          config.headers.Accept = `${config.headers.Accept}; style=${style}`
+        }
+        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, config)
+        this.citation = res.data
+        console.debug('citation', this.citation)
+      } catch (err) {
+        console.error('Could not cite identifier', err)
+        this.$toast.error('Could not cite identifier')
+        this.error = true
+      }
+      this.metadataLoading = false
     },
     closeDialog (event) {
       if (event.action === 'persisted') {
