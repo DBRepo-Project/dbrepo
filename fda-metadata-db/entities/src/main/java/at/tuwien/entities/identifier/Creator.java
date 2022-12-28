@@ -33,7 +33,10 @@ public class Creator {
     private Long pid;
 
     @Column(nullable = false)
-    private String name;
+    private String firstname;
+
+    @Column(nullable = false)
+    private String lastname;
 
     @Column
     private String affiliation;

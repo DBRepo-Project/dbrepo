@@ -172,31 +172,35 @@ public abstract class BaseUnitTest {
     public final static Long CREATOR_1_QUERY_ID = 1L;
     public final static String CREATOR_1_ORCID = "00000-00000-00000";
     public final static String CREATOR_1_AFFIL = "TU Graz";
-    public final static String CREATOR_1_NAME = "Mustermann, Max";
+    public final static String CREATOR_1_FIRSTNAME = "Max";
+    public final static String CREATOR_1_LASTNAME = "Mustermann";
     public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
-
-    public final static Long CREATOR_3_ID = 3L;
-    public final static Long CREATOR_3_QUERY_ID = 1L;
-    public final static String CREATOR_3_ORCID = "00000-00000-00000";
-    public final static String CREATOR_3_AFFIL = "TU Graz";
-    public final static String CREATOR_3_NAME = "Mustermann, Max";
-    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Long CREATOR_2_ID = 2L;
     public final static Long CREATOR_2_QUERY_ID = 1L;
     public final static String CREATOR_2_ORCID = "00000-00000-00000";
     public final static String CREATOR_2_AFFIL = "TU Wien";
-    public final static String CREATOR_2_NAME = "Mustermann, Martina";
+    public final static String CREATOR_2_FIRSTNAME = "Martina";
+    public final static String CREATOR_2_LASTNAME = "Mustermann";
     public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static Long CREATOR_3_ID = 3L;
+    public final static Long CREATOR_3_QUERY_ID = 1L;
+    public final static String CREATOR_3_ORCID = "00000-00000-00000";
+    public final static String CREATOR_3_AFFIL = "TU Graz";
+    public final static String CREATOR_3_FIRSTNAME = "Max";
+    public final static String CREATOR_3_LASTNAME = "Mustermann";
+    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Long CREATOR_4_ID = 4L;
     public final static Long CREATOR_4_QUERY_ID = 1L;
     public final static String CREATOR_4_ORCID = "00000-00000-00000";
     public final static String CREATOR_4_AFFIL = "TU Wien";
-    public final static String CREATOR_4_NAME = "Mustermann, Martina";
+    public final static String CREATOR_4_FIRSTNAME = "Martina";
+    public final static String CREATOR_4_LASTNAME = "Mustermann";
     public final static Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352);
 
@@ -272,14 +276,11 @@ public abstract class BaseUnitTest {
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.SUBSET;
 
-    public final static Long IDENTIFIER_1_CREATOR_1_ID = 1L;
-    public final static String IDENTIFIER_1_CREATOR_1_NAME = "Doe, Jane";
-    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION = "TU Wien";
-
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
-            .id(IDENTIFIER_1_CREATOR_1_ID)
-            .name(IDENTIFIER_1_CREATOR_1_NAME)
-            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .id(CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .affiliation(CREATOR_1_AFFIL)
             .build();
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
@@ -358,7 +359,8 @@ public abstract class BaseUnitTest {
             .id(CREATOR_1_ID)
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
@@ -366,7 +368,8 @@ public abstract class BaseUnitTest {
     public final static Creator CREATOR_1_REQUEST = Creator.builder()
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
@@ -375,7 +378,8 @@ public abstract class BaseUnitTest {
             .id(CREATOR_2_ID)
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
@@ -383,7 +387,8 @@ public abstract class BaseUnitTest {
     public final static Creator CREATOR_2_REQUEST = Creator.builder()
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
@@ -392,26 +397,30 @@ public abstract class BaseUnitTest {
             .id(CREATOR_1_ID)
             .affiliation(CREATOR_1_AFFIL)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .build();
 
     public final static CreatorCreateDto CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
             .affiliation(CREATOR_1_AFFIL)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .build();
 
     public final static CreatorDto CREATOR_2_DTO = CreatorDto.builder()
             .id(CREATOR_2_ID)
             .affiliation(CREATOR_2_AFFIL)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .build();
 
     public final static CreatorCreateDto CREATOR_2_CREATE_DTO = CreatorCreateDto.builder()
             .affiliation(CREATOR_2_AFFIL)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()

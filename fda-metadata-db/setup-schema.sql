@@ -369,7 +369,8 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 (
     id            bigint       NOT NULL AUTO_INCREMENT,
     pid           bigint       NOT NULL,
-    name          VARCHAR(255) NOT NULL,
+    firstname     VARCHAR(255) NOT NULL,
+    lastname      VARCHAR(255) NOT NULL,
     affiliation   VARCHAR(255),
     orcid         VARCHAR(255),
     created       timestamp    NOT NULL DEFAULT NOW(),

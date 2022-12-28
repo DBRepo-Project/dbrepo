@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
