@@ -1,5 +1,7 @@
-@misc{data[[${publicationYear}]],
+@misc{dbrepo[[${publicationYear}]],
+  author = {[# th:each="creator,idx: ${creators}"][# th:if="${idx.index} &gt; 0"] and [/][[${creator.lastname}]], [[${creator.firstname}]][/]},
   title = {[[${title}]]},
   howpublished = {\url{[[${doi}]]}},
+  month = {[[${publicationMonth}]]},
   year = {[[${publicationYear}]]}
 }

@@ -86,7 +86,8 @@ public class PersistenceEndpoint {
                     style = BibliographyTypeDto.valueOf(matcher.group(2).toUpperCase());
                     log.trace("bibliography style matches {}", style);
                 } else {
-                    style = null;
+                    style = BibliographyTypeDto.APA;
+                    log.trace("no bibliography style provided, default: {}", style);
                 }
                 final String resource = identifierService.exportBibliography(pid, style);
                 log.debug("find identifier resulted in resource {}", resource);

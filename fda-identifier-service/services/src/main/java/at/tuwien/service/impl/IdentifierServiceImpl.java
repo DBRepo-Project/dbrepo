@@ -184,11 +184,12 @@ public class IdentifierServiceImpl implements IdentifierService {
         context.setVariable("title", identifier.getTitle());
         context.setVariable("publisher", identifier.getPublisher());
         context.setVariable("publicationYear", identifier.getPublicationYear());
-        context.setVariable("created", documentMapper.instantToDate(identifier.getCreated()));
+        context.setVariable("created", identifier.getCreated());
         context.setVariable("relatedIdentifiers", identifier.getRelated());
         context.setVariable("description", identifier.getDescription());
         /* map */
-        final String body = templateEngine.process("doi.xml", context);
+        final String body = templateEngine.process("doi.xml", context)
+                .replaceAll("\\s+", " ");
         final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
         log.debug("mapped file stream {}", resource.getDescription());
         return resource;
@@ -203,9 +204,11 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* context */
         final Context context = new Context();
         context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        context.setVariable("creator", identifier.getCreator());
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("title", identifier.getTitle());
         context.setVariable("publisher", identifier.getPublisher());
+        context.setVariable("publicationMonth", identifier.getPublicationMonth());
         context.setVariable("publicationYear", identifier.getPublicationYear());
         /* map */
         final String template = "cite_" + style.name().toLowerCase() + ".txt";

@@ -266,6 +266,7 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352);
+    public final static Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
     public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_1_QUERY_HASH = "abc";
     public final static String IDENTIFIER_1_RESULT_HASH = "def";
@@ -295,9 +296,9 @@ public abstract class BaseUnitTest {
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
-            .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .creator(USER_1)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .queryHash(IDENTIFIER_1_QUERY_HASH)
             .resultHash(IDENTIFIER_1_RESULT_HASH)
             .query(IDENTIFIER_1_QUERY)
@@ -384,6 +385,16 @@ public abstract class BaseUnitTest {
             .lastModified(CREATOR_2_MODIFIED)
             .build();
 
+    public final static Creator CREATOR_3 = Creator.builder()
+            .id(CREATOR_3_ID)
+            .pid(IDENTIFIER_1_ID)
+            .orcid(CREATOR_3_ORCID)
+            .firstname(CREATOR_3_FIRSTNAME)
+            .lastname(CREATOR_3_LASTNAME)
+            .created(CREATOR_3_CREATED)
+            .lastModified(CREATOR_3_MODIFIED)
+            .build();
+
     public final static Creator CREATOR_2_REQUEST = Creator.builder()
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_2_ORCID)
@@ -434,6 +445,7 @@ public abstract class BaseUnitTest {
             .doi(IDENTIFIER_1_DOI)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .type(IDENTIFIER_1_TYPE_DTO)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)

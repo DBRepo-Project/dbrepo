@@ -439,10 +439,9 @@ export default {
       if (!this.database.identifier.id) {
         return
       }
-      this.metadataLoading = true
       try {
         const config = this.config
-        config.headers.Accept = 'text/bibliography'
+        config.headers.Accept = 'text/bibliography; style=apa'
         if (style != null) {
           config.headers.Accept = `${config.headers.Accept}; style=${style}`
         }
@@ -454,7 +453,6 @@ export default {
         this.$toast.error('Could not cite identifier')
         this.error = true
       }
-      this.metadataLoading = false
     },
     closeDialog (event) {
       if (event.action === 'persisted') {
