@@ -196,7 +196,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportBibliography(Long id, BibliographyTypeDto style)
+    public String exportBibliography(Long id, BibliographyTypeDto style)
             throws IdentifierNotFoundException, IdentifierRequestException {
         /* check */
         final Identifier identifier = find(id);
@@ -216,9 +216,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.error("Failed to load template: {}", e.getMessage());
             throw new IdentifierRequestException("Failed to load template", e);
         }
-        final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
-        log.debug("mapped file stream {}", resource.getDescription());
-        return resource;
+        return body;
     }
 
     @Override

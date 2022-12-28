@@ -1,0 +1,5 @@
+@misc{data2022,
+  title = {Australia weather data},
+  howpublished = {\url{http://localhost:3000/pid/1}},
+  year = {2022}
+}

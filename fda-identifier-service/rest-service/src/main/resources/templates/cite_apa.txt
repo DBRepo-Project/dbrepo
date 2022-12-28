@@ -1,1 +1,1 @@
-[# th:each="creator: ${creators}"][[${creator.name}]] [/]([[${publicationYear}]]). [[${title}]]. [[${publisher}]]. [[${doi}]]
+[# th:each="creator,idx: ${creators}"][[${creator.name}]][# th:if="${idx.index} != 0 and ${idx.count} != ${idx.size}"], [/][/]. ([[${publicationYear}]]). [[${title}]]. [[${publisher}]]. [[${doi}]]

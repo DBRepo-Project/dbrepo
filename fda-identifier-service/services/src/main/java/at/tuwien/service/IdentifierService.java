@@ -84,7 +84,7 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierRequestException  The identifier style was not found.
      */
-    InputStreamResource exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException, IdentifierRequestException;
+    String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Exports an identifier to XML

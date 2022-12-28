@@ -272,6 +272,40 @@ public abstract class BaseUnitTest {
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.SUBSET;
 
+    public final static Long IDENTIFIER_1_CREATOR_1_ID = 1L;
+    public final static String IDENTIFIER_1_CREATOR_1_NAME = "Doe, Jane";
+    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION = "TU Wien";
+
+    public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
+            .id(IDENTIFIER_1_CREATOR_1_ID)
+            .name(IDENTIFIER_1_CREATOR_1_NAME)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .build();
+
+    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .creator(USER_1)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
+            .build();
+
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
     public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
@@ -295,28 +329,6 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-
-    public final static Identifier IDENTIFIER_1 = Identifier.builder()
-            .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .queryId(IDENTIFIER_1_QUERY_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
-            .execution(IDENTIFIER_1_EXECUTION)
-            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
-            .publisher(IDENTIFIER_1_PUBLISHER)
-            .type(IDENTIFIER_1_TYPE)
-            .build();
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)

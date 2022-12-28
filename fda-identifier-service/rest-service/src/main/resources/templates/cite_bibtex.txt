@@ -1,0 +1,5 @@
+@misc{data[[${publicationYear}]],
+  title = {[[${title}]]},
+  howpublished = {\url{[[${doi}]]}},
+  year = {[[${publicationYear}]]}
+}
