@@ -11,6 +11,7 @@ ONTOLOGIES_DIRECTORY = 'ontologies'
 
 ONTOLOGY_EXTENSIONS = {'.ttl': 'turtle', '.nt': 'nt'}
 
+
 def search_ontologies(query, limit=sys.maxsize, offset=0):
     if not bool(re.match('^[a-zA-Z0-9\-\\\s]+$', query)):
         return None
@@ -30,16 +31,22 @@ def search_ontologies(query, limit=sys.maxsize, offset=0):
         for row in qres1:
             matches.append({"S-URI": str(row.s), "P": str(row.p), "O": str(row.o)})
     return matches
+
+
 def setup_ontology_dir():
     if not os.path.exists(ONTOLOGIES_DIRECTORY):
         os.mkdir(ONTOLOGIES_DIRECTORY)
+
+
 def list_ontologies():
     setup_ontology_dir()
     return list(map(lambda filename: Path(filename).stem, glob.glob(ONTOLOGIES_DIRECTORY + "/*")))
 
+
 def ontology_exists(name):
     setup_ontology_dir()
     return name in list_ontologies()
+
 
 def get_ontology(name):
     setup_ontology_dir()
@@ -49,6 +56,7 @@ def get_ontology(name):
     with open(files[0]) as f:
         return f.read()
 
+
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS

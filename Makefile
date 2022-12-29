@@ -92,7 +92,7 @@ tag-table:
 	docker tag fda-table-service:latest "dbrepo/table-service:${TAG}"
 
 tag-units:
-	docker tag fda-units-service:latest "dbrepo/units-service:${TAG}"
+	docker tag fda-semantics-service:latest "dbrepo/semantics-service:${TAG}"
 
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
@@ -136,7 +136,7 @@ release-table:
 	docker push "dbrepo/table-service:${TAG}"
 
 release-units:
-	docker push "dbrepo/units-service:${TAG}"
+	docker push "dbrepo/semantics-service:${TAG}"
 
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
@@ -183,7 +183,7 @@ pull-table:
 	docker pull "dbrepo/table-service:${TAG}"
 
 pull-units:
-	docker pull "dbrepo/units-service:${TAG}"
+	docker pull "dbrepo/semantics-service:${TAG}"
 
 pull-broker:
 	docker pull "dbrepo/broker-service:${TAG}"

@@ -6,6 +6,14 @@ Suggest and validates units of measurements defined in Ontology of Units of Meas
 
 Swagger UI: http://localhost:5010/swagger-ui/
 
+## Build
+
+Ubuntu/Debian:
+
+```console
+apt-get install libmariadb-dev
+```
+
 ## `POST /api/units/suggest`
 Autosuggests user typed in terms. 
 

@@ -1,6 +1,6 @@
 import logging
 import os
-from mariadb import connect
+import mariadb
 
 
 def insert_mdb_concepts(uri, c_name) -> int:
@@ -9,7 +9,7 @@ def insert_mdb_concepts(uri, c_name) -> int:
         database = os.getenv("METADATA_DB", "fda")
         username = os.getenv("METADATA_USERNAME", "root")
         password = os.getenv("METADATA_PASSWORD", "dbrepo")
-        conn = connect(database=database, user=username, host="metadata-db", password=password)
+        conn = mariadb.connect(database=database, user=username, host="metadata-db", password=password)
         cursor = conn.cursor()
 
         # Insert tblnames into table mdb_TABLES
@@ -30,7 +30,7 @@ def insert_mdb_columns_concepts(cdbid, tid, cid, uri) -> int:
         database = os.getenv("METADATA_DB", "fda")
         username = os.getenv("METADATA_USERNAME", "root")
         password = os.getenv("METADATA_PASSWORD", "dbrepo")
-        conn = connect(database=database, user=username, host="metadata-db", password=password)
+        conn = mariadb.connect(database=database, user=username, host="metadata-db", password=password)
         cursor = conn.cursor()
 
         # Insert tblnames into table mdb_TABLES
@@ -42,13 +42,14 @@ def insert_mdb_columns_concepts(cdbid, tid, cid, uri) -> int:
     except Exception as e:
         logging.error("Error while connecting to metadata database", e)
 
+
 def delete_mdb_columns_concepts(cdbid, tid, cid) -> int:
     try:
         # Connecting to metadatabase
         database = os.getenv("METADATA_DB", "fda")
         username = os.getenv("METADATA_USERNAME", "root")
         password = os.getenv("METADATA_PASSWORD", "dbrepo")
-        conn = connect(database=database, user=username, host="metadata-db", password=password)
+        conn = mariadb.connect(database=database, user=username, host="metadata-db", password=password)
         cursor = conn.cursor()
 
         logging.info("Deleting column concept assignment cDBID=%s AND tID=%s AND cID=%s", cdbid, tid, cid)

@@ -150,7 +150,7 @@ export default {
         return
       }
       try {
-        const res = await this.$axios.post('/api/units/suggest', {
+        const res = await this.$axios.post('/api/semantics/suggest', {
           offset: 0,
           ustring: val
         })
@@ -184,7 +184,7 @@ export default {
       this.cid = column.id
       this.dbid = column.id
       try {
-        const res = await this.$axios.get(`/api/units/uri/${column.column_concept.name}`)
+        const res = await this.$axios.get(`/api/semantics/uri/${column.column_concept.name}`)
         this.uri = res.data.uri
         console.debug('concept uri loaded', this.uri)
       } catch (err) {
@@ -200,7 +200,7 @@ export default {
         cdbid: this.databaseId
       }
       try {
-        await this.$axios.post('/api/units/deletecolumnsconcept', payload)
+        await this.$axios.post('/api/semantics/deletecolumnsconcept', payload)
         this.$toast.success('Deleted concept assignment')
         console.info('Deleted concept assignment')
       } catch (error) {
@@ -221,7 +221,7 @@ export default {
       /* save concept */
       try {
         console.debug('save', payload)
-        const res = await this.$axios.post('/api/units/saveconcept', payload)
+        const res = await this.$axios.post('/api/semantics/saveconcept', payload)
         console.info('Concept saved')
         console.debug('concept saved', res.data)
       } catch (error) {
@@ -235,7 +235,7 @@ export default {
       }
       /* save concept */
       try {
-        const res = await this.$axios.post('/api/units/savecolumnsconcept', {
+        const res = await this.$axios.post('/api/semantics/savecolumnsconcept', {
           cdbid: Number(this.$route.params.database_id),
           cid: this.column.id,
           tid: this.tableId,

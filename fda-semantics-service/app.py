@@ -67,21 +67,23 @@ template = {
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
         }
     },
-    "servers": [{
-        "url": "http://localhost:5010",
-        "description": "Generated server url"
-    },
+    "servers": [
+        {
+            "url": "http://localhost:5010",
+            "description": "Generated server url"
+        },
         {
             "url": "https://dbrepo1.ec.tuwien.ac.at/api/units",
             "description": "DBRepo Production Server"
-        }]
+        }
+    ]
 }
 
 app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
 
 
-@app.route('/api/units/suggest', methods=["POST"], endpoint='units_suggest')
+@app.route('/api/semantics/suggest', methods=["POST"], endpoint='units_suggest')
 @swag_from('suggest.yml')
 def suggest():
     logging.debug('endpoint suggest unit, body=%s', request)
@@ -98,7 +100,7 @@ def suggest():
         return jsonify(res), 500
 
 
-@app.route('/api/units/validate/<unit>', methods=["GET"], endpoint='units_validate')
+@app.route('/api/semantics/validate/<unit>', methods=["GET"], endpoint='units_validate')
 @swag_from('validate.yml')
 def validate(unit):
     logging.debug('endpoint validate unit, unit=%s, body=%s', unit, request)
@@ -112,12 +114,12 @@ def validate(unit):
         return jsonify(res), 500
 
 
-@app.route('/api/units/uri/<uname>', methods=["GET"], endpoint='units_uri')
+@app.route('/api/semantics/uri/<name>', methods=["GET"], endpoint='units_uri')
 @swag_from('geturi.yml')
-def get_uri(uname):
-    logging.debug('endpoint get uri, uname=%s, body=%s', uname, request)
+def get_uri(name):
+    logging.debug('endpoint get uri, name=%s, body=%s', name, request)
     try:
-        res = list_get_uri(uname)
+        res = list_get_uri(name)
         logging.info('get uri resulted in uri: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -126,7 +128,7 @@ def get_uri(uname):
         return jsonify(res), 500
 
 
-@app.route('/api/units/saveconcept', methods=["POST"], endpoint='units_saveconcept')
+@app.route('/api/semantics/saveconcept', methods=["POST"], endpoint='units_saveconcept')
 @swag_from('saveconcept.yml')
 def save_concept():
     logging.debug('endpoint save concept, body=%s', request)
@@ -144,7 +146,7 @@ def save_concept():
         return jsonify(res), 500
 
 
-@app.route('/api/units/savecolumnsconcept', methods=["POST"], endpoint='units_savecolumnsconcept')
+@app.route('/api/semantics/savecolumnsconcept', methods=["POST"], endpoint='units_savecolumnsconcept')
 @swag_from('savecolumnsconcept.yml')
 def save_column_concept():
     logging.debug('endpoint save column concept, body=%s', request)
@@ -164,7 +166,7 @@ def save_column_concept():
         return jsonify(res), 500
 
 
-@app.route('/api/units/deletecolumnsconcept', methods=["POST"], endpoint='units_deletecolumnsconcept')
+@app.route('/api/semantics/deletecolumnsconcept', methods=["POST"], endpoint='units_deletecolumnsconcept')
 @swag_from('deletecolumnsconcept.yml')
 def save_column_concept():
     logging.debug('endpoint delete column concept, body=%s', request)
