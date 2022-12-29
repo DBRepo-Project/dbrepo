@@ -3,10 +3,10 @@
     <v-form v-model="valid">
       <v-card>
         <v-card-title>
-          Unit of Measurement
+          {{ title }}
         </v-card-title>
         <v-card-subtitle>
-          Assign a unit of measurement to column <strong>{{ column.name }}</strong>
+          Assign a {{ subtitle }} to column <strong>{{ column.name }}</strong>
         </v-card-subtitle>
         <v-card-text>
           <v-autocomplete
@@ -33,6 +33,7 @@
               </v-list-item>
             </template>
           </v-autocomplete>
+          <pre>{{ column }}</pre>
         </v-card-text>
         <v-expand-transition>
           <v-list v-if="model" class="lighten-3" subheader three-line>
@@ -95,6 +96,10 @@ export default {
       type: Object,
       default: () => ({})
     },
+    mode: {
+      type: String,
+      default: () => 'unit'
+    },
     databaseId: { type: Number, default: () => -1 },
     tableId: { type: Number, default: () => -1 }
   },
@@ -121,6 +126,12 @@ export default {
     name () {
       return this.saved && this.model && this.model.name
     },
+    title () {
+      return this.unit ? 'Unit of measurement' : 'Concept'
+    },
+    subtitle () {
+      return this.unit ? 'unit of measurement' : 'semantic concept'
+    },
     items () {
       return this.entries && this.entries.map((entry) => {
         return {
@@ -132,12 +143,8 @@ export default {
     }
   },
   watch: {
-    concept (newVal, oldVal) {
-      this.loadConcept({ column_concept: newVal })
-    },
-    model (newVal, oldVal) {
-      console.debug('selected concept', newVal)
-      this.loadConcept({ column_concept: newVal })
+    column (newVal, oldVal) {
+      this.load(newVal)
     },
     async search (val) {
       if (!val) {
@@ -163,7 +170,7 @@ export default {
     }
   },
   mounted () {
-    this.loadConcept(this.column)
+    this.load(this.column)
   },
   methods: {
     cancel () {
@@ -172,19 +179,13 @@ export default {
         action: 'cancel'
       })
     },
-    async loadConcept (column) {
-      if (!column.column_concept) {
-        console.warn('column concept is null')
-        return
-      }
-      if (!column.column_concept.name) {
-        console.warn('column concept name is null')
-        return
-      }
+    async load (column) {
       this.cid = column.id
       this.dbid = column.id
+      const url = `/api/semantics/${this.mode}/${column[this.mode].name}`
+      console.debug('====>', url)
       try {
-        const res = await this.$axios.get(`/api/semantics/uri/${column.column_concept.name}`)
+        const res = await this.$axios.get(url)
         this.uri = res.data.uri
         console.debug('concept uri loaded', this.uri)
       } catch (err) {
@@ -212,6 +213,10 @@ export default {
         action: 'remove',
         data: payload
       })
+    },
+    setMode (mode) {
+      this.mode = mode
+      console.debug('set mode', mode)
     },
     async save () {
       const payload = {
