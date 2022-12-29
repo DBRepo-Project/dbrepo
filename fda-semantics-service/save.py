@@ -3,9 +3,9 @@ import os
 import mariadb
 
 
-def insert_mdb_concepts(uri, c_name) -> int:
+def insert_mdb_concepts(uri, name) -> int:
     try:
-        # Connecting to metadatabase
+        # Connecting to metadata database
         database = os.getenv("METADATA_DB", "fda")
         username = os.getenv("METADATA_USERNAME", "root")
         password = os.getenv("METADATA_PASSWORD", "dbrepo")
@@ -15,7 +15,7 @@ def insert_mdb_concepts(uri, c_name) -> int:
         # Insert tblnames into table mdb_TABLES
         cursor.execute(
             "INSERT IGNORE INTO mdb_concepts (uri, name, created) VALUES (%s, %s, current_timestamp)",
-            (uri, c_name,))
+            (uri, name,))
         logging.info("Created concept in metadata database")
         conn.commit()
         conn.close()
@@ -23,9 +23,10 @@ def insert_mdb_concepts(uri, c_name) -> int:
     except Exception as e:
         logging.error("Error while connecting to metadata database", e)
 
-def insert_mdb_units(uri, c_name) -> int:
+
+def insert_mdb_units(uri, name) -> int:
     try:
-        # Connecting to metadatabase
+        # Connecting to metadata database
         database = os.getenv("METADATA_DB", "fda")
         username = os.getenv("METADATA_USERNAME", "root")
         password = os.getenv("METADATA_PASSWORD", "dbrepo")
@@ -35,7 +36,7 @@ def insert_mdb_units(uri, c_name) -> int:
         # Insert tblnames into table mdb_TABLES
         cursor.execute(
             "INSERT IGNORE INTO mdb_units (uri, name, created) VALUES (%s, %s, current_timestamp)",
-            (uri, c_name,))
+            (uri, name,))
         logging.info("Created unit in metadata database")
         conn.commit()
         conn.close()

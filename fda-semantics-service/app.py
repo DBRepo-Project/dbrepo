@@ -81,7 +81,7 @@ swagger = Swagger(app, config=swagger_config, template=template)
 
 
 @app.route('/api/semantics/concept', methods=['GET'], endpoint='concepts_suggest')
-@swag_from('get_concept.yml')
+@swag_from('get_concepts.yml')
 def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest concept, body=%s', request)
@@ -96,7 +96,7 @@ def suggest():
 
 
 @app.route('/api/semantics/unit', methods=['GET'], endpoint='units_suggest')
-@swag_from('get_unit.yml')
+@swag_from('get_units.yml')
 def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest unit, body=%s', request)
@@ -159,8 +159,8 @@ def save_concept():
     logging.debug('endpoint save concept, body=%s', input_json)
     try:
         uri = str(input_json['uri'])
-        c_name = str(input_json['name'])
-        if insert_mdb_concepts(uri, c_name) > 0:
+        name = str(input_json['name'])
+        if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
             return jsonify({'status': 'error'}), 409
@@ -177,8 +177,8 @@ def save_concept():
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
         uri = str(input_json['uri'])
-        c_name = str(input_json['name'])
-        if insert_mdb_units(uri, c_name) > 0:
+        name = str(input_json['name'])
+        if insert_mdb_units(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
             return jsonify({'status': 'error'}), 409
@@ -193,7 +193,7 @@ def save_concept():
 def get_concept(name):
     logging.debug('endpoint get concept, cname=%s, body=%s', name, request)
     try:
-        res = search_ontologies(name)
+        res = list_get_uri(name)
         logging.info('get concept resulted in concept: %s', res)
         return jsonify(res), 200
     except Exception as e:

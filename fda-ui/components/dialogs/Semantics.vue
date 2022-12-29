@@ -33,7 +33,6 @@
               </v-list-item>
             </template>
           </v-autocomplete>
-          <pre>{{ column }}</pre>
         </v-card-text>
         <v-expand-transition>
           <v-list v-if="model" class="lighten-3" subheader three-line>
@@ -100,13 +99,17 @@ export default {
       type: String,
       default: () => 'unit'
     },
-    databaseId: { type: Number, default: () => -1 },
-    tableId: { type: Number, default: () => -1 }
+    databaseId: {
+      type: Number,
+      default: () => -1
+    },
+    tableId: {
+      type: Number,
+      default: () => -1
+    }
   },
   data () {
     return {
-      cid: null,
-      dbid: null,
       dialog: false,
       isLoading: false,
       saved: false,
@@ -123,6 +126,17 @@ export default {
     }
   },
   computed: {
+    token () {
+      return this.$store.state.token
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
     name () {
       return this.saved && this.model && this.model.name
     },
@@ -144,7 +158,12 @@ export default {
   },
   watch: {
     column (newVal, oldVal) {
-      this.load(newVal)
+      this.loadUri(newVal)
+    },
+    model (newVal, oldVal) {
+      /* selected semantic concept or unit */
+      this.column[this.mode] = newVal
+      this.loadUri(this.column)
     },
     async search (val) {
       if (!val) {
@@ -157,10 +176,7 @@ export default {
         return
       }
       try {
-        const res = await this.$axios.post('/api/semantics/suggest', {
-          offset: 0,
-          ustring: val
-        })
+        const res = await this.$axios.get(`/api/semantics/${this.mode}?q=${val}`, this.config)
         this.entries = res.data
         console.debug('suggest', res.data)
       } catch (err) {
@@ -170,7 +186,7 @@ export default {
     }
   },
   mounted () {
-    this.load(this.column)
+    this.loadUri(this.column)
   },
   methods: {
     cancel () {
@@ -179,55 +195,40 @@ export default {
         action: 'cancel'
       })
     },
-    async load (column) {
-      this.cid = column.id
-      this.dbid = column.id
-      const url = `/api/semantics/${this.mode}/${column[this.mode].name}`
+    async loadUri (column) {
+      if (!column) {
+        return
+      }
+      if (!column[this.mode]) {
+        console.warn('something wrong mode', this.mode, 'column', column)
+        return
+      }
+      const url = `/api/semantics/${this.mode}/${encodeURI(column[this.mode].name)}`
+      console.debug('load uri', url)
       try {
         const res = await this.$axios.get(url)
-        this.uri = res.data.uri
-        console.debug('concept uri loaded', this.uri)
+        this.uri = res.data
+        console.debug('concept uri loaded', res.data)
       } catch (err) {
-        this.$toast.error('Failed to concept')
-        console.error('Failed to concept', err)
+        this.$toast.error('Failed to load uri')
+        console.error('Failed to load uri', err)
       }
     },
-    async remove () {
+    remove () {
       /* delete assignment */
-      const payload = {
-        cid: this.column.id,
-        tid: this.tableId,
-        cdbid: this.databaseId
-      }
-      try {
-        await this.$axios.post('/api/semantics/deletecolumnsconcept', payload)
-        this.$toast.success('Deleted concept assignment')
-        console.info('Deleted concept assignment')
-      } catch (error) {
-        this.$toast.error('Could not delete')
-        console.error('Failed to delete', error)
-      }
-      this.$emit('close', {
-        success: true,
-        action: 'remove',
-        data: payload
-      })
-    },
-    setMode (mode) {
-      this.mode = mode
-      console.debug('set mode', mode)
     },
     async save () {
-      const payload = {
-        name: this.model.name,
-        uri: this.uri
-      }
-      /* save concept */
+      /* save semantics */
+      const url = `/api/semantics/${this.mode}`
       try {
-        console.debug('save', payload)
-        const res = await this.$axios.post('/api/semantics/saveconcept', payload)
-        console.info('Concept saved')
-        console.debug('concept saved', res.data)
+        const payload = {
+          name: this.model.name,
+          uri: this.uri
+        }
+        console.debug('save', payload, 'url', url)
+        const res = await this.$axios.post(url, payload)
+        this.column[this.mode].uri = res.data.uri
+        console.info('Semantic', this.mode, 'saved', res.data)
       } catch (error) {
         const { status } = error.response
         if (status === 409) {
@@ -237,14 +238,13 @@ export default {
           console.error('save', error)
         }
       }
-      /* save concept */
+      /* update column */
       try {
-        const res = await this.$axios.post('/api/semantics/savecolumnsconcept', {
-          cdbid: Number(this.$route.params.database_id),
-          cid: this.column.id,
-          tid: this.tableId,
-          uri: this.uri
-        })
+        const payload = {
+          concept_uri: (!this.column.concept ? null : this.column.concept.uri),
+          unit_uri: (!this.column.unit ? null : this.column.unit.uri)
+        }
+        const res = await this.$axios.put(`/api/container/${this.databaseId}/database/${this.databaseId}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
         this.column.column_concept = res.data
         this.column.column_concept.name = this.model.name
         this.dialog = false
