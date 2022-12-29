@@ -89,38 +89,7 @@
                     <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
                     <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
-                  <v-list-item-title v-if="hasIdentifier" class="mt-2">
-                    Citation
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-row v-if="hasIdentifier" no-gutters>
-                      <v-col
-                        v-if="loadingCitation">
-                        <v-skeleton-loader
-                          class="skeleton-large"
-                          type="list-item-two-line" />
-                      </v-col>
-                      <v-col
-                        v-if="!loadingCitation"
-                        md="10">
-                        <pre
-                          v-text="citation" />
-                      </v-col>
-                      <v-col
-                        md="2"
-                        class="hidden-md-and-down">
-                        <v-select
-                          v-model="style"
-                          :items="styles"
-                          item-text="style"
-                          item-value="accept"
-                          class="cite-style float-right"
-                          dense
-                          outlined
-                          single-line />
-                      </v-col>
-                    </v-row>
-                  </v-list-item-content>
+                  <Citation :pid="database.identifier.id" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -246,6 +215,7 @@
 import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
+import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
@@ -253,20 +223,13 @@ export default {
   components: {
     DBToolbar,
     Persist,
-    OrcidIcon
+    OrcidIcon,
+    Citation
   },
   data () {
     return {
       loading: false,
-      loadingCitation: false,
-      styles: [
-        { style: 'APA', accept: 'text/bibliography; style=apa' },
-        { style: 'IEEE', accept: 'text/bibliography; style=ieee' },
-        { style: 'BibTeX', accept: 'text/bibliography; style=bibtex' }
-      ],
-      style: null,
       editDbDialog: false,
-      citation: null,
       access: {
         type: null,
         user: {
@@ -350,7 +313,9 @@ export default {
     },
     config () {
       if (this.token === null) {
-        return {}
+        return {
+          headers: { Accept: 'application/json' }
+        }
       }
       return {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
@@ -423,17 +388,10 @@ export default {
       }
     }
   },
-  watch: {
-    style (newVal, oldVal) {
-      this.loadCitation(newVal)
-    }
-  },
   mounted () {
     this.loadUser()
     this.loadDatabase()
       .then(() => this.loadIdentifier())
-      .then(() => this.loadCitation(null))
-    this.style = this.styles[0]
   },
   methods: {
     async loadDatabase () {
@@ -446,27 +404,6 @@ export default {
         this.$toast.error('Could not load database')
       }
       this.loading = false
-    },
-    async loadCitation (style) {
-      if (!this.database.identifier.id) {
-        return
-      }
-      this.loadingCitation = true
-      try {
-        const config = this.config
-        config.headers.Accept = 'text/bibliography; style=apa'
-        if (style != null) {
-          config.headers.Accept = style
-        }
-        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, config)
-        this.citation = res.data
-        console.debug('citation', this.citation)
-      } catch (err) {
-        console.error('Could not cite identifier', err)
-        this.$toast.error('Could not cite identifier')
-        this.error = true
-      }
-      this.loadingCitation = false
     },
     closeDialog (event) {
       if (event.action === 'persisted') {
