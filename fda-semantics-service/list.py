@@ -23,7 +23,7 @@ f.parse('ontologies/VOCAB_QUDT-UNITS-ALL-v2.1.ttl', format='turtle')
 
 # qudt = rdflib.Namespace('http://qudt.org/2.1/vocab/unit')
 
-def list_units(string, offset=0):
+def list_units(string, offset=0) -> []:
     logging.info(f"list units for unit string {string}")
     if bool(re.match('^[a-zA-Z0-9\\s]+$', string)):
         l_query = """

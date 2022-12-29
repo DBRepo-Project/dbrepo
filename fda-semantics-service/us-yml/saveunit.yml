@@ -1,5 +1,5 @@
-summary: Save concept to MDB
-description: This is a simple API for saving concept
+summary: Save unit to MDB
+description: This is a simple API for saving units
 consumes:
   - application/json
 produces:
@@ -15,10 +15,10 @@ requestBody:
         properties:
           uri:
             type: string
-            example: http://www.ontology-of-units-of-measure.org/resource/om-2/metre
+            example: http://www.ontology-of-units-of-measure.org/resource/om-2/second-Time
           name:
             type: string
-            example: metre
+            example: second
 responses:
   200:
     description: OK

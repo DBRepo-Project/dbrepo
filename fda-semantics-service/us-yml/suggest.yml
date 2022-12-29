@@ -1,27 +1,19 @@
-summary: "Autosuggest units"
-description: "This is a simple API which returns a list of suggested units."
+summary: Suggest a unit
+description: This is a simple API which returns a list of suggested units.
 consumes:
-- "application/json"
+  - application/json
 produces:
-- "application/json"
+  - application/json
 parameters:
-- in: "body"
-  name: "body"
-  description: "Json containing ustring, i.e., string of a unit, and an offset."
-  required: true
-  schema:
-    type: "object"
-    properties:
-      ustring:
-        type: "string"
-        example : "met"
-      offset: 
-        type: "integer"
-        example: 0
+  - in: query
+    name: q
+    schema:
+      type: string
+    description: The query to retrieve a fitting unit
 responses:
-  200: 
-    description: "OK"
+  200:
+    description: OK
   405:
-    description: "Invalid input"
+    description: Invalid input
 tags:
   - units-endpoint

@@ -3,6 +3,7 @@ package at.tuwien.entities.database.table.columns;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.concepts.Concept;
+import at.tuwien.entities.database.table.columns.concepts.Unit;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -123,6 +124,16 @@ public class TableColumn implements Comparable<TableColumn> {
             },
             inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
     private Concept concept;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "mdb_columns_units",
+            joinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private Unit unit;
 
     @Column
     @LastModifiedDate

@@ -14,7 +14,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConceptDto {
+public class UnitDto {
 
     @NotBlank
     private String uri;

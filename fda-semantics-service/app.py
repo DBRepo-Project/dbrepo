@@ -7,13 +7,10 @@ from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyJSONEncoder
 from list import list_units, get_uri as list_get_uri
-from validate import validator, stringmapper
+from validate import validator
 from gevent.pywsgi import WSGIServer
-from save import insert_mdb_concepts, insert_mdb_columns_concepts, delete_mdb_columns_concepts
-from werkzeug.utils import secure_filename
-from pathlib import Path
-from onto_feat import search_ontologies, setup_ontology_dir, list_ontologies, ontology_exists, get_ontology, \
-    allowed_file
+from save import insert_mdb_concepts, insert_mdb_units
+from onto_feat import search_ontologies, list_ontologies, get_ontology
 from prometheus_flask_exporter import PrometheusMetrics
 
 dictConfig({
@@ -83,15 +80,13 @@ app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
 
 
-@app.route('/api/semantics/suggest', methods=["POST"], endpoint='units_suggest')
+@app.route('/api/semantics/unit', methods=["GET"], endpoint='units_suggest')
 @swag_from('suggest.yml')
 def suggest():
+    query = request.args.get('q')
     logging.debug('endpoint suggest unit, body=%s', request)
-    input_json = request.get_json()
     try:
-        unit = str(input_json['ustring'])
-        offset = int(input_json['offset'])
-        res = list_units(stringmapper(unit), offset)
+        res = list_units(query)
         logging.info('suggest unit result in units: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -100,7 +95,7 @@ def suggest():
         return jsonify(res), 500
 
 
-@app.route('/api/semantics/validate/<unit>', methods=["GET"], endpoint='units_validate')
+@app.route('/api/semantics/unit/<unit>/validate', methods=["GET"], endpoint='units_validate')
 @swag_from('validate.yml')
 def validate(unit):
     logging.debug('endpoint validate unit, unit=%s, body=%s', unit, request)
@@ -114,7 +109,7 @@ def validate(unit):
         return jsonify(res), 500
 
 
-@app.route('/api/semantics/uri/<name>', methods=["GET"], endpoint='units_uri')
+@app.route('/api/semantics/unit/<name>', methods=["GET"], endpoint='units_uri')
 @swag_from('geturi.yml')
 def get_uri(name):
     logging.debug('endpoint get uri, name=%s, body=%s', name, request)
@@ -128,11 +123,11 @@ def get_uri(name):
         return jsonify(res), 500
 
 
-@app.route('/api/semantics/saveconcept', methods=["POST"], endpoint='units_saveconcept')
+@app.route('/api/semantics/concept', methods=["POST"], endpoint='units_saveconcept')
 @swag_from('saveconcept.yml')
 def save_concept():
-    logging.debug('endpoint save concept, body=%s', request)
     input_json = request.get_json()
+    logging.debug('endpoint save concept, body=%s', input_json)
     try:
         uri = str(input_json['uri'])
         c_name = str(input_json['name'])
@@ -145,52 +140,30 @@ def save_concept():
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
-
-@app.route('/api/semantics/savecolumnsconcept', methods=["POST"], endpoint='units_savecolumnsconcept')
-@swag_from('savecolumnsconcept.yml')
-def save_column_concept():
-    logging.debug('endpoint save column concept, body=%s', request)
+@app.route('/api/semantics/unit', methods=["POST"], endpoint='units_saveunit')
+@swag_from('saveunit.yml')
+def save_concept():
     input_json = request.get_json()
+    logging.debug('endpoint save unit, body=%s', input_json)
     try:
-        uri = input_json['uri']
-        cid = int(input_json['cid'])
-        tid = int(input_json['tid'])
-        cdbid = int(input_json['cdbid'])
-        if insert_mdb_columns_concepts(cdbid, tid, cid, uri) > 0:
-            return jsonify(), 201
+        uri = str(input_json['uri'])
+        c_name = str(input_json['name'])
+        if insert_mdb_units(uri, c_name) > 0:
+            return jsonify({'uri': uri}), 201
         else:
             return jsonify({'status': 'error'}), 409
     except Exception as e:
-        logging.error('Failed to save column concept: %s', e)
+        logging.error('Failed to save unit: %s', e)
         res = {"success": False, "message": str(e)}
         return jsonify(res), 500
 
 
-@app.route('/api/semantics/deletecolumnsconcept', methods=["POST"], endpoint='units_deletecolumnsconcept')
-@swag_from('deletecolumnsconcept.yml')
-def save_column_concept():
-    logging.debug('endpoint delete column concept, body=%s', request)
-    input_json = request.get_json()
-    try:
-        cid = int(input_json['cid'])
-        tid = int(input_json['tid'])
-        cdbid = int(input_json['cdbid'])
-        if delete_mdb_columns_concepts(cdbid, tid, cid) > 0:
-            return jsonify(), 202
-        else:
-            return jsonify({'status': 'error'}), 409
-    except Exception as e:
-        logging.error('Failed to delete column concept: %s', e)
-        res = {"success": False, "message": str(e)}
-        return jsonify(res), 500
-
-
-@app.route('/api/ontologies/getconcept/<cname>', methods=["GET"], endpoint='ontologies_get_concept')
+@app.route('/api/semantics/concept/<name>', methods=["GET"], endpoint='ontologies_get_concept')
 @swag_from('getconcept.yml')
-def get_concept(cname):
-    logging.debug('endpoint get concept, cname=%s, body=%s', cname, request)
+def get_concept(name):
+    logging.debug('endpoint get concept, cname=%s, body=%s', name, request)
     try:
-        res = search_ontologies(cname)
+        res = search_ontologies(name)
         logging.info('get concept resulted in concept: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -199,38 +172,17 @@ def get_concept(cname):
         return jsonify(res), 500
 
 
-ONTOLOGIES_DIRECTORY = 'ontologies'
-
-
-@app.route('/api/ontologies/upload', methods=["POST"], endpoint='ontologies_upload_onto')
-@swag_from('ontologies.yml')
-def post_ontologies():
-    if 'file' not in request.files:
-        return "no file", 500
-    file = request.files['file']
-    if file.filename == '':
-        return "no file selected", 400
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        if ontology_exists(Path(filename).stem):
-            return "ontology name already exists", 409
-        setup_ontology_dir()
-        file.save(os.path.join(ONTOLOGIES_DIRECTORY, filename))
-        logging.info('created ontology: %s', filename)
-        return "created", 201
-
-
-@app.route('/api/ontologies/listontologies', methods=["GET"], endpoint='ontologies_get_ontos')
+@app.route('/api/semantics/ontology', methods=["GET"], endpoint='ontologies_get_ontos')
 @swag_from('ontology.yml')
 def get_ontologies():
     print(list_ontologies())
     return jsonify(list_ontologies())
 
 
-@app.route('/api/ontologies/<o_name>', methods=["GET"], endpoint='ontologies_get_onto')
+@app.route('/api/semantics/ontology/<name>', methods=["GET"], endpoint='ontologies_get_onto')
 @swag_from('ontologybyname.yml')
-def get_ontologies(o_name):
-    ontology = get_ontology(o_name)
+def get_ontologies(name):
+    ontology = get_ontology(name)
     if ontology is None:
         return "ontology does not exist", 404
     return ontology
