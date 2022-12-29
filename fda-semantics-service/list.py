@@ -43,6 +43,26 @@ def list_units(string, offset=0) -> []:
         return None
 
 
+def list_concepts(string, offset=0) -> []:
+    logging.info(f"list concepts for concepts string {string}")
+    if bool(re.match('^[a-zA-Z0-9\\s]+$', string)):
+        l_query = """
+        SELECT ?symbol ?name ?comment
+        WHERE {
+            ?unit om:symbol ?symbol .
+            ?unit <http://www.w3.org/2000/01/rdf-schema#label> ?name .
+            ?unit <http://www.w3.org/2000/01/rdf-schema#comment> ?comment .
+            FILTER (regex(str(?unit),\"""" + string + """\","i") && lang(?name)="en")
+            } LIMIT 10 OFFSET """ + str(offset)
+        qres = g.query(l_query)
+        units = list()
+        for row in qres:
+            units.append({"symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
+        return units
+    else:
+        return None
+
+
 def get_uri(name):
     logging.info(f"get url for concept name {name}")
     if bool(re.match('^[a-zA-Z0-9\\s]+$', name)):

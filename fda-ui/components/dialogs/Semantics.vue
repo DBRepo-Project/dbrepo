@@ -183,7 +183,6 @@ export default {
       this.cid = column.id
       this.dbid = column.id
       const url = `/api/semantics/${this.mode}/${column[this.mode].name}`
-      console.debug('====>', url)
       try {
         const res = await this.$axios.get(url)
         this.uri = res.data.uri

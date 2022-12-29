@@ -1,0 +1,20 @@
+summary: Get URI of concepts
+description: This is a simple API for getting the URI of a certain unit in OM.
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: name
+    description: Enter a unit name.
+    required: true
+    schema:
+      type: string
+responses:
+  200:
+    description: OK
+  405:
+    description: Invalid input
+tags:
+  - concepts-endpoint
