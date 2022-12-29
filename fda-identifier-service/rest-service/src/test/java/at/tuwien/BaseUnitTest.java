@@ -296,7 +296,6 @@ public abstract class BaseUnitTest {
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
-            .creator(USER_1)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .queryHash(IDENTIFIER_1_QUERY_HASH)
@@ -366,15 +365,6 @@ public abstract class BaseUnitTest {
             .lastModified(CREATOR_1_MODIFIED)
             .build();
 
-    public final static Creator CREATOR_1_REQUEST = Creator.builder()
-            .pid(IDENTIFIER_1_ID)
-            .orcid(CREATOR_1_ORCID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .created(CREATOR_1_CREATED)
-            .lastModified(CREATOR_1_MODIFIED)
-            .build();
-
     public final static Creator CREATOR_2 = Creator.builder()
             .id(CREATOR_2_ID)
             .pid(IDENTIFIER_1_ID)
@@ -393,15 +383,6 @@ public abstract class BaseUnitTest {
             .lastname(CREATOR_3_LASTNAME)
             .created(CREATOR_3_CREATED)
             .lastModified(CREATOR_3_MODIFIED)
-            .build();
-
-    public final static Creator CREATOR_2_REQUEST = Creator.builder()
-            .pid(IDENTIFIER_1_ID)
-            .orcid(CREATOR_2_ORCID)
-            .firstname(CREATOR_2_FIRSTNAME)
-            .lastname(CREATOR_2_LASTNAME)
-            .created(CREATOR_2_CREATED)
-            .lastModified(CREATOR_2_MODIFIED)
             .build();
 
     public final static CreatorDto CREATOR_1_DTO = CreatorDto.builder()
