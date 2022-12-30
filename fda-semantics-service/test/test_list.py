@@ -16,7 +16,6 @@ list = List(offline=True)
 
 class ListUnitTest(unittest.TestCase):
 
-    # suggest
     def test_list_units_succeeds(self):
         exp = ['metre', 'ampere per square metre', 'square metre', 'ampere per metre', 'mole per cubic metre',
                'candela per square metre', 'cubic metre', 'kilometre per second per megaparsec',
@@ -27,7 +26,6 @@ class ListUnitTest(unittest.TestCase):
         body = [unit["name"] for unit in response]
         self.assertEqual(exp, body)
 
-    # suggest
     def test_list_units_fails(self):
         exp = []
 
@@ -36,20 +34,32 @@ class ListUnitTest(unittest.TestCase):
         body = [unit["name"] for unit in response]
         self.assertEqual(exp, body)
 
-    # metre is SI Unit
-    def test_get_uri_succeeds(self):
-        exp = {"uri": "http://www.ontology-of-units-of-measure.org/resource/om-2/Time"}
+    def test_get_unit_uri_succeeds(self):
+        exp = {"uri": "http://www.ontology-of-units-of-measure.org/resource/om-2/second-Time"}
 
         # test
-        response = list.get_uri("time")
+        response = list.get_unit_uri("second")
         self.assertEqual(exp, response)
 
-    # metre is SI Unit
-    def test_get_uri_hasBraces_succeeds(self):
+    def test_get_unit_uri_hasBraces_succeeds(self):
         exp = {"uri": "http://www.ontology-of-units-of-measure.org/resource/om-2/minute-HourAngle"}
 
         # test
-        response = list.get_uri("minute (hour angle)")
+        response = list.get_unit_uri("minute (hour angle)")
+        self.assertEqual(exp, response)
+
+    def test_get_concept_uri_succeeds(self):
+        exp = {"uri": "https://www.wikidata.org/wiki/Q149892"}
+
+        # test
+        response = list.get_concept_uri("Canis")
+        self.assertEqual(exp, response)
+
+    def test_get_concept_uri_hasSpaces_succeeds(self):
+        exp = {"uri": "https://www.wikidata.org/wiki/Q225"}
+
+        # test
+        response = list.get_concept_uri("Bosnia and Herzegovina")
         self.assertEqual(exp, response)
 
 
