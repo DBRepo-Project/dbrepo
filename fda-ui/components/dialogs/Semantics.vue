@@ -53,11 +53,11 @@
               <v-list-item-content>{{ model.comment }}</v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="column[mode] && column[mode].uri" three-line>
+          <v-list-item v-if="model.uri" three-line>
             <v-list-item-content>
               <v-list-item-title>{{ title }} URI</v-list-item-title>
               <v-list-item-content>
-                <a :href="column[mode].uri" target="_blank">{{ column[mode].uri }}</a>
+                <a :href="model.uri" target="_blank">{{ model.uri }}</a>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -116,11 +116,11 @@ export default {
       saved: false,
       valid: false,
       model: {
+        uri: null,
         name: null,
         symbol: null,
         comment: null
       },
-      uri: null,
       search: null,
       searchTerm: null,
       entries: []
@@ -171,33 +171,26 @@ export default {
       return this.column[this.mode] !== null
     },
     canSave () {
-      return this.column[this.mode] && this.model
+      return this.model
     }
   },
   watch: {
     column (newVal, oldVal) {
-      this.uri = null
       if (newVal[this.mode]) {
-        this.resetModel(newVal[this.mode].name)
-        this.loadUri(newVal[this.mode].name)
+        this.resetModel(newVal[this.mode].name, newVal[this.mode].uri)
       } else {
-        this.resetModel(null)
+        this.resetModel(null, null)
       }
     },
     mode (newVal, oldVal) {
-      this.uri = null
       if (this.column[this.mode]) {
-        this.resetModel(this.column[this.mode].name)
-        this.loadUri(this.column[this.mode].name)
+        this.resetModel(this.column[this.mode].name, this.column[this.mode].uri)
       } else {
-        this.resetModel(null)
+        this.resetModel(null, null)
       }
     },
     model (newVal, oldVal) {
       /* selected semantic concept or unit */
-      if (newVal.name) {
-        this.loadUri(newVal.name)
-      }
     },
     async search (val) {
       if (!val) {
@@ -221,8 +214,7 @@ export default {
   },
   mounted () {
     if (this.column[this.mode]) {
-      this.resetModel(this.column[this.mode].name)
-      this.loadUri(this.column[this.mode].name)
+      this.resetModel(this.column[this.mode].name, this.column[this.mode].uri)
     }
   },
   methods: {
@@ -232,28 +224,14 @@ export default {
         action: 'cancel'
       })
     },
-    async loadUri (name) {
-      if (!name) {
-        return
-      }
-      const url = `/api/semantics/${this.mode}/${encodeURI(name)}`
-      try {
-        const res = await this.$axios.get(url)
-        const { uri } = res.data
-        this.column[this.mode] = { uri, name }
-        console.debug('loaded uri for column', this.column[this.mode])
-      } catch (err) {
-        this.$toast.error('Failed to load uri')
-        console.error('Failed to load uri', err)
-      }
-    },
     remove () {
       /* delete assignment */
       this.update()
     },
-    resetModel (name) {
+    resetModel (name, uri) {
       this.model = {
         name,
+        uri,
         symbol: null,
         comment: null
       }
@@ -264,12 +242,13 @@ export default {
       try {
         const payload = {
           name: this.model.name,
-          uri: this.column[this.mode].uri
+          uri: this.model.uri
         }
         console.debug('save', payload, 'url', url)
         const res = await this.$axios.post(url, payload)
-        this.column[this.mode].uri = res.data.uri
-        console.info('Semantic', this.mode, 'saved', res.data)
+        this.column[this.mode] = this.model
+        console.info('Saved concept/measurement')
+        console.debug('saved concept/measurement', res.data)
       } catch (error) {
         console.error('Failed to save', error)
         const { status } = error.response

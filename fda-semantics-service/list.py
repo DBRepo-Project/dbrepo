@@ -40,17 +40,18 @@ class List:
     def list_units(self, name, offset=0) -> []:
         name = name.lower()
         logging.info(f"list units for unit name {name}")
-        l_query = """SELECT ?symbol ?name ?comment
+        l_query = """SELECT DISTINCT ?item ?symbol ?name ?comment
         WHERE {
             ?unit om:symbol ?symbol .
             ?unit rdfs:label ?name .
             ?unit rdfs:comment ?comment .
-            FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)). 
+            FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)).
+            FILTER(LANG(?name) = "en").
             } LIMIT 10 OFFSET """ + str(offset)
         qres = self.g.query(l_query)
         units = list()
         for row in qres:
-            units.append({"symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
+            units.append({"uri": str(row.item), "symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
         return units
 
     def list_concepts(self, name) -> []:
@@ -65,7 +66,7 @@ class List:
                     OPTIONAL {
                         ?item rdfs:label ?name.
                         ?item schema:description ?comment.
-                        FILTER(LANG(?comment) = "en")
+                        FILTER(LANG(?comment) = "en").
                         FILTER(LANG(?name) = "en").
                     }
                     FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)). 
@@ -75,7 +76,7 @@ class List:
         qres = self.g.query(l_query)
         units = list()
         for row in qres:
-            units.append({"name": str(row.name), "comment": str(row.comment)})
+            units.append({"uri": str(row.item), "name": str(row.name), "comment": str(row.comment)})
         return units
 
     def get_unit_uri(self, name) -> {}:
@@ -88,7 +89,6 @@ class List:
             FILTER regex(str(?o),\"^""" + name + """$\","i")
             } LIMIT 1
         """
-        print(f"=====> {uri_query}")
         qres = self.g.query(uri_query)
         for row in qres:
             print(f"res: uri={row.uri}")
@@ -107,13 +107,12 @@ class List:
                         ?item rdfs:label ?name.
                         ?item schema:description ?comment.
                     }
-                    FILTER(LANG(?comment) = "en")
+                    FILTER(LANG(?comment) = "en").
                     FILTER(LANG(?name) = "en").
                     FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)). 
                 } LIMIT 1
             }
         }"""
-        print(f"=====> {uri_query}")
         qres = self.g.query(uri_query)
         for row in qres:
             print(f"res: uri={row.item}")

@@ -141,16 +141,16 @@
                 <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
               </template>
               <template v-slot:item.column_concept="{ item }">
-                <v-btn v-if="canModify && !item.concept" small @click="pick(item, 'concept')">Assign</v-btn>
+                <v-btn v-if="canModify && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
                 <v-btn
-                  v-if="canModify && item.concept"
+                  v-if="canModify && hasConcept(item)"
                   :title="item.concept.uri"
                   color="secondary"
                   small
                   @click="pick(item, 'concept')">
                   {{ item.concept.name }}
                 </v-btn>
-                <a v-if="!canModify && item.concept" :href="item.concept.uri" target="_blank">
+                <a v-if="!canModify && hasConcept(item)" :href="item.concept.uri" target="_blank">
                   {{ item.concept.name }}
                 </a>
               </template>
@@ -164,7 +164,7 @@
                   @click="pick(item, 'unit')">
                   {{ item.unit.name }}
                 </v-btn>
-                <a v-if="!canModify && item.concept" :href="item.unit.uri" target="_blank">
+                <a v-if="!canModify && hasUnit(item)" :href="item.unit.uri" target="_blank">
                   {{ item.unit.name }}
                 </a>
               </template>
@@ -366,6 +366,9 @@ export default {
     },
     hasUnit (item) {
       return item.unit !== null
+    },
+    hasConcept (item) {
+      return item.concept !== null
     },
     async loadDatabase () {
       try {

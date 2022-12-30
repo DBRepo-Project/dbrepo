@@ -140,20 +140,6 @@ def validate(concept):
         return jsonify(res), 500
 
 
-@app.route('/api/semantics/unit/<name>', methods=['GET'], endpoint='units_uri')
-@swag_from('get_unit_uri.yml')
-def get_unit_uri(name):
-    logging.debug('endpoint get uri, name=%s, body=%s', name, request)
-    try:
-        res = list.get_unit_uri(name)
-        logging.info('get uri resulted in uri: %s', res)
-        return jsonify(res), 200
-    except Exception as e:
-        logging.error('Failed to get uri: %s', e)
-        res = {'success': False, 'message': str(e), 'status': 500}
-        return jsonify(res), 500
-
-
 @app.route('/api/semantics/concept', methods=['POST'], endpoint='concepts_save')
 @swag_from('post_concept.yml')
 def save_concept():
@@ -186,20 +172,6 @@ def save_concept():
             return jsonify({'status': 'error'}), 409
     except Exception as e:
         logging.error('Failed to save unit: %s', e)
-        res = {'success': False, 'message': str(e)}
-        return jsonify(res), 500
-
-
-@app.route('/api/semantics/concept/<name>', methods=['GET'], endpoint='ontologies_get_concept')
-@swag_from('get_concept_uri.yml')
-def get_concept_uri(name):
-    logging.debug('endpoint get concept, cname=%s, body=%s', name, request)
-    try:
-        res = list.get_concept_uri(name)
-        logging.info('get concept resulted in concept: %s', res)
-        return jsonify(res), 200
-    except Exception as e:
-        logging.error('Failed to get concept: %s', e)
         res = {'success': False, 'message': str(e)}
         return jsonify(res), 500
 
