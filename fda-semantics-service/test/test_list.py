@@ -26,6 +26,14 @@ class ListUnitTest(unittest.TestCase):
         body = [unit["name"] for unit in response]
         self.assertEqual(exp, body)
 
+    def test_list_concepts_succeeds(self):
+        exp = ['Flask in the Form of a Leather Bag', 'Lentoid Flask (Pilgrim Flask)']
+
+        # test
+        response = list.list_concepts('flask')
+        body = [unit["name"] for unit in response]
+        self.assertEqual(exp, body)
+
     def test_list_units_fails(self):
         exp = []
 
@@ -48,18 +56,18 @@ class ListUnitTest(unittest.TestCase):
         response = list.get_unit_uri("minute (hour angle)")
         self.assertEqual(exp, response)
 
-    def test_get_concept_uri_succeeds(self):
-        exp = {"uri": "https://www.wikidata.org/wiki/Q149892"}
+    def test_get_concept_uri_hasSpaces_succeeds(self):
+        exp = {"uri": "http://www.wikidata.org/entity/Q60779664"}
 
         # test
-        response = list.get_concept_uri("Canis")
+        response = list.get_concept_uri("Box (Pyxis) in the Form of a Composite Capital")
         self.assertEqual(exp, response)
 
-    def test_get_concept_uri_hasSpaces_succeeds(self):
-        exp = {"uri": "https://www.wikidata.org/wiki/Q225"}
+    def test_get_concept_uri_succeeds(self):
+        exp = {"uri": "http://www.wikidata.org/entity/Q216425"}
 
         # test
-        response = list.get_concept_uri("Bosnia and Herzegovina")
+        response = list.get_concept_uri("teaspoon")
         self.assertEqual(exp, response)
 
 
