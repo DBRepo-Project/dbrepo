@@ -42,6 +42,14 @@ class ListUnitTest(unittest.TestCase):
         response = get_uri("time")
         self.assertEqual(exp, response)
 
+    # metre is SI Unit
+    def test_get_uri_hasBraces_succeeds(self):
+        exp = {"uri": "http://www.ontology-of-units-of-measure.org/resource/om-2/minute-HourAngle"}
+
+        # test
+        response = get_uri("minute (hour angle)")
+        self.assertEqual(exp, response)
+
 
 if __name__ == '__main__':
     unittest.main()

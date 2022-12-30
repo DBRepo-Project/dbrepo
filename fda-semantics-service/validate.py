@@ -6,12 +6,26 @@ Created on Thu Dec  2 23:31:39 2021
 @author: Cornelia Michlits
 """
 import rdflib
+import requests as rq
+
+rdf = rq.get('http://www.ontology-of-units-of-measure.org/resource/om-2', headers={'Accept': 'application/rdf+xml'})
+rdf.raise_for_status()
 
 g = rdflib.Graph()
 g.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
-g.parse('ontologies/om-2.ttl', format='turtle')
+g.parse(data=rdf.text, format='xml')
 
 om = rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
+rdf_schema = rdflib.Namespace('http://www.w3.org/2000/01/rdf-schema#')
+
+
+# rdf = rq.get('http://qudt.org/2.1/vocab/unit', headers={'Accept': 'text/turtle'})
+# rdf.raise_for_status()
+#
+# f = rdflib.Graph()
+# f.namespace_manager.bind('qudt', 'http://qudt.org/2.1/vocab/unit')
+# f.parse(data=rdf.text, format='turtle')
+
 _exhausted = object()
 
 

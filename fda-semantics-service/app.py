@@ -91,7 +91,7 @@ def suggest():
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to suggest concept: %s', e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 
@@ -106,7 +106,7 @@ def suggest():
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to suggest units: %s', e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 
@@ -120,7 +120,7 @@ def validate(unit):
         return str(res), 200
     except Exception as e:
         logging.error(e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 
@@ -134,7 +134,7 @@ def validate(concept):
         return str(res), 200
     except Exception as e:
         logging.error(e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 
@@ -148,7 +148,7 @@ def get_uri(name):
         return jsonify(res), 200
     except Exception as e:
         logging.error('Failed to get uri: %s', e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 
@@ -163,10 +163,10 @@ def save_concept():
         if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
-            return jsonify({'status': 'error'}), 409
+            return jsonify({'status': 409}), 409
     except Exception as e:
         logging.error('Failed to save concept: %s', e)
-        res = {'success': False, 'message': str(e)}
+        res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 
 

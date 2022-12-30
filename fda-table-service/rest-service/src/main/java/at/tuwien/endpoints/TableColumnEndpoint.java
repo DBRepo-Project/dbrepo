@@ -56,10 +56,6 @@ public class TableColumnEndpoint extends AbstractEndpoint {
             log.error("Missing table update permission");
             throw new NotAllowedException("Missing table update permission");
         }
-        if (updateDto.getConceptUri() == null && updateDto.getUnitUri() == null) {
-            log.error("Failed to update table: concept uri or unit uri must be set (or both)");
-            throw new TableMalformedException("Failed to update table");
-        }
         final TableColumn column = tableService.update(containerId, databaseId, tableId, columnId, updateDto, principal);
         log.info("Updated table semantics of table with id {} and database with id {}", tableId, databaseId);
         final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);

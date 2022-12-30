@@ -155,9 +155,9 @@
                 </a>
               </template>
               <template v-slot:item.column_unit="{ item }">
-                <v-btn v-if="canModify && !item.unit" small @click="pick(item, 'unit')">Assign</v-btn>
+                <v-btn v-if="canModify && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
                 <v-btn
-                  v-if="canModify && item.unit"
+                  v-if="canModify && hasUnit(item)"
                   :title="item.unit.uri"
                   color="secondary"
                   small
@@ -175,6 +175,7 @@
     </v-expansion-panels>
     <v-dialog
       v-model="dialogSemantic"
+      persistent
       max-width="600px">
       <DialogsSemantics
         :column="column"
@@ -356,13 +357,15 @@ export default {
       this.column = item
       this.mode = mode
       this.dialogSemantic = true
-      console.debug('set mode to', mode)
     },
     loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+    },
+    hasUnit (item) {
+      return item.unit !== null
     },
     async loadDatabase () {
       try {
@@ -434,10 +437,6 @@ export default {
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
-      if (data.success && data.action === 'remove') {
-        const { cid } = data.data
-        this.tableDetails.columns.filter(column => column.id === cid)[0].column_concept = null
-      }
     },
     /**
      * if tableId is given, open the table after refresh

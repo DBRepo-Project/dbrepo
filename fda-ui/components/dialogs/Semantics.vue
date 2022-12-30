@@ -34,36 +34,37 @@
             </template>
           </v-autocomplete>
         </v-card-text>
-        <v-expand-transition>
-          <v-list v-if="model" class="lighten-3" subheader three-line>
-            <v-list-item v-if="model.name">
+        <v-list v-if="model" dense>
+          <v-list-item v-if="model.name">
+            <v-list-item-content>
+              <v-list-item-title>{{ title }} Name</v-list-item-title>
+              <v-list-item-content>{{ model.name }}</v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="model.symbol">
+            <v-list-item-content>
+              <v-list-item-title>{{ title }} Symbol</v-list-item-title>
+              <v-list-item-content>{{ model.symbol }}</v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="model.comment">
+            <v-list-item-content>
+              <v-list-item-title>{{ title }} Comment</v-list-item-title>
+              <v-list-item-content>{{ model.comment }}</v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="column[mode] && column[mode].uri" three-line>
+            <v-list-item-content>
+              <v-list-item-title>{{ title }} URI</v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>Name</v-list-item-title>
-                <v-list-item-subtitle>{{ model.name }}</v-list-item-subtitle>
+                <a :href="column[mode].uri" target="_blank">{{ column[mode].uri }}</a>
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-if="model.symbol">
-              <v-list-item-content>
-                <v-list-item-title>Symbol</v-list-item-title>
-                <v-list-item-subtitle>{{ model.symbol }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-if="model.comment">
-              <v-list-item-content>
-                <v-list-item-title>Comment</v-list-item-title>
-                <v-list-item-subtitle>{{ model.comment }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-if="uri" three-line>
-              <v-list-item-content>
-                <v-list-item-title>URI</v-list-item-title>
-                <v-list-item-subtitle>{{ uri }}</v-list-item-subtitle>
-              </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-expand-transition>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
         <v-card-actions>
           <v-btn
+            v-if="canRemove"
             class="mb-2 ml-2"
             color="error"
             @click="remove">
@@ -78,7 +79,7 @@
           <v-btn
             color="primary"
             class="mb-2 mr-2"
-            :disabled="!model || !uri"
+            :disabled="!canSave"
             @click="save">
             Save
           </v-btn>
@@ -140,30 +141,63 @@ export default {
     name () {
       return this.saved && this.model && this.model.name
     },
-    title () {
-      return this.unit ? 'Unit of measurement' : 'Concept'
-    },
     subtitle () {
-      return this.unit ? 'unit of measurement' : 'semantic concept'
+      if (this.mode === 'unit') {
+        return 'unit of measurement'
+      }
+      if (this.mode === 'concept') {
+        return 'semantic concept'
+      }
+      return null
+    },
+    title () {
+      if (this.mode === 'unit') {
+        return 'Unit of measurement'
+      }
+      if (this.mode === 'concept') {
+        return 'Concept'
+      }
+      return null
     },
     items () {
       return this.entries && this.entries.map((entry) => {
         return {
-          // text: `${entry.name} [${entry.symbol}], ${entry.comment}`,
           text: entry.name,
           value: entry
         }
       })
+    },
+    canRemove () {
+      return this.column[this.mode] !== null
+    },
+    canSave () {
+      return this.column[this.mode] && this.model
     }
   },
   watch: {
     column (newVal, oldVal) {
-      this.loadUri(newVal)
+      this.uri = null
+      if (newVal[this.mode]) {
+        this.resetModel(newVal[this.mode].name)
+        this.loadUri(newVal[this.mode].name)
+      } else {
+        this.resetModel(null)
+      }
+    },
+    mode (newVal, oldVal) {
+      this.uri = null
+      if (this.column[this.mode]) {
+        this.resetModel(this.column[this.mode].name)
+        this.loadUri(this.column[this.mode].name)
+      } else {
+        this.resetModel(null)
+      }
     },
     model (newVal, oldVal) {
       /* selected semantic concept or unit */
-      this.column[this.mode] = newVal
-      this.loadUri(this.column)
+      if (newVal.name) {
+        this.loadUri(newVal.name)
+      }
     },
     async search (val) {
       if (!val) {
@@ -186,7 +220,10 @@ export default {
     }
   },
   mounted () {
-    this.loadUri(this.column)
+    if (this.column[this.mode]) {
+      this.resetModel(this.column[this.mode].name)
+      this.loadUri(this.column[this.mode].name)
+    }
   },
   methods: {
     cancel () {
@@ -195,20 +232,16 @@ export default {
         action: 'cancel'
       })
     },
-    async loadUri (column) {
-      if (!column) {
+    async loadUri (name) {
+      if (!name) {
         return
       }
-      if (!column[this.mode]) {
-        console.warn('something wrong mode', this.mode, 'column', column)
-        return
-      }
-      const url = `/api/semantics/${this.mode}/${encodeURI(column[this.mode].name)}`
-      console.debug('load uri', url)
+      const url = `/api/semantics/${this.mode}/${encodeURI(name)}`
       try {
         const res = await this.$axios.get(url)
-        this.uri = res.data
-        console.debug('concept uri loaded', res.data)
+        const { uri } = res.data
+        this.column[this.mode] = { uri, name }
+        console.debug('loaded uri for column', this.column[this.mode])
       } catch (err) {
         this.$toast.error('Failed to load uri')
         console.error('Failed to load uri', err)
@@ -216,6 +249,14 @@ export default {
     },
     remove () {
       /* delete assignment */
+      this.update()
+    },
+    resetModel (name) {
+      this.model = {
+        name,
+        symbol: null,
+        comment: null
+      }
     },
     async save () {
       /* save semantics */
@@ -223,13 +264,14 @@ export default {
       try {
         const payload = {
           name: this.model.name,
-          uri: this.uri
+          uri: this.column[this.mode].uri
         }
         console.debug('save', payload, 'url', url)
         const res = await this.$axios.post(url, payload)
         this.column[this.mode].uri = res.data.uri
         console.info('Semantic', this.mode, 'saved', res.data)
       } catch (error) {
+        console.error('Failed to save', error)
         const { status } = error.response
         if (status === 409) {
           console.debug('concept already saved, skipping')
@@ -238,6 +280,9 @@ export default {
           console.error('save', error)
         }
       }
+      await this.update()
+    },
+    async update () {
       /* update column */
       try {
         const payload = {
@@ -245,11 +290,30 @@ export default {
           unit_uri: (!this.column.unit ? null : this.column.unit.uri)
         }
         const res = await this.$axios.put(`/api/container/${this.databaseId}/database/${this.databaseId}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
-        this.column.column_concept = res.data
-        this.column.column_concept.name = this.model.name
+        if (this.mode === 'unit') {
+          if (res.data.unit_uri === null) {
+            this.column[this.mode] = null
+          } else {
+            this.column[this.mode] = {
+              name: this.model.name,
+              uri: res.data.unit_uri
+            }
+          }
+        }
+        if (this.mode === 'concept') {
+          if (res.data.concept_uri === null) {
+            this.column[this.mode] = null
+          } else {
+            this.column[this.mode] = {
+              name: this.model.name,
+              uri: res.data.concept_uri
+            }
+          }
+        }
         this.dialog = false
         this.saved = true
-        this.$toast.success(`Assigned unit ${this.model.name}`)
+        console.info(`Updated semantics of column ${this.column.name}`)
+        this.$toast.success(`Updated semantics of column ${this.column.name}`)
         this.$emit('close', {
           success: true,
           action: 'assign',
