@@ -6,7 +6,7 @@ import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyJSONEncoder
-from list import list_units, get_uri as list_get_uri, list_concepts
+from list import List
 from validate import validator
 from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_units
@@ -33,6 +33,8 @@ app = Flask(__name__)
 metrics = PrometheusMetrics(app)
 metrics.info('app_info', 'Application info', version='1.0.3')
 app.config['SWAGGER'] = {'openapi': '3.0.1', 'title': 'Swagger UI', 'uiversion': 3}
+
+list = List(offline=False)
 
 swagger_config = {
     'headers': [],
@@ -86,7 +88,7 @@ def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest concept, body=%s', request)
     try:
-        res = list_concepts(query)
+        res = list.list_concepts(query)
         logging.info('suggest concept result in units: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -101,7 +103,7 @@ def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest unit, body=%s', request)
     try:
-        res = list_units(query)
+        res = list.list_units(query)
         logging.info('suggest unit result in units: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -143,7 +145,7 @@ def validate(concept):
 def get_uri(name):
     logging.debug('endpoint get uri, name=%s, body=%s', name, request)
     try:
-        res = list_get_uri(name)
+        res = list.get_uri(name)
         logging.info('get uri resulted in uri: %s', res)
         return jsonify(res), 200
     except Exception as e:
@@ -193,7 +195,7 @@ def save_concept():
 def get_concept(name):
     logging.debug('endpoint get concept, cname=%s, body=%s', name, request)
     try:
-        res = list_get_uri(name)
+        res = list.get_uri(name)
         logging.info('get concept resulted in concept: %s', res)
         return jsonify(res), 200
     except Exception as e:
