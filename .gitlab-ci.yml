@@ -3,6 +3,7 @@ before_script:
   - "docker compose version"
   - "docker system prune -f"
   - "mvn --version"
+  - "python3 --version"
   - "df / -h"
   - "grep -rnw '@Test' | wc -l"
 
