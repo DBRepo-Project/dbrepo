@@ -12,12 +12,12 @@ import java.util.List;
 @Data
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "mdb_units")
+@javax.persistence.Table(name = "mdb_units")
 public class Unit {
 
     @Id
