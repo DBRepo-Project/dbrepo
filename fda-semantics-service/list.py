@@ -46,8 +46,8 @@ class List:
             ?unit rdfs:label ?name .
             ?unit rdfs:comment ?comment .
             ?unit rdf:type om:Unit .
-            FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)).
-            FILTER(LANG(?name) = "en").
+            FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)) .
+            FILTER(LANG(?name) = "en") .
         } LIMIT 10 OFFSET """ + str(offset)
         qres = self.g.query(l_query)
         units = list()
@@ -61,16 +61,14 @@ class List:
         l_query = """SELECT DISTINCT ?item ?name ?comment
         WHERE { 
             SERVICE <https://query.wikidata.org/sparql> {
-                SELECT DISTINCT ?item ?name ?comment
+                SELECT ?item ?name ?comment
                 WHERE {
-                    ?item wdt:P31 wd:Q4406616.
-                    OPTIONAL {
-                        ?item rdfs:label ?name.
-                        ?item schema:description ?comment.
-                        FILTER(LANG(?comment) = "en").
-                        FILTER(LANG(?name) = "en").
-                    }
-                    FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)). 
+                    ?item wdt:P279* wd:Q1183543 .
+                    ?item rdfs:label ?name .
+                    ?item schema:description ?comment .
+                    FILTER(LANG(?comment) = "en") .
+                    FILTER(LANG(?name) = "en") .
+                    FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)) . 
                 }
             }
         }"""
@@ -87,7 +85,7 @@ class List:
         uri_query = """SELECT ?uri
         WHERE {
             ?uri rdfs:label ?o .
-            FILTER regex(str(?o),\"^""" + name + """$\","i")
+            FILTER regex(str(?o),\"^""" + name + """$\","i") .
             } LIMIT 1
         """
         qres = self.g.query(uri_query)
@@ -101,17 +99,15 @@ class List:
         uri_query = """SELECT DISTINCT ?item ?name ?comment
         WHERE { 
             SERVICE <https://query.wikidata.org/sparql> {
-                SELECT DISTINCT ?item ?name ?comment
+                SELECT ?item ?name ?comment
                 WHERE {
-                    ?item wdt:P31 wd:Q4406616.
-                    OPTIONAL {
-                        ?item rdfs:label ?name.
-                        ?item schema:description ?comment.
-                    }
-                    FILTER(LANG(?comment) = "en").
-                    FILTER(LANG(?name) = "en").
-                    FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)). 
-                } LIMIT 1
+                    ?item wdt:P279* wd:Q1183543 .
+                    ?item rdfs:label ?name .
+                    ?item schema:description ?comment .
+                    FILTER(LANG(?comment) = "en") .
+                    FILTER(LANG(?name) = "en") .
+                    FILTER regex(?name, \"^""" + name + """$\", "i") .
+                }
             }
         }"""
         qres = self.g.query(uri_query)

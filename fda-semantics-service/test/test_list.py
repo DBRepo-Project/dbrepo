@@ -17,19 +17,19 @@ list = List(offline=True)
 class ListUnitTest(unittest.TestCase):
 
     def test_list_units_succeeds(self):
-        exp = ['metre', 'metre of mercury']
+        exp = ['metre', 'metre of mercury'].sort()
 
         # test
         response = list.list_units('metre')
-        body = [unit["name"] for unit in response]
+        body = [unit["name"] for unit in response].sort()
         self.assertEqual(exp, body)
 
     def test_list_concepts_succeeds(self):
-        exp = ['Flask in the Form of a Leather Bag', 'Lentoid Flask (Pilgrim Flask)']
+        exp = ['volumetric flask', 'vacuum flask cooker'].sort()
 
         # test
         response = list.list_concepts('flask')
-        body = [unit["name"] for unit in response]
+        body = [unit["name"] for unit in response].sort()
         self.assertEqual(exp, body)
 
     def test_list_units_fails(self):
@@ -55,17 +55,17 @@ class ListUnitTest(unittest.TestCase):
         self.assertEqual(exp, response)
 
     def test_get_concept_uri_hasSpaces_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q60779664"}
+        exp = {"uri": "http://www.wikidata.org/entity/Q998319"}
 
         # test
-        response = list.get_concept_uri("Box (Pyxis) in the Form of a Composite Capital")
+        response = list.get_concept_uri("flight recorder")
         self.assertEqual(exp, response)
 
     def test_get_concept_uri_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q216425"}
+        exp = {"uri": "http://www.wikidata.org/entity/Q235783"}
 
         # test
-        response = list.get_concept_uri("teaspoon")
+        response = list.get_concept_uri("flashlight")
         self.assertEqual(exp, response)
 
 
