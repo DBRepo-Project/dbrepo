@@ -45,9 +45,10 @@ class List:
             ?unit om:symbol ?symbol .
             ?unit rdfs:label ?name .
             ?unit rdfs:comment ?comment .
+            ?unit rdf:type om:Unit .
             FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)).
             FILTER(LANG(?name) = "en").
-            } LIMIT 10 OFFSET """ + str(offset)
+        } LIMIT 10 OFFSET """ + str(offset)
         qres = self.g.query(l_query)
         units = list()
         for row in qres:

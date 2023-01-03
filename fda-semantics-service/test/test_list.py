@@ -17,9 +17,7 @@ list = List(offline=True)
 class ListUnitTest(unittest.TestCase):
 
     def test_list_units_succeeds(self):
-        exp = ['metre', 'ampere per square metre', 'square metre', 'ampere per metre', 'mole per cubic metre',
-               'candela per square metre', 'cubic metre', 'kilometre per second per megaparsec',
-               'reciprocal metre', 'metre per second squared']
+        exp = ['metre', 'metre of mercury']
 
         # test
         response = list.list_units('metre')
@@ -38,7 +36,7 @@ class ListUnitTest(unittest.TestCase):
         exp = []
 
         # test
-        response = list.list_units('smurf')
+        response = list.list_units('time')
         body = [unit["name"] for unit in response]
         self.assertEqual(exp, body)
 
