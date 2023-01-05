@@ -1,8 +1,8 @@
 package at.tuwien.mapper;
 
-import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableCreateRawQuery;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -72,7 +72,7 @@ public interface TableMapper {
             @Mapping(source = "data.dfid", target = "dfid"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
-    TableColumn tableColumnToTableColumn(Table table, TableColumn data, CreateTableRawQuery query);
+    TableColumn tableColumnToTableColumn(Table table, TableColumn data, TableCreateRawQuery query);
 
     @Named("internalMapping")
     default String nameToInternalName(String data) {
@@ -172,7 +172,7 @@ public interface TableMapper {
      * @param data     The table
      * @return The create table query
      */
-    default CreateTableRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
+    default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException, TableMalformedException, QueryMalformedException {
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
@@ -263,7 +263,7 @@ public interface TableMapper {
         try {
             final PreparedStatement pstmt = connection.prepareStatement(query.toString());
             log.trace("prepared create table statement {}", query);
-            return CreateTableRawQuery.builder()
+            return TableCreateRawQuery.builder()
                     .preparedStatement(pstmt)
                     .generated(!primaryColumnExists)
                     .build();

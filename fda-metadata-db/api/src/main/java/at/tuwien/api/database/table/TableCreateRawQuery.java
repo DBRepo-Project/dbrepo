@@ -1,4 +1,4 @@
-package at.tuwien;
+package at.tuwien.api.database.table;
 
 import lombok.*;
 
@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateTableRawQuery {
+public class TableCreateRawQuery {
 
     private PreparedStatement preparedStatement;
 

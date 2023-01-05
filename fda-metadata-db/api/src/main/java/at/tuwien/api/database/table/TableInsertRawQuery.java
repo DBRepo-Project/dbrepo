@@ -1,4 +1,4 @@
-package at.tuwien;
+package at.tuwien.api.database.table;
 
 import lombok.*;
 
@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class InsertTableRawQuery {
+public class TableInsertRawQuery {
 
     private String query;
 

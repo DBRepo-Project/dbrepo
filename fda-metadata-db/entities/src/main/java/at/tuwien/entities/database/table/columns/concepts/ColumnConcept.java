@@ -1,43 +1,46 @@
 package at.tuwien.entities.database.table.columns.concepts;
 
+import at.tuwien.entities.database.table.columns.TableColumn;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 
-/**
- * Join Table
- */
 @Data
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@IdClass(ColumnConceptKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_columns_concepts")
-public class ColumnConcept implements Serializable {
+@javax.persistence.Table(name = "mdb_concepts")
+public class ColumnConcept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "columns-concepts-sequence")
-    @GenericGenerator(name = "columns-concepts-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
-    private Long cid;
-
-    @Id
-    @EqualsAndHashCode.Include
-    private Long tid;
-
-    @Id
-    @EqualsAndHashCode.Include
-    private Long cdbid;
-
-    @EqualsAndHashCode.Include
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @org.springframework.data.annotation.Transient
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "mdb_columns_concepts",
+            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
+            inverseJoinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            })
+    private List<TableColumn> columns;
+
+    @Column(nullable = false, updatable = false)
+    @CreatedDate
+    private Instant created;
 }

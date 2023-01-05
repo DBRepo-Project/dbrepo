@@ -1,4 +1,4 @@
-package at.tuwien.entities.database.table.columns.concepts;
+package at.tuwien.entities.database.table.columns.units;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import lombok.*;
@@ -12,13 +12,13 @@ import java.util.List;
 @Data
 @Entity
 @Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_concepts")
-public class Concept {
+@javax.persistence.Table(name = "mdb_units")
+public class ColumnUnit {
 
     @Id
     @EqualsAndHashCode.Include
@@ -31,7 +31,7 @@ public class Concept {
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "mdb_columns_concepts",
+    @JoinTable(name = "mdb_columns_units",
             joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),

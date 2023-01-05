@@ -4,13 +4,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>fda-table-service</artifactId>
         <groupId>at.tuwien</groupId>
+        <artifactId>fda-table-service</artifactId>
         <version>1.1.0-alpha</version>
     </parent>
 
     <artifactId>report</artifactId>
+    <version>1.1.0-alpha</version>
     <name>fda-table-service-report</name>
+    <description>
+        This module is only intended for the pipeline coverage report. See the detailed report in the
+        respective modules
+    </description>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>

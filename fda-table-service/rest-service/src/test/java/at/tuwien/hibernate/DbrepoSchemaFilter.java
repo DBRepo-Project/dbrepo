@@ -6,7 +6,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.tool.schema.spi.SchemaFilter;
 
 /**
- * Do not create table for class {@link at.tuwien.entities.database.table.columns.concepts.Concept} when using JUnit test
+ * Do not create table for class {@link at.tuwien.entities.database.table.columns.concepts.ColumnConcept} when using JUnit test
  */
 public class DbrepoSchemaFilter implements SchemaFilter {
 
