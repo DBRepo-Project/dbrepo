@@ -22,6 +22,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.SocketUtils;
 
@@ -212,7 +213,7 @@ public class ContainerServiceImpl implements ContainerService {
     @Override
     @Transactional
     public List<Container> getAll() {
-        final List<Container> containers = containerRepository.findAll();
+        final List<Container> containers = containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
         log.info("Found {} containers", containers.size());
         log.trace("found containers {}", containers);
         return containers;
