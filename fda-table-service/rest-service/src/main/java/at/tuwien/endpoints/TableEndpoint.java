@@ -48,8 +48,8 @@ public class TableEndpoint extends AbstractEndpoint {
     @Timed(value = "table.list", description = "Time needed to list the tables")
     @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
-                                                       @NotNull @PathVariable("databaseId") Long databaseId,
-                                                       Principal principal)
+                                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                                    Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint list tables, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
@@ -111,26 +111,6 @@ public class TableEndpoint extends AbstractEndpoint {
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);
         return ResponseEntity.ok(dto);
-    }
-
-    @PutMapping("/{tableId}")
-    @Transactional
-    @Timed(value = "table.update", description = "Time needed to update a table")
-    @Operation(summary = "Update a table", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<TableBriefDto> update(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @PathVariable("tableId") Long tableId,
-                                                @NotNull Principal principal) throws NotAllowedException,
-            AccessDeniedException {
-        log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
-                databaseId, tableId, principal);
-        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
-            log.error("Missing table update permission");
-            throw new NotAllowedException("Missing table update permission");
-        }
-        log.trace("update table resulted in table {}", "");
-        return ResponseEntity.unprocessableEntity()
-                .build();
     }
 
     @DeleteMapping("/{tableId}")

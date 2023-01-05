@@ -3,6 +3,7 @@ before_script:
   - "docker compose version"
   - "docker system prune -f"
   - "mvn --version"
+  - "python3 --version"
   - "df / -h"
   - "grep -rnw '@Test' | wc -l"
 
@@ -94,6 +95,11 @@ build-backend-metadata:
   script:
     - "make build-backend-metadata"
 
+build-semantics-service:
+  stage: build-backend
+  script:
+    - "make build-semantics-service"
+
 test-backend-authentication:
   stage: test-backend
   needs:
@@ -158,6 +164,13 @@ test-backend-gateway:
   script:
     - "make test-gateway-service"
 
+test-semantics-service:
+  stage: test-backend
+  needs:
+    - build-semantics-service
+  script:
+    - "make test-semantics-service"
+
 build-docker:
   stage: build-docker
   needs:
@@ -171,6 +184,7 @@ build-docker:
     - build-backend-query
     - build-backend-table
     - build-backend-metadata
+    - build-semantics-service
   script:
     - cp .env.unix.example .env
     - make build-docker

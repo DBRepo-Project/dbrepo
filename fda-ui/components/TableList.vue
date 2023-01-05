@@ -141,17 +141,31 @@
                 <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
               </template>
               <template v-slot:item.column_concept="{ item }">
-                <v-btn v-if="canModify && !item.column_concept" small @click="pickUnit(item)">Assign</v-btn>
+                <v-btn v-if="canModify && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
                 <v-btn
-                  v-if="canModify && item.column_concept"
-                  :title="item.column_concept.uri"
+                  v-if="canModify && hasConcept(item)"
+                  :title="item.concept.uri"
                   color="secondary"
                   small
-                  @click="pickUnit(item)">
-                  {{ item.column_concept.name }}
+                  @click="pick(item, 'concept')">
+                  {{ item.concept.name }}
                 </v-btn>
-                <a v-if="!canModify && item.column_concept" :href="item.column_concept.uri" target="_blank">
-                  {{ item.column_concept.name }}
+                <a v-if="!canModify && hasConcept(item)" :href="item.concept.uri" target="_blank">
+                  {{ item.concept.name }}
+                </a>
+              </template>
+              <template v-slot:item.column_unit="{ item }">
+                <v-btn v-if="canModify && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
+                <v-btn
+                  v-if="canModify && hasUnit(item)"
+                  :title="item.unit.uri"
+                  color="secondary"
+                  small
+                  @click="pick(item, 'unit')">
+                  {{ item.unit.name }}
+                </v-btn>
+                <a v-if="!canModify && hasUnit(item)" :href="item.unit.uri" target="_blank">
+                  {{ item.unit.name }}
                 </a>
               </template>
             </v-data-table>
@@ -160,9 +174,15 @@
       </v-expansion-panel>
     </v-expansion-panels>
     <v-dialog
-      v-model="unitDialog"
+      v-model="dialogSemantic"
+      persistent
       max-width="600px">
-      <DialogsColumnUnit :column="column" :table-id="tableDetails.id" :database-id="database.id" @close="closed" />
+      <DialogsSemantics
+        :column="column"
+        :mode="mode"
+        :table-id="tableDetails.id"
+        :database-id="database.id"
+        @close="closed" />
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="640">
       <v-card>
@@ -200,7 +220,8 @@ export default {
       tables: [],
       panel: null,
       column: null,
-      unitDialog: false,
+      dialogSemantic: false,
+      mode: 'unit',
       consumers: [],
       access: {
         type: null
@@ -233,7 +254,8 @@ export default {
       headers: [
         { value: 'name', text: 'Name' },
         { value: 'column_type', text: 'Type' },
-        { value: 'column_concept', text: 'Unit of Measurement' },
+        { value: 'column_concept', text: 'Concept' },
+        { value: 'column_unit', text: 'Unit' },
         { value: 'is_primary_key', text: 'Primary Key' },
         { value: 'unique', text: 'Unique' },
         { value: 'is_null_allowed', text: 'Nullable' },
@@ -331,15 +353,22 @@ export default {
     formatCreator (creator) {
       return formatUser(creator)
     },
-    pickUnit (item) {
+    pick (item, mode) {
       this.column = item
-      this.unitDialog = true
+      this.mode = mode
+      this.dialogSemantic = true
     },
     loadUser () {
       if (!this.token) {
         return
       }
       this.user.username = decodeJwt(this.token).sub
+    },
+    hasUnit (item) {
+      return item.unit !== null
+    },
+    hasConcept (item) {
+      return item.concept !== null
     },
     async loadDatabase () {
       try {
@@ -410,11 +439,7 @@ export default {
     },
     closed (data) {
       console.debug('closed dialog', data)
-      this.unitDialog = false
-      if (data.success && data.action === 'remove') {
-        const { cid } = data.data
-        this.tableDetails.columns.filter(column => column.id === cid)[0].column_concept = null
-      }
+      this.dialogSemantic = false
     },
     /**
      * if tableId is given, open the table after refresh

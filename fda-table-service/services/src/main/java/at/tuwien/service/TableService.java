@@ -1,8 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -65,4 +68,24 @@ public interface TableService {
     Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException;
+
+    /**
+     * Updates a table column
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param tableId     The table id.
+     * @param columnId    The column id.
+     * @param updateDto   The update data containing unit and concept uris.
+     * @param principal   The principal.
+     * @return The updated table column.
+     * @throws TableNotFoundException
+     * @throws DatabaseNotFoundException
+     * @throws ContainerNotFoundException
+     * @throws TableMalformedException
+     * @throws UnitNotFoundException
+     * @throws ConceptNotFoundException
+     */
+    TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
+                       ColumnSemanticsUpdateDto updateDto, Principal principal) throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, TableMalformedException, UnitNotFoundException, ConceptNotFoundException;
 }

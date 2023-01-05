@@ -10,7 +10,7 @@ import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.table.columns.concepts.Concept;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
@@ -823,7 +823,7 @@ public abstract class BaseUnitTest {
     public final static String CONCEPT_1_NAME = "Temperature";
     public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
 
-    public final static Concept CONCEPT_1 = Concept.builder()
+    public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
             .name(CONCEPT_1_NAME)
             .created(CONCEPT_1_CREATED)
             .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")

@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.columns;
 
 import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
+import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,7 +10,6 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @Getter
 @Setter
@@ -49,8 +49,9 @@ public class ColumnDto {
     @Schema(example = "string")
     private ColumnTypeDto columnType;
 
-    @JsonProperty("column_concept")
     private ConceptDto concept;
+
+    private UnitDto unit;
 
     @NotNull
     @Schema(example = "true")

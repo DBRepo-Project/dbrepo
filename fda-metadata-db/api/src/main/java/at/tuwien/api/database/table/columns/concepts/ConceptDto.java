@@ -1,10 +1,10 @@
 package at.tuwien.api.database.table.columns.concepts;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
 
@@ -16,10 +16,10 @@ import java.time.Instant;
 @NoArgsConstructor
 public class ConceptDto {
 
-    @NotNull
+    @NotBlank
     private String uri;
 
-    @NotNull
+    @NotBlank
     private String name;
 
     @NotNull

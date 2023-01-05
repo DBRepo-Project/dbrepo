@@ -7,6 +7,7 @@ import at.tuwien.exception.NotAllowedException;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
+import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
@@ -38,6 +39,7 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional
+    @Timed(value = "access.check", description = "Time needed to check access to a table")
     @PreAuthorize("hasRole('ROLE_RESEARCHER')")
     @Operation(summary = "Check access to some table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> checkAccess(@NotBlank @PathVariable("id") Long containerId,
