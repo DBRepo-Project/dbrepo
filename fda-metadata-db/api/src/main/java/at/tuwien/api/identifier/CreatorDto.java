@@ -1,6 +1,7 @@
 package at.tuwien.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,8 +21,12 @@ public class CreatorDto {
     private Long id;
 
     @NotBlank
-    @Schema(example = "Carberry, Josiah")
-    private String name;
+    @Schema(example = "Josiah")
+    private String firstname;
+
+    @NotBlank
+    @Schema(example = "Carberry")
+    private String lastname;
 
     @Schema(example = "Wesleyan University")
     private String affiliation;
@@ -30,9 +35,11 @@ public class CreatorDto {
     private String orcid;
 
     @NotNull
+    @JsonIgnore
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @JsonIgnore
     @JsonProperty("last_modified")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;

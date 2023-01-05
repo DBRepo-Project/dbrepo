@@ -172,6 +172,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .doi(IDENTIFIER_1_DOI)
                 .visibility(IDENTIFIER_1_VISIBILITY_DTO)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IDENTIFIER_1_TYPE_DTO)
                 .build();

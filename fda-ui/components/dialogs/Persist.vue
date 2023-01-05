@@ -79,15 +79,23 @@
             </v-col>
           </v-row>
           <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
-            <v-col cols="4">
+            <v-col cols="3">
               <v-text-field
-                v-model="creator.name"
-                name="name"
-                label="Lastname, Firstname *"
+                v-model="creator.firstname"
+                name="firstname"
+                label="Firstname *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
-            <v-col cols="4">
+            <v-col cols="3">
+              <v-text-field
+                v-model="creator.lastname"
+                name="lastname"
+                label="Lastname *"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col cols="3">
               <v-text-field
                 v-model="creator.affiliation"
                 name="affiliation"
@@ -95,7 +103,7 @@
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
-            <v-col cols="3">
+            <v-col cols="2">
               <v-text-field
                 v-model="creator.orcid"
                 name="orcid"
@@ -335,14 +343,16 @@ export default {
         return
       }
       this.identifier.creators.push({
-        name: `${this.user.lastname}, ${this.user.firstname}`,
+        firstname: this.user.firstname,
+        lastname: this.user.lastname,
         orcid: this.user.orcid,
         affiliation: this.user.affiliation
       })
     },
     addCreator () {
       this.identifier.creators.push({
-        name: null,
+        firstname: null,
+        lastname: null,
         affiliation: null,
         orcid: null
       })

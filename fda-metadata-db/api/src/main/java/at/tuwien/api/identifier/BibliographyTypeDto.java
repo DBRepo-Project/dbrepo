@@ -1,0 +1,26 @@
+package at.tuwien.api.identifier;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public enum BibliographyTypeDto {
+
+    @JsonProperty("apa")
+    APA("apa"),
+
+    @JsonProperty("ieee")
+    IEEE("ieee"),
+
+    @JsonProperty("bibtex")
+    BIBTEX("bibtex");
+
+    private String name;
+
+    BibliographyTypeDto(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
+}

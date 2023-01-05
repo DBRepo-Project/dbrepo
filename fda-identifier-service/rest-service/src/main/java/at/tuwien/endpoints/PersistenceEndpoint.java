@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Log4j2
 @CrossOrigin(origins = "*")
@@ -45,7 +48,7 @@ public class PersistenceEndpoint {
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
-            QueryNotFoundException, RemoteUnavailableException {
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -73,6 +76,22 @@ public class PersistenceEndpoint {
                     final InputStreamResource resource3 = identifierService.exportMetadata(pid);
                     log.debug("find identifier resulted in resource {}", resource3);
                     return ResponseEntity.ok(resource3);
+            }
+            final Pattern regex = Pattern.compile("text\\/bibliography(; ?style=(apa|ieee|bibtex))?");
+            final Matcher matcher = regex.matcher(accept);
+            if (matcher.find()) {
+                log.trace("accept header matches bibliography");
+                final BibliographyTypeDto style;
+                if (matcher.group(2) != null) {
+                    style = BibliographyTypeDto.valueOf(matcher.group(2).toUpperCase());
+                    log.trace("bibliography style matches {}", style);
+                } else {
+                    style = BibliographyTypeDto.APA;
+                    log.trace("no bibliography style provided, default: {}", style);
+                }
+                final String resource = identifierService.exportBibliography(pid, style);
+                log.debug("find identifier resulted in resource {}", resource);
+                return ResponseEntity.ok(resource);
             }
         } else {
             log.trace("no accept header present");

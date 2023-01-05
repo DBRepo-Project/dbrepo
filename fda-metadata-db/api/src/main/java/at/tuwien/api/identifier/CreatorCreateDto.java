@@ -17,8 +17,12 @@ import javax.validation.constraints.NotBlank;
 public class CreatorCreateDto {
 
     @NotBlank
-    @Schema(example = "Carberry, Josiah")
-    private String name;
+    @Schema(example = "Josiah")
+    private String firstname;
+
+    @NotBlank
+    @Schema(example = "Carberry")
+    private String lastname;
 
     @Schema(example = "Wesleyan University")
     private String affiliation;

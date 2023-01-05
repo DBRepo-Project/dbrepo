@@ -46,7 +46,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, IdentifierRequestException {
         final String accept = "application/json";
 
         /* mock */
@@ -108,7 +108,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, IdentifierRequestException {
         final String accept = null;
 
         /* mock */
