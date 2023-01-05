@@ -29,6 +29,8 @@ public interface UserMapper {
 
     UserDetailsDto userToUserDetailsDto(User data);
 
+    RoleType roleTypeDtoToRoleType(RoleTypeDto data);
+
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
     UserBriefDto userToUserBriefDto(User data);

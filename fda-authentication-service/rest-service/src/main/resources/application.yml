@@ -52,6 +52,8 @@ fda:
   website: "${WEBSITE}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   token.max: "${TOKEN_MAX}"
+  default_roles: "${DEFAULT_ROLES}"
+  developer_usernames: "${DEVELOPER_USERNAMES}"
   mail:
     prefix: /
     from: "${MAIL_FROM}"

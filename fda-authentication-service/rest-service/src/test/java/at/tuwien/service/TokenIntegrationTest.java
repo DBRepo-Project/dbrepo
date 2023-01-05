@@ -51,7 +51,7 @@ public class TokenIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
-        h2Utils.runScript("post-init.sql");
+        h2Utils.runScript("view.sql");
     }
 
     @Test

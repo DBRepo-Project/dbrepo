@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.config.ReadyConfig;
@@ -30,6 +31,8 @@ import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -114,6 +117,22 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                     log.info("Delete network {}", network.getName());
                     dockerClient.removeNetworkCmd(network.getId()).exec();
                 });
+    }
+
+    @Test
+    public void create_succeeds() throws UserNameExistsException, RoleNotFoundException, UserEmailExistsException {
+        final SignupRequestDto request = SignupRequestDto.builder()
+                .username(USER_2_USERNAME)
+                .password(USER_2_PASSWORD)
+                .email(USER_2_EMAIL)
+                .build();
+
+        /* mock */
+
+        /* test */
+        final User response = userService.create(request);
+        assertEquals(USER_2_USERNAME, response.getUsername());
+        assertEquals(USER_2_EMAIL, response.getEmail());
     }
 
     @Test

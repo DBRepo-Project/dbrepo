@@ -66,7 +66,6 @@ public abstract class BaseUnitTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-
     public final static Long USER_2_ID = 2L;
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "jdoe2";
@@ -87,7 +86,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
-            .roles(List.of(RoleType.ROLE_RESEARCHER))
+            .roles(List.of(RoleType.ROLE_DEVELOPER))
             .lastModified(USER_2_LAST_MODIFIED)
             .build();
 
@@ -95,11 +94,45 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
             .build();
 
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
+
+    public final static Long USER_3_ID = 3L;
+    public final static String USER_3_EMAIL = "jonas.doe@example.com";
+    public final static String USER_3_USERNAME = "jdoe3";
+    public final static String USER_3_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static Boolean USER_3_VERIFIED = false;
+    public final static Boolean USER_3_THEME_DARK = false;
+    public final static Instant USER_3_CREATED = Instant.now()
+            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_3_LAST_MODIFIED = USER_1_CREATED;
+
+    public final static User USER_3 = User.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .databasePassword(USER_3_DATABASE_PASSWORD)
+            .emailVerified(USER_3_VERIFIED)
+            .themeDark(USER_3_THEME_DARK)
+            .created(USER_3_CREATED)
+            .roles(List.of())
+            .lastModified(USER_3_LAST_MODIFIED)
+            .build();
+
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of())
+            .build();
+
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static Long TIME_SECRET_1_ID = 1L;
     public final static Boolean TIME_SECRET_1_PROCESSED = false;
