@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingContainers" :color="loadingColor" :indeterminate="!error" />
+    <v-progress-linear v-if="loadingContainers || loadingDatabases" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
         <span>Databases</span>
@@ -25,71 +25,46 @@
           label="Mine" />
       </v-toolbar-items>
     </v-toolbar>
-    <v-card flat>
-      <v-data-table
-        :headers="headers"
-        :items="filter(containers)"
-        :loading="loadingDatabases"
-        @click:row="loadDatabase">
-        <template v-slot:item.visibility="{ item }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                v-if="item.visibility"
-                color="primary"
-                class="private-icon"
-                right
-                v-bind="attrs"
-                v-on="on">
-                mdi-lock-outline
-              </v-icon>
-              <v-icon
-                v-if="!item.visibility"
-                class="private-icon"
-                right
-                v-bind="attrs"
-                v-on="on">
-                mdi-lock-open-outline
-              </v-icon>
-            </template>
-            <span>{{ tooltip(item) }}</span>
-          </v-tooltip>
-        </template>
-        <template v-slot:item.created="{ item }">
-          <span>{{ formatTimestamp(item.created) }}</span>
-        </template>
-        <template v-slot:item.creator="{ item }">
-          <span>{{ formatCreator(item.creator) }}</span>
-        </template>
-        <template v-slot:item.status="{ item }">
-          <span
-            v-if="notInit(item) && !canInit(item)">
-            Not Initialized
-          </span>
-          <v-btn
-            v-if="canInit(item)"
-            color="secondary"
-            :loading="loadingCreate"
-            small
-            @click.stop="initDatabase(item)">
-            Start
-          </v-btn>
-        </template>
-      </v-data-table>
-      <v-dialog
-        v-model="createDbDialog"
-        persistent
-        max-width="640">
-        <CreateDB @close="closed" />
-      </v-dialog>
+    <v-card v-for="(container, idx) in filter(containers)" :key="idx" flat tile>
+      <v-divider class="mx-4" />
+      <v-card-title v-if="notInit(container)" v-text="container.name" />
+      <v-card-title v-if="!notInit(container)">
+        <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>
+      </v-card-title>
+      <v-card-subtitle v-if="!container.database.identifier" class="db-subtitle" v-text="formatCreator(container.creator)" />
+      <v-card-subtitle v-if="container.database.identifier" class="db-subtitle" v-text="formatCreatorz(container)" />
+      <v-card-text class="db-description">
+        <div class="db-tags">
+          <v-chip v-if="!notInit(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
+          <v-chip v-if="!notInit(container) && !container.database.is_public" small color="red" outlined>Private</v-chip>
+          <v-chip small outlined>Database</v-chip>
+          <v-chip v-if="identifierCreated(container)" small outlined v-text="identifierCreated(container)" />
+        </div>
+        <div v-text="identifierDescription(container)" />
+      </v-card-text>
+      <v-card-text v-if="canInit(container)" class="db-buttons">
+        <v-btn
+          small
+          secondary
+          :loading="container.database.loading"
+          @click.stop="initDatabase(container)">
+          Start
+        </v-btn>
+      </v-card-text>
     </v-card>
+    <v-dialog
+      v-model="createDbDialog"
+      persistent
+      max-width="640">
+      <CreateDB @close="closed" />
+    </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel, formatCreators, formatYearUTC, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
 export default {
@@ -135,27 +110,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    headers () {
-      return [{
-        text: 'Name',
-        align: 'start',
-        value: 'name'
-      }, {
-        text: 'Creator',
-        value: 'creator',
-        sortable: false
-      }, {
-        text: 'Visibility',
-        value: 'visibility'
-      }, {
-        text: 'Created',
-        value: 'created'
-      }, {
-        text: 'Status',
-        value: 'status',
-        sortable: false
-      }]
     }
   },
   mounted () {
@@ -166,6 +120,9 @@ export default {
   methods: {
     formatCreator (creator) {
       return formatUser(creator)
+    },
+    formatCreatorz (container) {
+      return formatCreators(container)
     },
     canInit (container) {
       if (!this.token) {
@@ -179,22 +136,31 @@ export default {
     notInit (container) {
       return !container.database.id
     },
-    tooltip (item) {
-      return item.is_public ? 'Public' : 'Private'
-    },
     async initDatabase (container) {
       await this.startContainer(container)
         .then(() => this.createDatabase(container))
     },
-    filter (databases) {
-      let filtered = databases
+    filter (containers) {
+      let filtered = containers
       if (this.filterPrivate) {
-        filtered = filtered.filter(d => d.visibility === false)
+        filtered = filtered.filter(c => !c.database.is_public)
       }
       if (this.token && this.filterMine) {
-        filtered = filtered.filter(d => d.creator.username === this.user.username)
+        filtered = filtered.filter(c => c.creator.username === this.user.username)
       }
       return filtered
+    },
+    identifierCreated (container) {
+      if (!container.database.identifier) {
+        return null
+      }
+      return formatYearUTC(container.database.identifier.created)
+    },
+    identifierDescription (container) {
+      if (!container.database.identifier) {
+        return null
+      }
+      return container.database.identifier.description
     },
     async loadContainers () {
       this.createDbDialog = false
@@ -203,7 +169,8 @@ export default {
         const res = await this.$axios.get('/api/container/')
         this.containers = res.data.map((container) => {
           container.database = {
-            id: null
+            id: null,
+            loading: false
           }
           return container
         })
@@ -257,7 +224,7 @@ export default {
     },
     async startContainer (container) {
       try {
-        this.loadingCreate = true
+        container.database.loading = true
         const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
         this.error = false
@@ -268,21 +235,23 @@ export default {
           this.$toast.error('Failed to start container')
         }
       }
-      this.loadingCreate = false
+      container.database.loading = false
     },
     async createDatabase (container) {
       try {
-        this.loadingCreate = true
+        container.database.loading = true
         this.createDatabaseDto.name = container.name
         const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
         container.database = res.data
         console.debug('created database', container.database)
         this.error = false
-      } catch (err) {
+      } catch (error) {
+        const { message } = error.response
         this.error = true
-        this.$toast.error('Failed to create database')
+        console.error('Failed to create database', error)
+        this.$toast.error(`${message}`)
       }
-      this.loadingCreate = false
+      container.database.loading = false
     },
     closed (event) {
       this.createDbDialog = false
@@ -294,28 +263,17 @@ export default {
   }
 }
 </script>
-
-<style>
+<style scoped>
   tbody tr {
     cursor: pointer;
   }
-  .trim {
-    max-width: 10em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .database:hover {
-    cursor: pointer;
-  }
-  .color-grey {
-    color: #aaa;
-  }
-  .v-progress-circular {
+  .v-chip:not(:first-child) {
     margin-left: 8px;
   }
-  .private-icon {
-    flex: 0 !important;
-    margin-right: 16px;
+  .db-subtitle {
+    padding-bottom: 8px;
+  }
+  .db-tags {
+    margin-bottom: 8px;
   }
 </style>

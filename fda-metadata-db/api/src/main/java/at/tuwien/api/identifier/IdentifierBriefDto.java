@@ -19,6 +19,7 @@ import java.time.Instant;
 @Builder
 public class IdentifierBriefDto {
 
+    @NotNull
     private Long id;
 
     @NotNull

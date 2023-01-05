@@ -81,7 +81,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                     .filter(i -> i.getContainerId().equals(containerId) && i.getDatabaseId().equals(containerId) &&
                             i.getType().equals(IdentifierType.DATABASE))
                     .findFirst();
-            id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
+            id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier)));
         });
         log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
