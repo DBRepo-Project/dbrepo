@@ -1,10 +1,10 @@
 package at.tuwien.repository.jpa;
 
-import at.tuwien.entities.database.table.columns.units.ColumnUnit;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UnitRepository extends JpaRepository<ColumnUnit, String> {
+public interface UnitRepository extends JpaRepository<TableColumnUnit, String> {
 
 }

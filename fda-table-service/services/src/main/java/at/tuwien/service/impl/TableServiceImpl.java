@@ -7,8 +7,8 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.concepts.ColumnConcept;
-import at.tuwien.entities.database.table.columns.units.ColumnUnit;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
@@ -217,7 +217,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final TableColumn column = findColumn(table, columnId);
         /* assign */
         if (updateDto.getUnitUri() != null) {
-            final ColumnUnit unit = findUnit(updateDto.getUnitUri());
+            final TableColumnUnit unit = findUnit(updateDto.getUnitUri());
             column.setUnit(unit);
             log.debug("update unit of column, unit={}, column={}", unit, column);
         } else {
@@ -225,7 +225,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             log.debug("remove unit of column, column={}", column);
         }
         if (updateDto.getConceptUri() != null) {
-            final ColumnConcept concept = findConcept(updateDto.getConceptUri());
+            final TableColumnConcept concept = findConcept(updateDto.getConceptUri());
             column.setConcept(concept);
             log.debug("update ColumnConcept of column, concept={}, column={}", concept, column);
         } else {
@@ -265,8 +265,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
      * @return The concept, if successful.
      * @throws ConceptNotFoundException The ColumnConcept was not found in the metadata database.
      */
-    protected ColumnConcept findConcept(String uri) throws ConceptNotFoundException {
-        final Optional<ColumnConcept> optional = conceptRepository.findById(uri);
+    protected TableColumnConcept findConcept(String uri) throws ConceptNotFoundException {
+        final Optional<TableColumnConcept> optional = conceptRepository.findById(uri);
         if (optional.isEmpty()) {
             log.error("Failed to find ColumnConcept with uri {}", uri);
             throw new ConceptNotFoundException("Failed to find concept");
@@ -281,8 +281,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
      * @return The unit, if successful.
      * @throws UnitNotFoundException The unit was not found in the metadata database.
      */
-    protected ColumnUnit findUnit(String uri) throws UnitNotFoundException {
-        final Optional<ColumnUnit> optional = unitRepository.findById(uri);
+    protected TableColumnUnit findUnit(String uri) throws UnitNotFoundException {
+        final Optional<TableColumnUnit> optional = unitRepository.findById(uri);
         if (optional.isEmpty()) {
             log.error("Failed to find unit with uri {}", uri);
             throw new UnitNotFoundException("Failed to find unit");
