@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
@@ -42,11 +43,16 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @PostConstruct
+    @Override
     public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
         final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
+        final List<ExchangeDto> exchanges = brokerServiceGateway.getExchanges();
         for (Database database : databases) {
-            createExchange(database, principal);
+            if (exchanges.stream().noneMatch(e -> e.getName().equals(database.getExchangeName()))) {
+                log.warn("Exchange {} does not exist for database with id {}, recover...", database.getExchangeName(), database.getId());
+                createExchange(database, principal);
+            }
         }
     }
 

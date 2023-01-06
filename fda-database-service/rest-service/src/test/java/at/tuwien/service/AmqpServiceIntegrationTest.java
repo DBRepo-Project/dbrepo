@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
@@ -26,11 +27,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -43,6 +46,12 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private IndexInitializer indexInitializer;
 
+    @MockBean
+    private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
+
     @Autowired
     private Channel channel;
 
@@ -50,13 +59,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     private RabbitMqServiceImpl amqpService;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
-
-    @Autowired
     private AmqpUtils amqpUtils;
-
-    @MockBean
-    private DatabaseRepository databaseRepository;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -124,6 +127,10 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     public void createExchange_succeeds() throws AmqpException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
+        /* mock */
+        when(brokerServiceGateway.getExchanges())
+                .thenReturn(List.of());
+
         /* test */
         amqpService.createExchange(DATABASE_1, principal);
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
@@ -132,9 +139,30 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void deleteExchange_succeeds() throws AmqpException {
 
+        /* mock */
+        when(brokerServiceGateway.getExchanges())
+                .thenReturn(List.of());
+
         /* test */
         amqpService.deleteExchange(DATABASE_1);
         assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
+    }
+
+    @Test
+    public void init_succeeds() throws AmqpException {
+
+        /* mock */
+        when(brokerServiceGateway.getExchanges())
+                .thenReturn(List.of())
+                .thenReturn(List.of(DATABASE_EXCHANGE_1));
+
+        /* mock */
+        when(databaseRepository.findAll())
+                .thenReturn(List.of(DATABASE_1));
+
+        /* test */
+        amqpService.init();
+        assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
     }
 
 }
