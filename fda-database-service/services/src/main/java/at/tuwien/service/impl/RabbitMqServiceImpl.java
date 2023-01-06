@@ -47,12 +47,8 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
         final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
-        final List<ExchangeDto> exchanges = brokerServiceGateway.getExchanges();
         for (Database database : databases) {
-            if (exchanges.stream().noneMatch(e -> e.getName().equals(database.getExchangeName()))) {
-                log.warn("Exchange {} does not exist for database with id {}, recover...", database.getExchangeName(), database.getId());
-                createExchange(database, principal);
-            }
+            createExchange(database, principal);
         }
     }
 

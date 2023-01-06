@@ -19,7 +19,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -127,10 +126,6 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     public void createExchange_succeeds() throws AmqpException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
-        /* mock */
-        when(brokerServiceGateway.getExchanges())
-                .thenReturn(List.of());
-
         /* test */
         amqpService.createExchange(DATABASE_1, principal);
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
@@ -139,10 +134,6 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void deleteExchange_succeeds() throws AmqpException {
 
-        /* mock */
-        when(brokerServiceGateway.getExchanges())
-                .thenReturn(List.of());
-
         /* test */
         amqpService.deleteExchange(DATABASE_1);
         assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
@@ -150,11 +141,6 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void init_succeeds() throws AmqpException {
-
-        /* mock */
-        when(brokerServiceGateway.getExchanges())
-                .thenReturn(List.of())
-                .thenReturn(List.of(DATABASE_EXCHANGE_1));
 
         /* mock */
         when(databaseRepository.findAll())

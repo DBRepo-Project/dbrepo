@@ -39,6 +39,4 @@ public interface BrokerServiceGateway {
      */
     void grantPermission(String username, GrantVirtualHostPermissionsDto data)
             throws BrokerVirtualHostCreationException;
-
-    List<ExchangeDto> getExchanges() throws AmqpException;
 }

@@ -1,37 +1,35 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
+import at.tuwien.config.AmqpConfig;
 import at.tuwien.config.GatewayConfig;
-import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Slf4j
 @Service
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
+    private final AmqpConfig amqpConfig;
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(@Qualifier("brokerRestTemplate") RestTemplate restTemplate,
+    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, @Qualifier("brokerRestTemplate") RestTemplate restTemplate,
                                     GatewayConfig gatewayConfig) {
+        this.amqpConfig = amqpConfig;
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
     }
@@ -39,7 +37,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostCreationException {
         final ResponseEntity<Void> response = restTemplate.exchange(gatewayConfig.getGatewayEndpoint() + "/api/broker/vhost", HttpMethod.POST,
-                new HttpEntity<>(data), Void.class);
+                new HttpEntity<>(data, httpHeaders()), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create virtual host: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to create virtual host");
@@ -52,7 +50,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throws BrokerVirtualHostCreationException {
         final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/topic-permissions/%2F/" + username);
         final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+                new HttpEntity<>(data, httpHeaders()), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant exchange: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to grant exchange");
@@ -65,7 +63,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throws BrokerVirtualHostCreationException {
         final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
         final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+                new HttpEntity<>(data, httpHeaders()), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to grant virtual host");
@@ -73,19 +71,12 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         log.info("Grant permission for user with username {}", username);
     }
 
-    @Override
-    public List<ExchangeDto> getExchanges() throws AmqpException {
-        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/exchanges/%2F");
-        final ResponseEntity<ExchangeDto[]> response = restTemplate.exchange(grantUri, HttpMethod.GET, new HttpEntity<>(null), ExchangeDto[].class);
-        if (!response.getStatusCode().equals(HttpStatus.OK) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to fetch exchanges: {}", response.getStatusCode());
-            throw new AmqpException("Failed to fetch exchanges");
-        }
-        if (response.getBody() == null) {
-            log.error("Failed to fetch exchanges, body is null");
-            throw new AmqpException("Failed to fetch exchanges, body is null");
-        }
-        return Arrays.asList(response.getBody());
+    private HttpHeaders httpHeaders() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", Base64.getEncoder()
+                .encodeToString((amqpConfig.getAmpqUsername() + ":" + amqpConfig.getAmpqPassword())
+                        .getBytes(StandardCharsets.UTF_8)));
+        return headers;
     }
 
 }
