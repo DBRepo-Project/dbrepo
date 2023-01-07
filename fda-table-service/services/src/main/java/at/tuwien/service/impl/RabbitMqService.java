@@ -7,10 +7,11 @@ import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 
@@ -27,8 +28,9 @@ public class RabbitMqService implements MessageQueueService {
         this.tableRepository = tableRepository;
     }
 
-    @PostConstruct
-    @Autowired
+    @Override
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional(readOnly = true)
     public void init() throws AmqpException {
         final List<Table> tables = tableRepository.findAll();
         for (Table table : tables) {

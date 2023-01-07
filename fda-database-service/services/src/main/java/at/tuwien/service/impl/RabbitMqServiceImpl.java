@@ -1,6 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
@@ -15,9 +14,11 @@ import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
@@ -42,8 +43,9 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
-    @PostConstruct
     @Override
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional(readOnly = true)
     public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
         final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
