@@ -9,8 +9,6 @@ import java.io.IOException;
 
 public interface MessageQueueService {
 
-    @PostConstruct
-    @Transactional(readOnly = true)
     void init() throws AmqpException;
 
     /**

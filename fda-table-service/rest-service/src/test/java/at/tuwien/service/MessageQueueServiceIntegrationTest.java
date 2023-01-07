@@ -1,15 +1,23 @@
+
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.AmqpConfig;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.AmqpException;
-import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.exception.*;
+import at.tuwien.repository.elastic.TableColumnidxRepository;
+import at.tuwien.repository.elastic.TableidxRepository;
+import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.service.impl.RabbitMqServiceImpl;
+import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.utils.AmqpUtils;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
+import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
@@ -17,27 +25,33 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class AmqpServiceIntegrationTest extends BaseUnitTest {
+public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
@@ -46,24 +60,24 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     private IndexInitializer indexInitializer;
 
     @MockBean
-    private DatabaseRepository databaseRepository;
+    private TableidxRepository tableidxRepository;
 
     @MockBean
-    private BrokerServiceGateway brokerServiceGateway;
+    private TableColumnidxRepository tableColumnidxRepository;
 
-    @Autowired
-    private Channel channel;
-
-    @Autowired
-    private RabbitMqServiceImpl amqpService;
+    @MockBean
+    private TableRepository tableRepository;
 
     @Autowired
     private AmqpUtils amqpUtils;
 
+    @Autowired
+    private MessageQueueService messageQueueService;
+
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
-        /* create networks */
+        /* create network */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
                 .withIpam(new Network.Ipam()
@@ -78,7 +92,6 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-
         /* create amqp */
         final CreateContainerResponse request = dockerClient.createContainerCmd(BROKER_IMAGE + ":" + BROKER_TAG)
                 .withHostConfig(
@@ -122,34 +135,23 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
                 });
     }
 
-    @Test
-    public void createExchange_succeeds() throws AmqpException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* test */
-        amqpService.createExchange(DATABASE_1, principal);
-        assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-    }
-
-    @Test
-    public void deleteExchange_succeeds() throws AmqpException {
-
-        /* test */
-        amqpService.deleteExchange(DATABASE_1);
-        assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2));
     }
 
     @Test
     public void init_succeeds() throws AmqpException {
 
         /* mock */
-        when(databaseRepository.findAll())
-                .thenReturn(List.of(DATABASE_1));
+        when(tableRepository.findAll())
+                .thenReturn(List.of(TABLE_1, TABLE_2));
+        amqpUtils.createExchange(DATABASE_1_EXCHANGE);
 
         /* test */
-        assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-        amqpService.init();
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
+        messageQueueService.init();
+        assertTrue(amqpUtils.queueExists(TABLE_1_QUEUE_NAME));
     }
 
 }
