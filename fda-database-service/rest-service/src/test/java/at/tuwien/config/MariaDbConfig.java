@@ -60,10 +60,10 @@ public class MariaDbConfig {
             final String call = "{call store_query(?,?)}";
             log.trace("prepare procedure '{}'", call);
             final CallableStatement statement = connection.prepareCall(call);
-            statement.setString("query", query);
-            statement.registerOutParameter("queryId", Types.BIGINT);
+            statement.setString(1, query);
+            statement.registerOutParameter(2, Types.BIGINT);
             statement.executeUpdate();
-            final Long queryId = statement.getLong("queryId");
+            final Long queryId = statement.getLong(2);
             statement.close();
             log.debug("received queryId={}", queryId);
             return queryId;

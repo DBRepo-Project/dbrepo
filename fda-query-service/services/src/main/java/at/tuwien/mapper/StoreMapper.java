@@ -7,11 +7,18 @@ import at.tuwien.querystore.Query;
 import org.mapstruct.Mapper;
 
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Mapper(componentModel = "spring")
 public interface StoreMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(StoreMapper.class);
+
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S[SS]")
+            .withZone(ZoneId.of("UTC"));
 
     default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, String query)
             throws QueryStoreException {
@@ -61,10 +68,14 @@ public interface StoreMapper {
     }
 
     default Query resultSetToQuery(ResultSet data) throws SQLException {
+        final String created = data.getString(2);
+        final Instant createdInst = LocalDateTime.parse(created, mariaDbFormatter)
+                .atZone(ZoneId.of("UTC"))
+                .toInstant();
+        log.trace("query created {} parsed as Instant {}", created, createdInst);
         return Query.builder()
                 .id(data.getLong(1))
-                .created(Timestamp.valueOf(data.getString(2))
-                        .toInstant())
+                .created(createdInst)
                 .createdBy(data.getString(3))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))

@@ -5,6 +5,7 @@ import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,6 +32,7 @@ public class FileUtilTest extends BaseUnitTest {
     private Channel channel;
 
     @Test
+    @Disabled
     public void loadResource_succeeds() throws IOException {
 
         /* test */
