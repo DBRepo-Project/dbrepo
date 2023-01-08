@@ -107,15 +107,6 @@
                 {{ identifier.publisher }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Creators
-              </v-list-item-title>
-              <v-list-item-content>
-                <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
-                  <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                  {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
-                </span>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
                 Publication Date
               </v-list-item-title>
               <v-list-item-content>
@@ -148,6 +139,7 @@
                   </span>
                 </div>
               </v-list-item-content>
+              <Citation :pid="database.identifier.id" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -168,17 +160,6 @@
               <v-list-item-content>
                 <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-medium" />
                 <pre v-if="query_hash">{{ query_hash }}</pre>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Subset Creator
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="!creator" type="text" class="skeleton-small" />
-                <span v-if="creator">
-                  {{ creator }} <sup>
-                    <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-                  </sup>
-                </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Creation
@@ -251,7 +232,7 @@
 </template>
 <script>
 import Persist from '@/components/dialogs/Persist'
-import OrcidIcon from '@/components/icons/OrcidIcon'
+import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 import { decodeJwt } from 'jose'
 
@@ -259,7 +240,7 @@ export default {
   name: 'QueryShow',
   components: {
     Persist,
-    OrcidIcon
+    Citation
   },
   data () {
     return {
@@ -445,25 +426,6 @@ export default {
     },
     executionUTC () {
       return this.identifier.id ? formatTimestampUTCLabel(this.identifier.created) : formatTimestampUTCLabel(this.query.created)
-    },
-    creator () {
-      if (this.identifier.creator.username !== null) {
-        if (this.identifier.creator.firstname === null || this.identifier.creator.lastname === null) {
-          return this.identifier.creator.username
-        } else {
-          return this.identifier.creator.firstname + ' ' + this.identifier.creator.lastname
-        }
-      }
-      if (this.query.creator.username === null) {
-        return null
-      }
-      if (this.query.creator.firstname === null || this.query.creator.lastname === null) {
-        return this.query.creator.username
-      }
-      return this.query.creator.firstname + ' ' + this.query.creator.lastname
-    },
-    creators () {
-      return this.identifier.id ? this.identifier.creators : null
     },
     erroneous () {
       if (this.identifier) {

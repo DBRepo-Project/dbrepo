@@ -259,12 +259,12 @@ services:
     logging:
       driver: json-file
 
-  fda-units-service:
+  fda-semantics-service:
     restart: on-failure
-    container_name: dbrepo-units-service
-    hostname: units-service
-    build: ./fda-units-service
-    image: fda-units-service
+    container_name: dbrepo-semantics-service
+    hostname: semantics-service
+    build: ./fda-semantics-service
+    image: fda-semantics-service
     networks:
       core:
     ports:

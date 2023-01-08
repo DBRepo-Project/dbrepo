@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit" autocomplete="off">
+    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
         <v-card-title>
           Create Database
@@ -44,7 +44,7 @@
             color="primary"
             type="submit"
             :loading="loading"
-            @click="createContainer">
+            @click="create">
             Create
           </v-btn>
         </v-card-actions>
@@ -76,6 +76,10 @@ export default {
         name: null,
         repository: null,
         tag: null
+      },
+      createDatabaseDto: {
+        name: null,
+        is_public: true
       },
       container: {
         id: null,
@@ -130,6 +134,11 @@ export default {
       }
       this.loading = false
     },
+    async create () {
+      await this.createContainer()
+        .then(() => this.startContainer(this.container)
+          .then(() => this.createDatabase(this.container)))
+    },
     async createContainer () {
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
@@ -139,10 +148,39 @@ export default {
         this.container = res.data
         console.debug('created container', this.container)
         this.error = false
-        this.$emit('close', { success: true })
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to create container')
+      }
+      this.loading = false
+    },
+    async startContainer (container) {
+      try {
+        this.loading = true
+        const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
+        console.debug('started container', res.data)
+        this.error = false
+      } catch (error) {
+        const { status } = error.response
+        if (status !== 409) {
+          this.error = true
+          this.$toast.error('Failed to start container')
+        }
+      }
+      this.loading = false
+    },
+    async createDatabase (container) {
+      try {
+        this.loading = true
+        this.createDatabaseDto.name = container.name
+        const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
+        container.database = res.data
+        console.debug('created database', container.database)
+        this.error = false
+        this.$emit('close', { success: true })
+      } catch (err) {
+        this.error = true
+        this.$toast.error('Failed to create database')
       }
       this.loading = false
     },

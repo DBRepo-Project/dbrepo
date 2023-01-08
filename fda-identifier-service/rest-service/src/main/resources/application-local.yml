@@ -35,5 +35,5 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
-  website: localhost:3000
+  website: http://localhost:3000
   gateway.endpoint: http://localhost:9095

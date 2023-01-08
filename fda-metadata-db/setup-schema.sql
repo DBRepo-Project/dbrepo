@@ -285,7 +285,29 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS mdb_units
+(
+    uri        text      not null,
+    name       VARCHAR(255),
+    created    timestamp NOT NULL DEFAULT NOW(),
+    created_by bigint,
+    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    PRIMARY KEY (uri(200))
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS mdb_columns_concepts
+(
+    cDBID   bigint    NOT NULL,
+    tID     bigint    NOT NULL,
+    cID     bigint    NOT NULL,
+    uri     text      NOT NULL,
+    created timestamp NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
+    #FOREIGN KEY (uri) REFERENCES mdb_concepts (uri), -- does not work in MariaDB as of 10.5+
+    PRIMARY KEY (cDBID, tID, cID)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS mdb_columns_units
 (
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
@@ -369,7 +391,8 @@ CREATE TABLE IF NOT EXISTS mdb_creators
 (
     id            bigint       NOT NULL AUTO_INCREMENT,
     pid           bigint       NOT NULL,
-    name          VARCHAR(255) NOT NULL,
+    firstname     VARCHAR(255) NOT NULL,
+    lastname      VARCHAR(255) NOT NULL,
     affiliation   VARCHAR(255),
     orcid         VARCHAR(255),
     created       timestamp    NOT NULL DEFAULT NOW(),

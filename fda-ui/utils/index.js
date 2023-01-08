@@ -92,6 +92,26 @@ function formatTimestamp (str) {
   return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
+function formatCreators (container) {
+  if (!container.database.identifier || !container.database.identifier.creators) {
+    return ''
+  }
+  const creators = container.database.identifier.creators
+  if (creators.length === 0) {
+    return formatUser(container.database.creator)
+  }
+  let str = ''
+  for (let i = 0; i < creators.length; i++) {
+    if (i > 0 && creators.length === 2) {
+      str += ' & '
+    } else if (i > 0 && creators.length !== 2) {
+      str += ', '
+    }
+    str += creators[i].name
+  }
+  return str
+}
+
 function formatTimestampUTCLabel (str) {
   if (str === null) {
     return null
@@ -119,5 +139,6 @@ module.exports = {
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  padLeft
+  padLeft,
+  formatCreators
 }

@@ -230,11 +230,11 @@ services:
     logging:
       driver: json-file
 
-  units-service:
+  semantics-service:
     restart: on-failure
-    container_name: dbrepo-units-service
-    hostname: units-service
-    image: dbrepo/units-service:latest
+    container_name: dbrepo-semantics-service
+    hostname: semantics-service
+    image: dbrepo/semantics-service:latest
     networks:
       core:
     env_file:

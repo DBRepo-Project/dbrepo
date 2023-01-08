@@ -4,9 +4,9 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="hasIdentifier" flat tile>
+        <v-card v-if="hasIdentifier || isCreator" flat tile>
           <v-card-title>Identifier</v-card-title>
-          <v-card-text>
+          <v-card-text v-if="hasIdentifier">
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
@@ -21,26 +21,23 @@
                     Database Publisher
                   </v-list-item-title>
                   <v-list-item-content v-if="publisher">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ publisher }}</span>
+                    {{ publisher }}
                   </v-list-item-content>
-                  <v-list-item-title v-if="database.identifier.creators.length > 0" class="mt-2">
+                  <v-list-item-title v-if="identifier.creators.length > 0" class="mt-2">
                     Creators
                   </v-list-item-title>
                   <v-list-item-content>
-                    <span v-for="(person_or_org, i) in database.identifier.creators" :key="`c-${i}`" class="mt-1">
+                    <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
                       <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      <v-tooltip
-                        top>
-                        <template v-slot:activator="{ on, attrs }">
-                          <span
-                            v-bind="attrs"
-                            v-on="on">
-                            {{ person_or_org.name }}
-                          </span>
-                        </template>
-                        <span v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</span>
-                      </v-tooltip>
+                      <span>
+                        {{ person_or_org.firstname }} {{ person_or_org.lastname }} <sup>{{ person_or_org.affiliation_id }}</sup>
+                      </span>
+                    </span>
+                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-1">
+                      <span>
+                        <sup>{{ i+1 }}</sup>
+                        {{ affiliation }}
+                      </span>
                     </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="language" class="mt-2">
@@ -57,11 +54,11 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="publication" />
                   </v-list-item-content>
-                  <v-list-item-title v-if="database.identifier.related.length > 0" class="mt-2">
+                  <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
                     Related Identifiers
                   </v-list-item-title>
-                  <v-list-item-content v-if="database.identifier.related.length > 0">
-                    <div v-for="(rel, i) in database.identifier.related" :key="`r-${i}`">
+                  <v-list-item-content v-if="identifier.related.length > 0">
+                    <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
                       <span v-if="rel.type === 'DOI'">
                         {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
                         <span v-if="rel.relation">({{ rel.relation }})</span>
@@ -84,30 +81,31 @@
                       </span>
                     </div>
                   </v-list-item-content>
-                  <v-list-item-title v-if="database.identifier.license" class="mt-2">
+                  <v-list-item-title v-if="identifier.license" class="mt-2">
                     License
                   </v-list-item-title>
-                  <v-list-item-content v-if="database.identifier.license">
+                  <v-list-item-content v-if="identifier.license">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="database.identifier.license" target="_blank" :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
-                    <span v-if="!database.identifier.license">(none)</span>
+                    <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
+                    <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
+                  <Citation :pid="database.identifier.id" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
+          </v-card-text>
+          <v-card-text v-if="isCreator && !loading && !database.identifier.id">
             <v-card-actions>
               <v-btn
-                v-if="hasIdentifier"
                 small
-                color="secondary"
-                :loading="metadataLoading"
-                @click.stop="download">
-                <v-icon left>mdi-code-tags</v-icon> Metadata .xml
+                color="primary"
+                @click="editDbDialog = true">
+                Get Database PID
               </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="hasIdentifier" />
+        <v-divider v-if="isCreator || hasIdentifier" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -197,13 +195,6 @@
               </v-list-item>
             </v-list>
             <v-card-actions v-if="isCreator">
-              <v-btn
-                v-if="!hasIdentifier"
-                small
-                color="primary"
-                @click="editDbDialog = true">
-                Get Database PID
-              </v-btn>
               <v-dialog
                 v-if="!hasIdentifier"
                 v-model="editDbDialog"
@@ -224,6 +215,7 @@
 import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
+import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
 import { decodeJwt } from 'jose'
 
@@ -231,7 +223,8 @@ export default {
   components: {
     DBToolbar,
     Persist,
-    OrcidIcon
+    OrcidIcon,
+    Citation
   },
   data () {
     return {
@@ -242,6 +235,14 @@ export default {
         user: {
           username: null
         }
+      },
+      identifier: {
+        id: null,
+        license: {
+          identifier: null,
+          uri: null
+        },
+        creators: []
       },
       metadataLoading: false,
       user: {
@@ -299,27 +300,29 @@ export default {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.database.identifier.description
+      return this.identifier.description
     },
     publisher () {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.database.identifier.publisher
+      return this.identifier.publisher
     },
     token () {
       return this.$store.state.token
     },
     config () {
       if (this.token === null) {
-        return {}
+        return {
+          headers: { Accept: 'application/json' }
+        }
       }
       return {
-        headers: { Authorization: `Bearer ${this.token}` }
+        headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
     pid () {
-      return `${this.baseUrl}/pid/${this.database.identifier.id}`
+      return `${this.baseUrl}/pid/${this.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -331,7 +334,7 @@ export default {
       return this.database.creator.username === this.user.username
     },
     language () {
-      return this.database.identifier.language
+      return this.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -349,12 +352,12 @@ export default {
       return formatUser(this.database.contact)
     },
     publication () {
-      if (this.database.identifier.publication_year === null) {
+      if (this.identifier.publication_year === null) {
         return null
-      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
-        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
+      } else if (this.identifier.publication_month !== null && this.identifier.publication_day !== null) {
+        return this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day
       } else {
-        return this.database.identifier.publication_year
+        return this.identifier.publication_year
       }
     },
     creator () {
@@ -364,10 +367,10 @@ export default {
       return this.database.creator.email_verified
     },
     hasIdentifier () {
-      if (this.database.identifier === null) {
+      if (this.identifier === null) {
         return false
       }
-      return this.database.identifier.id !== null
+      return this.identifier.id !== null
     },
     accessDescription () {
       if (!this.access.type) {
@@ -386,8 +389,9 @@ export default {
     }
   },
   mounted () {
-    this.loadDatabase()
     this.loadUser()
+    this.loadDatabase()
+      .then(() => this.loadIdentifier())
   },
   methods: {
     async loadDatabase () {
@@ -446,6 +450,30 @@ export default {
         }
       }
       this.loading = false
+    },
+    async loadIdentifier () {
+      if (!this.database.identifier.id) {
+        return
+      }
+      this.loadingCitation = true
+      try {
+        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
+        this.identifier = res.data
+        this.identifier.affiliations = []
+        this.identifier.creators.forEach((personOrOrg) => {
+          const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
+          if (affiliationId === -1) {
+            this.identifier.affiliations.push(personOrOrg.affiliation)
+            personOrOrg.affiliation_id = this.identifier.affiliations.indexOf(personOrOrg.affiliation) + 1
+          } else {
+            personOrOrg.affiliation_id = affiliationId + 1
+          }
+        })
+        console.debug('identifier', this.identifier)
+      } catch (err) {
+        console.error('Failed to load identifier', err)
+        this.$toast.error('Failed to load identifier')
+      }
     }
   }
 }
@@ -453,5 +481,8 @@ export default {
 <style>
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
+}
+.skeleton-large .v-skeleton-loader__text {
+  width: 400px;
 }
 </style>

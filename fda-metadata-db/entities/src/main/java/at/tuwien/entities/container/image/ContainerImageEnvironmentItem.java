@@ -32,10 +32,10 @@ public class ContainerImageEnvironmentItem {
     @EqualsAndHashCode.Include
     public Long iid;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String key;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String value;
 
     @Column(nullable = false, name = "etype", columnDefinition = "enum('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD')")

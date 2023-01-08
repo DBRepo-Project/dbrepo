@@ -4,12 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-### Environment ###
-.env
-
 ### Generated ###
 ready
-mapping.xml
 
 ### STS ###
 .apt_generated

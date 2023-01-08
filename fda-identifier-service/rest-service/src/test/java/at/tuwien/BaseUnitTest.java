@@ -172,31 +172,35 @@ public abstract class BaseUnitTest {
     public final static Long CREATOR_1_QUERY_ID = 1L;
     public final static String CREATOR_1_ORCID = "00000-00000-00000";
     public final static String CREATOR_1_AFFIL = "TU Graz";
-    public final static String CREATOR_1_NAME = "Mustermann, Max";
+    public final static String CREATOR_1_FIRSTNAME = "Max";
+    public final static String CREATOR_1_LASTNAME = "Mustermann";
     public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
-
-    public final static Long CREATOR_3_ID = 3L;
-    public final static Long CREATOR_3_QUERY_ID = 1L;
-    public final static String CREATOR_3_ORCID = "00000-00000-00000";
-    public final static String CREATOR_3_AFFIL = "TU Graz";
-    public final static String CREATOR_3_NAME = "Mustermann, Max";
-    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Long CREATOR_2_ID = 2L;
     public final static Long CREATOR_2_QUERY_ID = 1L;
     public final static String CREATOR_2_ORCID = "00000-00000-00000";
     public final static String CREATOR_2_AFFIL = "TU Wien";
-    public final static String CREATOR_2_NAME = "Mustermann, Martina";
+    public final static String CREATOR_2_FIRSTNAME = "Martina";
+    public final static String CREATOR_2_LASTNAME = "Mustermann";
     public final static Instant CREATOR_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_2_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static Long CREATOR_3_ID = 3L;
+    public final static Long CREATOR_3_QUERY_ID = 1L;
+    public final static String CREATOR_3_ORCID = "00000-00000-00000";
+    public final static String CREATOR_3_AFFIL = "TU Graz";
+    public final static String CREATOR_3_FIRSTNAME = "Max";
+    public final static String CREATOR_3_LASTNAME = "Mustermann";
+    public final static Instant CREATOR_3_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant CREATOR_3_MODIFIED = Instant.ofEpochSecond(1541588352);
 
     public final static Long CREATOR_4_ID = 4L;
     public final static Long CREATOR_4_QUERY_ID = 1L;
     public final static String CREATOR_4_ORCID = "00000-00000-00000";
     public final static String CREATOR_4_AFFIL = "TU Wien";
-    public final static String CREATOR_4_NAME = "Mustermann, Martina";
+    public final static String CREATOR_4_FIRSTNAME = "Martina";
+    public final static String CREATOR_4_LASTNAME = "Mustermann";
     public final static Instant CREATOR_4_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_4_MODIFIED = Instant.ofEpochSecond(1541588352);
 
@@ -262,6 +266,7 @@ public abstract class BaseUnitTest {
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352);
+    public final static Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
     public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
     public final static String IDENTIFIER_1_QUERY_HASH = "abc";
     public final static String IDENTIFIER_1_RESULT_HASH = "def";
@@ -271,6 +276,36 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_1_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.SUBSET;
+
+    public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
+            .id(CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .affiliation(CREATOR_1_AFFIL)
+            .build();
+
+    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
+            .build();
 
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
@@ -295,28 +330,6 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-
-    public final static Identifier IDENTIFIER_1 = Identifier.builder()
-            .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .queryId(IDENTIFIER_1_QUERY_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
-            .execution(IDENTIFIER_1_EXECUTION)
-            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
-            .publisher(IDENTIFIER_1_PUBLISHER)
-            .type(IDENTIFIER_1_TYPE)
-            .build();
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
@@ -346,15 +359,8 @@ public abstract class BaseUnitTest {
             .id(CREATOR_1_ID)
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
-            .created(CREATOR_1_CREATED)
-            .lastModified(CREATOR_1_MODIFIED)
-            .build();
-
-    public final static Creator CREATOR_1_REQUEST = Creator.builder()
-            .pid(IDENTIFIER_1_ID)
-            .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .created(CREATOR_1_CREATED)
             .lastModified(CREATOR_1_MODIFIED)
             .build();
@@ -363,43 +369,50 @@ public abstract class BaseUnitTest {
             .id(CREATOR_2_ID)
             .pid(IDENTIFIER_1_ID)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .created(CREATOR_2_CREATED)
             .lastModified(CREATOR_2_MODIFIED)
             .build();
 
-    public final static Creator CREATOR_2_REQUEST = Creator.builder()
+    public final static Creator CREATOR_3 = Creator.builder()
+            .id(CREATOR_3_ID)
             .pid(IDENTIFIER_1_ID)
-            .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
-            .created(CREATOR_2_CREATED)
-            .lastModified(CREATOR_2_MODIFIED)
+            .orcid(CREATOR_3_ORCID)
+            .firstname(CREATOR_3_FIRSTNAME)
+            .lastname(CREATOR_3_LASTNAME)
+            .created(CREATOR_3_CREATED)
+            .lastModified(CREATOR_3_MODIFIED)
             .build();
 
     public final static CreatorDto CREATOR_1_DTO = CreatorDto.builder()
             .id(CREATOR_1_ID)
             .affiliation(CREATOR_1_AFFIL)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .build();
 
     public final static CreatorCreateDto CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
             .affiliation(CREATOR_1_AFFIL)
             .orcid(CREATOR_1_ORCID)
-            .name(CREATOR_1_NAME)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
             .build();
 
     public final static CreatorDto CREATOR_2_DTO = CreatorDto.builder()
             .id(CREATOR_2_ID)
             .affiliation(CREATOR_2_AFFIL)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .build();
 
     public final static CreatorCreateDto CREATOR_2_CREATE_DTO = CreatorCreateDto.builder()
             .affiliation(CREATOR_2_AFFIL)
             .orcid(CREATOR_2_ORCID)
-            .name(CREATOR_2_NAME)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
@@ -413,6 +426,7 @@ public abstract class BaseUnitTest {
             .doi(IDENTIFIER_1_DOI)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .type(IDENTIFIER_1_TYPE_DTO)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)

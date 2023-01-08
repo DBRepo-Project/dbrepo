@@ -1,16 +1,23 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.CreateTableRawQuery;
 import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableCreateRawQuery;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.elastic.TableColumnidxRepository;
 import at.tuwien.repository.elastic.TableidxRepository;
+import at.tuwien.repository.jpa.ConceptRepository;
+import at.tuwien.repository.jpa.TableColumnRepository;
 import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.UnitRepository;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -34,22 +41,30 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     private final TableMapper tableMapper;
     private final UserService userService;
+    private final UnitRepository unitRepository;
     private final TableRepository tableRepository;
     private final DatabaseService databaseService;
     private final ContainerService containerService;
+    private final ConceptRepository conceptRepository;
     private final TableidxRepository tableidxRepository;
+    private final TableColumnRepository tableColumnRepository;
     private final TableColumnidxRepository tableColumnidxRepository;
 
     @Autowired
-    public TableServiceImpl(TableMapper tableMapper, UserService userService, TableRepository tableRepository,
-                            DatabaseService databaseService, ContainerService containerService,
-                            TableidxRepository tableidxRepository, TableColumnidxRepository tableColumnidxRepository) {
+    public TableServiceImpl(TableMapper tableMapper, UserService userService, UnitRepository unitRepository,
+                            TableRepository tableRepository, DatabaseService databaseService,
+                            ContainerService containerService, ConceptRepository conceptRepository,
+                            TableidxRepository tableidxRepository, TableColumnRepository tableColumnRepository,
+                            TableColumnidxRepository tableColumnidxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
+        this.unitRepository = unitRepository;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
         this.containerService = containerService;
+        this.conceptRepository = conceptRepository;
         this.tableidxRepository = tableidxRepository;
+        this.tableColumnRepository = tableColumnRepository;
         this.tableColumnidxRepository = tableColumnidxRepository;
     }
 
@@ -119,7 +134,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        final CreateTableRawQuery query;
+        final TableCreateRawQuery query;
         try {
             final Connection connection = dataSource.getConnection();
             query = tableMapper.tableToCreateTableRawQuery(connection, database, createDto);
@@ -191,6 +206,88 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         log.info("Saved table with id {} in elastic search", eTbl.getId());
         log.trace("saved database in elastic search {}", eTbl);
         return table;
+    }
+
+    @Override
+    @Transactional
+    public TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
+                              ColumnSemanticsUpdateDto updateDto, Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, ContainerNotFoundException, TableMalformedException, UnitNotFoundException, ConceptNotFoundException {
+        final Table table = findById(containerId, databaseId, tableId);
+        final TableColumn column = findColumn(table, columnId);
+        /* assign */
+        if (updateDto.getUnitUri() != null) {
+            final TableColumnUnit unit = findUnit(updateDto.getUnitUri());
+            column.setUnit(unit);
+            log.debug("update unit of column, unit={}, column={}", unit, column);
+        } else {
+            column.setUnit(null);
+            log.debug("remove unit of column, column={}", column);
+        }
+        if (updateDto.getConceptUri() != null) {
+            final TableColumnConcept concept = findConcept(updateDto.getConceptUri());
+            column.setConcept(concept);
+            log.debug("update ColumnConcept of column, concept={}, column={}", concept, column);
+        } else {
+            column.setConcept(null);
+            log.debug("remove ColumnConcept of column, column={}", column);
+        }
+        final TableColumn out = tableColumnRepository.save(column);
+        log.info("Updated table column with id {} of table with id {}", columnId, tableId);
+        log.debug("updated table column {}", out);
+        return out;
+    }
+
+    /**
+     * Finds a column in a given table with column id
+     *
+     * @param table    The table.
+     * @param columnId The column id.
+     * @return The column, if successful.
+     * @throws TableMalformedException The requested column was not found in the table.
+     */
+    protected TableColumn findColumn(Table table, Long columnId) throws TableMalformedException {
+        final Optional<TableColumn> optional = table.getColumns()
+                .stream()
+                .filter(c -> c.getId().equals(columnId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column with id {}", columnId);
+            throw new TableMalformedException("Failed to find column");
+        }
+        return optional.get();
+    }
+
+    /**
+     * Finds a ColumnConcept with given uri
+     *
+     * @param uri The uri.
+     * @return The concept, if successful.
+     * @throws ConceptNotFoundException The ColumnConcept was not found in the metadata database.
+     */
+    protected TableColumnConcept findConcept(String uri) throws ConceptNotFoundException {
+        final Optional<TableColumnConcept> optional = conceptRepository.findById(uri);
+        if (optional.isEmpty()) {
+            log.error("Failed to find ColumnConcept with uri {}", uri);
+            throw new ConceptNotFoundException("Failed to find concept");
+        }
+        return optional.get();
+    }
+
+    /**
+     * Finds a unit with given uri
+     *
+     * @param uri The uri.
+     * @return The unit, if successful.
+     * @throws UnitNotFoundException The unit was not found in the metadata database.
+     */
+    protected TableColumnUnit findUnit(String uri) throws UnitNotFoundException {
+        final Optional<TableColumnUnit> optional = unitRepository.findById(uri);
+        if (optional.isEmpty()) {
+            log.error("Failed to find unit with uri {}", uri);
+            throw new UnitNotFoundException("Failed to find unit");
+        }
+        return optional.get();
     }
 
 }
