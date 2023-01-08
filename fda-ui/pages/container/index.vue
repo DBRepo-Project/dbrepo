@@ -1,6 +1,5 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingContainers || loadingDatabases" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
         <span>Databases</span>
@@ -25,6 +24,7 @@
           label="Mine" />
       </v-toolbar-items>
     </v-toolbar>
+    <v-progress-linear v-if="loadingContainers || loadingDatabases" :color="loadingColor" :indeterminate="!error" />
     <v-card v-for="(container, idx) in filter(containers)" :key="idx" flat tile>
       <v-divider class="mx-4" />
       <v-card-title v-if="notInit(container)" v-text="container.name" />
@@ -141,6 +141,9 @@ export default {
         .then(() => this.createDatabase(container))
     },
     filter (containers) {
+      if (this.loadingDatabases) {
+        return []
+      }
       let filtered = containers
       if (this.filterPrivate) {
         filtered = filtered.filter(c => !c.database.is_public)
