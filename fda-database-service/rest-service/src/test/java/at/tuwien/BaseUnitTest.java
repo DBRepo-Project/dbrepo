@@ -1,5 +1,6 @@
 package at.tuwien;
 
+import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.database.DatabaseCreateDto;
@@ -34,6 +35,13 @@ public abstract class BaseUnitTest {
     public final static Integer BROKER_MANAGEMENT_PORT = 15672;
     public final static String BROKER_IMAGE = "rabbitmq";
     public final static String BROKER_TAG = "3-management-alpine";
+
+    public final static String GATEWAY_NAME = "fda-gateway-service";
+    public final static String GATEWAY_IP = "172.29.0.3";
+    public final static String GATEWAY_HOSTNAME = "gateway-service";
+    public final static Integer GATEWAY_PORT = 9095;
+    public final static String GATEWAY_IMAGE = "nginx";
+    public final static String GATEWAY_TAG = "alpine";
 
     public final static String SEARCH_NAME = "fda-search-mock-service";
     public final static String SEARCH_IP = "172.29.0.3";
@@ -270,6 +278,15 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
+
+    public final static ExchangeDto DATABASE_EXCHANGE_1 = ExchangeDto.builder()
+            .durable(false)
+            .autoDelete(false)
+            .type("direct")
+            .internal(false)
+            .vhost("/")
+            .name(DATABASE_1_EXCHANGE)
+            .build();
 
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)

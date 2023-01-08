@@ -12,26 +12,16 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Configuration
 public class GatewayConfig {
 
-    @Value("${fda.gateway.endpoint}")
-    private String gatewayEndpoint;
-
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 
     @Value("${spring.rabbitmq.password}")
     private String brokerPassword;
 
-    @Bean("authenticationRestTemplate")
-    public RestTemplate authenticationRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
-        return restTemplate;
-    }
-
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://broker-service:15672"));
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
         return restTemplate;

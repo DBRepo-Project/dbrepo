@@ -25,7 +25,7 @@ class List:
 
         if not offline:
             # ontology of measure
-            rdf = rq.get('http://www.ontology-of-units-of-measure.org/resource/om-2/',
+            rdf = rq.get('http://www.ontology-of-units-of-measure.org/data/om-2/',
                          headers={'Accept': 'application/rdf+xml'})
             rdf.raise_for_status()
             self.g.parse(data=rdf.text, format='xml')

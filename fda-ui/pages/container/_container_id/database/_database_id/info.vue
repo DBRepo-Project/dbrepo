@@ -452,10 +452,9 @@ export default {
       this.loading = false
     },
     async loadIdentifier () {
-      if (!this.database.identifier.id) {
+      if (!this.database.identifier) {
         return
       }
-      this.loadingCitation = true
       try {
         const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
         this.identifier = res.data

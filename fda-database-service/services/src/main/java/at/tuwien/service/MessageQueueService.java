@@ -3,9 +3,13 @@ package at.tuwien.service;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 
+import javax.annotation.PostConstruct;
 import java.security.Principal;
 
 public interface MessageQueueService {
+
+    @PostConstruct
+    void init() throws AmqpException;
 
     /**
      * Creates an exchange for a database.
