@@ -137,7 +137,8 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2));
+        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_1);
     }
 
     @Test
