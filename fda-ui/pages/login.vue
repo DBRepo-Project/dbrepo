@@ -12,7 +12,7 @@
             If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.username"
                 autocomplete="off"
@@ -23,7 +23,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.password"
                 autocomplete="off"

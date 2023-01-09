@@ -52,17 +52,15 @@ import java.util.stream.Collectors;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final QueryMapper queryMapper;
-    private final UserService userService;
     private final TableService tableService;
     private final StoreService storeService;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
-    public QueryServiceImpl(QueryMapper queryMapper, UserService userService, TableService tableService,
+    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService,
                             DatabaseService databaseService, StoreService storeService, DatabaseMapper databaseMapper) {
         this.queryMapper = queryMapper;
-        this.userService = userService;
         this.tableService = tableService;
         this.storeService = storeService;
         this.databaseMapper = databaseMapper;
@@ -72,18 +70,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  QueryTypeDto type, Principal principal, Long page, Long size,
+                                  Principal principal, Long page, Long size,
                                   SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        final Query query = storeService.insert(containerId, databaseId, null, statement, type, principal, Instant.now());
-        final QueryResultDto result = this.reExecute(containerId, databaseId, query, page, size, sortDirection,
-                sortColumn, principal);
-        if (type.equals(QueryTypeDto.QUERY)) {
-            /* view executions are not stored in the query store */
-            storeService.update(containerId, databaseId, result, result.getResultNumber(), query, principal);
-        }
-        return result;
+        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
+        return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
     @Override
@@ -91,7 +83,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
                                     SortType sortDirection, String sortColumn, Principal principal)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
-            TableMalformedException, QueryStoreException, UserNotFoundException {
+            TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -113,7 +105,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), true, page, size);
+                    database, query.getCreated(), true, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -123,7 +115,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
         }
         dto.setId(query.getId());
-        dto.setResultNumber(countQueryResults(containerId, databaseId, query, principal));
+        dto.setResultNumber(query.getResultNumber());
         return dto;
     }
 
@@ -231,7 +223,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, QueryStoreException, TableMalformedException, UserNotFoundException {
+            QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
@@ -403,19 +395,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final Statement statement = parserRealSql.parse(new StringReader(query));
-
         /* check */
         if (!(statement instanceof Select)) {
             log.error("Query attempts to update the dataset, not a SELECT statement");
             throw new JSQLParserException("Query attempts to update the dataset");
         }
-
         /* start parsing */
         final Select selectStatement = (Select) statement;
         final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
         final List<SelectItem> clauses = ps.getSelectItems();
         log.trace("columns referenced in the from-clause: {}", clauses);
-
         /* Parse all tables */
         final List<FromItem> tables = new ArrayList<>();
         tables.add(ps.getFromItem());
@@ -427,9 +416,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
         }
-        log.debug("tables referenced: {}", tables);
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
-
         /* Checking if all tables or views exist */
         final List<TableColumn> allColumns = new ArrayList<>();
         for (FromItem fromItem : tables) {
@@ -454,13 +441,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             }
             if (!foundView && !foundTable) {
                 final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table or view {} does not exist", tableName);
-                log.trace("available tables are {}", database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()));
-                log.trace("available views are {}", database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Table or view " + tableName + " does not exist");
+                log.error("Table or view {} does not exist in tables {} or views {}", tableName,
+                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()),
+                        database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
+                throw new JSQLParserException("Table or view does not exist");
             }
         }
-
         /* Checking if all columns exist */
         for (SelectItem item : clauses) {
             if (item.toString().trim().equals("*")) {
@@ -476,46 +462,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
             if (!foundColumn) {
-                log.error("Column {} does not exist", item);
-                log.trace("available columns are {}", allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Column " + item + " does not exist");
+                log.error("Column {} does not exist in columns {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
+                throw new JSQLParserException("Column does not exist");
             }
         }
         return columns;
-
-    }
-
-    /**
-     * Counts the total number of tuples in the user database with given id for a given query object
-     *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param query       The query object.
-     * @return The number of tuples this query returns.
-     * @throws DatabaseNotFoundException  The user database was not found in the container.
-     * @throws ImageNotSupportedException The database image is not supported.
-     */
-    @Transactional(readOnly = true)
-    protected Long countQueryResults(Long containerId, Long databaseId, Query query, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException, UserNotFoundException {
-        /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getExecution(), false, null, null);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToNumber(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to count tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count tuples", e);
-        } finally {
-            dataSource.close();
-        }
     }
 
 

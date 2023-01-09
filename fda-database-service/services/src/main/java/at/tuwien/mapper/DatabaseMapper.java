@@ -106,7 +106,7 @@ public interface DatabaseMapper {
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
                 .append(user.getDatabasePassword())
                 .append("';");
-        log.debug("raw create user statement [{}]", statement);
+        log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -132,7 +132,7 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE DATABASE `")
                 .append(database.getInternalName())
                 .append("`;");
-        log.debug("raw create database statement [{}]", statement);
+        log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -159,7 +159,7 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
                 .append(user.getUsername())
                 .append("`@`%`;");
-        log.debug("raw grant all privileges statement [{}]", statement);
+        log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
@@ -207,10 +207,9 @@ public interface DatabaseMapper {
 
     default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
+        log.trace("statement={}", statement);
         try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.debug("mapped create database query {}", statement);
-            return pstmt;
+            return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);

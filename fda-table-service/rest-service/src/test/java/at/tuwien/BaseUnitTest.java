@@ -83,10 +83,12 @@ public abstract class BaseUnitTest {
 
     public final static String DATABASE_NET = "fda-userdb";
 
-    public final static String BROKER_IMAGE = "fda-broker-service:latest";
-    public final static String BROKER_INTERNALNAME = "fda-broker-service";
-    public final static String BROKER_NET = "fda-public";
+    public final static String BROKER_NAME = "fda-broker-service";
     public final static String BROKER_IP = "172.29.0.2";
+    public final static String BROKER_HOSTNAME = "broker-service";
+    public final static Integer BROKER_MANAGEMENT_PORT = 15672;
+    public final static String BROKER_IMAGE = "rabbitmq";
+    public final static String BROKER_TAG = "3-management-alpine";
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -167,24 +169,24 @@ public abstract class BaseUnitTest {
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + DATABASE_2_INTERNALNAME;
 
     public final static Long DATABASE_3_ID = 3L;
     public final static String DATABASE_3_NAME = "traffic";
     public final static String DATABASE_3_INTERNALNAME = "traffic";
-    public final static String DATABASE_3_EXCHANGE = "fda." + DATABASE_3_INTERNALNAME;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + DATABASE_3_INTERNALNAME;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + DATABASE_1_INTERNALNAME + "/" + TABLE_1_INTERNALNAME + "/1";
     public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_1_SKIP_HEADERS = 1L;
@@ -197,7 +199,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_2_ID;
+    public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + DATABASE_1_INTERNALNAME + "/" + TABLE_2_INTERNALNAME + "/1";
     public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_2_SKIP_HEADERS = 1L;
@@ -210,7 +212,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_3_NAME = "Traffic Zürich";
     public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_3_ID;
+    public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + DATABASE_1_INTERNALNAME + "/" + TABLE_3_INTERNALNAME + "/1";
     public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_3_SKIP_HEADERS = 1L;
@@ -223,7 +225,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_4_ID;
+    public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + DATABASE_1_INTERNALNAME + "/" + TABLE_4_INTERNALNAME + "/1";
     public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_4_SKIP_HEADERS = 1L;
@@ -236,7 +238,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_5_ID;
+    public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + DATABASE_1_INTERNALNAME + "/" + TABLE_5_INTERNALNAME + "/1";
     public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
     public final static Long TABLE_5_SKIP_HEADERS = 1L;
@@ -802,13 +804,10 @@ public abstract class BaseUnitTest {
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
-            .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID)
+            .createdBy(USER_1_USERNAME)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()

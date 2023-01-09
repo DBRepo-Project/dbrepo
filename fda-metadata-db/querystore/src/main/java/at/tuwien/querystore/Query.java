@@ -35,16 +35,6 @@ public class Query implements Serializable {
     )
     private Long id;
 
-    @javax.persistence.Column(nullable = false)
-    private Long cid;
-
-    @javax.persistence.Column(nullable = false)
-    private Long dbid;
-
-    @javax.persistence.Column
-    @Schema(example = "2022-01-01 08:00:00.000")
-    private Instant execution;
-
     @javax.persistence.Column(nullable = false, columnDefinition = "TEXT")
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String query;
@@ -68,22 +58,11 @@ public class Query implements Serializable {
     @javax.persistence.Column(nullable = false)
     private Boolean isPersisted;
 
-    @javax.persistence.Column(columnDefinition = "enum('QUERY', 'VIEW')")
-    @Enumerated(EnumType.STRING)
-    private QueryType type;
-
     @javax.persistence.Column(nullable = false, updatable = false)
     @CreatedDate
     private Instant created;
 
     @javax.persistence.Column(nullable = false)
-    private Long createdBy;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
-    private List<at.tuwien.querystore.Table> tables;
-
-    @javax.persistence.Column(name = "last_modified")
-    @LastModifiedDate
-    private Instant lastModified;
+    private String createdBy;
 
 }

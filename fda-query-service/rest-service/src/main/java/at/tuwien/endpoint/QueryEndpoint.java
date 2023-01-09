@@ -62,14 +62,14 @@ public class QueryEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing execute query permission");
         }
         if (data.getStatement() == null || data.getStatement().isBlank()) {
-            log.error("Failed to execute query: is empty");
-            throw new QueryMalformedException("Failed to execute query");
+            log.error("Failed to execute empty query");
+            throw new QueryMalformedException("Failed to execute empty query");
         }
         validateForbiddenStatements(data);
         validateDataParams(page, size, sortDirection, sortColumn);
         /* execute */
-        final QueryResultDto result = queryService.execute(containerId, databaseId, data, QueryTypeDto.QUERY,
-                principal, page, size, sortDirection, sortColumn);
+        final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size,
+                sortDirection, sortColumn);
         log.trace("execute query resulted in result {}", result);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(result);

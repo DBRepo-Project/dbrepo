@@ -54,11 +54,21 @@ public class DockerConfig {
     }
 
     public static void createContainer(Container container, String... environment) {
+        createContainer(null, container, environment);
+    }
+
+    public static void createContainer(String bind, Container container, String... environment) {
         log.trace("creating container with internalName={}, ipAddress={}, hostname={}, environment={}",
                 container.getInternalName(), container.getIpAddress(), container.getInternalName(),
                 environment);
+        final HostConfig hostConfig1;
+        if (bind == null) {
+            hostConfig1 = hostConfig.withNetworkMode("fda-userdb");
+        } else {
+            hostConfig1 = hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind));
+        }
         final CreateContainerResponse response = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withHostConfig(hostConfig1)
                 .withName(container.getInternalName())
                 .withIpv4Address(container.getIpAddress())
                 .withHostName(container.getInternalName())

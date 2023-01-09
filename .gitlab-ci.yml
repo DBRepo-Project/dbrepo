@@ -100,6 +100,11 @@ build-semantics-service:
   script:
     - "make build-semantics-service"
 
+build-analyse-service:
+  stage: build-backend
+  script:
+    - "make build-analyse-service"
+
 test-backend-authentication:
   stage: test-backend
   needs:
@@ -171,6 +176,13 @@ test-semantics-service:
   script:
     - "make test-semantics-service"
 
+test-analyse-service:
+  stage: test-backend
+  needs:
+    - build-analyse-service
+  script:
+    - "make test-analyse-service"
+
 build-docker:
   stage: build-docker
   needs:
@@ -185,6 +197,7 @@ build-docker:
     - build-backend-table
     - build-backend-metadata
     - build-semantics-service
+    - build-analyse-service
   script:
     - cp .env.unix.example .env
     - make build-docker

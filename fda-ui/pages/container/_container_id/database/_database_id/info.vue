@@ -90,6 +90,7 @@
                     <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
                   <Citation :pid="database.identifier.id" />
+                  <v-skeleton-loader v-if="loadingCitation" type="text" class="skeleton-small" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -229,6 +230,7 @@ export default {
   data () {
     return {
       loading: false,
+      loadingCitation: false,
       editDbDialog: false,
       access: {
         type: null,
@@ -395,10 +397,18 @@ export default {
   },
   methods: {
     async loadDatabase () {
+      if (!this.database.identifier.id) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
         this.database = res.data
+        if (!this.database.identifier) {
+          this.database.identifier = {
+            id: null
+          }
+        }
         console.debug('database', res.data)
       } catch (err) {
         this.$toast.error('Could not load database')
@@ -455,7 +465,6 @@ export default {
       if (!this.database.identifier.id) {
         return
       }
-      this.loadingCitation = true
       try {
         const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
         this.identifier = res.data

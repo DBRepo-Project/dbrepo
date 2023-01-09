@@ -116,14 +116,9 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
             createViewStatement.executeUpdate();
-            final PreparedStatement createEntityStatement = viewMapper.viewCreateDtoToRawInsertViewQuery(connection, containerId, databaseId, user.getId(), data);
-            createEntityStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view", e);
-        } catch (QueryStoreException e) {
-            log.error("Failed to insert view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to insert view", e);
         } finally {
             dataSource.close();
         }
