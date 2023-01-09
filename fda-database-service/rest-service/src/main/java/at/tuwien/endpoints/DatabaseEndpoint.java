@@ -97,7 +97,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException {
+            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException {
         log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
                 principal);
         if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {

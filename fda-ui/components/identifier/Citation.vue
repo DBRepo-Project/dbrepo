@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="pid">
     <v-list-item-title class="mt-2">
       Citation
     </v-list-item-title>
@@ -79,6 +79,7 @@ export default {
       if (!this.pid) {
         return
       }
+      this.loading = true
       try {
         const config = this.config
         if (accept != null) {
@@ -92,6 +93,7 @@ export default {
         this.$toast.error('Could not cite identifier')
         this.error = true
       }
+      this.loading = false
     }
   }
 }

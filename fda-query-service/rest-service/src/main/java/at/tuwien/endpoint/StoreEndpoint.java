@@ -95,7 +95,7 @@ public class StoreEndpoint extends AbstractEndpoint {
         }
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.find(query.getCreatedBy());
+        final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
         log.trace("find query resulted in query {}", dto);
         return ResponseEntity.ok(dto);
@@ -124,7 +124,7 @@ public class StoreEndpoint extends AbstractEndpoint {
         }
         final Query query = storeService.persist(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.find(query.getCreatedBy());
+        final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
         log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)

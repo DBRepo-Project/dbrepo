@@ -135,6 +135,7 @@ public abstract class BaseUnitTest {
     public final static Long IMAGE_1_SIZE = 12000L;
     public final static Instant IMAGE_1_CREATED = Instant.now().minus(40, HOURS);
     public final static Instant IMAGE_1_UPDATED = Instant.now().minus(39, HOURS);
+
     public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENVIRONMENT = List.of(ContainerImageEnvironmentItem.builder()
                     .iid(IMAGE_1_ID)
                     .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
@@ -160,6 +161,21 @@ public abstract class BaseUnitTest {
                     .value("mariadb")
                     .build());
 
+    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .size(IMAGE_1_SIZE)
+            .environment(IMAGE_1_ENVIRONMENT)
+            .dialect(IMAGE_1_DIALECT)
+            .driverClass(IMAGE_1_DRIVER)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .created(IMAGE_1_CREATED)
+            .defaultPort(IMAGE_1_PORT)
+            .compiled(IMAGE_1_UPDATED)
+            .build();
+
     public final static String LICENSE_1_IDENTIFIER = "MIT";
     public final static String LICENSE_1_URI = "https://opensource.org/licenses/MIT";
 
@@ -181,44 +197,8 @@ public abstract class BaseUnitTest {
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
 
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant CONTAINER_2_UPDATED = Instant.now();
-
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant CONTAINER_3_UPDATED = Instant.now();
-
-    public final static Long CONTAINER_4_ID = 4L;
-    public final static String CONTAINER_4_HASH = "deadbeef";
-    public final static String CONTAINER_4_IP = "172.28.0.8";
-    public final static String CONTAINER_4_NAME = "fda-userdb-u04";
-    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
-    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant CONTAINER_4_UPDATED = Instant.now();
-
-    public final static ContainerImage IMAGE_1 = ContainerImage.builder()
-            .id(IMAGE_1_ID)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
-            .hash(IMAGE_1_HASH)
-            .size(IMAGE_1_SIZE)
-            .environment(IMAGE_1_ENVIRONMENT)
-            .dialect(IMAGE_1_DIALECT)
-            .driverClass(IMAGE_1_DRIVER)
-            .jdbcMethod(IMAGE_1_JDBC)
-            .created(IMAGE_1_CREATED)
-            .defaultPort(IMAGE_1_PORT)
-            .compiled(IMAGE_1_UPDATED)
-            .build();
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -232,6 +212,17 @@ public abstract class BaseUnitTest {
             .image(IMAGE_1)
             .build();
 
+    public final static Long CONTAINER_2_ID = 2L;
+    public final static String CONTAINER_2_HASH = "deadbeef";
+    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
+    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_2_UPDATED = Instant.now();
+
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
+
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
@@ -244,6 +235,17 @@ public abstract class BaseUnitTest {
             .image(IMAGE_1)
             .build();
 
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_3_UPDATED = Instant.now();
+
+    public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
+
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
             .name(CONTAINER_3_NAME)
@@ -255,6 +257,17 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .build();
+
+    public final static Long CONTAINER_4_ID = 4L;
+    public final static String CONTAINER_4_HASH = "deadbeef";
+    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static String CONTAINER_4_NAME = "fda-userdb-u04";
+    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
+    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_4_UPDATED = Instant.now();
+
+    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -307,9 +320,9 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "Weather AT";
+    public final static String DATABASE_3_NAME = "Weather";
     public final static Boolean DATABASE_3_PUBLIC = false;
-    public final static String DATABASE_3_INTERNALNAME = "weather_at";
+    public final static String DATABASE_3_INTERNALNAME = "weather";
     public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
     public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_3_UPDATED = Instant.now();
@@ -404,7 +417,15 @@ public abstract class BaseUnitTest {
             .database(DATABASE_1)
             .build();
 
-    public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb");
+    public final static Long QUERY_1_ID = 1L;
+    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
+            "`weather_aus`";
+
+    public final static Long QUERY_2_ID = 2L;
+    public final static String QUERY_2_STATEMENT = "SELECT `date`, `location`, `mintemp`, `rainfall`, `id` FROM " +
+            "`weather_aus`";
+
+    public final static List<String> IMAGE_1_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb");
 
     public final static List<String> IMAGE_2_ENV = List.of("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather_at");
 

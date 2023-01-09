@@ -425,7 +425,7 @@ export default {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     executionUTC () {
-      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
+      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.created) : formatTimestampUTCLabel(this.query.created)
     },
     erroneous () {
       if (this.identifier) {

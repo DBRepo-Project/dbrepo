@@ -444,8 +444,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(Optional.of(access));
             log.trace("mock access {} for database with id {} and username {}", access.getType(), databaseId, username);
         }
-        when(queryService.execute(containerId, databaseId, request, QueryTypeDto.QUERY,
-                principal, page, size, sortDirection, sortColumn))
+        when(queryService.execute(containerId, databaseId, request, principal, page, size, sortDirection, sortColumn))
                 .thenReturn(QUERY_1_RESULT_DTO);
         log.trace("mock query service for container with id {} and database with id {}", containerId, databaseId);
 

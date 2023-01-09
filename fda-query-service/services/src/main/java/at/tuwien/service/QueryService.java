@@ -26,7 +26,6 @@ public interface QueryService {
      * @param containerId   The container id.
      * @param databaseId    The database id.
      * @param statement     The query.
-     * @param type          The query type.
      * @param principal     The current user.
      * @param page          The page number.
      * @param size          The page size.
@@ -41,7 +40,7 @@ public interface QueryService {
      * @throws QueryMalformedException    The query is malformed.
      */
     QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                           QueryTypeDto type, Principal principal, Long page, Long size,
+                           Principal principal, Long page, Long size,
                            SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
             ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException;

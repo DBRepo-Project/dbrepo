@@ -13,7 +13,7 @@
             Before you can use the repository, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="createAccount.email"
                 type="email"
@@ -26,7 +26,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="createAccount.username"
                 autocomplete="off"
@@ -38,7 +38,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="createAccount.password"
                 autocomplete="off"
@@ -48,8 +48,19 @@
                 label="Password *" />
             </v-col>
           </v-row>
+          <v-row>
+            <v-col sm="6">
+              <v-text-field
+                v-model="password2"
+                autocomplete="off"
+                required
+                :rules="[v => !!v || $t('Required'), v => (!!v && v) === createAccount.password || $t('Not matching!')]"
+                type="password"
+                label="Repeat Password *" />
+            </v-col>
+          </v-row>
           <v-row v-if="sandbox">
-            <v-col cols="6">
+            <v-col sm="6">
               <v-checkbox
                 v-model="consent"
                 required
@@ -58,7 +69,7 @@
             </v-col>
           </v-row>
           <v-row v-if="sandbox">
-            <v-col cols="6">
+            <v-col sm="6">
               <v-checkbox
                 v-model="privacy"
                 required
@@ -90,6 +101,7 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       valid: false,
+      password2: null,
       privacy: false,
       consent: false,
       createAccount: {

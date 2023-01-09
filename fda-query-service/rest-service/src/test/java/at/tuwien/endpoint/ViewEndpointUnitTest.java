@@ -658,7 +658,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         }
         when(viewService.findById(databaseId, viewId, principal))
                 .thenReturn(VIEW_1);
-        when(queryService.execute(containerId, databaseId, statement, QueryTypeDto.VIEW, principal, page, size, null, null))
+        when(queryService.execute(containerId, databaseId, statement, principal, page, size, null, null))
                 .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */

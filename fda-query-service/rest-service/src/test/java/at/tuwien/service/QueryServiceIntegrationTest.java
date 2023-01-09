@@ -296,8 +296,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, QueryTypeDto.QUERY,
-                USER_1_PRINCIPAL, 0L, 100L, null, null);
+        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
         assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
