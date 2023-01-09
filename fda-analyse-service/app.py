@@ -1,4 +1,6 @@
 import os
+from _csv import Error
+
 from flask import Flask, request, Response
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
@@ -71,10 +73,16 @@ template = {
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
         }
     },
-    "servers": [{
-        "url": "http://localhost:5000",
-        "description": "Generated server url"
-    }]
+    "servers": [
+        {
+            "url": "http://localhost:5000",
+            "description": "Generated server url"
+        },
+        {
+            "url": "https://dbrepo2.tuwien.ac.at:5000",
+            "description": "DBRepo Sandbox"
+        }
+    ]
 }
 
 app.json_encoder = LazyJSONEncoder
@@ -102,6 +110,14 @@ def determinedt():
         res = determine_datatypes(filepath, enum, enum_tol, separator)
         logging.debug('determine datatype resulted in datatypes %s', res)
         return Response(res, mimetype="application/json"), 200
+    except OSError as e:
+        logging.error('Failed to determine data types: %s', e)
+        res = {"success": False, "message": str(e)}
+        return Response(res, mimetype="application/json"), 409
+    except Error as e:
+        logging.error('Failed to determine separator %s', e)
+        res = {"success": False, "message": str(e)}
+        return Response(res, mimetype="application/json"), 422
     except Exception as e:
         logging.error('Failed to determine data types: %s', e)
         res = {"success": False, "message": str(e)}

@@ -7,7 +7,7 @@ all:
 clean:
 	bash ./.dbrepo2/clean.sh
 
-build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata
+build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-analyse-service
 
 build-backend-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
@@ -41,6 +41,9 @@ build-backend-metadata: build-backend-metadata-db
 
 build-semantics-service:
 	bash ./fda-semantics-service/build.sh
+
+build-analyse-service:
+	bash ./fda-analyse-service/build.sh
 
 build-docker:
 	docker compose build fda-metadata-db
@@ -194,7 +197,7 @@ pull-broker:
 pull-metadata:
 	docker pull "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service
+test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
 test-authentication-service: build-backend-metadata-db
 	docker system prune -f --volumes
@@ -238,6 +241,9 @@ test-metadata-service: build-backend-metadata-db
 
 test-semantics-service: build-semantics-service
 	bash ./fda-semantics-service/test.sh
+
+test-analyse-service: build-analyse-service
+	bash ./fda-analyse-service/test.sh
 
 coverage-frontend: clean build-frontend
 	yarn --cwd ./fda-ui run coverage || true
