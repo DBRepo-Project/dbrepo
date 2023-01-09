@@ -1,11 +1,13 @@
 <template>
-  <div>
+  <div v-if="isResearcher">
     <QueryBuilder />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
+import { isResearcher } from '@/utils'
+
 export default {
   data () {
     return {
@@ -25,6 +27,12 @@ export default {
     }
   },
   computed: {
+    user () {
+      return this.$store.state.user
+    },
+    isResearcher () {
+      return isResearcher(this.user)
+    }
   }
 }
 </script>

@@ -208,7 +208,6 @@
 
 <script>
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   data () {
@@ -225,9 +224,6 @@ export default {
       consumers: [],
       access: {
         type: null
-      },
-      user: {
-        username: null
       },
       database: {
         id: null,
@@ -289,6 +285,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
     brokerConfig () {
       return {
         headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
@@ -344,7 +343,6 @@ export default {
   },
   mounted () {
     this.$root.$on('table-create', this.refresh)
-    this.loadUser()
     this.loadAccess()
     this.loadDatabase()
     this.pollConsumerStatus()
@@ -357,12 +355,6 @@ export default {
       this.column = item
       this.mode = mode
       this.dialogSemantic = true
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     },
     hasUnit (item) {
       return item.unit !== null

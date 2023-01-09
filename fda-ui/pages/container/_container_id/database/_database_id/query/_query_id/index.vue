@@ -234,7 +234,6 @@
 import Persist from '@/components/dialogs/Persist'
 import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   name: 'QueryShow',
@@ -265,9 +264,6 @@ export default {
           firstname: null,
           lastname: null
         }
-      },
-      user: {
-        username: null
       },
       access: {
         type: null,
@@ -435,7 +431,6 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadDatabase()
       .then(() => this.loadMetadata())
       .then(() => {
@@ -582,25 +577,6 @@ export default {
       if (event.action === 'persisted') {
         this.loadMetadata()
       }
-    },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
-        this.access = res.data
-        console.debug('check access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
     }
   }
 }

@@ -3,19 +3,22 @@ package at.tuwien;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.identifier.*;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.entities.identifier.VisibilityType;
+import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -40,11 +43,86 @@ public abstract class BaseUnitTest {
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .email(USER_1_EMAIL)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .emailVerified(USER_1_EMAIL_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
             .created(USER_1_CREATED)
             .lastModified(USER_1_LAST_MODIFIED)
             .build();
+
+    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .password(USER_1_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+            USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
+    public final static String USER_2_USERNAME = "junit2";
+    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_2_EMAIL = "junit2@example.com";
+    public final static Boolean USER_2_EMAIL_VERIFIED = true;
+    public final static Boolean USER_2_THEME_DARK = false;
+    public final static Instant USER_2_CREATED = Instant.now()
+            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_2_LAST_MODIFIED = USER_2_CREATED;
+
+    public final static User USER_2 = User.builder()
+            .username(USER_2_USERNAME)
+            .password(USER_2_PASSWORD)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
+            .email(USER_2_EMAIL)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
+            .emailVerified(USER_2_EMAIL_VERIFIED)
+            .themeDark(USER_2_THEME_DARK)
+            .created(USER_2_CREATED)
+            .lastModified(USER_2_LAST_MODIFIED)
+            .build();
+
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
+
+    public final static String USER_3_USERNAME = "junit3";
+    public final static String USER_3_PASSWORD = "junit3";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_3_EMAIL = "junit3@example.com";
+    public final static Boolean USER_3_EMAIL_VERIFIED = true;
+    public final static Boolean USER_3_THEME_DARK = false;
+    public final static Instant USER_3_CREATED = Instant.now()
+            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_3_LAST_MODIFIED = USER_3_CREATED;
+
+    public final static User USER_3 = User.builder()
+            .username(USER_3_USERNAME)
+            .password(USER_3_PASSWORD)
+            .databasePassword(USER_3_DATABASE_PASSWORD)
+            .email(USER_3_EMAIL)
+            .roles(List.of(RoleType.ROLE_DATA_STEWARD))
+            .emailVerified(USER_3_EMAIL_VERIFIED)
+            .themeDark(USER_3_THEME_DARK)
+            .created(USER_3_CREATED)
+            .lastModified(USER_3_LAST_MODIFIED)
+            .build();
+
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DATA_STEWARD")))
+            .build();
+
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "postgres";
@@ -128,12 +206,14 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_INTERNAL_NAME = "test_database";
     public final static String DATABASE_1_EXCHANGE = "fda." + DATABASE_1_INTERNAL_NAME;
     public final static Boolean DATABASE_1_PUBLIC = true;
+    public final static User DATABASE_1_CREATOR = USER_1;
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Test Database 2";
     public final static String DATABASE_2_INTERNAL_NAME = "test_database_2";
     public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNAL_NAME;
     public final static Boolean DATABASE_2_PUBLIC = false;
+    public final static User DATABASE_2_CREATOR = USER_2;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Rainfall";
@@ -148,6 +228,7 @@ public abstract class BaseUnitTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .tables(List.of())
             .isPublic(DATABASE_1_PUBLIC)
+            .creator(DATABASE_1_CREATOR)
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
@@ -157,6 +238,7 @@ public abstract class BaseUnitTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .tables(List.of())
             .isPublic(DATABASE_2_PUBLIC)
+            .creator(DATABASE_2_CREATOR)
             .build();
 
     public final static Table TABLE_1 = Table.builder()
@@ -275,7 +357,7 @@ public abstract class BaseUnitTest {
     public final static Long IDENTIFIER_1_RESULT_NUMBER = 2L;
     public final static String IDENTIFIER_1_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
-    public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
 
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
@@ -434,14 +516,39 @@ public abstract class BaseUnitTest {
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 
-    public final static String RELATED_IDENTIFIER_1_VALUE = "10.5281/zenodo.6637333";
-    public final static RelatedTypeDto RELATED_IDENTIFIER_1_TYPE = RelatedTypeDto.DOI;
-    public final static RelationTypeDto RELATED_IDENTIFIER_1_RELATION = RelationTypeDto.CITES;
+    public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
+            .cid(IDENTIFIER_1_CONTAINER_ID)
+            .dbid(IDENTIFIER_1_DATABASE_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
+            .relatedIdentifiers(List.of())
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_1_CREATE_DTO))
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .build();
 
-    public final static RelatedIdentifierCreateDto RELATED_IDENTIFIER_1_CREATE_DTO = RelatedIdentifierCreateDto.builder()
-            .value(RELATED_IDENTIFIER_1_VALUE)
-            .type(RELATED_IDENTIFIER_1_TYPE)
-            .relation(RELATED_IDENTIFIER_1_RELATION)
+    public final static Long RELATED_IDENTIFIER_2_ID = 1L;
+    public final static Long RELATED_IDENTIFIER_2_IDENTIFIER_ID = 2L;
+    public final static String RELATED_IDENTIFIER_2_VALUE = "10.5281/zenodo.6637333";
+    public final static RelatedTypeDto RELATED_IDENTIFIER_2_TYPE_DTO = RelatedTypeDto.DOI;
+    public final static RelationType RELATED_IDENTIFIER_2_TYPE = RelationType.CITES;
+    public final static RelationTypeDto RELATED_IDENTIFIER_2_RELATION = RelationTypeDto.CITES;
+
+    public final static RelatedIdentifier IDENTIFIER_1_RELATED_IDENTIFIER_1 = RelatedIdentifier.builder()
+            .id(RELATED_IDENTIFIER_2_ID)
+            .iid(RELATED_IDENTIFIER_2_IDENTIFIER_ID)
+            .relation(RELATED_IDENTIFIER_2_TYPE)
+            .value(RELATED_IDENTIFIER_2_VALUE)
+            .build();
+
+    public final static RelatedIdentifierCreateDto IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO = RelatedIdentifierCreateDto.builder()
+            .value(RELATED_IDENTIFIER_2_VALUE)
+            .type(RELATED_IDENTIFIER_2_TYPE_DTO)
+            .relation(RELATED_IDENTIFIER_2_RELATION)
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
@@ -452,7 +559,7 @@ public abstract class BaseUnitTest {
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
-            .relatedIdentifiers(List.of(RELATED_IDENTIFIER_1_CREATE_DTO))
+            .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
             .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)

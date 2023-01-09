@@ -138,9 +138,11 @@ export default {
     },
     async updateRoles () {
       this.loading = true
-      this.modify.roles = this.modify.roles.map(role => this.roles.filter(r => r.code === role)[0].value)
+      const roles = {
+        roles: this.modify.roles.map(role => this.roles.filter(r => r.code === role)[0].value)
+      }
       try {
-        const res = await this.$axios.put(`/api/user/${this.selectedUser.id}/roles`, this.modify, this.config)
+        const res = await this.$axios.put(`/api/user/${this.selectedUser.id}/roles`, roles, this.config)
         console.debug('roles', res.data)
         this.$toast.success('Updated user roles')
         this.$emit('close-dialog', { success: true })

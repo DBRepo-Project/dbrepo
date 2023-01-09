@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="hasIdentifier || isCreator" flat tile>
+        <v-card v-if="hasIdentifier || (isCreator && isResearcher)" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
@@ -95,7 +95,7 @@
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-text v-if="isCreator && !loading && !database.identifier.id">
+          <v-card-text v-if="isCreator && !loading && !database.identifier.id && isResearcher">
             <v-card-actions>
               <v-btn
                 small
@@ -106,7 +106,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="isCreator || hasIdentifier" />
+        <v-divider v-if="hasIdentifier || (isCreator && isResearcher)" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -217,7 +217,7 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel, formatUser, isResearcher } from '@/utils'
 
 export default {
   components: {
@@ -322,6 +322,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
+    isResearcher () {
+      return isResearcher(this.user)
+    },
     pid () {
       return `${this.baseUrl}/pid/${this.identifier.id}`
     },
@@ -395,9 +398,6 @@ export default {
   },
   methods: {
     async loadDatabase () {
-      if (!this.database.identifier.id) {
-        return
-      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)

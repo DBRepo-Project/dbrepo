@@ -86,7 +86,7 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { decodeJwt } from 'jose'
+
 export default {
   data () {
     return {
@@ -94,9 +94,6 @@ export default {
       loadProgress: 0,
       error: false,
       queries: [],
-      user: {
-        username: null
-      },
       database: {
         is_public: null,
         creator: {
@@ -129,6 +126,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
     loadingColor () {
       return this.error ? 'error' : 'primary'
     },
@@ -149,7 +149,6 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadDatabase()
       .then(() => this.loadIdentifiers())
       .then(() => {
@@ -222,12 +221,6 @@ export default {
         return false
       }
       return this.database.creator.username === this.user.username
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     },
     simulateProgress () {
       if (this.loadProgress !== 0) {

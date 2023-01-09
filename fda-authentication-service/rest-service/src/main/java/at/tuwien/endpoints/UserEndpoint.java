@@ -60,7 +60,6 @@ public class UserEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Timed(value = "user.list", description = "Time needed to list the users")
     @Operation(summary = "List users")
     public ResponseEntity<List<UserBriefDto>> list() {
