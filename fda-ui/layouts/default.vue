@@ -85,8 +85,17 @@
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
       <v-btn v-if="username" to="/user" plain>
-        {{ username }} <sup v-if="user.email_verified">
-          <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+        {{ username }} <sup v-if="isDeveloper">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                color="primary"
+                small
+                v-bind="attrs"
+                v-on="on">mdi-check-decagram</v-icon>
+            </template>
+            <span>Developer</span>
+          </v-tooltip>
         </sup>
       </v-btn>
       <v-menu bottom offset-y left>
@@ -135,6 +144,8 @@
 </template>
 
 <script>
+import { isDeveloper } from '@/utils'
+
 export default {
   name: 'DefaultLayout',
   data () {
@@ -144,9 +155,6 @@ export default {
       query: null,
       searchResults: [],
       databases: [],
-      user: {
-        theme_dark: null
-      },
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false
@@ -159,14 +167,20 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
     username () {
-      return this.$store.state.user && this.$store.state.user.username
+      return this.user ? this.user.username : null
     },
     container () {
       return this.$store.state.container
     },
     db () {
       return this.$store.state.db
+    },
+    isDeveloper () {
+      return isDeveloper(this.user)
     },
     version () {
       return this.$config.version
@@ -194,9 +208,8 @@ export default {
   watch: {
     $route () {
       this.loadDB()
-      if (this.token) {
-        this.loadUser()
-          .then(() => this.setTheme())
+      if (this.user) {
+        this.setTheme()
       }
     },
     query (val) {
@@ -217,8 +230,7 @@ export default {
     this.loadDB()
     this.loadContainers()
       .then(() => this.loadDatabases())
-    this.loadUser()
-      .then(() => this.setTheme())
+    this.setTheme()
   },
   methods: {
     metadata (item) {
@@ -331,30 +343,11 @@ export default {
         }
       }
     },
-    async loadUser () {
-      if (!this.token) {
+    setTheme () {
+      if (!this.user || !this.user.theme_dark) {
+        this.$vuetify.theme.dark = false
         return
       }
-      try {
-        this.loadingUser = true
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        console.debug('user data', res.data)
-        this.user = res.data
-      } catch (err) {
-        const { status } = err.response
-        if (status === 401) {
-          console.error('Token expired', err)
-          this.$toast.warning('Login has expired')
-          this.logout()
-        } else {
-          console.error('user data', err)
-          this.$toast.error('Failed to load user')
-          this.error = true
-        }
-      }
-      this.loadingUser = false
-    },
-    setTheme () {
       this.$vuetify.theme.dark = this.user.theme_dark
     }
   }

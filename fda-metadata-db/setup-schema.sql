@@ -125,11 +125,12 @@ CREATE TABLE IF NOT EXISTS mdb_data
 
 CREATE TABLE IF NOT EXISTS mdb_user_roles
 (
+    id            bigint       NOT NULL AUTO_INCREMENT,
     uid           bigint       not null,
     role          varchar(255) not null,
     created       timestamp    NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    PRIMARY KEY (uid),
+    PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
     UNIQUE (uid, role)
 ) WITH SYSTEM VERSIONING;

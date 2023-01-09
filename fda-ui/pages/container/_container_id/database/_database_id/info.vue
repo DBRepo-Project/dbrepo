@@ -218,7 +218,6 @@ import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatUser } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -247,9 +246,6 @@ export default {
         creators: []
       },
       metadataLoading: false,
-      user: {
-        username: null
-      },
       database: {
         id: null,
         name: null,
@@ -313,6 +309,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
     config () {
       if (this.token === null) {
         return {
@@ -330,7 +329,7 @@ export default {
       return formatTimestampUTCLabel(this.database.created)
     },
     isCreator () {
-      if (this.database.creator.username === null || this.user.username === null) {
+      if (!this.database.creator.username || !this.user || !this.user.username) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -391,7 +390,6 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadDatabase()
       .then(() => this.loadIdentifier())
   },
@@ -441,25 +439,6 @@ export default {
         this.error = true
       }
       this.metadataLoading = false
-    },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
-        this.access = res.data
-        console.debug('check access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
     },
     async loadIdentifier () {
       if (!this.database.identifier.id) {

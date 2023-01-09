@@ -28,16 +28,16 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!loading && canModify" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="!loading && canModify && isResearcher" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn v-if="!loading && canRead" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn v-if="!loading && canRead && isResearcher" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="!loading && isOwner" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
+        <v-btn v-if="!loading && isOwner && isResearcher" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
           <v-icon left>mdi-view-carousel-outline</v-icon> Create View
         </v-btn>
-        <v-btn v-if="!loading && canModify" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="!loading && canModify && isResearcher" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { decodeJwt } from 'jose'
+import { isResearcher } from '@/utils'
 
 export default {
   data () {
@@ -78,9 +78,6 @@ export default {
         user: {
           username: null
         }
-      },
-      user: {
-        username: null
       },
       database: {
         id: null,
@@ -102,11 +99,14 @@ export default {
     db () {
       return this.$store.state.db
     },
+    user () {
+      return this.$store.state.user
+    },
     token () {
       return this.$store.state.token
     },
     canModify () {
-      if (!this.user.username) {
+      if (!this.user || !this.user.username) {
         /* not yet loaded */
         return false
       }
@@ -119,11 +119,14 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     isOwner () {
-      if (!this.user.username) {
+      if (!this.user || !this.user.username) {
         /* not yet loaded */
         return false
       }
       return this.database.creator.username === this.user.username
+    },
+    isResearcher () {
+      return isResearcher(this.user)
     },
     config () {
       if (this.token === null) {
@@ -141,9 +144,6 @@ export default {
     },
     databaseTooltip () {
       return this.database.is_public ? 'Public' : 'Private'
-    },
-    isPublicOrOwner () {
-      return this.database.is_public || this.database.creator.username === this.user.username
     }
   },
   watch: {
@@ -158,7 +158,7 @@ export default {
       return
     }
     this.loadDatabase()
-    this.loadUser()
+    this.loadAccess()
   },
   methods: {
     async loadDatabase () {
@@ -174,11 +174,10 @@ export default {
       }
       this.loading = false
     },
-    async loadUser () {
-      if (!this.token) {
+    async loadAccess () {
+      if (!this.user) {
         return
       }
-      this.user.username = decodeJwt(this.token).sub
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)

@@ -6,7 +6,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token" color="primary" @click.stop="createDbDialog = true">
+        <v-btn v-if="isResearcher" color="primary" @click.stop="createDbDialog = true">
           <v-icon left>mdi-plus</v-icon> Database
         </v-btn>
       </v-toolbar-title>
@@ -18,7 +18,7 @@
           v-model="filterPrivate"
           label="Private" />
         <v-checkbox
-          v-if="user.username"
+          v-if="user"
           v-model="filterMine"
           class="ml-2"
           label="Mine" />
@@ -64,8 +64,7 @@
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
-import { formatTimestampUTCLabel, formatCreators, formatYearUTC, formatUser } from '@/utils'
-import { decodeJwt } from 'jose'
+import { formatTimestampUTCLabel, formatCreators, formatYearUTC, formatUser, isResearcher } from '@/utils'
 
 export default {
   components: {
@@ -85,9 +84,6 @@ export default {
         name: null,
         is_public: true
       },
-      user: {
-        username: null
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
@@ -103,6 +99,12 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
+    isResearcher () {
+      return isResearcher(this.user)
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -113,7 +115,6 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadContainers()
       .then(() => this.loadDatabases())
   },
@@ -148,7 +149,7 @@ export default {
       if (this.filterPrivate) {
         filtered = filtered.filter(c => !c.database.is_public)
       }
-      if (this.token && this.filterMine) {
+      if (this.user && this.filterMine) {
         filtered = filtered.filter(c => c.creator.username === this.user.username)
       }
       return filtered
@@ -209,21 +210,12 @@ export default {
       this.loadingDatabases = false
       console.debug('containers with databases', this.containers)
     },
-    formatTimestamp (str) {
-      return formatTimestampUTCLabel(str)
-    },
     loadDatabase (container) {
       if (this.notInit(container)) {
         console.warn('Container', container.id, 'not initialized')
         return
       }
       this.$router.push(`/container/${container.id}/database/${container.database.id}`)
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     },
     async startContainer (container) {
       try {
