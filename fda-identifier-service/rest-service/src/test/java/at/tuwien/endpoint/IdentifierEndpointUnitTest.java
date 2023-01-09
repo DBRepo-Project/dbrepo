@@ -7,12 +7,12 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.endpoints.PersistenceEndpoint;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.repository.jpa.RelatedIdentifierRepository;
@@ -27,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -38,7 +39,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -139,8 +139,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_anonymousDatabase_fails() {
 
         /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            generic_create(IDENTIFIER_1_DTO_REQUEST, null, null, null);
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, null, null, null, null);
         });
     }
 
@@ -151,7 +151,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException {
 
         /* test */
-        generic_create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(IDENTIFIER_1_DTO_REQUEST, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
         });
     }
 
@@ -171,36 +171,36 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException {
 
         /* test */
-        generic_create(IDENTIFIER_1_DTO_REQUEST, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3);
+        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3);
     }
 
     @Test
     public void create_anonymousQuery_fails() {
 
         /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            generic_create(IDENTIFIER_2_DTO_REQUEST, null, null, null);
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null, null);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    @WithMockUser(username = USER_2_USERNAME, roles = {"RESEARCHER"})
     public void create_creatorResearcherQuery_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException {
 
         /* test */
-        generic_create(IDENTIFIER_2_DTO_REQUEST, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"RESEARCHER"})
-    public void create_nonCreatorResearcherQuery_fails() throws IdentifierAlreadyExistsException,
-            UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException {
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void create_nonCreatorResearcherQuery_fails() {
 
         /* test */
-        generic_create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        });
     }
 
     @Test
@@ -210,25 +210,23 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException {
 
         /* test */
-        generic_create(IDENTIFIER_2_DTO_REQUEST, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3);
+        generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(IdentifierCreateDto identifier, Principal principal, String username, User user)
-            throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
+    protected void generic_create(Long containerId, Long databaseId, Database database, IdentifierCreateDto data,
+                                  Identifier identifier, Principal principal, String username, User user)
+            throws QueryNotFoundException, RemoteUnavailableException,
+            IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
             IdentifierRequestException, NotAllowedException {
 
         /* mock */
-        when(databaseRepository.findByContainerAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(databaseRepository.findByContainerAndDatabaseId(CONTAINER_2_ID, DATABASE_2_ID))
-                .thenReturn(Optional.of(DATABASE_2));
-        when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_2_ID, QUERY_2_ID))
-                .thenReturn(List.of());
+        when(databaseRepository.findByContainerAndDatabaseId(containerId, databaseId))
+                .thenReturn(Optional.of(database));
         if (user == null) {
             when(userRepository.findByUsername(username))
                     .thenReturn(Optional.empty());
@@ -236,26 +234,28 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             when(userRepository.findByUsername(username))
                     .thenReturn(Optional.of(user));
         }
-        when(queryServiceGateway.find(CONTAINER_2_ID, DATABASE_2_ID, identifier, "ABC"))
+        when(queryServiceGateway.find(containerId, databaseId, data, "ABC"))
                 .thenReturn(QUERY_1_DTO);
+        when(identifierService.create(data, principal, "ABC"))
+                .thenReturn(identifier);
         when(identifierRepository.save(any(Identifier.class)))
-                .thenReturn(IDENTIFIER_1)
-                .thenReturn(IDENTIFIER_1);
+                .thenReturn(identifier)
+                .thenReturn(identifier);
         when(relatedIdentifierRepository.save(any(RelatedIdentifier.class)))
                 .thenReturn(IDENTIFIER_1_RELATED_IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(identifier, "ABC", principal);
+        final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(data, "ABC", principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
-        assertEquals(IDENTIFIER_1_ID, body.getId());
-        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, body.getDescription());
-        assertEquals(IDENTIFIER_1_QUERY, body.getQuery());
-        assertEquals(IDENTIFIER_1_QUERY_HASH, body.getQueryHash());
-        assertEquals(IDENTIFIER_1_RESULT_HASH, body.getResultHash());
-        assertEquals(IDENTIFIER_1_RESULT_NUMBER, body.getResultNumber());
+        assertEquals(identifier.getId(), body.getId());
+        assertEquals(identifier.getTitle(), body.getTitle());
+        assertEquals(identifier.getDescription(), body.getDescription());
+        assertEquals(identifier.getQuery(), body.getQuery());
+        assertEquals(identifier.getQueryHash(), body.getQueryHash());
+        assertEquals(identifier.getResultHash(), body.getResultHash());
+        assertEquals(identifier.getResultNumber(), body.getResultNumber());
     }
 
     protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource)
@@ -267,6 +267,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
         if (resource != null) {
             when(identifierService.exportResource(IDENTIFIER_1_ID))
+                    .thenReturn(resource);
+            when(identifierService.exportMetadata(IDENTIFIER_1_ID))
                     .thenReturn(resource);
         }
 

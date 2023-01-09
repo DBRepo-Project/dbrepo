@@ -56,7 +56,7 @@ public abstract class AbstractEndpoint {
                     database.getCreator().getUsername());
             return true;
         }
-        log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
+        log.error("Failed to grant permission {} because database owner with id {} is not the current user with id {}", permissionCode, database.getCreator().getId(), user.getId());
         return false;
     }
 

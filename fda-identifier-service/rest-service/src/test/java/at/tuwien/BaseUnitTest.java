@@ -28,6 +28,7 @@ import java.util.Map;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_PASSWORD = "junit";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -39,6 +40,7 @@ public abstract class BaseUnitTest {
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
 
     public final static User USER_1 = User.builder()
+            .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
@@ -60,6 +62,7 @@ public abstract class BaseUnitTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
+    public final static Long USER_2_ID = 2L;
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -71,6 +74,7 @@ public abstract class BaseUnitTest {
     public final static Instant USER_2_LAST_MODIFIED = USER_2_CREATED;
 
     public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
@@ -435,6 +439,7 @@ public abstract class BaseUnitTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
+            .creator(USER_2)
             .build();
 
     public final static Creator CREATOR_1 = Creator.builder()
