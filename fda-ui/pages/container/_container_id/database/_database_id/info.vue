@@ -397,6 +397,9 @@ export default {
   },
   methods: {
     async loadDatabase () {
+      if (!this.database.identifier.id) {
+        return
+      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
@@ -459,7 +462,7 @@ export default {
       this.loading = false
     },
     async loadIdentifier () {
-      if (!this.database.identifier) {
+      if (!this.database.identifier.id) {
         return
       }
       try {
