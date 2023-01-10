@@ -90,7 +90,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
@@ -109,7 +109,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     public ResponseEntity<?> delete(@NotNull @Valid @RequestParam("id") Long id)
             throws IdentifierNotFoundException {
         identifierService.delete(id);
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }
 }

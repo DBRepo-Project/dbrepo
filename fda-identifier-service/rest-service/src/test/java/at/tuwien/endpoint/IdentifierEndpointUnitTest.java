@@ -27,6 +27,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -39,6 +40,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -213,6 +215,69 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3);
     }
 
+    @Test
+    public void update_anonymous_fails() {
+
+        /* test */
+        assertThrows(AuthenticationCredentialsNotFoundException.class, this::generic_update);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void update_creatorResearcher_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, this::generic_update);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"RESEARCHER"})
+    public void update_nonCreatorResearcher_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, this::generic_update);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void update_dataSteward_succeeds() throws IdentifierPublishingNotAllowedException,
+            IdentifierNotFoundException {
+
+        /* test */
+        generic_update();
+    }
+
+    @Test
+    public void delete_anonymous_fails() {
+
+        /* test */
+        assertThrows(AuthenticationCredentialsNotFoundException.class, this::generic_delete);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void delete_creatorResearcher_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, this::generic_delete);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"RESEARCHER"})
+    public void delete_nonCreatorResearcher_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, this::generic_delete);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void delete_dataSteward_succeeds() throws IdentifierNotFoundException {
+
+        /* test */
+        generic_delete();
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -274,6 +339,41 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         return persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+    }
+
+    protected void generic_update() throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
+
+        /* mock */
+        when(identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO))
+                .thenReturn(IDENTIFIER_1);
+        when(identifierRepository.save(IDENTIFIER_1))
+                .thenReturn(IDENTIFIER_1);
+
+        /* test */
+        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        final IdentifierDto body = response.getBody();
+        assertNotNull(body);
+        assertEquals(IDENTIFIER_1_ID, body.getId());
+        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
+        assertEquals(IDENTIFIER_1_DESCRIPTION, body.getDescription());
+        assertEquals(IDENTIFIER_1_QUERY, body.getQuery());
+        assertEquals(IDENTIFIER_1_QUERY_HASH, body.getQueryHash());
+        assertEquals(IDENTIFIER_1_RESULT_NUMBER, body.getResultNumber());
+        assertEquals(IDENTIFIER_1_RESULT_HASH, body.getResultHash());
+    }
+
+    protected void generic_delete() throws IdentifierNotFoundException {
+
+        /* mock */
+        doNothing()
+                .when(identifierService)
+                .delete(IDENTIFIER_1_ID);
+
+        /* test */
+        final ResponseEntity<?> response = identifierEndpoint.delete(IDENTIFIER_1_ID);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
 }
