@@ -48,7 +48,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
-                                                       @RequestParam(required = false) Long qid) {
+                                                    @RequestParam(required = false) Long qid) {
         log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()
@@ -92,7 +92,7 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
+    public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
             throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
@@ -105,9 +105,10 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Transactional
     @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
-    @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @Valid @RequestParam("id") Long id)
+    @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
             throws IdentifierNotFoundException {
+        log.debug("endpoint delete identifier, id={}", id);
         identifierService.delete(id);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();

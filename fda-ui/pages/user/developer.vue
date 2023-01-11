@@ -1,5 +1,5 @@
 <template>
-  <div v-if="token">
+  <div v-if="isDeveloper">
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -56,11 +56,13 @@
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
-                v-if="!isDeveloper1(item)"
+                v-if="item.username !== user.username"
+                :disabled="isDeveloper1(item)"
                 x-small
                 @click="modifyRoles(item)">
                 Modify
               </v-btn>
+              <span v-if="item.username === user.username">(you)</span>
             </template>
           </v-data-table>
         </v-card>

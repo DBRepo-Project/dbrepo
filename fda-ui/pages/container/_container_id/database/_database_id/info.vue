@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="hasIdentifier || (isCreator && isResearcher)" flat tile>
+        <v-card v-if="!loadingCitation && (isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher))" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
@@ -95,18 +95,34 @@
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-text v-if="isCreator && !loading && !database.identifier.id && isResearcher">
+          <v-card-text>
             <v-card-actions>
               <v-btn
+                v-if="!hasIdentifier && (isDataSteward || (!hasIdentifier && isCreator && isResearcher))"
                 small
                 color="primary"
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
+              <!--              <v-btn-->
+              <!--                v-if="isDataSteward && hasIdentifier"-->
+              <!--                small-->
+              <!--                color="secondary"-->
+              <!--                @click="editDbDialog = true">-->
+              <!--                Update Database PID-->
+              <!--              </v-btn>-->
+              <v-btn
+                v-if="isDataSteward && hasIdentifier"
+                small
+                :loading="loadingDelete"
+                color="error"
+                @click="deleteIdentifier">
+                Delete Database PID
+              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="hasIdentifier || (isCreator && isResearcher)" />
+        <v-divider v-if="!loadingCitation && (hasIdentifier || (isCreator && isResearcher) || isDataSteward)" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -195,19 +211,16 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-card-actions v-if="isCreator">
-              <v-dialog
-                v-if="!hasIdentifier"
-                v-model="editDbDialog"
-                persistent
-                max-width="860">
-                <Persist type="database" @close="closeDialog" />
-              </v-dialog>
-            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-tab-item>
     </v-tabs-items>
+    <v-dialog
+      v-model="editDbDialog"
+      persistent
+      max-width="860">
+      <Persist type="database" :database="database" @close="closeDialog" />
+    </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -217,7 +230,7 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
-import { formatTimestampUTCLabel, formatUser, isResearcher } from '@/utils'
+import { formatTimestampUTCLabel, formatUser, isDataSteward, isResearcher } from '@/utils'
 
 export default {
   components: {
@@ -230,6 +243,7 @@ export default {
     return {
       loading: false,
       loadingCitation: false,
+      loadingDelete: false,
       editDbDialog: false,
       access: {
         type: null,
@@ -253,13 +267,7 @@ export default {
         is_public: null,
         created: null,
         contact: null,
-        identifier: {
-          id: null,
-          license: {
-            identifier: null,
-            uri: null
-          }
-        },
+        identifier: null,
         container: {
           id: null,
           name: null,
@@ -324,6 +332,9 @@ export default {
     },
     isResearcher () {
       return isResearcher(this.user)
+    },
+    isDataSteward () {
+      return isDataSteward(this.user)
     },
     pid () {
       return `${this.baseUrl}/pid/${this.identifier.id}`
@@ -393,6 +404,7 @@ export default {
     }
   },
   mounted () {
+    this.loadingCitation = true
     this.loadDatabase()
       .then(() => this.loadIdentifier())
   },
@@ -416,6 +428,7 @@ export default {
     closeDialog (event) {
       if (event.action === 'persisted') {
         this.loadDatabase()
+          .then(() => this.loadIdentifier())
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
@@ -442,11 +455,13 @@ export default {
     },
     async loadIdentifier () {
       if (!this.database.identifier.id) {
+        this.loadingCitation = false
         return
       }
       try {
         const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
         this.identifier = res.data
+        this.database.identifier = res.data
         this.identifier.affiliations = []
         this.identifier.creators.forEach((personOrOrg) => {
           const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
@@ -462,6 +477,30 @@ export default {
         console.error('Failed to load identifier', err)
         this.$toast.error('Failed to load identifier')
       }
+      this.loadingCitation = false
+    },
+    async deleteIdentifier () {
+      if (!this.database.identifier.id) {
+        return
+      }
+      this.loadingDelete = true
+      try {
+        await this.$axios.delete(`/api/identifier/${this.database.identifier.id}`, this.config)
+        console.info('Deleted identifier with id ', this.database.identifier.id)
+        this.$toast.success('Successfully deleted identifier with id ' + this.database.identifier.id)
+        this.identifier = {
+          id: null,
+          license: {
+            identifier: null,
+            uri: null
+          }
+        }
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to delete identifier', error)
+        this.$toast.error('Failed to delete identifier: ' + message)
+      }
+      this.loadingDelete = false
     }
   }
 }
