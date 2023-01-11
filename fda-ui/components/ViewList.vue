@@ -59,7 +59,6 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   data () {
@@ -69,10 +68,6 @@ export default {
       error: false,
       panel: null,
       views: [],
-      user: {
-        id: null,
-        username: null
-      },
       database: {
         exchange: null,
         is_public: null,
@@ -106,6 +101,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
     isOwner () {
       if (!this.user.username) {
         /* not yet loaded */
@@ -129,24 +127,9 @@ export default {
   },
   mounted () {
     this.loadViews()
-    this.loadUser()
     this.loadDatabase()
   },
   methods: {
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        this.user = res.data
-        console.debug('user', this.views)
-      } catch (err) {
-        console.error('Failed to load user', err)
-      }
-    },
     async loadViews () {
       try {
         this.loading = true

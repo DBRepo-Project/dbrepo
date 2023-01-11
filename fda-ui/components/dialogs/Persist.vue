@@ -5,7 +5,7 @@
       <v-card-title v-text="`Persist ${title}`" />
       <v-card-text>
         <v-alert
-          v-if="is_subset"
+          v-if="isSubset"
           border="left"
           color="info">
           Choose an expressive subset title and describe what it produces.
@@ -15,14 +15,14 @@
             <v-col>
               <v-text-field
                 id="title"
-                v-model="identifier.title"
+                v-model="database.identifier.title"
                 name="title"
                 :label="`${prefix} title *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
                 id="description"
-                v-model="identifier.description"
+                v-model="database.identifier.description"
                 name="description"
                 rows="2"
                 :label="`${prefix} description *`" />
@@ -32,7 +32,7 @@
             <v-col>
               <v-text-field
                 id="publisher"
-                v-model="identifier.publisher"
+                v-model="database.identifier.publisher"
                 name="publisher"
                 :label="`${prefix} publisher *`"
                 :rules="[v => !!v || $t('Required')]"
@@ -43,21 +43,21 @@
             <v-col cols="2">
               <v-text-field
                 id="publication-day"
-                v-model.number="identifier.publication_day"
+                v-model.number="database.identifier.publication_day"
                 type="number"
                 label="Publication day" />
             </v-col>
             <v-col cols="2">
               <v-text-field
                 id="publication-month"
-                v-model.number="identifier.publication_month"
+                v-model.number="database.identifier.publication_month"
                 type="number"
                 label="Publication month" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 id="publication-year"
-                v-model.number="identifier.publication_year"
+                v-model.number="database.identifier.publication_year"
                 type="number"
                 label="Publication year *"
                 :rules="[v => !!v || $t('Required')]"
@@ -68,7 +68,7 @@
             <v-col>
               <v-select
                 id="visibility"
-                v-model="identifier.visibility"
+                v-model="database.identifier.visibility"
                 :items="visibility"
                 item-value="value"
                 :disabled="database.is_public"
@@ -78,7 +78,7 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
+          <v-row v-for="(creator,i) in database.identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
                 v-model="creator.firstname"
@@ -122,7 +122,7 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-for="(related,i) in identifier.related_identifiers" :key="`r-${i}`" dense>
+          <v-row v-for="(related,i) in database.identifier.related_identifiers" :key="`r-${i}`" dense>
             <v-col cols="4">
               <v-text-field
                 v-model="related.value"
@@ -170,7 +170,6 @@
           Cancel
         </v-btn>
         <v-btn
-          id="createDB"
           class="mb-2"
           :disabled="!formValid || loading"
           color="primary"
@@ -189,6 +188,12 @@ export default {
     type: {
       type: String,
       default: 'subset'
+    },
+    database: {
+      type: Object,
+      default () {
+        return {}
+      }
     }
   },
   data () {
@@ -204,18 +209,6 @@ export default {
         name: 'Only me',
         value: 'self'
       }],
-      database: {
-        id: null,
-        name: null,
-        is_public: null,
-        publisher: null
-      },
-      user: {
-        firstname: null,
-        lastname: null,
-        affiliation: null,
-        orcid: null
-      },
       relatedTypes: [
         { value: 'DOI' },
         { value: 'URL' },
@@ -271,23 +264,7 @@ export default {
         { value: 'Requires' },
         { value: 'IsObsoletedBy' },
         { value: 'Obsoletes' }
-      ],
-      identifier: {
-        cid: parseInt(this.$route.params.container_id),
-        dbid: parseInt(this.$route.params.database_id),
-        qid: parseInt(this.$route.params.query_id),
-        title: null,
-        description: null,
-        publisher: 'TU Wien',
-        publication_year: formatYearUTC(Date.now()),
-        publication_month: formatMonthUTC(Date.now()),
-        publication_day: formatDayUTC(Date.now()),
-        visibility: 'everyone',
-        type: 'subset',
-        doi: null,
-        creators: [],
-        related_identifiers: []
-      }
+      ]
     }
   },
   computed: {
@@ -297,57 +274,73 @@ export default {
     token () {
       return this.$store.state.token
     },
-    headers () {
-      if (this.token === null) {
-        return null
-      }
-      return { Authorization: `Bearer ${this.token}` }
+    user () {
+      return this.$store.state.user
     },
-    is_subset () {
+    config () {
+      if (this.token === null) {
+        return {
+          headers: { Accept: 'application/json' }
+        }
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
+      }
+    },
+    isEdit () {
+      if (!this.database.identifier) {
+        return false
+      }
+      return this.database.identifier.id !== null
+    },
+    isSubset () {
       return this.type === 'subset'
     },
-    is_database () {
+    isDatabase () {
       return this.type === 'database'
     },
     title () {
-      if (this.is_subset) {
+      if (this.isSubset) {
         return 'subset'
-      } else if (this.is_database) {
+      } else if (this.isDatabase) {
         return 'database'
       }
       return ''
     },
     prefix () {
-      if (this.is_subset) {
+      if (this.isSubset) {
         return 'Subset'
-      } else if (this.is_database) {
+      } else if (this.isDatabase) {
         return 'Database'
       }
       return ''
     }
   },
   mounted () {
-    this.loadUser()
-      .then(() => this.addCreatorSelf())
-    this.loadDatabase()
-      .then(() => this.prefill())
+    if (this.database.identifier) {
+      return
+    }
+    this.database.identifier = {
+      cid: parseInt(this.$route.params.container_id),
+      dbid: parseInt(this.$route.params.database_id),
+      qid: this.isSubset ? parseInt(this.$route.params.query_id) : null,
+      title: null,
+      description: null,
+      publisher: 'TU Wien',
+      publication_year: formatYearUTC(Date.now()),
+      publication_month: formatMonthUTC(Date.now()),
+      publication_day: formatDayUTC(Date.now()),
+      visibility: 'everyone',
+      type: this.type,
+      doi: null,
+      creators: [],
+      related_identifiers: []
+    }
   },
   methods: {
     cancel () {
       this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
-    },
-    addCreatorSelf () {
-      if (!this.user.firstname || !this.user.lastname) {
-        this.addCreator()
-        return
-      }
-      this.identifier.creators.push({
-        firstname: this.user.firstname,
-        lastname: this.user.lastname,
-        orcid: this.user.orcid,
-        affiliation: this.user.affiliation
-      })
     },
     addCreator () {
       this.identifier.creators.push({
@@ -364,21 +357,6 @@ export default {
         type: 'DOI'
       })
     },
-    async loadDatabase () {
-      this.loading = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, {
-          headers: this.headers
-        })
-        console.debug('database', res.data)
-        this.database = res.data
-      } catch (err) {
-        this.error = true
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
-    },
     deleteCreator (index) {
       this.identifier.creators.splice(index, 1)
     },
@@ -389,9 +367,7 @@ export default {
       this.loading = true
       let res
       try {
-        res = await this.$axios.post('/api/identifier', this.identifier, {
-          headers: this.headers
-        })
+        res = await this.$axios.post('/api/identifier', this.database.identifier, this.config)
         console.debug('persist', res.data)
       } catch (err) {
         this.error = true
@@ -421,14 +397,6 @@ export default {
         console.error('load user data failed', err)
       }
       this.loading = false
-    },
-    prefill () {
-      if (!this.is_database) {
-        return
-      }
-      this.identifier.title = this.database.name
-      this.identifier.type = 'database'
-      console.debug('pre-filled identifier', this.identifier)
     }
   }
 }

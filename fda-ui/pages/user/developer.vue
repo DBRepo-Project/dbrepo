@@ -1,5 +1,5 @@
 <template>
-  <div v-if="token">
+  <div v-if="isDeveloper">
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -28,30 +28,99 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
-            <v-btn :disabled="tokens.length >= tokenMax" class="mt-4" color="secondary" small @click="mintToken">
+            <v-btn
+              v-if="isResearcher || isDeveloper"
+              :disabled="tokens.length >= tokenMax"
+              class="mt-4"
+              color="secondary"
+              small
+              @click="mintToken">
               Create Token
             </v-btn>
           </v-card-text>
+          <v-divider />
+          <v-card-title>User Roles</v-card-title>
+          <v-card-subtitle>Modify user roles</v-card-subtitle>
+          <v-data-table
+            :headers="headers"
+            :items="users"
+            :loading="loadingUsers"
+            :items-per-page="10">
+            <template v-slot:item.username="{ item }">
+              {{ item.username }}
+            </template>
+            <template v-slot:item.roles="{ item }">
+              <div v-for="(role, idx) in item.roles" :key="idx">
+                {{ formatRole(role) }}
+              </div>
+            </template>
+            <template v-slot:item.action="{ item }">
+              <v-btn
+                v-if="item.username !== user.username"
+                :disabled="isDeveloper1(item)"
+                x-small
+                @click="modifyRoles(item)">
+                Modify
+              </v-btn>
+              <span v-if="item.username === user.username">(you)</span>
+            </template>
+          </v-data-table>
         </v-card>
       </v-tab-item>
     </v-tabs-items>
+    <v-dialog
+      v-model="editRoleDialog"
+      persistent
+      max-width="640">
+      <EditRoles :user="selectedUser" @close-dialog="closeDialog" />
+    </v-dialog>
   </div>
 </template>
 
 <script>
-import { formatTimestamp } from '@/utils'
+import { formatTimestamp, isResearcher, isDeveloper } from '@/utils'
+import EditRoles from '@/components/dialogs/EditRoles.vue'
+
 export default {
+  components: {
+    EditRoles
+  },
   data () {
     return {
       tab: 0,
       error: false,
       tokens: [],
-      loading: false
+      loading: false,
+      loadingUsers: false,
+      users: [],
+      editRoleDialog: false,
+      selectedUser: {},
+      roles: [
+        { text: 'Researcher', value: 'researcher', code: 'ROLE_RESEARCHER' },
+        { text: 'Data Steward', value: 'data_steward', code: 'ROLE_DATA_STEWARD' },
+        { text: 'Developer', value: 'developer', code: 'ROLE_DEVELOPER' }
+      ]
     }
   },
   computed: {
     token () {
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
+    },
+    headers () {
+      return [
+        { text: 'Username', value: 'username', sortable: false },
+        { text: 'Role', value: 'roles', sortable: false },
+        { text: 'Action', value: 'action', sortable: false }
+      ]
+    },
+    isDeveloper () {
+      return isDeveloper(this.user)
+    },
+    isResearcher () {
+      return isResearcher(this.user)
     },
     config () {
       if (this.token === null) {
@@ -67,6 +136,7 @@ export default {
   },
   mounted () {
     this.loadTokens()
+    this.loadUsers()
   },
   methods: {
     submit () {
@@ -80,6 +150,19 @@ export default {
     },
     tokenClass (token) {
       return token.last_used ? '' : 'token-not_used'
+    },
+    isDeveloper1 (user) {
+      return isDeveloper(user)
+    },
+    closeDialog (event) {
+      if (event.success) {
+        this.loadUsers()
+      }
+      this.editRoleDialog = false
+    },
+    modifyRoles (item) {
+      this.selectedUser = item
+      this.editRoleDialog = true
     },
     async loadTokens () {
       this.loading = true
@@ -108,6 +191,26 @@ export default {
         }
       }
       this.loading = false
+    },
+    formatRole (role) {
+      if (role === null) {
+        return null
+      }
+      const arr = this.roles.filter(r => r.code === role)
+      return arr.length > 0 ? arr[0].text : null
+    },
+    async loadUsers () {
+      this.loadingUsers = true
+      try {
+        const res = await this.$axios.get('/api/user', this.config)
+        this.users = res.data
+        console.debug('users', this.users)
+      } catch (error) {
+        const { message } = error.response
+        this.$toast.error('Failed to load users: ' + message)
+        console.error('Failed to load users', error)
+      }
+      this.loadingUsers = false
     },
     async revokeToken (id) {
       this.loading = true

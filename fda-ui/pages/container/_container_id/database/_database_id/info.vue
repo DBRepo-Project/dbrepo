@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="hasIdentifier || isCreator" flat tile>
+        <v-card v-if="!loadingCitation && (isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher))" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
@@ -95,18 +95,34 @@
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-text v-if="isCreator && !loading && !database.identifier.id">
+          <v-card-text>
             <v-card-actions>
               <v-btn
+                v-if="!hasIdentifier && (isDataSteward || (!hasIdentifier && isCreator && isResearcher))"
                 small
                 color="primary"
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
+              <!--              <v-btn-->
+              <!--                v-if="isDataSteward && hasIdentifier"-->
+              <!--                small-->
+              <!--                color="secondary"-->
+              <!--                @click="editDbDialog = true">-->
+              <!--                Update Database PID-->
+              <!--              </v-btn>-->
+              <v-btn
+                v-if="isDataSteward && hasIdentifier"
+                small
+                :loading="loadingDelete"
+                color="error"
+                @click="deleteIdentifier">
+                Delete Database PID
+              </v-btn>
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="isCreator || hasIdentifier" />
+        <v-divider v-if="!loadingCitation && (hasIdentifier || (isCreator && isResearcher) || isDataSteward)" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -195,19 +211,16 @@
                 </v-list-item-content>
               </v-list-item>
             </v-list>
-            <v-card-actions v-if="isCreator">
-              <v-dialog
-                v-if="!hasIdentifier"
-                v-model="editDbDialog"
-                persistent
-                max-width="860">
-                <Persist type="database" @close="closeDialog" />
-              </v-dialog>
-            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-tab-item>
     </v-tabs-items>
+    <v-dialog
+      v-model="editDbDialog"
+      persistent
+      max-width="860">
+      <Persist type="database" :database="database" @close="closeDialog" />
+    </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -217,8 +230,7 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
-import { decodeJwt } from 'jose'
+import { formatTimestampUTCLabel, formatUser, isDataSteward, isResearcher } from '@/utils'
 
 export default {
   components: {
@@ -231,6 +243,7 @@ export default {
     return {
       loading: false,
       loadingCitation: false,
+      loadingDelete: false,
       editDbDialog: false,
       access: {
         type: null,
@@ -247,9 +260,6 @@ export default {
         creators: []
       },
       metadataLoading: false,
-      user: {
-        username: null
-      },
       database: {
         id: null,
         name: null,
@@ -257,13 +267,7 @@ export default {
         is_public: null,
         created: null,
         contact: null,
-        identifier: {
-          id: null,
-          license: {
-            identifier: null,
-            uri: null
-          }
-        },
+        identifier: null,
         container: {
           id: null,
           name: null,
@@ -313,6 +317,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
     config () {
       if (this.token === null) {
         return {
@@ -323,6 +330,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
+    isResearcher () {
+      return isResearcher(this.user)
+    },
+    isDataSteward () {
+      return isDataSteward(this.user)
+    },
     pid () {
       return `${this.baseUrl}/pid/${this.identifier.id}`
     },
@@ -330,7 +343,7 @@ export default {
       return formatTimestampUTCLabel(this.database.created)
     },
     isCreator () {
-      if (this.database.creator.username === null || this.user.username === null) {
+      if (!this.database.creator.username || !this.user || !this.user.username) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -391,15 +404,12 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
+    this.loadingCitation = true
     this.loadDatabase()
       .then(() => this.loadIdentifier())
   },
   methods: {
     async loadDatabase () {
-      if (!this.database.identifier.id) {
-        return
-      }
       this.loading = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
@@ -418,6 +428,7 @@ export default {
     closeDialog (event) {
       if (event.action === 'persisted') {
         this.loadDatabase()
+          .then(() => this.loadIdentifier())
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
@@ -442,32 +453,15 @@ export default {
       }
       this.metadataLoading = false
     },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
-        this.access = res.data
-        console.debug('check access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
-    },
     async loadIdentifier () {
       if (!this.database.identifier.id) {
+        this.loadingCitation = false
         return
       }
       try {
         const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
         this.identifier = res.data
+        this.database.identifier = res.data
         this.identifier.affiliations = []
         this.identifier.creators.forEach((personOrOrg) => {
           const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
@@ -483,6 +477,30 @@ export default {
         console.error('Failed to load identifier', err)
         this.$toast.error('Failed to load identifier')
       }
+      this.loadingCitation = false
+    },
+    async deleteIdentifier () {
+      if (!this.database.identifier.id) {
+        return
+      }
+      this.loadingDelete = true
+      try {
+        await this.$axios.delete(`/api/identifier/${this.database.identifier.id}`, this.config)
+        console.info('Deleted identifier with id ', this.database.identifier.id)
+        this.$toast.success('Successfully deleted identifier with id ' + this.database.identifier.id)
+        this.identifier = {
+          id: null,
+          license: {
+            identifier: null,
+            uri: null
+          }
+        }
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to delete identifier', error)
+        this.$toast.error('Failed to delete identifier: ' + message)
+      }
+      this.loadingDelete = false
     }
   }
 }

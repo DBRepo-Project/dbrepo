@@ -78,7 +78,6 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditAccess from '@/components/dialogs/EditAccess'
-import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -106,9 +105,6 @@ export default {
         { text: 'Action', value: 'action', sortable: false }
       ],
       accesses: [],
-      user: {
-        username: null
-      },
       database: {
         id: null,
         name: null,
@@ -169,6 +165,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
     isCreator () {
       if (this.database.creator.username === null || this.user.username === null) {
         return false
@@ -181,7 +180,6 @@ export default {
   },
   mounted () {
     this.loadDatabase()
-    this.loadUser()
   },
   methods: {
     async loadDatabase () {
@@ -195,12 +193,6 @@ export default {
         this.$toast.error('Could not load database')
       }
       this.loading = false
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     },
     closeDialog (event) {
       if (event.success) {

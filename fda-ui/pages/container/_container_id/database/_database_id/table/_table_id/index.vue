@@ -79,7 +79,6 @@
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -102,9 +101,6 @@ export default {
       pickVersionDialog: null,
       version: null,
       edit: false,
-      user: {
-        username: null
-      },
       access: {
         type: null,
         user: {
@@ -152,6 +148,9 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    user () {
+      return this.$store.state.user
     },
     downloadConfig () {
       if (this.token === null) {
@@ -217,7 +216,6 @@ export default {
   mounted () {
     this.loadProperties()
     this.loadData()
-    this.loadUser()
   },
   methods: {
     async download () {
@@ -357,25 +355,6 @@ export default {
         this.$toast.error('Could not load table data')
       }
       this.loadingData = false
-    },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/access`, this.config)
-        this.access = res.data
-        console.debug('check access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
     }
   }
 }

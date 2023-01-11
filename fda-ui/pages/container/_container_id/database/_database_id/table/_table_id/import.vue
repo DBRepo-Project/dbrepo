@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="isResearcher">
     <v-toolbar flat>
       <v-toolbar-title>
         <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
@@ -14,7 +14,6 @@
       <v-stepper-step :complete="step > 1" step="1">
         Import Data
       </v-stepper-step>
-
       <v-stepper-content step="1">
         <v-form ref="form" v-model="validStep1" @submit.prevent="submit">
           <v-row dense>
@@ -100,7 +99,8 @@
   </div>
 </template>
 <script>
-const { isNonNegativeInteger } = require('@/utils')
+const { isNonNegativeInteger, isResearcher } = require('@/utils')
+
 export default {
   name: 'TableImportCSV',
   components: {
@@ -165,6 +165,12 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    user () {
+      return this.$store.state.user
+    },
+    isResearcher () {
+      return isResearcher(this.user)
     },
     fileConfig () {
       return { headers: { 'Content-Type': 'multipart/form-data' } }

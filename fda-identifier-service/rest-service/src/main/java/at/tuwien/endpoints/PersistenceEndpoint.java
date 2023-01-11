@@ -9,7 +9,9 @@ import at.tuwien.exception.IdentifierRequestException;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
@@ -29,14 +31,17 @@ import java.util.regex.Pattern;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/pid")
-public class PersistenceEndpoint {
+public class PersistenceEndpoint extends AbstractEndpoint {
 
     private final EndpointConfig endpointConfig;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public PersistenceEndpoint(EndpointConfig endpointConfig, IdentifierMapper identifierMapper, IdentifierService identifierService) {
+    public PersistenceEndpoint(EndpointConfig endpointConfig, IdentifierMapper identifierMapper,
+                               IdentifierService identifierService, DatabaseService databaseService,
+                               UserService userService) {
+        super(userService, databaseService);
         this.endpointConfig = endpointConfig;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;

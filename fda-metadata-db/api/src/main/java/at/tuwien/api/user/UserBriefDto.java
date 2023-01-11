@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -43,6 +44,10 @@ public class UserBriefDto {
 
     @Schema(example = "0000-0002-1825-0097")
     private String orcid;
+
+    @NotNull
+    @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
+    private List<String> roles;
 
     @JsonIgnore
     @JsonProperty("theme_dark")

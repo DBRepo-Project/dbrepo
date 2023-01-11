@@ -45,7 +45,7 @@ public class Identifier {
     @Column(name = "qid")
     private Long queryId;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
     })
@@ -102,7 +102,7 @@ public class Identifier {
     @Column
     private Integer publicationDay;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })

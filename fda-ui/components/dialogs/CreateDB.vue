@@ -54,8 +54,6 @@
 </template>
 
 <script>
-import { decodeJwt } from 'jose'
-
 const { notEmpty } = require('@/utils')
 
 export default {
@@ -64,9 +62,6 @@ export default {
       valid: false,
       loading: false,
       error: false,
-      user: {
-        username: null
-      },
       engine: {
         repository: null,
         tag: null
@@ -107,6 +102,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` },
         progress: false
       }
+    },
+    user () {
+      return this.$store.state.user
     }
   },
   mounted () {
@@ -184,13 +182,7 @@ export default {
       }
       this.loading = false
     },
-    notEmpty,
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-    }
+    notEmpty
   }
 }
 </script>

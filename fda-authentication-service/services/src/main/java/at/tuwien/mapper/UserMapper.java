@@ -29,11 +29,21 @@ public interface UserMapper {
 
     UserDetailsDto userToUserDetailsDto(User data);
 
+    RoleType roleTypeDtoToRoleType(RoleTypeDto data);
+
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
     UserBriefDto userToUserBriefDto(User data);
 
     CreateUserDto userPasswordDtoToCreateUserDto(UserPasswordDto data);
+
+    @Mappings({
+            @Mapping(source = "token", target = "token"),
+            @Mapping(source = "expires", target = "expires")
+    })
+    TokenDto tokenToTokenDto(Token data);
+
+    TokenBriefDto tokenToTokenBriefDto(Token data);
 
     @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {
@@ -108,12 +118,9 @@ public interface UserMapper {
                 .toString();
     }
 
-    @Mappings({
-            @Mapping(source = "token", target = "token"),
-            @Mapping(source = "expires", target = "expires")
-    })
-    TokenDto tokenToTokenDto(Token data);
-
-    TokenBriefDto tokenToTokenBriefDto(Token data);
+    /* keep */
+    default String roleTypeToString(RoleType data) {
+        return data.name();
+    }
 
 }

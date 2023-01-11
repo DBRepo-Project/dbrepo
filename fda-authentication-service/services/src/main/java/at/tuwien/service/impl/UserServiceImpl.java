@@ -5,6 +5,7 @@ import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.auth.MariaDbPassword;
+import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -24,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.ConstraintViolationException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,14 +39,16 @@ public class UserServiceImpl implements UserService {
     private final QueueService queueService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationConfig authenticationConfig;
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper, QueueService queueService, UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder, AuthenticationConfig authenticationConfig) {
         this.userMapper = userMapper;
         this.queueService = queueService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationConfig = authenticationConfig;
     }
 
     @Override
@@ -105,7 +110,13 @@ public class UserServiceImpl implements UserService {
         /* save */
         final User user = userMapper.signupRequestDtoToUser(data);
         user.setEmailVerified(false);
-        user.setRoles(List.of(RoleType.ROLE_RESEARCHER));
+        final List<RoleType> roles = new LinkedList<>(Arrays.asList(authenticationConfig.getDefaultRoles()));
+        final List<String> developers = Arrays.asList(authenticationConfig.getDeveloperUsernames());
+        if (developers.contains(data.getUsername())) {
+            log.info("Assign developer privileges to user with username {}", data.getUsername());
+            roles.add(RoleType.ROLE_DEVELOPER);
+        }
+        user.setRoles(roles);
         user.setThemeDark(false);
         user.setPassword(passwordEncoder.encode(data.getPassword()));
         user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
@@ -199,7 +210,7 @@ public class UserServiceImpl implements UserService {
         try {
             user.setRoles(data.getRoles()
                     .stream()
-                    .map(RoleType::valueOf)
+                    .map(userMapper::roleTypeDtoToRoleType)
                     .collect(Collectors.toList()));
         } catch (IllegalArgumentException e) {
             log.error("Failed to map roles {}", data.getRoles());

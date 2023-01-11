@@ -28,6 +28,27 @@ function isNonNegativeInteger (str) {
   return str >>> 0 === parseFloat(str)
 }
 
+function isDeveloper (user) {
+  if (!user || !user.roles || user.roles.length === 0) {
+    return false
+  }
+  return user.roles.filter(a => a === 'ROLE_DEVELOPER').length === 1
+}
+
+function isResearcher (user) {
+  if (!user || !user.roles || user.roles.length === 0) {
+    return false
+  }
+  return user.roles.filter(a => a === 'ROLE_RESEARCHER').length === 1
+}
+
+function isDataSteward (user) {
+  if (!user || !user.roles || user.roles.length === 0) {
+    return false
+  }
+  return user.roles.filter(a => a === 'ROLE_DATA_STEWARD').length === 1
+}
+
 function formatUser (user) {
   if (user.firstname === undefined || user.lastname === undefined) {
     return user.username
@@ -140,5 +161,8 @@ module.exports = {
   formatMonthUTC,
   formatDayUTC,
   padLeft,
-  formatCreators
+  formatCreators,
+  isDeveloper,
+  isResearcher,
+  isDataSteward
 }
