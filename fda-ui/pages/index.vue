@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card flat>
+    <v-card flat tile>
       <v-card-text>
         <div class="mb-2">Important Links</div>
         <div class="text--primary">
@@ -33,7 +33,7 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-    <v-card flat class="mt-4">
+    <v-card class="mt-4" flat tile>
       <v-card-text>
         <div>Release Notes</div>
         <p class="text-h4 text--primary">

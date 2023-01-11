@@ -84,8 +84,8 @@
         to="/signup">
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
-      <v-btn v-if="username" to="/user" plain>
-        {{ username }} <sup v-if="isDeveloper">
+      <v-btn v-if="user" to="/user" plain>
+        {{ user.username }} <sup v-if="isDeveloper">
           <v-tooltip bottom>
             <template v-slot:activator="{ on, attrs }">
               <v-icon
@@ -98,7 +98,7 @@
           </v-tooltip>
         </sup>
       </v-btn>
-      <v-menu bottom offset-y left>
+      <v-menu v-if="user" bottom offset-y left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
             icon
@@ -162,16 +162,14 @@ export default {
   },
   computed: {
     availableLocales () {
-      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
+      // return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
+      return []
     },
     token () {
       return this.$store.state.token
     },
     user () {
       return this.$store.state.user
-    },
-    username () {
-      return this.user ? this.user.username : null
     },
     container () {
       return this.$store.state.container
