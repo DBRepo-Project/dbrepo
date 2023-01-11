@@ -13,6 +13,9 @@ export const mutations = {
     state.token = token
   },
   SET_USER (state, user) {
+    state.user = null
+    delete user.token
+    console.debug('set user', user)
     state.user = user
   },
 

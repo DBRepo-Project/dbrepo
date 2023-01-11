@@ -17,7 +17,7 @@
             :cache-items="false"
             autofocus
             :loading="isLoading"
-            placeholder="Search Unit of Measurements"
+            :placeholder="`Search ${title}s`"
             :search-input.sync="search"
             :items="items"
             hide-no-data

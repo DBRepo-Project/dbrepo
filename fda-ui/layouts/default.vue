@@ -228,6 +228,7 @@ export default {
   },
   mounted () {
     this.loadDB()
+    this.loadUser()
     this.loadContainers()
       .then(() => this.loadDatabases())
     this.setTheme()
@@ -333,6 +334,29 @@ export default {
       this.loading = false
       console.debug('databases', this.databases)
     },
+    async loadUser () {
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loadingUser = true
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.$store.commit('SET_USER', res.data)
+      } catch (err) {
+        const { status } = err.response
+        if (status === 401) {
+          console.error('Token expired', err)
+          this.$toast.warning('Login has expired')
+          this.logout()
+        } else {
+          console.error('user data', err)
+          this.$toast.error('Failed to load user')
+          this.error = true
+        }
+      }
+      this.loadingUser = false
+    },
+
     async loadDB () {
       if (this.$route.params.db_id && !this.db) {
         try {

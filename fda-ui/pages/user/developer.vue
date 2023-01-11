@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isDeveloper">
+  <div>
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -38,10 +38,11 @@
               Create Token
             </v-btn>
           </v-card-text>
-          <v-divider />
-          <v-card-title>User Roles</v-card-title>
-          <v-card-subtitle>Modify user roles</v-card-subtitle>
+          <v-divider v-if="isDeveloper" />
+          <v-card-title v-if="isDeveloper">User Roles</v-card-title>
+          <v-card-subtitle v-if="isDeveloper">Modify user roles</v-card-subtitle>
           <v-data-table
+            v-if="isDeveloper"
             :headers="headers"
             :items="users"
             :loading="loadingUsers"
@@ -79,11 +80,13 @@
 
 <script>
 import { formatTimestamp, isResearcher, isDeveloper } from '@/utils'
-import EditRoles from '@/components/dialogs/EditRoles.vue'
+import UserToolbar from '@/components/UserToolbar'
+import EditRoles from '@/components/dialogs/EditRoles'
 
 export default {
   components: {
-    EditRoles
+    EditRoles,
+    UserToolbar
   },
   data () {
     return {

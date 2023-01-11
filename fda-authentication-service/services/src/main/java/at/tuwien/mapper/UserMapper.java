@@ -79,6 +79,10 @@ public interface UserMapper {
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)
                         .collect(Collectors.toList()))
+                .roles(data.getRoles()
+                        .stream()
+                        .map(Enum::name)
+                        .collect(Collectors.toList()))
                 .build();
     }
 

@@ -124,7 +124,12 @@
 </template>
 
 <script>
+import UserToolbar from '@/components/UserToolbar'
+
 export default {
+  components: {
+    UserToolbar
+  },
   data () {
     return {
       tab: 0,
