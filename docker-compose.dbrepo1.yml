@@ -35,7 +35,7 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:1.1
+    image: dbrepo/metadata-db:1.2
     networks:
       core:
     volumes:
@@ -51,7 +51,7 @@ services:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
-    image: dbrepo/discovery-service:1.1
+    image: dbrepo/discovery-service:1.2
     networks:
       core:
     env_file:
@@ -63,7 +63,7 @@ services:
     restart: on-failure
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: dbrepo/gateway-service:1.1
+    image: dbrepo/gateway-service:1.2
     networks:
       core:
     ports:
@@ -80,7 +80,7 @@ services:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service:1.1
+    image: dbrepo/database-service:1.2
     networks:
       userdb:
       core:
@@ -102,7 +102,7 @@ services:
     restart: on-failure
     container_name: dbrepo-container-service
     hostname: container-service
-    image: dbrepo/container-service:1.1
+    image: dbrepo/container-service:1.2
     networks:
       core:
     env_file:
@@ -119,7 +119,7 @@ services:
     restart: on-failure
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:1.1
+    image: dbrepo/authentication-service:1.2
     networks:
       core:
     env_file:
@@ -138,7 +138,7 @@ services:
     restart: on-failure
     container_name: dbrepo-query-service
     hostname: query-service
-    image: dbrepo/query-service:1.1
+    image: dbrepo/query-service:1.2
     networks:
       core:
       userdb:
@@ -158,7 +158,7 @@ services:
     restart: on-failure
     container_name: dbrepo-table-service
     hostname: table-service
-    image: dbrepo/table-service:1.1
+    image: dbrepo/table-service:1.2
     networks:
       core:
       userdb:
@@ -181,7 +181,7 @@ services:
     restart: on-failure
     container_name: dbrepo-identifier-service
     hostname: identifier-service
-    image: dbrepo/identifier-service:1.1
+    image: dbrepo/identifier-service:1.2
     networks:
       core:
     env_file:
@@ -200,7 +200,7 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:1.1
+    image: dbrepo/metadata-service:1.2
     networks:
       core:
     env_file:
@@ -215,7 +215,7 @@ services:
     restart: on-failure
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:1.1
+    image: dbrepo/analyse-service:1.2
     networks:
       core:
       userdb:
@@ -234,7 +234,7 @@ services:
     restart: on-failure
     container_name: dbrepo-semantics-service
     hostname: semantics-service
-    image: dbrepo/semantics-service:1.1
+    image: dbrepo/semantics-service:1.2
     networks:
       core:
     env_file:
@@ -254,7 +254,7 @@ services:
     restart: on-failure
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:1.1
+    image: dbrepo/broker-service:1.2
     networks:
       core:
     ports:
@@ -296,7 +296,7 @@ services:
     restart: on-failure
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:1.1
+    image: dbrepo/ui:1.2
     networks:
       core:
       public:
