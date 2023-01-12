@@ -19,7 +19,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(RelatedIdentifierKey.class)
-@Where(clause = "deleted is null")
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_related_identifiers", uniqueConstraints = {
@@ -29,12 +28,9 @@ public class RelatedIdentifier {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "related-identifier-sequence")
-    @GenericGenerator(
-            name = "related-identifier-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_related_identifiers_seq")
-    )
+    @GeneratedValue(generator = "related-identifiers-sequence")
+    @GenericGenerator(name = "related-identifiers-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -65,9 +61,6 @@ public class RelatedIdentifier {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }
 

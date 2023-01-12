@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @SpringBootApplication
 @EnableTransactionManagement
+@EntityScan(basePackages = {"at.tuwien.entities"})
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
-@EntityScan(basePackages = {"at.tuwien.entities"})
 public class FdaTableServiceApplication {
 
     public static void main(String[] args) {

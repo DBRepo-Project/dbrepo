@@ -23,13 +23,9 @@ public class TimeSecret {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "id", columnDefinition = "numeric(19, 2)")
-    @GeneratedValue(generator = "time-secret-sequence")
-    @GenericGenerator(
-            name = "time-secret-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_time_secrets_seq")
-    )
+    @GeneratedValue(generator = "time-secrets-sequence")
+    @GenericGenerator(name = "time-secrets-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Column(nullable = false)
@@ -44,7 +40,7 @@ public class TimeSecret {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "uid", referencedColumnName = "userid", insertable = false, updatable = false)
     })

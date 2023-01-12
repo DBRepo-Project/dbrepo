@@ -1,23 +1,43 @@
 <template>
   <div>
-    <v-toolbar v-if="cached_database" flat>
+    <v-toolbar v-if="db" flat>
       <v-toolbar-title>
-        <span>{{ cached_database.name }}</span>
-        <v-icon v-if="!cached_database.is_public" color="primary" class="mb-1" title="Private" right>mdi-lock-outline</v-icon>
-        <v-icon v-if="cached_database.is_public" class="mb-1" title="Public" right>mdi-lock-open-outline</v-icon>
+        <span>{{ db.name }}</span>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon
+              v-if="!db.is_public"
+              color="primary"
+              class="mb-1"
+              right
+              v-bind="attrs"
+              v-on="on">
+              mdi-lock-outline
+            </v-icon>
+            <v-icon
+              v-if="db.is_public"
+              class="mb-1"
+              right
+              v-bind="attrs"
+              v-on="on">
+              mdi-lock-open-outline
+            </v-icon>
+          </template>
+          <span>{{ databaseTooltip }}</span>
+        </v-tooltip>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && canModify" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="!loading && canModify && isResearcher" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn v-if="token && canModify" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn v-if="!loading && canRead && isResearcher" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="token && canModify" color="secondary" class="mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
+        <v-btn v-if="!loading && isOwner && isResearcher" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
           <v-icon left>mdi-view-carousel-outline</v-icon> Create View
         </v-btn>
-        <v-btn v-if="token && canModify" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="!loading && canModify && isResearcher" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
@@ -35,6 +55,9 @@
           <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/view`">
             Views
           </v-tab>
+          <v-tab v-if="isOwner" :to="`/container/${$route.params.container_id}/database/${databaseId}/settings`">
+            Settings
+          </v-tab>
         </v-tabs>
       </template>
     </v-toolbar>
@@ -42,7 +65,7 @@
 </template>
 
 <script>
-import { decodeJwt } from 'jose'
+import { isResearcher } from '@/utils'
 
 export default {
   data () {
@@ -50,8 +73,11 @@ export default {
       tab: null,
       loading: false,
       error: false,
-      user: {
-        username: null
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
       },
       database: {
         id: null,
@@ -64,24 +90,43 @@ export default {
     }
   },
   computed: {
-    cached_database () {
-      return this.$store.state.db
-    },
     databaseId () {
       return this.$route.params.database_id
     },
     loadingColor () {
       return 'primary'
     },
+    db () {
+      return this.$store.state.db
+    },
+    user () {
+      return this.$store.state.user
+    },
     token () {
       return this.$store.state.token
     },
     canModify () {
-      if (!this.user.username) {
+      if (!this.user || !this.user.username) {
+        /* not yet loaded */
+        return false
+      }
+      if (this.database.creator.username === this.user.username) {
+        return true
+      }
+      return this.access.type === 'write_own' || this.access.type === 'write_all'
+    },
+    canRead () {
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+    },
+    isOwner () {
+      if (!this.user || !this.user.username) {
         /* not yet loaded */
         return false
       }
       return this.database.creator.username === this.user.username
+    },
+    isResearcher () {
+      return isResearcher(this.user)
     },
     config () {
       if (this.token === null) {
@@ -91,8 +136,14 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
-    isPublicOrOwner () {
-      return this.database.is_public || this.database.creator.username === this.user.username
+    silentConfig () {
+      return {
+        headers: this.config.headers,
+        progress: false
+      }
+    },
+    databaseTooltip () {
+      return this.database.is_public ? 'Public' : 'Private'
     }
   },
   watch: {
@@ -106,11 +157,8 @@ export default {
     if (this.database.id) {
       return
     }
-    if (this.cached_database && this.cached_database.id === this.$route.params.database_id) {
-      return
-    }
     this.loadDatabase()
-    this.loadUser()
+    this.loadAccess()
   },
   methods: {
     async loadDatabase () {
@@ -122,15 +170,27 @@ export default {
         this.$store.commit('SET_DATABASE', res.data)
       } catch (err) {
         console.error('Could not load database', err)
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     },
-    loadUser () {
-      if (!this.token) {
+    async loadAccess () {
+      if (!this.user) {
         return
       }
-      this.user.username = decodeJwt(this.token).sub
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
+        this.access = res.data
+        console.debug('access', this.access)
+      } catch (err) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
     }
   }
 }

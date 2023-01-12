@@ -7,7 +7,7 @@ all:
 clean:
 	bash ./.dbrepo2/clean.sh
 
-build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata
+build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-analyse-service
 
 build-backend-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
@@ -38,6 +38,12 @@ build-backend-query: build-backend-metadata-db
 
 build-backend-metadata: build-backend-metadata-db
 	mvn -f ./fda-metadata-service/pom.xml clean package -DskipTests
+
+build-semantics-service:
+	bash ./fda-semantics-service/build.sh
+
+build-analyse-service:
+	bash ./fda-analyse-service/build.sh
 
 build-docker:
 	docker compose build fda-metadata-db
@@ -92,7 +98,7 @@ tag-table:
 	docker tag fda-table-service:latest "dbrepo/table-service:${TAG}"
 
 tag-units:
-	docker tag fda-units-service:latest "dbrepo/units-service:${TAG}"
+	docker tag fda-semantics-service:latest "dbrepo/semantics-service:${TAG}"
 
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
@@ -136,7 +142,7 @@ release-table:
 	docker push "dbrepo/table-service:${TAG}"
 
 release-units:
-	docker push "dbrepo/units-service:${TAG}"
+	docker push "dbrepo/semantics-service:${TAG}"
 
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
@@ -183,7 +189,7 @@ pull-table:
 	docker pull "dbrepo/table-service:${TAG}"
 
 pull-units:
-	docker pull "dbrepo/units-service:${TAG}"
+	docker pull "dbrepo/semantics-service:${TAG}"
 
 pull-broker:
 	docker pull "dbrepo/broker-service:${TAG}"
@@ -191,34 +197,53 @@ pull-broker:
 pull-metadata:
 	docker pull "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service
+test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
 test-authentication-service: build-backend-metadata-db
+	docker system prune -f --volumes
+	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
 test-identifier-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
 test-container-service: build-backend-metadata-db
+	docker system prune -f --volumes
+	docker pull mysql:8.0
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
 test-database-service: build-backend-metadata-db
+	docker system prune -f --volumes
+	docker pull rabbitmq:3-management-alpine
+	docker pull nginx:alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
 test-discovery-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
 test-gateway-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
 test-query-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
 test-table-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-table-service/pom.xml clean test verify
 
 test-metadata-service: build-backend-metadata-db
+	docker system prune -f --volumes
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
+
+test-semantics-service: build-semantics-service
+	bash ./fda-semantics-service/test.sh
+
+test-analyse-service: build-analyse-service
+	bash ./fda-analyse-service/test.sh
 
 coverage-frontend: clean build-frontend
 	yarn --cwd ./fda-ui run coverage || true
@@ -234,4 +259,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.fda-deployment/teardown
+	./.dbrepo2/teardown

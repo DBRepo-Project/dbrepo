@@ -4,6 +4,7 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -89,6 +90,7 @@ public class IdentifierDto {
     private String publisher;
 
     @NotNull
+    @JsonIgnore
     private UserDto creator;
 
     @JsonProperty("publication_day")

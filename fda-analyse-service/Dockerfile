@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9-slim
 MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
 
 ENV FLASK_APP=app.py
@@ -25,3 +25,5 @@ RUN chmod +x ./service_ready
 EXPOSE $PORT_APP
 
 ENTRYPOINT [ "python", "./pywsgi.py" ]
+
+CMD sh -c /wait && flask run

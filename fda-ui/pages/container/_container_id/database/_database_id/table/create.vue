@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="isResearcher">
     <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
@@ -10,7 +10,6 @@
       <v-stepper-step :complete="step > 1" step="1">
         Table Information
       </v-stepper-step>
-
       <v-stepper-content step="1">
         <v-form ref="form" v-model="valid" @submit.prevent="submit">
           <v-row dense>
@@ -45,11 +44,9 @@
           </v-row>
         </v-form>
       </v-stepper-content>
-
       <v-stepper-step :complete="step > 2" step="2">
         Table Schema
       </v-stepper-step>
-
       <v-stepper-content step="2">
         <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
@@ -60,7 +57,8 @@
 
 <script>
 import TableSchema from '@/components/TableSchema'
-const { notEmpty } = require('@/utils')
+const { notEmpty, isResearcher } = require('@/utils')
+
 export default {
   components: {
     TableSchema
@@ -101,6 +99,12 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
+    isResearcher () {
+      return isResearcher(this.user)
+    },
     config () {
       if (this.token === null) {
         return { headers: {} }
@@ -129,6 +133,9 @@ export default {
     }
   },
   mounted () {
+    if (!this.isResearcher) {
+      return
+    }
     this.listTables()
   },
   methods: {
@@ -142,7 +149,7 @@ export default {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, this.config)
         if (res.status === 201) {
           this.error = false
-          this.$toast.success('Table created.')
+          this.$toast.success('Table created')
           this.$root.$emit('table-create', res.data)
           await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${res.data.id}`)
         } else {

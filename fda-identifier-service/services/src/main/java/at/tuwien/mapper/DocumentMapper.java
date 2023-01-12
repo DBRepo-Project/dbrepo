@@ -1,16 +1,7 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.LanguageTypeDto;
-import at.tuwien.api.database.LicenseDto;
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.LanguageType;
-import at.tuwien.entities.database.License;
-import at.tuwien.entities.identifier.Identifier;
-import org.apache.commons.io.IOUtils;
 import org.mapstruct.Mapper;
-import org.springframework.core.io.InputStreamResource;
 
-import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Date;
 
@@ -19,82 +10,6 @@ public interface DocumentMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DocumentMapper.class);
 
-    LanguageTypeDto languageToLanguageDto(LanguageType data);
-
-    LicenseDto licenseToLicenseDto(License data);
-
     Date instantToDate(Instant data);
-
-    default InputStreamResource identifierToInputStreamResource(Identifier data) {
-        final StringBuilder builder = new StringBuilder("<resource ")
-                .append("xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ")
-                .append("xmlns=\"http://datacite.org/schema/kernel-4\" ")
-                .append("xsi:schemaLocation=\"http://datacite.org/schema/kernel-4 ")
-                .append("https://schema.datacite.org/meta/kernel-4.4/metadata.xsd\">");
-        builder.append("<identifier identifierType=\"DOI\">")
-                .append(data.getDoi())
-                .append("</identifier>");
-        if (data.getCreators().size() > 0) {
-            builder.append("<creators>");
-            data.getCreators()
-                    .forEach(creator -> {
-                        builder.append("<creator><creatorName nameType=\"Personal\">")
-                                .append(creator.getName())
-                                .append("</creatorName>");
-                        if (creator.getOrcid() != null) {
-                            builder.append("<nameIdentifier schemeURI=\"https://orcid.org\"")
-                                    .append(" nameIdentifierScheme=\"ORCID\">")
-                                    .append(creator.getOrcid())
-                                    .append("</nameIdentifier>");
-                        }
-                        builder.append("</creator>");
-                    });
-            builder.append("</creators>");
-        }
-        builder.append("<titles><title xml:lang=\"en\">")
-                .append(data.getTitle())
-                .append("</title></titles>")
-                .append("<publisher xml:lang=\"en\">")
-                .append(data.getPublisher())
-                .append("</publisher><publicationYear>")
-                .append(data.getPublicationYear())
-                .append("</publicationYear>");
-        builder.append("<dates><date dateType=\"Issued\">")
-                .append(instantToDate(data.getCreated()))
-                .append("</date><date dateType=\"Available\">")
-                .append(instantToDate(data.getCreated()))
-                .append("</date></dates>");
-        builder.append("<resourceType resourceTypeGeneral=\"Dataset\">Dataset</resourceType>");
-        if (data.getRelated().size() > 0) {
-            builder.append("<relatedIdentifiers>");
-            data.getRelated()
-                    .forEach(related -> {
-                        builder.append("<relatedIdentifier");
-                        if (related.getType() != null) {
-                            builder.append(" relatedIdentifierType=\"")
-                                    .append(related.getType())
-                                    .append("\"");
-                        }
-                        if (related.getRelation() != null) {
-                            builder.append(" relationType=\"")
-                                    .append(related.getRelation().name())
-                                    .append("\"");
-                        }
-                        builder.append(">")
-                                .append(related.getValue())
-                                .append("</relatedIdentifier>");
-                    });
-            builder.append("</relatedIdentifiers>");
-        }
-        if (data.getDescription() != null) {
-            builder.append("<descriptions><description descriptionType=\"Abstract\">")
-                    .append(data.getDescription())
-                    .append("</description></descriptions>");
-        }
-        builder.append("<version>1.0</version>")
-                .append("</resource>");
-        log.trace("mapped identifier to xml {}", builder);
-        return new InputStreamResource(IOUtils.toInputStream(builder.toString(), Charset.defaultCharset()));
-    }
 
 }

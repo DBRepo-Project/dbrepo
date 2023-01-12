@@ -48,6 +48,10 @@ public class UserDto {
     private String orcid;
 
     @NotNull
+    @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
+    private List<String> roles;
+
+    @NotNull
     @JsonProperty("theme_dark")
     @Schema(example = "true")
     private Boolean themeDark;

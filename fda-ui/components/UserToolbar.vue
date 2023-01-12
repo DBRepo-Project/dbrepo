@@ -12,7 +12,7 @@
       <v-tab to="/user/authentication">
         Authentication
       </v-tab>
-      <v-tab to="/user/developer">
+      <v-tab v-if="isDeveloper || isResearcher" to="/user/developer">
         Developer
       </v-tab>
     </v-tabs>
@@ -20,10 +20,23 @@
 </template>
 
 <script>
+import { isDeveloper, isResearcher } from '@/utils'
+
 export default {
   data () {
     return {
       tab: null
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+    isDeveloper () {
+      return isDeveloper(this.user)
+    },
+    isResearcher () {
+      return isResearcher(this.user)
     }
   }
 }

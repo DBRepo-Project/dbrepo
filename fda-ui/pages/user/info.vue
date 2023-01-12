@@ -8,13 +8,13 @@
           <v-card-text>
             <v-form v-model="valid1" @submit.prevent="submit">
               <v-row dense>
-                <v-col cols="2">
+                <v-col md="2">
                   <v-text-field
                     v-model="user.id"
                     disabled
                     label="ID" />
                 </v-col>
-                <v-col cols="3">
+                <v-col md="4">
                   <v-text-field
                     v-model="user.username"
                     disabled
@@ -22,7 +22,15 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
+                  <v-text-field
+                    v-model="roles"
+                    disabled
+                    label="Roles" />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col md="6">
                   <v-text-field
                     v-model="user.titles_before"
                     :disabled="error"
@@ -31,7 +39,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="user.firstname"
                     :disabled="error"
@@ -41,7 +49,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="user.lastname"
                     :disabled="error"
@@ -51,7 +59,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="user.titles_after"
                     :disabled="error"
@@ -60,7 +68,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="user.affiliation"
                     :disabled="error"
@@ -69,7 +77,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="user.orcid"
                     :disabled="error"
@@ -79,7 +87,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-btn
                     small
                     color="primary"
@@ -116,32 +124,33 @@
 </template>
 
 <script>
+import UserToolbar from '@/components/UserToolbar'
+
 export default {
+  components: {
+    UserToolbar
+  },
   data () {
     return {
       tab: 0,
       valid1: false,
       valid2: false,
       error: false,
-      loading: false,
-      user: {
-        id: null,
-        email: null,
-        username: null,
-        lastname: null,
-        firstname: null,
-        titles_after: null,
-        titles_before: null,
-        email_verified: false,
-        affiliation: null,
-        orcid: null,
-        theme_dark: null
-      }
+      loading: false
     }
   },
   computed: {
     token () {
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
+    },
+    roles () {
+      if (!this.user.roles) {
+        return null
+      }
+      return this.user.roles.join(',')
     },
     config () {
       if (this.token === null) {
@@ -153,27 +162,9 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
   },
   methods: {
     submit () {
-    },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.put('/api/auth/', {}, this.config)
-        this.user = res.data
-        console.debug('user', this.user)
-        this.error = false
-      } catch (err) {
-        this.$toast.error('Failed to load user')
-        console.error('user', err)
-        this.error = true
-      }
-      this.loading = false
     },
     async updateInfo () {
       try {

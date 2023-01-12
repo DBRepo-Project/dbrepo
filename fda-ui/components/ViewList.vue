@@ -46,7 +46,7 @@
               <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
                 More
               </v-btn>
-              <v-btn v-if="canDelete" small color="error" @click="deleteView(viewDetails)">
+              <v-btn v-if="isOwner" small color="error" @click="deleteView(viewDetails)">
                 Delete
               </v-btn>
             </v-col>
@@ -59,7 +59,6 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   data () {
@@ -69,10 +68,6 @@ export default {
       error: false,
       panel: null,
       views: [],
-      user: {
-        id: null,
-        username: null
-      },
       database: {
         exchange: null,
         is_public: null,
@@ -106,6 +101,16 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
+    isOwner () {
+      if (!this.user.username) {
+        /* not yet loaded */
+        return false
+      }
+      return this.database.creator.username === this.user.username
+    },
     createdUTC () {
       if (this.viewDetails.created === undefined || this.viewDetails.created === null) {
         return null
@@ -122,23 +127,9 @@ export default {
   },
   mounted () {
     this.loadViews()
-    this.loadUser()
+    this.loadDatabase()
   },
   methods: {
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-      try {
-        this.loading = true
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        this.user = res.data
-        console.debug('user', this.views)
-      } catch (err) {
-        console.error('Failed to load user', err)
-      }
-    },
     async loadViews () {
       try {
         this.loading = true
@@ -147,6 +138,17 @@ export default {
         console.debug('views', this.views)
       } catch (err) {
         console.error('Failed to load views', err)
+      }
+      this.loading = false
+    },
+    async loadDatabase () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.database = res.data
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Failed to load database', err)
       }
       this.loading = false
     },

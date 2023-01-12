@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit">
+    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
         <v-card-title>
           Create Database
@@ -29,20 +29,6 @@
             :rules="[v => !!v || $t('Required')]"
             return-object
             required />
-          <v-switch
-            id="public"
-            v-model="createDatabaseDto.is_public"
-            color="primary"
-            :label="publicLabel"
-            name="public" />
-          <p v-if="createDatabaseDto.is_public">
-            Your database tables will be <strong>publicly visible</strong>. The metadata is also publicly visible to the
-            world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
-          </p>
-          <p v-if="!createDatabaseDto.is_public">
-            Your database tables will be <strong>private</strong>. The metadata will still be <strong>publicly visible</strong>
-            to the world. It will run the engine <strong v-text="`${engine.repository}:${engine.tag}`" />.
-          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -68,8 +54,6 @@
 </template>
 
 <script>
-import { decodeJwt } from 'jose'
-
 const { notEmpty } = require('@/utils')
 
 export default {
@@ -78,9 +62,6 @@ export default {
       valid: false,
       loading: false,
       error: false,
-      user: {
-        username: null
-      },
       engine: {
         repository: null,
         tag: null
@@ -91,16 +72,16 @@ export default {
         repository: null,
         tag: null
       },
+      createDatabaseDto: {
+        name: null,
+        is_public: true
+      },
       container: {
         id: null,
         name: null
       },
       database: {
         id: null
-      },
-      createDatabaseDto: {
-        name: null,
-        is_public: true
       }
     }
   },
@@ -122,8 +103,8 @@ export default {
         progress: false
       }
     },
-    publicLabel () {
-      return this.createDatabaseDto.is_public ? 'Public' : 'Private'
+    user () {
+      return this.$store.state.user
     }
   },
   mounted () {
@@ -151,11 +132,12 @@ export default {
       }
       this.loading = false
     },
+    async create () {
+      await this.createContainer()
+        .then(() => this.startContainer(this.container)
+          .then(() => this.createDatabase(this.container)))
+    },
     async createContainer () {
-      if (this.container.id !== null) {
-        console.warn('container id already present', this.container.id)
-        return
-      }
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
       try {
@@ -163,62 +145,36 @@ export default {
         const res = await this.$axios.post('/api/container', this.createContainerDto, this.config)
         this.container = res.data
         console.debug('created container', this.container)
+        this.error = false
       } catch (err) {
         this.error = true
         this.$toast.error('Failed to create container')
       }
       this.loading = false
     },
-    async startContainer () {
-      if (this.error) {
-        console.warn('will not attempt to start container, error in previous step')
-        return
-      }
+    async startContainer (container) {
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${this.container.id}`, { action: 'start' }, this.config)
+        const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
         console.debug('started container', res.data)
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to start container')
-      }
-      this.loading = false
-    },
-    async inspectContainer () {
-      if (this.error) {
-        console.warn('will not attempt to inspect container, error in previous step')
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.container.id}`, this.config)
-        const { state } = res.data
-        console.debug('inspected container', res.data)
-        if (state !== 'running') {
-          console.warn('Container is not running')
+        this.error = false
+      } catch (error) {
+        const { status } = error.response
+        if (status !== 409) {
+          this.error = true
+          this.$toast.error('Failed to start container')
         }
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to start container')
       }
       this.loading = false
     },
-    async createDatabase () {
-      if (this.error) {
-        console.warn('will not attempt to create database, error in previous step')
-        return
-      }
-      if (this.database.id !== null) {
-        console.warn('database id already present', this.database.id)
-        return
-      }
+    async createDatabase (container) {
       try {
         this.loading = true
-        this.createDatabaseDto.name = this.container.name
-        const res = await this.$axios.post(`/api/container/${this.container.id}/database`, this.createDatabaseDto, this.config)
-        this.database = res.data
-        console.debug('created database', this.database)
-        await this.$router.push(`/container/${this.container.id}/database/${this.database.id}/info`)
+        this.createDatabaseDto.name = container.name
+        const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
+        container.database = res.data
+        console.debug('created database', container.database)
+        this.error = false
         this.$emit('close', { success: true })
       } catch (err) {
         this.error = true
@@ -226,19 +182,7 @@ export default {
       }
       this.loading = false
     },
-    notEmpty,
-    create () {
-      this.createContainer()
-        .then(() => this.startContainer()
-          .then(() => this.inspectContainer()
-            .then(() => this.createDatabase())))
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
-    }
+    notEmpty
   }
 }
 </script>

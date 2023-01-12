@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" fixed app>
+    <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
       <v-list-item>
         <v-list-item-content>
           <v-list-item-subtitle>
@@ -41,10 +41,9 @@
       </div>
     </v-navigation-drawer>
     <v-app-bar fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+      <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
       <v-autocomplete
         v-model="model"
-        class="ml-1"
         :items="searchResults"
         :loading="loadingSearch"
         :search-input.sync="query"
@@ -75,7 +74,7 @@
         v-if="!token"
         class="mr-2"
         color="secondary"
-        to="/login">
+        @click="login">
         <v-icon left>mdi-login</v-icon> Login
       </v-btn>
       <v-btn
@@ -85,12 +84,21 @@
         to="/signup">
         <v-icon left>mdi-account-plus</v-icon> Signup
       </v-btn>
-      <v-btn v-if="username" to="/user" plain>
-        {{ username }} <sup v-if="user.email_verified">
-          <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
+      <v-btn v-if="user" to="/user" plain>
+        {{ user.username }} <sup v-if="isDeveloper">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-icon
+                color="primary"
+                small
+                v-bind="attrs"
+                v-on="on">mdi-check-decagram</v-icon>
+            </template>
+            <span>Developer</span>
+          </v-tooltip>
         </sup>
       </v-btn>
-      <v-menu bottom offset-y left>
+      <v-menu v-if="user" bottom offset-y left>
         <template v-slot:activator="{ on, attrs }">
           <v-btn
             icon
@@ -136,6 +144,8 @@
 </template>
 
 <script>
+import { isDeveloper } from '@/utils'
+
 export default {
   name: 'DefaultLayout',
   data () {
@@ -145,9 +155,6 @@ export default {
       query: null,
       searchResults: [],
       databases: [],
-      user: {
-        theme_dark: null
-      },
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false
@@ -155,19 +162,23 @@ export default {
   },
   computed: {
     availableLocales () {
-      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
+      // return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
+      return []
     },
     token () {
       return this.$store.state.token
     },
-    username () {
-      return this.$store.state.user && this.$store.state.user.username
+    user () {
+      return this.$store.state.user
     },
     container () {
       return this.$store.state.container
     },
     db () {
       return this.$store.state.db
+    },
+    isDeveloper () {
+      return isDeveloper(this.user)
     },
     version () {
       return this.$config.version
@@ -195,9 +206,8 @@ export default {
   watch: {
     $route () {
       this.loadDB()
-      if (this.token) {
-        this.loadUser()
-          .then(() => this.setTheme())
+      if (this.user) {
+        this.setTheme()
       }
     },
     query (val) {
@@ -216,10 +226,10 @@ export default {
   },
   mounted () {
     this.loadDB()
+    this.loadUser()
     this.loadContainers()
       .then(() => this.loadDatabases())
-    this.loadUser()
-      .then(() => this.setTheme())
+    this.setTheme()
   },
   methods: {
     metadata (item) {
@@ -261,6 +271,10 @@ export default {
         title: item.item.name,
         subtitle: item.item.description
       }
+    },
+    login () {
+      const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
+      this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
     navigate (item) {
       this.$router.push(this.metadata(item).link)
@@ -318,16 +332,6 @@ export default {
       this.loading = false
       console.debug('databases', this.databases)
     },
-    async loadDB () {
-      if (this.$route.params.db_id && !this.db) {
-        try {
-          const res = await this.$axios.get(`/api/database/${this.$route.params.db_id}`)
-          this.$store.commit('SET_DATABASE', res.data)
-        } catch (err) {
-          console.error('Failed to load database', err)
-        }
-      }
-    },
     async loadUser () {
       if (!this.token) {
         return
@@ -335,8 +339,7 @@ export default {
       try {
         this.loadingUser = true
         const res = await this.$axios.put('/api/auth', {}, this.config)
-        console.debug('user data', res.data)
-        this.user = res.data
+        this.$store.commit('SET_USER', res.data)
       } catch (err) {
         const { status } = err.response
         if (status === 401) {
@@ -351,7 +354,22 @@ export default {
       }
       this.loadingUser = false
     },
+
+    async loadDB () {
+      if (this.$route.params.db_id && !this.db) {
+        try {
+          const res = await this.$axios.get(`/api/database/${this.$route.params.db_id}`)
+          this.$store.commit('SET_DATABASE', res.data)
+        } catch (err) {
+          console.error('Failed to load database', err)
+        }
+      }
+    },
     setTheme () {
+      if (!this.user || !this.user.theme_dark) {
+        this.$vuetify.theme.dark = false
+        return
+      }
       this.$vuetify.theme.dark = this.user.theme_dark
     }
   }

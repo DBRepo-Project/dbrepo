@@ -2,18 +2,20 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: "jdbc:postgresql://metadata-db:5432/${METADATA_DB}"
-    driver-class-name: org.postgresql.Driver
+    url: "jdbc:mariadb://metadata-db:3306/${METADATA_DB}"
+    driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME}"
     password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
+      use-new-id-generator-mappings: false
     open-in-view: false
     properties:
       hibernate:
+        default_schema: "${METADATA_DB}"
         jdbc:
           time_zone: UTC
   application:
@@ -50,6 +52,8 @@ fda:
   website: "${WEBSITE}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   token.max: "${TOKEN_MAX}"
+  default_roles: "${DEFAULT_ROLES}"
+  developer_usernames: "${DEVELOPER_USERNAMES}"
   mail:
     prefix: /
     from: "${MAIL_FROM}"

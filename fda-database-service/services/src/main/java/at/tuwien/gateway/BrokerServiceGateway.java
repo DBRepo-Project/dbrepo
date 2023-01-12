@@ -2,9 +2,13 @@ package at.tuwien.gateway;
 
 
 import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
+import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
+
+import java.util.List;
 
 public interface BrokerServiceGateway {
 

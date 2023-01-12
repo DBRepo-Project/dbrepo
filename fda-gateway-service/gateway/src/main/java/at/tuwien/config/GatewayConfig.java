@@ -55,7 +55,8 @@ public class GatewayConfig {
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://table-service"))
-                .route("database-service", r -> r.path("/api/container/**/database/**")
+                .route("database-service", r -> r.path("/api/container/**/database/**",
+                                "/api/container/**/database/**/access/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
@@ -66,11 +67,11 @@ public class GatewayConfig {
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
                         .uri("lb://container-service"))
-                .route("units-service", r -> r.path("/api/units/**")
+                .route("semantics-service", r -> r.path("/api/semantics/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
                         .and()
-                        .uri("lb://units-service"))
+                        .uri("lb://semantics-service"))
                 .build();
 
     }

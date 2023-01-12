@@ -72,18 +72,12 @@ public class MetadataServiceImpl implements MetadataService {
     public String getRecord(OaiRecordParameters parameters) throws IdentifierNotFoundException {
         final Long id = Long.parseLong(parameters.getIdentifier());
         final Identifier identifier = identifierService.find(id);
-        final StringBuilder builder = new StringBuilder();
         final Context context = new Context();
         context.setVariable("identifier", identifier.getId());
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         context.setVariable("title", identifier.getTitle());
         context.setVariable("description", identifier.getDescription());
         context.setVariable("publisher", identifier.getPublisher());
-        identifier.getCreators()
-                .forEach(c -> builder.append("<dc:creator>")
-                        .append(c.getName())
-                        .append("</dc:creator>"));
-        context.setVariable("creators", builder.toString());
         return parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
     }
 

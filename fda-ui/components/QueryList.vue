@@ -1,11 +1,11 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" indeterminate />
+    <v-progress-linear v-if="loading || error" :color="loadingColor" :value="loadProgress" />
     <v-tabs-items>
       <v-card v-if="!loading && queries.length === 0" flat>
         <v-card-text v-text="emptyMessage" />
       </v-card>
-      <v-expansion-panels v-if="!loading && queries.length > 0" accordion>
+      <v-expansion-panels v-if="queries.length > 0" accordion>
         <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
           <v-expansion-panel-header>
             <pre>{{ item.query }}</pre>
@@ -86,15 +86,14 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import { decodeJwt } from 'jose'
+
 export default {
   data () {
     return {
       loading: false,
+      loadProgress: 0,
+      error: false,
       queries: [],
-      user: {
-        username: null
-      },
       database: {
         is_public: null,
         creator: {
@@ -127,6 +126,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
+    loadingColor () {
+      return this.error ? 'error' : 'primary'
+    },
     executionUTC () {
       return formatTimestampUTCLabel(this.queryDetails.execution)
     },
@@ -144,10 +149,12 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadDatabase()
-      .then(() => this.loadQueries())
       .then(() => this.loadIdentifiers())
+      .then(() => {
+        this.simulateProgress()
+        this.loadQueries()
+      })
   },
   methods: {
     async loadQueries () {
@@ -157,10 +164,17 @@ export default {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
-        this.queries = res.data
+        res.data.forEach((query) => {
+          if (this.queries.filter(q => q.id === query.id).length > 0) {
+            return
+          }
+          this.queries.push(query)
+        })
         console.debug('queries', this.queries)
       } catch (err) {
-        this.$toast.error('Could not list queries')
+        this.error = true
+        console.error('Connection to query store failed', err.response.data)
+        this.$toast.error(err.response.data.message)
       }
       this.loading = false
     },
@@ -172,15 +186,24 @@ export default {
         this.loading = true
         const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}`, this.config)
         const identifiers = res.data.filter(i => i.type === 'subset')
-        this.queries.forEach((query) => {
-          const id = identifiers.filter(i => i.container_id === query.cid && i.database_id === query.dbid && i.query_id === query.id)
-          if (id.length === 1) {
-            query.identifier = id[0]
+        const queries = identifiers.map((identifier) => {
+          const query = {
+            id: identifier.query_id,
+            identifier,
+            type: identifier.type,
+            query: identifier.query,
+            query_hash: identifier.query_hash,
+            result_hash: identifier.result_hash,
+            created: identifier.created,
+            execution: identifier.execution
           }
+          return query
         })
-        console.debug('identifiers', identifiers)
+        this.queries = queries
+        console.debug('identifier queries', queries)
       } catch (err) {
-        this.$toast.error('Could not list identifiers')
+        console.error('Failed to load identifiers', err.response.data)
+        this.$toast.error('Failed to load identifiers')
       }
       this.loading = false
     },
@@ -199,11 +222,19 @@ export default {
       }
       return this.database.creator.username === this.user.username
     },
-    loadUser () {
-      if (!this.token) {
+    simulateProgress () {
+      if (this.loadProgress !== 0) {
         return
       }
-      this.user.username = decodeJwt(this.token).sub
+      const timeout = 30 * 1000 /* ms */
+      const ticks = 100 /* ms */
+      let i = 0
+      setInterval(() => {
+        if (i++ >= timeout && !this.error) {
+          return
+        }
+        this.loadProgress = ((i * 100) / timeout) * 100
+      }, ticks)
     },
     async loadDatabase () {
       try {
@@ -213,7 +244,7 @@ export default {
         console.debug('database', this.database)
       } catch (err) {
         this.error = true
-        this.$toast.error('Could not get database details.')
+        this.$toast.error('Could not get database details')
       }
       this.loading = false
     }

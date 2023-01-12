@@ -57,10 +57,13 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ImageRepository imageRepository;
+
     @BeforeEach
-    @Transactional
     public void beforeEach() {
         userRepository.save(USER_1);
+        imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         identifierRepository.save(IDENTIFIER_1);
@@ -73,7 +76,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Transactional
     public void findAll_succeeds() {
 
         /* mock */
@@ -89,7 +91,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .created(IDENTIFIER_2_CREATED)
                 .lastModified(IDENTIFIER_2_MODIFIED)
                 .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-                .deleted(Instant.now().minus(4, ChronoUnit.MINUTES))
                 .publisher(IDENTIFIER_2_PUBLISHER)
                 .type(IDENTIFIER_2_TYPE)
                 .build());
@@ -171,6 +172,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .doi(IDENTIFIER_1_DOI)
                 .visibility(IDENTIFIER_1_VISIBILITY_DTO)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IDENTIFIER_1_TYPE_DTO)
                 .build();

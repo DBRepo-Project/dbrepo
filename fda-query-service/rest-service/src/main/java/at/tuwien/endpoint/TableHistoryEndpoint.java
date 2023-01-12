@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.database.table.TableHistoryDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
@@ -26,8 +27,9 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
 
     @Autowired
     public TableHistoryEndpoint(TableService tableService, DatabaseService databaseService,
-                                IdentifierService identifierService) {
-        super(databaseService, identifierService);
+                                IdentifierService identifierService, AccessService accessService,
+                                QueryConfig queryConfig) {
+        super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.tableService = tableService;
     }
 
@@ -40,14 +42,14 @@ public class TableHistoryEndpoint extends AbstractEndpoint {
                                                         @NotNull @PathVariable("tableId") Long tableId,
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, NotAllowedException,
-            QueryStoreException, DatabaseConnectionException {
+            QueryStoreException, DatabaseConnectionException, UserNotFoundException {
         log.debug("endpoint find all history, containerId={}, databaseid={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "DATA_HISTORY", principal)) {
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_HISTORY", principal)) {
             log.error("Missing data history permission");
             throw new NotAllowedException("Missing data history permission");
         }
-        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId);
+        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId, principal);
         log.trace("find all history resulted in history {}", history);
         return ResponseEntity.ok(history);
     }

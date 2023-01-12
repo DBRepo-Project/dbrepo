@@ -12,10 +12,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !query.is_persisted && is_owner" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
+        <v-btn v-if="token && !query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && is_owner" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
@@ -34,6 +34,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
+    <v-progress-linear v-if="loadingQuery || loadingIdentifier || loadingDatabase || error" :color="loadingColor" :value="loadProgress" />
     <v-card flat tile>
       <v-card-title>
         Subset Information
@@ -106,15 +107,6 @@
                 {{ identifier.publisher }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Creators
-              </v-list-item-title>
-              <v-list-item-content>
-                <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
-                  <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                  {{ person_or_org.name }} <sup v-if="person_or_org.affiliation">{{ person_or_org.affiliation }}</sup>
-                </span>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
                 Publication Date
               </v-list-item-title>
               <v-list-item-content>
@@ -147,6 +139,7 @@
                   </span>
                 </div>
               </v-list-item-content>
+              <Citation :pid="database.identifier.id" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -158,33 +151,22 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-large" />
-                <pre v-if="!loadingQuery">{{ query_statement }}</pre>
+                <v-skeleton-loader v-if="!query_statement" type="text" class="skeleton-large" />
+                <pre v-if="query_statement">{{ query_statement }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-medium" />
-                <pre v-if="!loadingQuery">{{ query_hash }}</pre>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Subset Creator
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">
-                  {{ creator }} <sup>
-                    <v-icon v-if="database.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-                  </sup>
-                </span>
+                <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-medium" />
+                <pre v-if="query_hash">{{ query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Creation
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingQuery" type="text" class="skeleton-small" />
-                <span v-if="!loadingQuery">{{ executionUTC }}</span>
+                <v-skeleton-loader v-if="!executionUTC" type="text" class="skeleton-small" />
+                <span v-if="executionUTC">{{ executionUTC }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -250,15 +232,14 @@
 </template>
 <script>
 import Persist from '@/components/dialogs/Persist'
-import OrcidIcon from '@/components/icons/OrcidIcon'
+import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   name: 'QueryShow',
   components: {
     Persist,
-    OrcidIcon
+    Citation
   },
   data () {
     return {
@@ -284,8 +265,11 @@ export default {
           lastname: null
         }
       },
-      user: {
-        username: null
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
       },
       loadingSave: false,
       identifier: {
@@ -300,11 +284,16 @@ export default {
         query_normalized: null,
         query_hash: null,
         result_number: null,
+        result_hash: null,
         execution: null,
         publication_year: null,
         publication_month: null,
         publication_day: null,
         related: [],
+        creator: {
+          username: null,
+          id: null
+        },
         doi: null,
         creators: []
       },
@@ -330,6 +319,7 @@ export default {
       metadataLoading: false,
       downloadLoading: false,
       error: false,
+      loadProgress: 0,
       promises: []
     }
   },
@@ -341,7 +331,7 @@ export default {
       return location.protocol + '//' + location.host
     },
     loadingColor () {
-      return this.error ? 'red' : 'primary'
+      return this.error ? 'error' : 'primary'
     },
     token () {
       return this.$store.state.token
@@ -373,9 +363,6 @@ export default {
     database_visibility () {
       return this.database.is_public !== null ? this.database.is_public : false
     },
-    is_owner () {
-      return this.token && this.query.creator.username === this.user.username
-    },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
     },
@@ -393,6 +380,15 @@ export default {
         return true
       }
       return this.identifier.visibility === 'everyone'
+    },
+    canWrite () {
+      if (!this.access.type) {
+        return false
+      }
+      if (this.access.type === 'write_own' || this.access.type === 'write_all') {
+        return true
+      }
+      return false
     },
     result_visibility_icon () {
       if (this.erroneous) {
@@ -425,30 +421,23 @@ export default {
       return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
     },
     executionUTC () {
-      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.execution) : formatTimestampUTCLabel(this.query.execution)
-    },
-    creator () {
-      if (this.query.creator.username === null) {
-        return null
-      }
-      if (this.query.creator.firstname === null || this.query.creator.lastname === null) {
-        return this.query.creator.username
-      }
-      return this.query.creator.firstname + ' ' + this.query.creator.lastname
-    },
-    creators () {
-      return this.identifier.id ? this.identifier.creators : null
+      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.created) : formatTimestampUTCLabel(this.query.created)
     },
     erroneous () {
+      if (this.identifier) {
+        return false
+      }
       return !this.query.result_hash
     }
   },
   mounted () {
-    this.loadUser()
     this.loadDatabase()
-      .then(() => this.loadQuery())
-      .then(() => this.loadResult())
       .then(() => this.loadMetadata())
+      .then(() => {
+        this.simulateProgress()
+        this.loadQuery()
+      })
+      .then(() => this.loadResult())
   },
   methods: {
     loadResult () {
@@ -482,6 +471,20 @@ export default {
       }
       this.downloadLoading = false
       this.metadataLoading = false
+    },
+    simulateProgress () {
+      if (this.loadProgress !== 0) {
+        return
+      }
+      const timeout = 30 * 1000 /* ms */
+      const ticks = 100 /* ms */
+      let i = 0
+      setInterval(() => {
+        if (i++ >= timeout && !this.error) {
+          return
+        }
+        this.loadProgress = ((i * 100) / timeout) * 100
+      }, ticks)
     },
     async downloadData () {
       this.downloadLoading = true
@@ -574,12 +577,6 @@ export default {
       if (event.action === 'persisted') {
         this.loadMetadata()
       }
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

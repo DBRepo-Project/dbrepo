@@ -2,6 +2,7 @@ package at.tuwien.config;
 
 import at.tuwien.auth.AuthTokenFilter;
 import at.tuwien.auth.JwtUtils;
+import at.tuwien.service.TokenService;
 import at.tuwien.service.impl.UserDetailsServiceImpl;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
@@ -35,20 +36,22 @@ import javax.servlet.http.HttpServletResponse;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtUtils jwtUtils;
+    private final TokenService tokenService;
     private final SecurityConfig securityConfig;
     private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public WebSecurityConfig(JwtUtils jwtUtils, SecurityConfig securityConfig,
+    public WebSecurityConfig(JwtUtils jwtUtils, TokenService tokenService, SecurityConfig securityConfig,
                              UserDetailsServiceImpl userDetailsService) {
         this.jwtUtils = jwtUtils;
+        this.tokenService = tokenService;
         this.securityConfig = securityConfig;
         this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter(jwtUtils, userDetailsService);
+        return new AuthTokenFilter(jwtUtils, tokenService, userDetailsService);
     }
 
     @Override

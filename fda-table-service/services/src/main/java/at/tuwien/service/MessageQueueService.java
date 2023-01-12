@@ -4,9 +4,12 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.AmqpException;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 public interface MessageQueueService {
+
+    void init() throws AmqpException;
 
     /**
      * Creates a queue and consumer that re-routes the insert requests to the Query Service. Therefore and due to the

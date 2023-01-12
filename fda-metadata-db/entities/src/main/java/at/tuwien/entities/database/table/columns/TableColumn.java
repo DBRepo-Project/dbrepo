@@ -2,7 +2,6 @@ package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.concepts.Concept;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.SelectItem;
@@ -32,12 +31,9 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "column-sequence")
-    @GenericGenerator(
-            name = "column-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_columns_seq")
-    )
+    @GeneratedValue(generator = "columns-sequence")
+    @GenericGenerator(name = "columns-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -58,7 +54,7 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
@@ -124,8 +120,18 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri"))
-    private Concept concept;
+            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private TableColumnConcept concept;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "mdb_columns_units",
+            joinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private TableColumnUnit unit;
 
     @Column
     @LastModifiedDate

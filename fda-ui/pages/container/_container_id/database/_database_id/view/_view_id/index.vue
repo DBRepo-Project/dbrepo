@@ -98,7 +98,6 @@
   </div>
 </template>
 <script>
-import { decodeJwt } from 'jose'
 import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
@@ -127,9 +126,6 @@ export default {
           lastname: null
         }
       },
-      user: {
-        username: null
-      },
       loadingView: false,
       error: false
     }
@@ -146,6 +142,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` },
         progress: false
       }
+    },
+    user () {
+      return this.$store.state.user
     },
     is_owner () {
       return this.token && this.view.creator.username === this.user.username
@@ -167,7 +166,6 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
     this.loadView()
       .then(() => this.loadResult())
   },
@@ -189,12 +187,6 @@ export default {
     },
     loadResult () {
       this.$refs.queryResults.reExecute(this.view.id)
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

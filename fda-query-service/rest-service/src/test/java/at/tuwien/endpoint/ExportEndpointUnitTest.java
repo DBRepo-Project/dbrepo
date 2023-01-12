@@ -3,14 +3,19 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.ExportResource;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
+import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.impl.QueryServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.apache.http.impl.io.EmptyInputStream;
 import org.junit.jupiter.api.Test;
@@ -26,13 +31,18 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithSecurityContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -48,88 +58,200 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    @Autowired
-    private ExportEndpoint exportEndpoint;
-
     @MockBean
     private QueryService queryService;
 
     @MockBean
     private DatabaseService databaseService;
 
-    @Test
-    public void export_timestampNull_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+    @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
 
-        /* mock */
-        doReturn(DATABASE_1, DATABASE_1).when(databaseService)
-                .find(CONTAINER_1_ID, DATABASE_1_ID);
-        doReturn(
-                ExportResource.builder()
-                        .resource(new InputStreamResource(EmptyInputStream.nullInputStream()))
-                        .filename("/tmp/filename")
-                        .build()
-        ).when(queryService)
-                .findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
+    @MockBean
+    private TableRepository tableRepository;
+
+    @Autowired
+    private ExportEndpoint exportEndpoint;
+
+    @Test
+    public void export_publicAnonymous_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, null, principal);
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
     }
 
     @Test
-    public void export_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, PaginationException,
-            ContainerNotFoundException, NotAllowedException, QueryMalformedException {
-        final Instant request = Instant.now()
-                .minusMillis(1000 * 1000);
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        doReturn(DATABASE_1, DATABASE_1).when(databaseService)
-                .find(CONTAINER_1_ID, DATABASE_1_ID);
-        doReturn(
-                ExportResource.builder()
-                        .resource(new InputStreamResource(EmptyInputStream.nullInputStream()))
-                        .filename("/tmp/filename")
-                        .build()
-        ).when(queryService)
-                .findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+    public void export_publicRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, request, principal);
-        assertNotNull(response);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS);
     }
 
     @Test
-    public void export_inFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException {
-        final Instant request = Instant.now()
-                .plusMillis(1000 * 1000);
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        doReturn(DATABASE_1, DATABASE_1).when(databaseService)
-                .find(CONTAINER_1_ID, DATABASE_1_ID);
-        doReturn(
-                ExportResource.builder()
-                        .resource(new InputStreamResource(EmptyInputStream.nullInputStream()))
-                        .filename("/tmp/filename")
-                        .build()
-        ).when(queryService)
-                .findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request);
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(CONTAINER_1_ID, DATABASE_1_ID,
-                TABLE_1_ID, request, principal);
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void export_publicWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void export_publicOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void export_publicReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+        final Instant timestamp = Instant.now();
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS);
+    }
+
+    @Test
+    public void export_publicReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+        final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
+
+        /* test */
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS);
+    }
+
+    /* ################################################################################################### */
+    /* ## PRIVATE DATABASES                                                                             ## */
+    /* ################################################################################################### */
+
+    @Test
+    public void export_privateAnonymous_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null, null, null);
+        });
+    }
+
+    @Test
+    public void export_privateRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS);
+    }
+
+    @Test
+    public void export_privateWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_WRITE_OWN_ACCESS);
+    }
+
+    @Test
+    public void export_privateWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void export_privateOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    public void export_privateReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+        final Instant timestamp = Instant.now();
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS);
+    }
+
+    @Test
+    public void export_privateReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException {
+        final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS);
+    }
+    
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void export_generic(Long containerId, Long databaseId, Long tableId, Database database, Instant timestamp,
+                                  Principal principal, String username, DatabaseAccess access) throws IOException,
+            DatabaseNotFoundException, UserNotFoundException, TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, QueryMalformedException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException {
+        final ExportResource resource = ExportResource.builder()
+                .filename("location.csv")
+                .resource(new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/weather/location.csv"))))
+                .build();
+
+        /* mock */
+        when(databaseService.find(containerId, databaseId))
+                .thenReturn(database);
+        if (access == null) {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.of(access));
+        }
+        when(tableRepository.find(containerId, databaseId, tableId))
+                .thenReturn(Optional.of(TABLE_1));
+        when(queryService.findAll(containerId, databaseId, tableId, timestamp, principal))
+                .thenReturn(resource);
+
+        /* test */
+        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(containerId, databaseId, tableId,
+                timestamp, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }

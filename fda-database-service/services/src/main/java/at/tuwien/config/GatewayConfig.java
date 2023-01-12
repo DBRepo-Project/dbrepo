@@ -21,14 +21,14 @@ public class GatewayConfig {
     @Value("${spring.rabbitmq.password}")
     private String brokerPassword;
 
-    @Bean
+    @Bean("authenticationRestTemplate")
     public RestTemplate authenticationRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
         return restTemplate;
     }
 
-    @Bean
+    @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));

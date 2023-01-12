@@ -77,7 +77,8 @@ export default {
     sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest',
     logo: process.env.LOGO || '/logo.png',
-    mailVerify: process.env.MAIL_VERIFY || false
+    mailVerify: process.env.MAIL_VERIFY || false,
+    tokenMax: process.env.TOKEN_MAX || 5
   },
 
   proxy: {
@@ -113,8 +114,8 @@ export default {
           secondary: colors.blueGrey.base,
           info: colors.amber.lighten4,
           code: colors.grey.lighten4,
-          warning: colors.amber.base,
-          error: colors.red.base,
+          warning: colors.orange.lighten2,
+          error: colors.red.base /* is used by forms */,
           banner: colors.red.lighten2,
           success: colors.teal.base
         },

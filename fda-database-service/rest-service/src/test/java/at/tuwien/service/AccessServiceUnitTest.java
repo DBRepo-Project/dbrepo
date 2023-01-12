@@ -1,0 +1,118 @@
+package at.tuwien.service;
+
+import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.repository.jpa.*;
+import com.rabbitmq.client.Channel;
+import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
+
+@Log4j2
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ExtendWith(SpringExtension.class)
+public class AccessServiceUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
+    private Channel channel;
+
+    @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
+    private DatabaseRepository databaseRepository;
+
+    @Autowired
+    private AccessService accessService;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @BeforeEach
+    public void beforeEach() {
+        /* metadata database */
+        imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+    }
+
+    @Test
+    public void list_succeeds() throws AccessDeniedException {
+
+        /* mock */
+        when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
+                .thenReturn(List.of(DATABASE_1_READ_ACCESS, DATABASE_2_READ_ACCESS));
+
+        /* test */
+        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
+        assertEquals(2, response.size());
+    }
+
+    @Test
+    public void list_empty_succeeds() throws AccessDeniedException {
+
+        /* mock */
+        when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
+                .thenReturn(List.of());
+
+        /* test */
+        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
+        assertEquals(0, response.size());
+    }
+
+    @Test
+    public void find_succeeds() throws AccessDeniedException {
+
+        /* mock */
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_READ_ACCESS));
+
+        /* test */
+        final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.getType());
+    }
+
+    @Test
+    public void find_fails() {
+
+        /* mock */
+        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.empty());
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+        });
+    }
+
+}

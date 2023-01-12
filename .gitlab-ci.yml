@@ -1,9 +1,11 @@
-before_script: 
+before_script:
   - "docker version"
   - "docker compose version"
   - "docker system prune -f"
   - "mvn --version"
+  - "python3 --version"
   - "df / -h"
+  - "grep -rnw '@Test' | wc -l"
 
 variables:
   HOSTALIASES: ./hosts
@@ -11,7 +13,7 @@ variables:
   TAG: ${TAG:-latest}
 
 cache:
-  paths: 
+  paths:
     - /root/.m2/repository/
     - /root/.npm/
 
@@ -23,6 +25,7 @@ stages:
   - test-backend
   - build-docker
   - release
+  - deploy
 
 build-backend-metadata-db:
   stage: build-backend
@@ -92,6 +95,16 @@ build-backend-metadata:
   script:
     - "make build-backend-metadata"
 
+build-semantics-service:
+  stage: build-backend
+  script:
+    - "make build-semantics-service"
+
+build-analyse-service:
+  stage: build-backend
+  script:
+    - "make build-analyse-service"
+
 test-backend-authentication:
   stage: test-backend
   needs:
@@ -118,6 +131,7 @@ test-backend-database:
   needs:
     - build-backend-database
   script:
+    - "docker pull elasticsearch:7.13.4"
     - "make test-database-service"
 
 test-backend-discovery:
@@ -155,6 +169,20 @@ test-backend-gateway:
   script:
     - "make test-gateway-service"
 
+test-semantics-service:
+  stage: test-backend
+  needs:
+    - build-semantics-service
+  script:
+    - "make test-semantics-service"
+
+test-analyse-service:
+  stage: test-backend
+  needs:
+    - build-analyse-service
+  script:
+    - "make test-analyse-service"
+
 build-docker:
   stage: build-docker
   needs:
@@ -168,7 +196,10 @@ build-docker:
     - build-backend-query
     - build-backend-table
     - build-backend-metadata
+    - build-semantics-service
+    - build-analyse-service
   script:
+    - cp .env.unix.example .env
     - make build-docker
 
 build-frontend:
@@ -184,6 +215,7 @@ release-latest:
     refs:
       - dev
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=latest make release
 
@@ -195,7 +227,22 @@ release-version:
     refs:
       - master
   script:
+    - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - TAG=1.1 make release
+    - TAG=1.2 make release
 
-
+deploy-dbrepo2:
+  stage: deploy
+  needs:
+    - release-latest
+  only:
+    refs:
+      - dev
+  script:
+    - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
+    - "scp ./.dbrepo2/known_hosts demo@dbrepo2.ec.tuwien.ac.at:/home/demo/.ssh/known_hosts"
+    - "scp ./Makefile demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
+    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.dbrepo2.yml"
+    - "scp ./.dbrepo2/deploy demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
+    - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
+    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash deploy'"

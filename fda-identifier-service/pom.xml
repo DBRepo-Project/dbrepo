@@ -89,8 +89,9 @@
         </dependency>
         <!-- DataSource -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
@@ -187,6 +188,7 @@
                 <includes>
                     <include>**/application*.yml</include>
                     <include>**/templates/*.xml</include>
+                    <include>**/templates/*.txt</include>
                 </includes>
             </resource>
         </resources>
