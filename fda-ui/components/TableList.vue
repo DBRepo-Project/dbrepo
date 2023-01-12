@@ -427,6 +427,9 @@ export default {
       }
     },
     is_owner (table) {
+      if (!this.user) {
+        return false
+      }
       return table.creator.username === this.user.username
     },
     closed (data) {
