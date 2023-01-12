@@ -6,7 +6,9 @@ import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,13 +30,15 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/identifier")
-public class IdentifierEndpoint {
+public class IdentifierEndpoint extends AbstractEndpoint {
 
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(IdentifierMapper identifierMapper, IdentifierService identifierService) {
+    public IdentifierEndpoint(IdentifierMapper identifierMapper, IdentifierService identifierService,
+                              DatabaseService databaseService, UserService userService) {
+        super(userService, databaseService);
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
     }
@@ -44,7 +48,7 @@ public class IdentifierEndpoint {
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
-                                                       @RequestParam(required = false) Long qid) {
+                                                    @RequestParam(required = false) Long qid) {
         log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()
@@ -64,8 +68,13 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException,
+            NotAllowedException {
         log.debug("endpoint create identifier, data={}, authorization={}, principal={}", data, authorization, principal);
+        if (!hasDatabasePermission(data.getCid(), data.getDbid(), "CREATE_IDENTIFIER", principal)) {
+            log.error("Missing identifier create permission");
+            throw new NotAllowedException("Missing identifier create permission");
+        }
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
             log.error("Identifier of type subset need to have a qid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
@@ -81,9 +90,9 @@ public class IdentifierEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DATA_STEWARD')")
+    @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<IdentifierDto> update(@NotNull @Valid @RequestParam("id") Long id,
+    public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
             throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
@@ -96,11 +105,12 @@ public class IdentifierEndpoint {
     @Transactional
     @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
     @PreAuthorize("hasRole('ROLE_DATA_STEWARD')")
-    @Operation(summary = "Delete some identifer", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @Valid @RequestParam("id") Long id)
+    @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
             throws IdentifierNotFoundException {
+        log.debug("endpoint delete identifier, id={}", id);
         identifierService.delete(id);
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }
 }

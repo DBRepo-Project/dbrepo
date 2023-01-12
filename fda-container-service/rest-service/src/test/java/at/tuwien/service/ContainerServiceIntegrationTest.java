@@ -166,6 +166,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -214,7 +215,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException {
+    public void change_start_succeeds() throws DockerClientException, ContainerNotFoundException,
+            ContainerAlreadyRunningException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
@@ -234,6 +236,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -248,7 +251,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException {
+    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException,
+            ContainerAlreadyStoppedException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
@@ -268,6 +272,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -303,6 +308,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -312,7 +318,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.start(CONTAINER_1_ID);
         });
     }
@@ -338,6 +344,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -347,7 +354,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.remove(CONTAINER_1_ID);
         });
     }
@@ -373,6 +380,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -382,6 +390,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_2_ID)
                 .name(CONTAINER_2_NAME)
                 .internalName(CONTAINER_2_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_2_HASH)
                 .ipAddress(CONTAINER_2_IP)
@@ -397,7 +406,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException, ContainerNotFoundException {
+    public void remove_succeeds() throws DockerClientException, ContainerStillRunningException,
+            ContainerNotFoundException, ContainerAlreadyRemovedException {
 
         /* mock */
         final ContainerImage IMAGE_1 = ContainerImage.builder()
@@ -417,6 +427,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -461,6 +472,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -498,6 +510,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -509,7 +522,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyRunningException.class, () -> {
             containerService.start(CONTAINER_1_ID);
         });
     }
@@ -535,6 +548,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -570,6 +584,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -582,7 +597,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyStoppedException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
@@ -608,6 +623,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -618,7 +634,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerAlreadyStoppedException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
@@ -644,6 +660,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -653,7 +670,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
 
         /* test */
-        assertThrows(DockerClientException.class, () -> {
+        assertThrows(ContainerNotFoundException.class, () -> {
             containerService.stop(CONTAINER_1_ID);
         });
     }
@@ -680,6 +697,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)
@@ -728,6 +746,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .id(CONTAINER_1_ID)
                 .name(CONTAINER_1_NAME)
                 .internalName(CONTAINER_1_INTERNALNAME)
+                .imageId(IMAGE_1_ID)
                 .image(IMAGE_1)
                 .hash(CONTAINER_1_HASH)
                 .ipAddress(CONTAINER_1_IP)

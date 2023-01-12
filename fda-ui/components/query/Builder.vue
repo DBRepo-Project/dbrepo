@@ -58,7 +58,7 @@
                 <v-col cols="6">
                   <v-select
                     v-model="table"
-                    :disabled="isExecuted"
+                    :disabled="isExecuted || loadingTables"
                     :items="tables"
                     item-text="name"
                     :loading="loadingTables"
@@ -71,7 +71,7 @@
                   <v-select
                     v-model="select"
                     item-text="name"
-                    :disabled="!table || isExecuted"
+                    :disabled="!table || isExecuted || loadingTables"
                     :items="selectItems"
                     :loading="loadingColumns"
                     label="Columns"
@@ -102,7 +102,11 @@
                   <v-alert
                     border="left"
                     color="info">
-                    Currently, comments in the query (e.g. <code>-- Comment</code>) are not supported!
+                    Currently, comments and <a href="https://mariadb.com/kb/en/aggregate-functions/" target="_blank">aggregation functions</a>
+                    <sup>
+                      <v-icon dense x-small>mdi-open-in-new</v-icon>
+                    </sup>
+                    are not supported!
                   </v-alert>
                 </v-col>
               </v-row>
@@ -146,9 +150,34 @@ export default {
       table: {},
       tables: [],
       views: [],
+      foundForbiddenKeywords: [],
+      forbiddenKeywords: [
+        '\\*',
+        'AVG',
+        'BIT_AND',
+        'BIT_OR',
+        'BIT_XOR',
+        'COUNT',
+        'COUNT', 'DISTINCT',
+        'GROUP_CONCAT',
+        'JSON_ARRAYAGG',
+        'JSON_OBJECTAGG',
+        'MAX',
+        'MIN',
+        'STD',
+        'STDDEV',
+        'STDDEV_POP',
+        'STDDEV_SAMP',
+        'SUM',
+        'VARIANCE',
+        'VAR_POP',
+        'VAR_SAMP',
+        '--'
+      ],
       tableDetails: null,
       resultId: null,
       valid: false,
+      errorKeyword: null,
       query: {
         sql: ''
       },
@@ -195,11 +224,9 @@ export default {
       if (this.tabs === 0) {
         return this.query.sql
       } else if (this.tabs === 1) {
-        const sql = this.rawSQL.replaceAll('\n', ' ') /* remove newline */
+        return this.rawSQL.replaceAll('\n', ' ') /* remove newline */
           .replaceAll(/\s+/g, ' ') /* remove whitespace */
           .trim()
-        console.debug('raw sql', sql)
-        return sql
       }
       return null
     },
@@ -241,7 +268,7 @@ export default {
         this.tables = res.data
         console.debug('tables', this.tables)
       } catch (err) {
-        this.$toast.error('Could not list table.')
+        this.$toast.error('Could not list table')
       }
       this.loadingTables = false
     },
@@ -333,7 +360,7 @@ export default {
         this.tableDetails = res.data
         this.buildQuery()
       } catch (err) {
-        this.$toast.error('Could not get table details.')
+        this.$toast.error('Could not get table details')
       }
       this.loadingColumns = false
     }

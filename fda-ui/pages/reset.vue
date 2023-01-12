@@ -1,13 +1,13 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!error && !token">
+      <v-card v-if="!error && !token" flat tile>
         <v-card-title>
           Reset Password
         </v-card-title>
         <v-card-text>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="password"
                 autocomplete="off"
@@ -18,7 +18,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="data.password"
                 autocomplete="off"

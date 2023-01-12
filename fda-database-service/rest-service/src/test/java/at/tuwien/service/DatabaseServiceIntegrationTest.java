@@ -2,23 +2,18 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -27,15 +22,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
 import java.security.Principal;
+import java.sql.SQLException;
+import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -50,34 +48,26 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private IndexInitializer indexInitializer;
 
     @MockBean
+    private DatabaseidxRepository databaseidxRepository;
+
+    @MockBean
     private Channel channel;
 
-    @Autowired
-    private ImageRepository imageRepository;
+    @MockBean
+    private ContainerRepository containerRepository;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
+    private DatabaseRepository databaseRepository;
 
     @Autowired
     private MariaDbServiceImpl databaseService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private LicenseRepository licenseRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    private static final Container CONTAINER_SEARCH = Container.builder()
-            .name(SEARCH_NAME)
-            .internalName(SEARCH_NAME)
-            .build();
-
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
+    @BeforeEach
+    public void beforeEach() throws InterruptedException {
+        afterEach();
         /* create networks */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -93,68 +83,30 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-
-        /* create elastic search */
-        final CreateContainerResponse search = dockerClient.createContainerCmd(SEARCH_IMAGE + ":" + SEARCH_TAG)
-                .withHostConfig(
-                        hostConfig
-                                .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("9200:9200"), PortBinding.parse("9300:9300"))
-                )
-                .withName(SEARCH_NAME)
-                .withIpv4Address(SEARCH_IP)
-                .withHostName(SEARCH_HOSTNAME)
-                .withEnv("discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN")
-                .exec();
-        CONTAINER_SEARCH.setHash(search.getId());
-        /* start elastic search */
-        startContainer(CONTAINER_SEARCH, 30);
-    }
-
-    @Transactional
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        /* create fda-userdb-u01 */
+        /* create containers */
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(CONTAINER_1_NAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
+                .withEnv(IMAGE_1_ENV)
                 .exec();
         CONTAINER_1.setHash(response1.getId());
-        /* create fda-userdb-u02 */
         final CreateContainerResponse response2 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(CONTAINER_2_NAME)
                 .withIpv4Address(CONTAINER_2_IP)
                 .withHostName(CONTAINER_2_INTERNALNAME)
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb")
+                .withEnv(IMAGE_1_ENV)
                 .exec();
         CONTAINER_2.setHash(response2.getId());
-        /* start fda-userdb-u01 */
+        /* start containers */
         startContainer(CONTAINER_1);
-        /* start fda-userdb-u02 */
         startContainer(CONTAINER_2);
-        /* metadata db */
-        licenseRepository.save(LICENSE_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        USER_1.setPassword(passwordEncoder.encode(USER_1_PASSWORD));
-        userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
     }
 
     @AfterEach
     public void afterEach() {
-        stopContainer(CONTAINER_1);
-        removeContainer(CONTAINER_1);
-        stopContainer(CONTAINER_2);
-        removeContainer(CONTAINER_2);
-    }
-
-    @AfterAll
-    public static void afterAll() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)
@@ -184,25 +136,151 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
     }
 
     @Test
-    public void create_multiple_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
+    public void create_inSequence_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
             ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final Database database1 = databaseService.create(CONTAINER_1_ID, DATABASE_1_CREATE, principal);
-        assertEquals(DATABASE_1_NAME, database1.getName());
-        assertEquals(1, userRepository.findAll().size());
-        final Database database2 = databaseService.create(CONTAINER_2_ID, DATABASE_2_CREATE, principal);
-        assertEquals(DATABASE_2_NAME, database2.getName());
-        assertEquals(1, userRepository.findAll().size());
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
+    }
+
+    @Test
+    public void create_outOfSequence_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
+            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, AmqpException,
+            ContainerNotFoundException, ContainerConnectionException, DatabaseMalformedException {
+
+        /* test */
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
+    }
+
+    @Test
+    public void create_queryStore_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_create(QUERY_1_STATEMENT, 1L, true);
+    }
+
+    @Test
+    public void create_queryStoreSameQueryHash_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_create(QUERY_1_STATEMENT, 1L, true);
+        generic_create(QUERY_2_STATEMENT, 2L, false);
+        generic_create(QUERY_1_STATEMENT, 1L, false);
+    }
+
+    @Test
+    public void create_systemProcedure_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_system_create("root", "mariadb");
+    }
+
+    @Test
+    public void create_systemProcedure_fails() {
+
+        /* test */
+        assertThrows(SQLException.class, () -> {
+            generic_system_create("junit", "junit");
+        });
+    }
+
+    @Test
+    public void create_userProcedureRoot_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_user_create("root", "mariadb");
+    }
+
+    @Test
+    public void create_userProcedureUser_succeeds() throws SQLException, InterruptedException {
+
+        /* test */
+        generic_user_create("junit", "junit");
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected void generic_create(String query, Long assertQueryId, boolean create) throws InterruptedException,
+            SQLException {
+
+        /* mock */
+        if (create) {
+            final String bind = new File(
+                    "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+            log.trace("container bind {}", bind);
+            containerRepository.save(CONTAINER_3);
+            createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+            startContainer(CONTAINER_3);
+        }
+
+        /* test */
+        final Long response = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, query);
+        assertNotNull(response);
+        assertEquals(assertQueryId, response);
+    }
+
+    protected void generic_create(Long containerId, DatabaseCreateDto createDto, Container container, Database database)
+            throws UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
+            QueryMalformedException, ImageNotSupportedException, AmqpException, ContainerNotFoundException,
+            ContainerConnectionException, DatabaseMalformedException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(databaseidxRepository.save(any(Database.class)))
+                .thenReturn(database);
+        when(containerRepository.findById(containerId))
+                .thenReturn(Optional.of(container));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(database);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final Database response = databaseService.create(containerId, createDto, principal);
+        assertEquals(database.getName(), response.getName());
+    }
+
+    protected void generic_system_create(String username, String password) throws InterruptedException, SQLException {
+
+        /* mock */
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        containerRepository.save(CONTAINER_3);
+        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        startContainer(CONTAINER_3);
+
+        /* test */
+        final Long queryId = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,
+                QUERY_1_STATEMENT, username, password);
+        assertEquals(1L, queryId);
+    }
+
+    protected void generic_user_create(String username, String password) throws InterruptedException, SQLException {
+
+        /* mock */
+        final String bind = new File(
+                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+        log.trace("container bind {}", bind);
+        containerRepository.save(CONTAINER_3);
+        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        startContainer(CONTAINER_3);
+
+        /* test */
+        final Long queryId = MariaDbConfig.mockUserQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,
+                QUERY_1_STATEMENT, username, password);
+        assertEquals(1L, queryId);
     }
 
 }

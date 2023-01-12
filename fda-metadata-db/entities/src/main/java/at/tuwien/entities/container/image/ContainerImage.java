@@ -1,8 +1,6 @@
 package at.tuwien.entities.container.image;
 
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.user.User;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -26,12 +24,9 @@ public class ContainerImage {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "image-sequence")
-    @GenericGenerator(
-            name = "image-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_seq")
-    )
+    @GeneratedValue(generator = "images-sequence")
+    @GenericGenerator(name = "images-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     public Long id;
 
     @Column(nullable = false)
@@ -71,7 +66,7 @@ public class ContainerImage {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "image")
     private List<Container> containers;
 
     @Column(nullable = false, updatable = false)

@@ -53,13 +53,26 @@ public class DockerConfig {
         startContainer(container, 15);
     }
 
-    public static void createContainer(Container container) {
+    public static void createContainer(Container container, String... environment) {
+        createContainer(null, container, environment);
+    }
+
+    public static void createContainer(String bind, Container container, String... environment) {
+        log.trace("creating container with internalName={}, ipAddress={}, hostname={}, environment={}",
+                container.getInternalName(), container.getIpAddress(), container.getInternalName(),
+                environment);
+        final HostConfig hostConfig1;
+        if (bind == null) {
+            hostConfig1 = hostConfig.withNetworkMode("fda-userdb");
+        } else {
+            hostConfig1 = hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind));
+        }
         final CreateContainerResponse response = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
+                .withHostConfig(hostConfig1)
                 .withName(container.getInternalName())
-                .withIpv4Address("172.28.0.5")
+                .withIpv4Address(container.getIpAddress())
                 .withHostName(container.getInternalName())
-                .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
+                .withEnv(environment)
                 .exec();
         container.setHash(response.getId());
     }

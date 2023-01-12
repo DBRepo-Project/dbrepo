@@ -103,7 +103,7 @@ public interface UserService {
      * @return The updated user.
      * @throws UserNotFoundException The user was not found.
      */
-    User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException;
+    User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException, BrokerUserCreationException;
 
     /**
      * Updates a user with the given id and updated email.

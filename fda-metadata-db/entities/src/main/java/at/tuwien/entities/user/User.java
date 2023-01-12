@@ -25,13 +25,9 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "userid", columnDefinition = "numeric(19, 2)")
-    @GeneratedValue(generator = "user-sequence")
-    @GenericGenerator(
-            name = "user-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_user_seq")
-    )
+    @GeneratedValue(generator = "users-sequence")
+    @GenericGenerator(name = "users-sequence", strategy = "increment")
+    @Column(name = "userid", updatable = false, nullable = false)
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -67,6 +63,10 @@ public class User {
     @ToString.Exclude
     @Column(nullable = false)
     private String password;
+
+    @ToString.Exclude
+    @Column(nullable = false)
+    private String databasePassword;
 
     @ElementCollection(targetClass = RoleType.class)
     @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {

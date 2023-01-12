@@ -8,7 +8,7 @@
           <v-card-text>
             <v-form v-model="valid1" @submit.prevent="submit">
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="email"
                     :disabled="user.email_verified || error"
@@ -18,7 +18,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-btn
                     v-model="user.email"
                     small
@@ -32,11 +32,12 @@
               </v-row>
             </v-form>
           </v-card-text>
+          <v-divider />
           <v-card-title>Password Change</v-card-title>
           <v-card-text>
             <v-form v-model="valid2" @submit.prevent="submit">
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-text-field
                     v-model="reset.password"
                     :disabled="error"
@@ -47,7 +48,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col cols="5">
+                <v-col md="6">
                   <v-btn
                     small
                     color="primary"
@@ -68,7 +69,12 @@
 </template>
 
 <script>
+import UserToolbar from '@/components/UserToolbar'
+
 export default {
+  components: {
+    UserToolbar
+  },
   data () {
     return {
       tab: 0,
@@ -109,27 +115,9 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
   },
   methods: {
     submit () {
-    },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        this.user = res.data
-        console.debug('user', this.user)
-        this.error = false
-      } catch (err) {
-        this.$toast.error('Failed to load user')
-        console.error('user', err)
-        this.error = true
-      }
-      this.loading = false
     },
     async resend () {
       try {

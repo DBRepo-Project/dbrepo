@@ -5,9 +5,48 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [[1.2]()] - 2022-01-11
+
+### Added
+
+- Wikidata ontology and proxy the ontology of units of measure for using only units
+- Mapping from concepts to table column
+- Alerting to Prometheus (the registration part on the services side)
+- Access model to give more than one user access to a database
+- Default role flag for new users and administrator usernames
+- Citation suggestions IEEE/BibTeX/APA
+- Automatic deployment for dev pipeline to dbrepo2.ec.tuwien.ac.at
+- MQTT plugin for broker service
+- More logging and implemented minimum logging level flag
+- PID for databases
+- Public code wiki (documentation website)
+- Analyse service tests to pipeline
+
+### Changed
+
+- Metadata database to use a system-versioned MariaDB 10.5 database
+- Query Store to use trigger for query result count and query hash as well as result hash calculation
+- Query service to allow XML/CSV export for PIDs
+- Query service to support subsets of views
+
+### Fixed
+
+- Container creation in frontend prevents invalid state where no database can be created anymore
+- RabbitMQ exchange/queue/binds when starting the system from a previous version or without data for RabbitMQ
+- RabbitMQ non-uniqueness of exchanges/queues/routing keys
+- A python loop that used too much CPU resources for registering at the discovery service
+- Select `*` that does not return proper error message as well as vendor-specific aggregation functions like `min`, `max`, `avg`, `count`
+- Various frontend error messages
+- A bug where a invalid table creation and subsequent valid table creation is blocked
+
+### Removed
+
+- The name Unit Service will no longer be maintained, the Docker image is discontinued and is replaced by the Semantics Service
+
 ## [[1.1.1-alpha]](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/2a1f1bd53e3445aafa881e1209703dfa7de9c918) - 2022-08-11
 
 ### Added
+
 - DataCite mandatory fields on databases and queries
 - User management (info, password forgotten, verification, email, RabbitMQ)
 - Re-worked interfaces of database info, database tables, database queries, persisted queries (landing page)

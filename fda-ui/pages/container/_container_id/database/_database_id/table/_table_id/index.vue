@@ -12,22 +12,22 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="is_owner && canAdd" class="mr-2 mb-1" @click="addTuple">
+        <v-btn v-if="!loading && canModify && canAdd" class="mr-2 mb-1" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="is_owner && canEdit" color="warning" class="mr-2 mb-1 black--text" @click="editTupleDialog = true">
+        <v-btn v-if="!loading && canEdit" color="warning" class="mr-2 mb-1 black--text" @click="editTupleDialog = true">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="is_owner && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="!loading && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="token" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="!loading && canRead" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="token" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="!loading && canModify" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
-        <v-btn v-if="is_owner" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="!loading && canModify" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
       </v-toolbar-title>
@@ -61,7 +61,7 @@
         :options.sync="options"
         :server-items-length="total"
         :footer-props="footerProps">
-        <template v-if="is_owner" v-slot:item.selection="{ item }">
+        <template v-if="canModify" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
       </v-data-table>
@@ -79,7 +79,6 @@
 import EditTuple from '@/components/dialogs/EditTuple'
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
-import { decodeJwt } from 'jose'
 
 export default {
   components: {
@@ -102,8 +101,11 @@ export default {
       pickVersionDialog: null,
       version: null,
       edit: false,
-      user: {
-        username: null
+      access: {
+        type: null,
+        user: {
+          username: null
+        }
       },
       error: false, // XXX: `error` is never changed
       options: {
@@ -147,6 +149,9 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
     downloadConfig () {
       if (this.token === null) {
         return {
@@ -178,16 +183,25 @@ export default {
     },
     canEdit () {
       if (this.selection.length !== 1) { return false }
-      return this.edit === true
+      return this.edit === true && this.canModify
     },
     canAdd () {
       return !this.canDelete
     },
     canDelete () {
-      return this.edit && this.selection.length !== 0
+      return this.edit && this.selection.length !== 0 && this.canModify
     },
-    is_owner () {
-      return this.token && this.table.creator.username === this.user.username
+    canModify () {
+      if (this.table.creator.username === this.user.username) {
+        return true
+      }
+      if (this.access.type === 'write_own' && this.table.creator.username === this.user.username) {
+        return true
+      }
+      return this.access.type === 'write_all'
+    },
+    canRead () {
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
   watch: {
@@ -202,7 +216,6 @@ export default {
   mounted () {
     this.loadProperties()
     this.loadData()
-    this.loadUser()
   },
   methods: {
     async download () {
@@ -283,7 +296,7 @@ export default {
         }
       } catch (err) {
         console.error('Failed to delete rows', err)
-        this.$toast.error('Failed to delete rows.')
+        this.$toast.error('Failed to delete rows')
         return
       }
       this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
@@ -308,7 +321,7 @@ export default {
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (err) {
-        this.$toast.error('Could not get table details.')
+        this.$toast.error('Could not get table details')
       }
       this.loading = false
     },
@@ -339,15 +352,9 @@ export default {
         console.debug('rows', this.rows)
       } catch (err) {
         console.error('failed to load data', err)
-        this.$toast.error('Could not load table data.')
+        this.$toast.error('Could not load table data')
       }
       this.loadingData = false
-    },
-    loadUser () {
-      if (!this.token) {
-        return
-      }
-      this.user.username = decodeJwt(this.token).sub
     }
   }
 }

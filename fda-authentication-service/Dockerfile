@@ -22,12 +22,12 @@ RUN mvn -q clean package -DskipTests
 FROM openjdk:11-jre-slim as runtime
 
 ENV METADATA_DB=fda
-ENV METADATA_USERNAME=postgres
-ENV METADATA_PASSWORD=postgres
+ENV METADATA_USERNAME=root
+ENV METADATA_PASSWORD=dbrepo
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV WEBSITE=http://example.com
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service:9095/api/broker
 ENV TOKEN_MAX=5
 ENV MAIL_FROM="Database Repository <noreply@example.com>"
 ENV MAIL_REPLY_TO="Somebody <somebody@example.com>"
@@ -40,6 +40,8 @@ ENV SMTP_PORT=""
 ENV SMTP_USERNAME=""
 ENV SMTP_PASSWORD=""
 ENV LOG_LEVEL=debug
+ENV DEFAULT_ROLES=ROLE_RESEARCHER
+ENV DEVELOPER_USERNAMES=""
 
 VOLUME /tmp
 

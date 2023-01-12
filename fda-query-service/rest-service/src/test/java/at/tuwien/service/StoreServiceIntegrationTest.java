@@ -1,13 +1,14 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -15,6 +16,7 @@ import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,14 +27,15 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.security.Principal;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -49,11 +52,25 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
+    @MockBean
+    private TableRepository tableRepository;
+
+    @MockBean
+    private ImageRepository imageRepository;
+
+    @MockBean
+    private ContainerRepository containerRepository;
+
+    @MockBean
+    private DatabaseRepository databaseRepository;
+
     @Autowired
     private StoreService storeService;
 
-    @Autowired
-    private TableRepository tableRepository;
+    @BeforeEach
+    public void beforeEach() {
+        TABLE_1.setDatabase(DATABASE_1);
+    }
 
     @BeforeAll
     public static void beforeAll() {
@@ -74,6 +91,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .withName(CONTAINER_1_INTERNALNAME)
                 .withIpv4Address(CONTAINER_1_IP)
                 .withHostName(CONTAINER_1_INTERNALNAME)
+                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
                 .exec();
         /* start */
@@ -106,31 +124,19 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 });
     }
 
-    @BeforeEach
-    @Transactional
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_2);
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
-    }
-
     @Test
     public void findOne_notFound_fails() throws InterruptedException, SQLException {
-        final QueryResultDto result = QueryResultDto.builder()
-                .result(List.of(Map.of("key", "val")))
-                .build();
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(QUERY_1_STATEMENT)
-                .build();
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         DockerConfig.startContainer(CONTAINER_1);
         MariaDbConfig.clearQueryStore(TABLE_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, principal);
         });
     }
 

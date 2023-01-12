@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!token">
+      <v-card v-if="!token" flat tile>
         <v-card-title>
           Login
         </v-card-title>
@@ -12,7 +12,7 @@
             If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.username"
                 autocomplete="off"
@@ -23,7 +23,7 @@
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="6">
+            <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.password"
                 autocomplete="off"
@@ -96,22 +96,22 @@ export default {
         delete user.token
         this.$store.commit('SET_USER', user)
         this.$toast.success('Welcome back!')
-        this.$router.push('/container')
+        this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 418) {
-            this.$toast.error('Check your inbox and confirm your e-mail address.')
+            this.$toast.error('Check your inbox and confirm your e-mail address')
             console.error('user has not confirmed e-mail', err)
             this.loading = false
             return
           } else if (err.response.status === 404) {
-            this.$toast.error('Username not found.')
+            this.$toast.error('Username not found')
             console.error('user has not confirmed e-mail', err)
             this.loading = false
             return
           }
           console.error('login user failed', err)
-          this.$toast.error('Login not successful.')
+          this.$toast.error('Login not successful')
         }
       }
       this.loading = false

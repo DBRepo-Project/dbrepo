@@ -32,8 +32,9 @@ public class DatabaseDto {
     private String name;
 
     @NotBlank
-    @Schema(example = "air_quality")
-    private String exchange;
+    @JsonProperty("exchange_name")
+    @Schema(example = "dbrepo/4/4")
+    private String exchangeName;
 
     @NotNull
     private UserBriefDto creator;
@@ -58,12 +59,10 @@ public class DatabaseDto {
 
     private ContainerDto container;
 
+    private List<DatabaseAccessDto> accesses;
+
     @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
-
-    @Schema(example = "2020-08-04 11:13:00")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant deleted;
 
 }

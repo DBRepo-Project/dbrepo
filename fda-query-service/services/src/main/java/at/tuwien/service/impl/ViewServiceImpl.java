@@ -5,6 +5,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.jpa.ViewRepository;
 import at.tuwien.service.DatabaseService;
@@ -29,14 +30,16 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     private final ViewMapper viewMapper;
     private final UserService userService;
+    private final DatabaseMapper databaseMapper;
     private final ViewRepository viewRepository;
     private final DatabaseService databaseService;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, ViewRepository viewRepository,
-                           DatabaseService databaseService) {
+    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, DatabaseMapper databaseMapper,
+                           ViewRepository viewRepository, DatabaseService databaseService) {
         this.viewMapper = viewMapper;
         this.userService = userService;
+        this.databaseMapper = databaseMapper;
         this.viewRepository = viewRepository;
         this.databaseService = databaseService;
     }
@@ -77,8 +80,10 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* find */
         final View view = findById(databaseId, id, principal);
         final Database database = databaseService.find(containerId, databaseId);
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* delete view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewToRawDeleteViewQuery(connection, view);
@@ -103,20 +108,17 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final User user = userService.findByUsername(principal.getName());
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* create view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
             createViewStatement.executeUpdate();
-            final PreparedStatement createEntityStatement = viewMapper.viewCreateDtoToRawInsertViewQuery(connection, containerId, databaseId, user.getId(), data);
-            createEntityStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
             throw new ViewMalformedException("Failed to create view", e);
-        } catch (QueryStoreException e) {
-            log.error("Failed to insert view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to insert view", e);
         } finally {
             dataSource.close();
         }

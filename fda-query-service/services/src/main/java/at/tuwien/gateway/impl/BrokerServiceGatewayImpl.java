@@ -38,7 +38,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public List<ConsumerDto> findAllConsumers() {
-        log.debug("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
+        log.trace("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
         final URI findUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/consumers/" + VIRTUAL_SERVER);
         final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
                 new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
@@ -53,9 +53,9 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
      */
     private HttpHeaders getHeaders() {
         String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
+        log.trace("set Authorization header username={}, password=(redacted)", amqpConfig.getAmqpUsername());
         byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
         String authHeader = "Basic " + new String(encodedAuth);
-        log.trace("gateway set authorization header {}", authHeader);
         return new HttpHeaders() {{
             set("Authorization", authHeader);
         }};

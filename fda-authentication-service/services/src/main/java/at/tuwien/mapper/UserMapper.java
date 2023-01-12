@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenBriefDto;
@@ -28,9 +29,21 @@ public interface UserMapper {
 
     UserDetailsDto userToUserDetailsDto(User data);
 
+    RoleType roleTypeDtoToRoleType(RoleTypeDto data);
+
     UserPasswordDto userResetDtoToUserPasswordDto(UserResetDto data);
 
     UserBriefDto userToUserBriefDto(User data);
+
+    CreateUserDto userPasswordDtoToCreateUserDto(UserPasswordDto data);
+
+    @Mappings({
+            @Mapping(source = "token", target = "token"),
+            @Mapping(source = "expires", target = "expires")
+    })
+    TokenDto tokenToTokenDto(Token data);
+
+    TokenBriefDto tokenToTokenBriefDto(Token data);
 
     @Transactional(readOnly = true)
     default JwtResponseDto principalToJwtResponseDto(Object data) {
@@ -65,6 +78,10 @@ public interface UserMapper {
                 .authorities(data.getRoles()
                         .stream()
                         .map(this::roleTypeToGrantedAuthorityDto)
+                        .collect(Collectors.toList()))
+                .roles(data.getRoles()
+                        .stream()
+                        .map(Enum::name)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -105,12 +122,9 @@ public interface UserMapper {
                 .toString();
     }
 
-    @Mappings({
-            @Mapping(source = "token", target = "token"),
-            @Mapping(source = "expires", target = "expires")
-    })
-    TokenDto tokenToTokenDto(Token data);
-
-    TokenBriefDto tokenToTokenBriefDto(Token data);
+    /* keep */
+    default String roleTypeToString(RoleType data) {
+        return data.name();
+    }
 
 }

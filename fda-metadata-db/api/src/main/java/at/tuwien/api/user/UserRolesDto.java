@@ -14,6 +14,6 @@ import java.util.List;
 public class UserRolesDto {
 
     @NotNull
-    private List<String> roles;
+    private List<RoleTypeDto> roles;
 
 }

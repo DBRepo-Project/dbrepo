@@ -32,7 +32,6 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier find(Long containerId, Long databaseId, IdentifierType type) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findByContainerIdAndDatabaseIdAndType(containerId, databaseId, type);
         if (optional.isEmpty()) {
-            log.error("Failed to find identifier with container id {} and database id {} and type {}", containerId, databaseId, type);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         return optional.get();

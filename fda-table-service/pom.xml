@@ -19,7 +19,6 @@
         <module>rest-service</module>
         <module>services</module>
         <module>report</module>
-        <module>api</module>
     </modules>
 
     <properties>
@@ -96,11 +95,11 @@
             <artifactId>hibernate-c3p0</artifactId>
             <version>${hibernate-c3po.version}</version>
         </dependency>
-        <!-- DataSource -->
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+        <!-- DataSource -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
@@ -133,17 +132,6 @@
             <artifactId>btrace-client</artifactId>
             <version>${btrace-client.version}</version>
         </dependency>
-        <!-- Testing -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.aventrix.jnanoid</groupId>
-            <artifactId>jnanoid</artifactId>
-            <scope>test</scope>
-            <version>${random-utils.version}</version>
-        </dependency>
         <!-- AMPQ -->
         <dependency>
             <groupId>com.rabbitmq</groupId>
@@ -157,10 +145,6 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
@@ -218,6 +202,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -227,16 +220,8 @@
                     <excludes>
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
-                        <exclude>at/tuwien/utils/**/*</exclude>
-                        <exclude>at/tuwien/api/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>at/tuwien/handlers/**/*</exclude>
-                        <exclude>**/FdaTableServiceApplication.class</exclude>
-                        <exclude>**/RabbitMqService.class</exclude>
-                        <exclude>**/TableSeeder.class</exclude>
-                        <exclude>**/DataSeeder.class</exclude>
-                        <exclude>**/ServiceSeeder.class</exclude>
-                        <exclude>**/JdbcConnector.class</exclude>
+                        <exclude>**/FdaContainerManagingApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -247,25 +232,11 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>default-report</id>
+                        <id>report</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>aggregate</id>
-                        <goals>
-                            <goal>aggregate</goal>
-                        </goals>
-                        <phase>site</phase>
                     </execution>
                 </executions>
             </plugin>

@@ -10,8 +10,8 @@ volumes:
   broker-service-data:
 
 networks:
-  core:
-    name: core
+  public:
+    name: public
     driver: bridge
     ipam:
       config:
@@ -23,7 +23,7 @@ networks:
       config:
         - subnet: 172.28.0.0/16
   core:
-    name: public
+    name: core
     driver: bridge
     ipam:
       config:
@@ -35,13 +35,13 @@ services:
     restart: on-failure
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:1.1
+    image: dbrepo/metadata-db:1.2
     networks:
       core:
     volumes:
-      - metadata-db-data:/var/lib/postgresql/data
+      - metadata-db-data:/var/lib/mysql
     ports:
-      - "5432:5432"
+      - "3306:3306"
     env_file:
       - .env
     logging:
@@ -51,11 +51,9 @@ services:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
-    image: dbrepo/discovery-service:1.1
+    image: dbrepo/discovery-service:1.2
     networks:
       core:
-    ports:
-      - "9090:9090"
     env_file:
       - .env
     logging:
@@ -65,7 +63,7 @@ services:
     restart: on-failure
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: dbrepo/gateway-service:1.1
+    image: dbrepo/gateway-service:1.2
     networks:
       core:
     ports:
@@ -82,12 +80,10 @@ services:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service:1.1
+    image: dbrepo/database-service:1.2
     networks:
       userdb:
       core:
-    ports:
-      - "9092:9092"
     env_file:
       - .env
     volumes:
@@ -106,11 +102,9 @@ services:
     restart: on-failure
     container_name: dbrepo-container-service
     hostname: container-service
-    image: dbrepo/container-service:1.1
+    image: dbrepo/container-service:1.2
     networks:
       core:
-    ports:
-      - "9091:9091"
     env_file:
       - .env
     volumes:
@@ -125,11 +119,9 @@ services:
     restart: on-failure
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:1.1
+    image: dbrepo/authentication-service:1.2
     networks:
       core:
-    ports:
-      - "9097:9097"
     env_file:
       - .env
     depends_on:
@@ -146,12 +138,10 @@ services:
     restart: on-failure
     container_name: dbrepo-query-service
     hostname: query-service
-    image: dbrepo/query-service:1.1
+    image: dbrepo/query-service:1.2
     networks:
       core:
       userdb:
-    ports:
-      - "9093:9093"
     env_file:
       - .env
     volumes:
@@ -168,12 +158,10 @@ services:
     restart: on-failure
     container_name: dbrepo-table-service
     hostname: table-service
-    image: dbrepo/table-service:1.1
+    image: dbrepo/table-service:1.2
     networks:
       core:
       userdb:
-    ports:
-      - "9094:9094"
     env_file:
       - .env
     volumes:
@@ -193,11 +181,9 @@ services:
     restart: on-failure
     container_name: dbrepo-identifier-service
     hostname: identifier-service
-    image: dbrepo/identifier-service:1.1
+    image: dbrepo/identifier-service:1.2
     networks:
       core:
-    ports:
-      - "9096:9096"
     env_file:
       - .env
     depends_on:
@@ -210,19 +196,17 @@ services:
     logging:
       driver: json-file
 
-  fda-metadata-service:
+  metadata-service:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:1.1
+    image: dbrepo/metadata-service:1.2
     networks:
       core:
     env_file:
       - .env
-    ports:
-      - "9099:9099"
     depends_on:
-      fda-metadata-db:
+      metadata-db:
         condition: service_started
     logging:
       driver: json-file
@@ -231,13 +215,12 @@ services:
     restart: on-failure
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:1.1
+    image: dbrepo/analyse-service:1.2
     networks:
       core:
       userdb:
-    command: sh -c "/wait && flask run" # docker-compose should not test the implementation
-    ports:
-      - "5000:5000"
+    env_file:
+      - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -247,20 +230,22 @@ services:
     logging:
       driver: json-file
 
-  units-service:
+  semantics-service:
     restart: on-failure
-    container_name: dbrepo-units-service
-    hostname: units-service
-    image: dbrepo/units-service:1.1
+    container_name: dbrepo-semantics-service
+    hostname: semantics-service
+    image: dbrepo/semantics-service:1.2
     networks:
       core:
-    ports:
-      - "5010:5010"
+    env_file:
+      - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       discovery-service:
+        condition: service_healthy
+      metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -269,13 +254,11 @@ services:
     restart: on-failure
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:1.1
+    image: dbrepo/broker-service:1.2
     networks:
       core:
     ports:
       - "5672:5672"
-      - "9098:9098"
-      - "15672:15672"
     env_file:
       - .env
     depends_on:
@@ -301,9 +284,8 @@ services:
     depends_on:
       discovery-service:
         condition: service_healthy
-    ports:
-      - 9200:9200
-      - 9600:9600
+    env_file:
+      - .env
     volumes:
       - search-service-data:/usr/share/elasticsearch/data
     logging:
@@ -313,16 +295,14 @@ services:
     restart: on-failure
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:1.1
+    image: dbrepo/ui:1.2
     networks:
       core:
+      public:
     env_file:
       - .env
-    ports:
-      - "80:3000"
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
-      - /logos:/app/static/logos
     depends_on:
       identifier-service:
         condition: service_healthy

@@ -2,18 +2,20 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5432/fda
-    driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    url: jdbc:mariadb://metadata-db:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    password: dbrepo
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
+      use-new-id-generator-mappings: false
     open-in-view: false
     properties:
       hibernate:
+        default_schema: fda
         jdbc:
           time_zone: UTC
   application:
@@ -39,3 +41,4 @@ fda:
   gateway.endpoint: http://localhost:9095
   ready.path: ./ready
   consumers: 2
+  unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--

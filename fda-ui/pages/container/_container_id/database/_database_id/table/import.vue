@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="isResearcher">
     <v-toolbar flat>
       <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
@@ -7,7 +7,6 @@
       <v-stepper-step :complete="step > 1" step="1">
         Table Information
       </v-stepper-step>
-
       <v-stepper-content step="1">
         <v-form ref="form" v-model="validStep1" @submit.prevent="submit">
           <v-row dense>
@@ -38,11 +37,9 @@
           </v-row>
         </v-form>
       </v-stepper-content>
-
       <v-stepper-step :complete="step > 2" step="2">
         Metadata
       </v-stepper-step>
-
       <v-stepper-content step="2">
         <v-form ref="form" v-model="validStep2" @submit.prevent="submit">
           <v-row dense>
@@ -124,11 +121,9 @@
           </v-row>
         </v-form>
       </v-stepper-content>
-
       <v-stepper-step :complete="step > 3" step="3">
         Import Data
       </v-stepper-step>
-
       <v-stepper-content step="3">
         <v-form ref="form" v-model="validStep3" @submit.prevent="submit">
           <v-row dense>
@@ -165,21 +160,17 @@
           </v-row>
         </v-form>
       </v-stepper-content>
-
       <v-stepper-step :complete="step > 4" step="4">
         Table Schema
       </v-stepper-step>
-
       <v-stepper-content step="4">
         <TableSchema :back="true" :error="error" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
-
       <v-stepper-step
         :complete="step > 5"
         step="5">
         Done
       </v-stepper-step>
-
       <v-stepper-content step="5">
         <div class="mt-2">
           <v-btn class="mb-1" color="primary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`">
@@ -193,7 +184,8 @@
 </template>
 <script>
 import TableSchema from '@/components/TableSchema'
-const { notEmpty, isNonNegativeInteger } = require('@/utils')
+const { notEmpty, isNonNegativeInteger, isResearcher } = require('@/utils')
+
 export default {
   name: 'TableFromCSV',
   components: {
@@ -267,6 +259,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    user () {
+      return this.$store.state.user
+    },
+    isResearcher () {
+      return isResearcher(this.user)
+    },
     fileConfig () {
       return { headers: { 'Content-Type': 'multipart/form-data' } }
     },
@@ -311,7 +309,7 @@ export default {
       } catch (err) {
         console.error('Failed to upload .csv data', err)
         console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data.')
+        this.$toast.error('Could not upload data')
       }
       this.loading = false
     },
@@ -344,7 +342,7 @@ export default {
       } catch (err) {
         console.error('Failed to upload .csv data', err)
         console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data.')
+        this.$toast.error('Could not upload data')
       }
       this.loading = false
     },
@@ -421,9 +419,9 @@ export default {
         this.loading = false
         this.error = true
         if (err.response.status === 409) {
-          this.$toast.error('Table name already exists.')
+          this.$toast.error('Table name already exists')
         } else {
-          this.$toast.error('Could not create table.')
+          this.$toast.error('Could not create table')
         }
         console.error('create table failed', err)
         return
@@ -437,7 +435,7 @@ export default {
         this.loading = false
         this.error = true
         console.error('insert table failed', err)
-        this.$toast.error('Could not insert csv into table.')
+        this.$toast.error('Could not insert csv into table')
         return
       }
       this.loading = false

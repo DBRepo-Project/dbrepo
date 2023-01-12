@@ -81,7 +81,7 @@ export default {
         this.$router.push({ path: '/databases' })
         this.$toast.success(`Database "${this.db.name}" deleted.`)
       } catch (err) {
-        this.$toast.error('Could not delete database.')
+        this.$toast.error('Could not delete database')
       }
       this.dialogDelete = false
     },
@@ -96,7 +96,7 @@ export default {
         this.$store.commit('SET_DATABASE', res.data)
         this.loading = false
       } catch (err) {
-        this.$toast.error('Could not load database.')
+        this.$toast.error('Could not load database')
         this.loading = false
       }
     }

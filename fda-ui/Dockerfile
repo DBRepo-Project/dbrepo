@@ -2,6 +2,9 @@
 FROM node:14-alpine as build
 MAINTAINER Kirill Stytsenko <kirill.stytsenko@univie.ac.at>
 
+RUN apk --no-cache add curl
+RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV API=http://gateway-service:9095
@@ -31,15 +34,19 @@ COPY ./utils ./utils
 RUN yarn build > /dev/null
 
 EXPOSE 3000
+EXPOSE 9100
 
 ENV API=http://gateway-service:9095
-ENV SEARCH=http://search-service:9200
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false
+ENV SEARCH=http://search-service:9200
 ENV SHARED_FILESYSTEM=/tmp
 ENV VERSION=1.1
 ENV LOGO=/logo.png
 ENV MAIL_VERIFY=false
 
-ENTRYPOINT [ "yarn", "start" ]
+COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENTRYPOINT [ "/app/docker-entrypoint.sh" ]

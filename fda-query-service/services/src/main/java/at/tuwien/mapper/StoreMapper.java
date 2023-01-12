@@ -1,67 +1,34 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
-import at.tuwien.querystore.QueryType;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.mapstruct.Mapper;
 
 import java.sql.*;
 import java.time.Instant;
-import java.util.LinkedList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Mapper(componentModel = "spring")
 public interface StoreMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(StoreMapper.class);
 
-    QueryType queryTypeDtoToQueryType(QueryTypeDto data);
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S[SS]")
+            .withZone(ZoneId.of("UTC"));
 
-    default Long queryResultDtoToLong(QueryResultDto data) {
-        if (data == null) {
-            return null;
-        }
-        return Long.parseLong(String.valueOf(data.getResult().size()));
-    }
-
-    default String queryResultDtoToString(QueryResultDto data) {
-        if (data == null) {
-            return null;
-        }
-        final String hash = DigestUtils.sha256Hex(data.getResult().toString());
-        log.trace("mapped query result {} to hash {}", data, hash);
-        return hash;
-    }
-
-    default PreparedStatement queryStoreRawInsertQuery(Connection connection, Query data) throws QueryStoreException {
-        final String statement = "INSERT INTO `qs_queries` (`cid`, `dbid`, `query`, `query_normalized`, `query_hash`, `result_number`, `result_hash`, `execution`, `created`, `created_by`, `type`, `is_persisted`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING `id`";
+    default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, String query)
+            throws QueryStoreException {
+        final String statement = "{call _store_query(?, ?, ?)}";
+        log.trace("statement={}", statement);
         try {
-            final PreparedStatement ps = connection.prepareStatement(statement);
-            ps.setLong(1, data.getCid());
-            ps.setLong(2, data.getDbid());
-            ps.setString(3, data.getQuery());
-            ps.setString(4, data.getQueryNormalized());
-            ps.setString(5, data.getQueryHash());
-            if (data.getResultNumber() == null) {
-                ps.setNull(6, Types.NULL);
-            } else {
-                ps.setLong(6, data.getResultNumber());
-            }
-            if (data.getResultHash() == null) {
-                ps.setNull(7, Types.NULL);
-            } else {
-                ps.setString(7, data.getResultHash());
-            }
-            ps.setTimestamp(8, Timestamp.from(data.getExecution()));
-            ps.setTimestamp(9, Timestamp.from(Instant.now()));
-            ps.setLong(10, data.getCreatedBy());
-            ps.setString(11, data.getType().toString());
-            ps.setBoolean(12, false);
-            log.trace("mapped insert query {} to prepared statement {}", statement, ps);
+            final CallableStatement ps = connection.prepareCall(statement);
+            ps.setString(1, user.getUsername());
+            ps.setString(2, query);
+            ps.registerOutParameter(3, Types.BIGINT);
             return ps;
         } catch (SQLException e) {
             log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -70,13 +37,29 @@ public interface StoreMapper {
     }
 
     default PreparedStatement queryStoreRawSelectAllQuery(Connection connection, Boolean persisted) throws QueryStoreException {
-        String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type`, `is_persisted` FROM `qs_queries`";
+        String statement = "SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted` FROM `qs_queries`";
         if (persisted != null) {
-            statement += " WHERE `is_persisted` = " + persisted;
+            statement += " WHERE `is_persisted` = ?";
         }
         try {
+            log.trace("mapped select all query '{}' to prepared statement", statement);
+            final PreparedStatement preparedStatement = connection.prepareStatement(statement);
+            if (persisted != null) {
+                preparedStatement.setBoolean(1, persisted);
+            }
+            return preparedStatement;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryStoreException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement queryStoreRawSelectOneQuery(Connection connection, Long queryId) throws QueryStoreException {
+        final String statement = "SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted` FROM `qs_queries` q WHERE q.`id` = ?";
+        try {
+            log.trace("mapped select one query '{}' to prepared statement", statement);
             final PreparedStatement pstmt = connection.prepareStatement(statement);
-            log.trace("mapped select all query {} to prepared statement {}", statement, pstmt);
+            pstmt.setLong(1, queryId);
             return pstmt;
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -84,78 +67,37 @@ public interface StoreMapper {
         }
     }
 
-    default PreparedStatement queryStoreRawSelectOneQuery(Connection connection, Long containerId, Long databaseId, Long queryId) throws QueryStoreException {
-        final String statement = "SELECT `id`, `cid`, `created`, `created_by`, `dbid`, `execution`, `last_modified`, `query`, `query_hash`, `result_hash`, `result_number`, `type`, `is_persisted` FROM `qs_queries` q WHERE q.`cid` = ? AND q.`dbid` = ? AND q.`id` = ?";
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement);
-            pstmt.setLong(1, containerId);
-            pstmt.setLong(2, databaseId);
-            pstmt.setLong(3, queryId);
-            log.trace("mapped select one query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryStoreException("Failed to prepare statement", e);
-        }
+    default Query resultSetToQuery(ResultSet data) throws SQLException {
+        final String created = data.getString(2);
+        final Instant createdInst = LocalDateTime.parse(created, mariaDbFormatter)
+                .atZone(ZoneId.of("UTC"))
+                .toInstant();
+        log.trace("query created {} parsed as Instant {}", created, createdInst);
+        return Query.builder()
+                .id(data.getLong(1))
+                .created(createdInst)
+                .createdBy(data.getString(3))
+                .query(data.getString(4))
+                .queryHash(data.getString(5))
+                .resultHash(data.getString(6))
+                .resultNumber(data.getLong(7))
+                .isPersisted(data.getBoolean(8))
+                .build();
     }
 
-    default PreparedStatement queryStoreRawUpdateQuery(Connection connection, Query data) throws QueryStoreException {
-        final String statement = "UPDATE `qs_queries` SET `execution` = ?, `last_modified` = ?, `query` = ?, `query_hash` = ?, `result_hash` = ?, `result_number` = ?, `query_normalized` = ? WHERE `cid` = ? AND `dbid` = ? AND `id` = ?";
-        try {
-            final PreparedStatement ps = connection.prepareStatement(statement);
-            ps.setTimestamp(1, Timestamp.from(data.getExecution()));
-            ps.setTimestamp(2, Timestamp.from(Instant.now()));
-            ps.setString(3, data.getQuery());
-            ps.setString(4, data.getQueryHash());
-            ps.setString(5, data.getResultHash());
-            ps.setLong(6, data.getResultNumber());
-            ps.setString(7, data.getQueryNormalized());
-            /* where */
-            ps.setLong(8, data.getCid());
-            ps.setLong(9, data.getDbid());
-            ps.setLong(10, data.getId());
-            log.trace("mapped update query {} to prepared statement {}", statement, ps);
-            return ps;
-        } catch (SQLException e) {
-            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryStoreException("Failed to prepare statement", e);
-        }
-    }
-
-    default PreparedStatement queryStoreRawPersistQuery(Connection connection, Boolean persisted, Long containerId,
-                                                        Long databaseId, Long queryId) throws QueryStoreException {
-        final String statement = "UPDATE `qs_queries` SET `is_persisted` = ? WHERE `cid` = ? AND `dbid` = ? AND `id` = ?";
+    default PreparedStatement queryStoreRawPersistQuery(Connection connection, Boolean persisted, Long queryId) throws QueryStoreException {
+        final String statement = "UPDATE `qs_queries` SET `is_persisted` = ? WHERE `id` = ?";
         try {
             final PreparedStatement ps = connection.prepareStatement(statement);
             ps.setBoolean(1, persisted);
             /* where */
-            ps.setLong(2, containerId);
-            ps.setLong(3, databaseId);
-            ps.setLong(4, queryId);
+            ps.setLong(2, queryId);
             log.trace("mapped persist query {} to prepared statement {}", statement, ps);
             return ps;
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
-    }
-
-    default List<Query> resultSetToQueryList(ResultSet data) throws TableMalformedException {
-        final List<Query> list = new LinkedList<>();
-        try {
-            while (data.next()) {
-                list.add(resultSetToQuery(data));
-            }
-        } catch (SQLException e) {
-            log.error("Failed to map queries: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map queries", e);
-        }
-        log.trace("mapped result set {} to query list {}", data, list);
-        return list;
-    }
-
-    default Query resultSetToQuery(ResultSet data) throws SQLException {
-        return resultSetToQuery(data, false);
     }
 
     default Long resultSetToId(ResultSet data) throws TableMalformedException, QueryStoreException {
@@ -169,41 +111,6 @@ public interface StoreMapper {
             log.error("Failed to retrieve id");
             throw new QueryStoreException("Failed to retrieve id");
         }
-    }
-
-    /**
-     * Maps a result set row to an entity.
-     *
-     * @param data The result set row.
-     * @return The query.
-     * @throws SQLException The mapping does not exist
-     */
-    default Query resultSetToQuery(ResultSet data, Boolean next) throws SQLException {
-        if (next && !data.next()) {
-            throw new SQLException("Tuple does not exist");
-        }
-        final Query dto = Query.builder()
-                .id(data.getLong(1))
-                .cid(data.getLong(2))
-                .created(data.getTimestamp(3)
-                        .toInstant())
-                .createdBy(data.getLong(4))
-                .dbid(data.getLong(5))
-                .execution(data.getTimestamp(6)
-                        .toInstant())
-                .lastModified(data.getTimestamp(7) != null ? data.getTimestamp(7)
-                        .toInstant() : null)
-                .query(data.getString(8))
-                .queryNormalized(data.getString(8))
-                .queryHash(data.getString(9))
-                .resultHash(data.getString(10) != null ? data.getString(10) : null)
-                .resultNumber(data.getLong(11))
-                .type(QueryType.valueOf(data.getString(12)
-                        .toUpperCase()))
-                .isPersisted(data.getBoolean(13))
-                .build();
-        log.trace("mapped result set {} to query {}", data, dto);
-        return dto;
     }
 
 }

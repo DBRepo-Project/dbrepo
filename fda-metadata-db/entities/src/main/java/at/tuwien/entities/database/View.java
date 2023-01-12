@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
 import lombok.*;
+import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -23,12 +24,9 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "view-sequence")
-    @GenericGenerator(
-            name = "view-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_view_seq")
-    )
+    @GeneratedValue(generator = "views-sequence")
+    @GenericGenerator(name = "views-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     private Long id;
 
     @Id
@@ -46,7 +44,7 @@ public class View {
     private User creator;
 
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
     private Database database;
 
@@ -62,8 +60,26 @@ public class View {
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
+
+    /**
+     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
+     * Custom equality function implementation.
+     *
+     * @param other The other view
+     * @return True if views are equal, false otherwise
+     */
+    public boolean equals(FromItem other) {
+        final String name = other.toString()
+                .replace("`", "");
+        if (other.getAlias() != null) {
+            final int idx = name.indexOf(' ');
+            return this.getInternalName()
+                    .equals(name.substring(0, idx));
+        }
+        return this.getInternalName().equals(name);
+    }
 
     @Column(nullable = false, updatable = false)
     @CreatedDate
@@ -72,8 +88,5 @@ public class View {
     @Column
     @LastModifiedDate
     private Instant lastModified;
-
-    @Column
-    private Instant deleted;
 
 }

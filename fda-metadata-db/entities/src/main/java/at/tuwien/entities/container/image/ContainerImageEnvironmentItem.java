@@ -23,23 +23,19 @@ public class ContainerImageEnvironmentItem {
 
     @Id
     @EqualsAndHashCode.Include
-    @ToString.Include
-    @GeneratedValue(generator = "environment-sequence")
-    @GenericGenerator(
-            name = "environment-sequence",
-            strategy = "enhanced-sequence",
-            parameters = @org.hibernate.annotations.Parameter(name = "sequence_name", value = "mdb_images_environment_item_seq")
-    )
+    @GeneratedValue(generator = "environments-sequence")
+    @GenericGenerator(name = "environments-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
     public Long id;
 
     @Id
     @EqualsAndHashCode.Include
     public Long iid;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String key;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String value;
 
     @Column(nullable = false, name = "etype", columnDefinition = "enum('USERNAME', 'PASSWORD', 'PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD')")
@@ -48,7 +44,7 @@ public class ContainerImageEnvironmentItem {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
     })

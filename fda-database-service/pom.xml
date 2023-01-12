@@ -206,6 +206,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/init/querystore.sql</include>
                 </includes>
             </resource>
         </resources>

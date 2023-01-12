@@ -12,6 +12,9 @@ docs/images/
 # Docker
 ready
 
+## JUnit
+.attach_pid*
+
 ### STS ###
 .apt_generated
 .classpath
