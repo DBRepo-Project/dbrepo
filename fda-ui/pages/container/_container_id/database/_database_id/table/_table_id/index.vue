@@ -192,6 +192,9 @@ export default {
       return this.edit && this.selection.length !== 0 && this.canModify
     },
     canModify () {
+      if (!this.user) {
+        return false
+      }
       if (this.table.creator.username === this.user.username) {
         return true
       }
