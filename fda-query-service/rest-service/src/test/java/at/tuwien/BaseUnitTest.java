@@ -109,6 +109,26 @@ public abstract class BaseUnitTest {
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
+    public final static Long USER_3_ID = 3L;
+    public final static String USER_3_USERNAME = "system";
+    public final static String USER_3_EMAIL = "system@example.com";
+    public final static String USER_3_PASSWORD = "password";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static Instant USER_3_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static User USER_3 = User.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(true)
+            .themeDark(false)
+            .password(USER_3_PASSWORD)
+            .databasePassword(USER_3_DATABASE_PASSWORD)
+            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
+            .created(USER_3_CREATED)
+            .lastModified(USER_3_CREATED)
+            .build();
+
     public final static String DATABASE_NET = "fda-userdb";
 
     public final static String BROKER_IMAGE = "fda-broker-service:latest";

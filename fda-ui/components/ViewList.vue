@@ -105,8 +105,7 @@ export default {
       return this.$store.state.user
     },
     isOwner () {
-      if (!this.user.username) {
-        /* not yet loaded */
+      if (!this.user) {
         return false
       }
       return this.database.creator.username === this.user.username

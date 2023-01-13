@@ -54,7 +54,7 @@ fda:
   gateway.endpoint: http://localhost:9095/api/broker
   token.max: 100
   default_roles: ROLE_RESEARCHER
-  developer_usernames: dev1
+  superusers: dev1
   mail:
     prefix: /
     from: Nobody

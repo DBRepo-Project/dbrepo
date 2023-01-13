@@ -67,7 +67,11 @@ public class StoreEndpoint extends AbstractEndpoint {
         final List<QueryBriefDto> dto = queries.stream()
                 .map(q -> {
                     final QueryBriefDto brief = queryMapper.queryToQueryBriefDto(q);
-                    final Optional<User> optional = users.stream().filter(u -> u.getId().equals(q.getCreatedBy())).findFirst();
+                    final Optional<User> optional = users.stream().filter(u -> {
+                        u.getId();
+                        q.getCreatedBy();
+                        return false;
+                    }).findFirst();
                     optional.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
                     return brief;
                 })
@@ -102,6 +106,7 @@ public class StoreEndpoint extends AbstractEndpoint {
     }
 
     @PutMapping("/{queryId}")
+    @Transactional(readOnly = true)
     @Timed(value = "store.persist", description = "Time needed to persist a query in the query store")
     @Operation(summary = "Persist some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("id") Long containerId,

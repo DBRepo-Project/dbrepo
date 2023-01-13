@@ -113,8 +113,8 @@ public class UserServiceImpl implements UserService {
         final List<RoleType> roles = new LinkedList<>(Arrays.asList(authenticationConfig.getDefaultRoles()));
         final List<String> developers = Arrays.asList(authenticationConfig.getDeveloperUsernames());
         if (developers.contains(data.getUsername())) {
-            log.info("Assign developer privileges to user with username {}", data.getUsername());
-            roles.add(RoleType.ROLE_DEVELOPER);
+            log.info("Assign all privileges to user with username {}", data.getUsername());
+            roles.addAll(List.of(RoleType.ROLE_DEVELOPER, RoleType.ROLE_RESEARCHER, RoleType.ROLE_DATA_STEWARD));
         }
         user.setRoles(roles);
         user.setThemeDark(false);

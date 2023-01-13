@@ -17,7 +17,7 @@ public class AuthenticationConfig {
     @Value("${fda.default_roles}")
     private RoleType[] defaultRoles;
 
-    @Value("${fda.developer_usernames}")
+    @Value("${fda.superusers}")
     private String[] developerUsernames;
 
 }

@@ -90,13 +90,13 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
-                log.error("Failed to retrieve first row");
-                throw new QueryStoreException("Failed to retrieve first row");
+                log.error("Query not found with id {}", queryId);
+                throw new QueryNotFoundException("Query not found with id " + queryId);
             }
             return storeMapper.resultSetToQuery(resultSet);
         } catch (SQLException e) {
-            log.error("Query not found with id {}, because {}", queryId, e.getMessage());
-            throw new QueryNotFoundException("Query not found");
+            log.error("Failed to retrieve first row for query with id {}, because {}", queryId, e.getMessage());
+            throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId);
         } finally {
             dataSource.close();
         }
@@ -117,7 +117,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         log.debug("insert into database id {}, metadata {}", databaseId, metadata);
         /* user */
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        final User creator = userService.findByUsername(principal.getName());
+        final User creator;
+        if (principal != null) {
+            creator = userService.findByUsername(principal.getName());
+        } else {
+            creator = userService.findByUsername("system");
+        }
         /* save */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
                 database.getContainer(), database, root);

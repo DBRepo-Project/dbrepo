@@ -367,8 +367,7 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
+<style>
 /* these are taked from solarized-light (plugins/vendors.js), to override the
 main.scss file from vuetify, because it paints it red */
 ::v-deep code {
@@ -386,5 +385,8 @@ main.scss file from vuetify, because it paints it red */
 }
 #back-btn::before {
   opacity: 0;
+}
+.v-data-table {
+  border-radius: 0;
 }
 </style>
