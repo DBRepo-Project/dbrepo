@@ -465,7 +465,7 @@ COMMIT;
 BEGIN;
 
 INSERT INTO mdb_users (username, Main_Email, password, database_password)
-VALUES ('system', 'system@example.com', SHA1(RANDOM_BYTES()), '*A8C67ABBEAE837AABCF49680A157D85D44A117E9');
+VALUES ('system', 'system@example.com', SHA1(RAND(512)), '*A8C67ABBEAE837AABCF49680A157D85D44A117E9');
 
 INSERT INTO mdb_licenses (identifier, uri)
 VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
