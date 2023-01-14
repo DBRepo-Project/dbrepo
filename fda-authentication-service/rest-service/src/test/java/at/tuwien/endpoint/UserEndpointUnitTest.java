@@ -25,11 +25,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.thymeleaf.context.Context;
@@ -71,14 +69,13 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     private UserEndpoint userEndpoint;
 
     @Test
-    @WithAnonymousUser
     public void updateRoles_anonymous_fails() {
         final UserRolesDto request = UserRolesDto.builder()
                 .roles(List.of(RoleTypeDto.ROLE_RESEARCHER))
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
             updateRoles_generic(USER_3_ID, USER_3, request);
         });
     }

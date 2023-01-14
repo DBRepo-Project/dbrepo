@@ -101,7 +101,8 @@ public class TokenServiceImpl implements TokenService {
             log.error("Attempted to delete foreign token");
             throw new TokenNotFoundException("Attempted to delete foreign token");
         }
-        tokenRepository.deleteById(token.getId());
+        token.setExpires(Instant.now());
+        tokenRepository.save(token);
         log.info("Deleted token with id {}", token.getId());
         log.debug("deleted token {}", token);
     }

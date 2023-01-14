@@ -12,6 +12,7 @@ import at.tuwien.entities.user.TimeSecret;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
@@ -22,6 +23,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
@@ -30,6 +32,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "jdoe";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
@@ -48,7 +51,7 @@ public abstract class BaseUnitTest {
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
-            .password(USER_1_PASSWORD)
+            .password(USER_1_PASSWORD_ENCODED)
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
@@ -70,6 +73,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
@@ -129,6 +133,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
@@ -174,6 +179,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
@@ -233,7 +239,8 @@ public abstract class BaseUnitTest {
             .plus(1, ChronoUnit.DAYS);
 
     public final static Long TOKEN_1_ID = 1L;
-    public final static String TOKEN_1_TOKEN = TIME_SECRET_1_TOKEN;
+    public final static String TOKEN_1_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_1_AUTHORIZATION = "Bearer " + TOKEN_1_TOKEN;
     public final static Instant TOKEN_1_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_1 = Token.builder()
@@ -243,7 +250,8 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long TOKEN_2_ID = 2L;
-    public final static String TOKEN_2_TOKEN = TIME_SECRET_2_TOKEN;
+    public final static String TOKEN_2_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_2_AUTHORIZATION = "Bearer " + TOKEN_2_TOKEN;
     public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_2 = Token.builder()
@@ -252,8 +260,15 @@ public abstract class BaseUnitTest {
             .expires(TOKEN_2_EXPIRES)
             .build();
 
+    public final static Token TOKEN_2_EXPIRED = Token.builder()
+            .id(TOKEN_2_ID)
+            .token(TOKEN_2_TOKEN)
+            .expires(Instant.now().minus(100000000, MILLIS))
+            .build();
+
     public final static Long TOKEN_3_ID = 3L;
-    public final static String TOKEN_3_TOKEN = TIME_SECRET_3_TOKEN;
+    public final static String TOKEN_3_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_3_AUTHORIZATION = "Bearer " + TOKEN_3_TOKEN;
     public final static Instant TOKEN_3_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_3 = Token.builder()
