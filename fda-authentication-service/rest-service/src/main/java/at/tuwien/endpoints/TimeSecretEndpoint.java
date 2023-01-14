@@ -73,7 +73,7 @@ public class TimeSecretEndpoint {
         final Context context = new Context();
         context.setVariable("username", user.getUsername());
         context.setVariable("token", token.getToken());
-        mailService.send(user, "E-Mail Verification", "token-mail.txt", context);
+        mailService.send(user, "E-Mail Verification", "mail-verify-email.txt", context);
         return ResponseEntity.status(HttpStatus.OK)
                 .build();
     }

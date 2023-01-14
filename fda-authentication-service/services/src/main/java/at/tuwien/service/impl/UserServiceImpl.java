@@ -229,8 +229,8 @@ public class UserServiceImpl implements UserService {
             log.error("Failed to assign roles, must be unique");
             throw new RoleUniqueException("Failed to assign roles", e);
         }
-        log.info("Updated user with id {}", entity.getId());
-        log.trace("updated user {}", entity);
+        log.info("Updated roles of user with id {}", entity.getId());
+        log.trace("roles={}", data.getRoles());
         return entity;
     }
 
@@ -242,8 +242,8 @@ public class UserServiceImpl implements UserService {
         /* save */
         user.setThemeDark(data.getThemeDark());
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
-        log.trace("updated user {}", entity);
+        log.info("Updated theme of user with id {}", entity.getId());
+        log.trace("theme={}", data);
     }
 
     @Override
@@ -252,16 +252,6 @@ public class UserServiceImpl implements UserService {
             BrokerUserCreationException {
         /* check */
         final User user = find(id);
-        /* modify */
-        final UserDetailsDto details = queueService.findUser(user.getUsername());
-        final CreateUserDto modifyDto = userMapper.userPasswordDtoToCreateUserDto(data);
-        if (details.getTags().length > 0) {
-            final String tags = Strings.join(details.getTags(), ",");
-            log.debug("found tags, setting the tags={}", tags);
-            modifyDto.setTags(tags);
-        }
-        queueService.modifyUserPassword(user, modifyDto);
-        log.info("Updated broker service password for user with id {}", user.getId());
         /* save */
         final String passwd = passwordEncoder.encode(data.getPassword());
         log.trace("encoded updated user password {}", passwd);
@@ -269,7 +259,7 @@ public class UserServiceImpl implements UserService {
         user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         log.trace("mapped password {} to updated user {}", passwd, user);
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
+        log.info("Updated password of user with id {}", entity.getId());
         return entity;
     }
 
@@ -280,10 +270,10 @@ public class UserServiceImpl implements UserService {
         final User user = find(id);
         /* save */
         user.setEmail(data.getEmail());
-        log.debug("mapped email {} to updated user {}", data, user);
+        user.setEmailVerified(false);
+        log.trace("mapped email {} to updated user {}", data, user);
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.info("Updated email of user with id {}", entity.getId());
         return entity;
     }
 

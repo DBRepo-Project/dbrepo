@@ -4,7 +4,7 @@ Now please verify your e-mail address by clicking this link:
 
 [[${website}]]/api/user/token?token=[[${token}]]
 
-We are looking forward to your test data in the repository!
+We are looking forward to your data in the repository!
 
 Kind regards,
 DBRepo

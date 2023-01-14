@@ -1,11 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.user.User;
+import at.tuwien.dto.AmqpUserBriefDto;
 import at.tuwien.exception.*;
 import at.tuwien.repositories.ImageRepository;
 import at.tuwien.repositories.UserRepository;
@@ -35,13 +34,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class UserServiceIntegrationTest extends BaseUnitTest {
+public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
-
-    @Autowired
-    private UserService userService;
 
     /* keep */
     @Autowired
@@ -50,6 +46,9 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private QueueService queueService;
 
     @Autowired
     private UserRepository userRepository;
@@ -118,36 +117,21 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserNameExistsException, RoleNotFoundException, UserEmailExistsException {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_2_USERNAME)
-                .password(USER_2_PASSWORD)
-                .email(USER_2_EMAIL)
-                .build();
-
-        /* mock */
-
-        /* test */
-        final User response = userService.create(request);
-        assertEquals(USER_2_USERNAME, response.getUsername());
-        assertEquals(USER_2_EMAIL, response.getEmail());
-    }
-
-    @Test
-    public void updatePassword_succeeds() throws UserNotFoundException, BrokerUserCreationException {
+    public void updatePassword_succeeds() throws BrokerUserCreationException {
         final String USER_1_OLD_PASSWORD = "other";
-        final UserPasswordDto request = UserPasswordDto.builder()
+        final CreateUserDto request = CreateUserDto.builder()
                 .password(USER_1_PASSWORD)
+                .tags("administrator")
                 .build();
 
         /* mock */
         amqpConfig.addUser(USER_1_USERNAME, USER_1_OLD_PASSWORD, "administrator");
         amqpConfig.grantAccess(USER_1_USERNAME);
+        queueService.modifyUserPassword(USER_1, request);
 
         /* test */
-        final User response = userService.updatePassword(USER_1_ID, request);
-        assertEquals(USER_1_USERNAME, response.getUsername());
-        assertEquals(USER_1_EMAIL, response.getEmail());
+        final AmqpUserBriefDto response2 = amqpConfig.whoami(USER_1_USERNAME, USER_1_PASSWORD);
+        assertEquals(USER_1_USERNAME, response2.getName());
     }
 
 }

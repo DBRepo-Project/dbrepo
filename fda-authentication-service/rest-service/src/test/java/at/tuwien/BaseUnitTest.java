@@ -38,7 +38,7 @@ public abstract class BaseUnitTest {
     public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
-    public final static Boolean USER_1_VERIFIED = true;
+    public final static Boolean USER_1_VERIFIED = false;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static Instant USER_1_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
@@ -76,6 +76,11 @@ public abstract class BaseUnitTest {
             .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
             .build();
 
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{})
+            .build();
+
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
@@ -89,7 +94,7 @@ public abstract class BaseUnitTest {
     public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static Boolean USER_2_VERIFIED = false;
+    public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
@@ -123,6 +128,11 @@ public abstract class BaseUnitTest {
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
             .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_2_USERNAME)
+            .tags(new String[]{})
             .build();
 
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
@@ -163,6 +173,11 @@ public abstract class BaseUnitTest {
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
             .authorities(List.of())
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_3_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_3_USERNAME)
+            .tags(new String[]{})
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
@@ -207,18 +222,22 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long TOKEN_1_ID = 1L;
+    public final static String TOKEN_1_TOKEN = TIME_SECRET_1_TOKEN;
     public final static Instant TOKEN_1_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_1 = Token.builder()
             .id(TOKEN_1_ID)
+            .token(TOKEN_1_TOKEN)
             .expires(TOKEN_1_EXPIRES)
             .build();
 
     public final static Long TOKEN_2_ID = 2L;
+    public final static String TOKEN_2_TOKEN = TIME_SECRET_2_TOKEN;
     public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_2 = Token.builder()
             .id(TOKEN_2_ID)
+            .token(TOKEN_2_TOKEN)
             .expires(TOKEN_2_EXPIRES)
             .build();
 

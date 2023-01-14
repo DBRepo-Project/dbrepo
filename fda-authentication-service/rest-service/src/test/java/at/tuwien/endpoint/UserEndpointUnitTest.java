@@ -1,6 +1,8 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.endpoints.UserEndpoint;
@@ -22,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -434,6 +437,194 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         });
     }
 
+    @Test
+    public void updateEmail_anonymous_fails() {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* test */
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            updateEmail_generic(USER_1_ID, null, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updateEmail_researcher_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        updateEmail_generic(USER_1_ID, USER_1, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void updateEmail_developer_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_2_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        updateEmail_generic(USER_2_ID, USER_2, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void updateEmail_dataSteward_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_3_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_3_USERNAME))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        updateEmail_generic(USER_3_ID, USER_3, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updateEmail_differentUser_fails() {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            updateEmail_generic(USER_2_ID, USER_2, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updateEmail_notExists_fails() {
+        final UserEmailDto request = UserEmailDto.builder()
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            updateEmail_generic(USER_1_ID, null, request);
+        });
+    }
+
+    @Test
+    public void updatePassword_anonymous_fails() {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_1_PASSWORD)
+                .build();
+
+        /* test */
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            updatePassword_generic(USER_1_ID, USER_1_USERNAME, null, USER_1_DETAILS_DTO, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updatePassword_researcher_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException, BrokerUserCreationException {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_1_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        updatePassword_generic(USER_1_ID, USER_1_USERNAME, USER_1, USER_1_DETAILS_DTO, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void updatePassword_developer_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException, BrokerUserCreationException {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_2_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        updatePassword_generic(USER_2_ID, USER_2_USERNAME, USER_2, USER_2_DETAILS_DTO, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void updatePassword_dataSteward_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException, BrokerUserCreationException {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_3_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_3_USERNAME))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        updatePassword_generic(USER_3_ID, USER_3_USERNAME, USER_3, USER_3_DETAILS_DTO, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updatePassword_differentUser_fails() {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_1_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            updatePassword_generic(USER_2_ID, USER_2_USERNAME, USER_2, USER_2_DETAILS_DTO, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updatePassword_notExists_fails() {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_1_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            updatePassword_generic(USER_1_ID, USER_1_USERNAME, null, USER_1_DETAILS_DTO, request);
+        });
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -545,6 +736,60 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();
+    }
+
+    protected void updateEmail_generic(Long userId, User user, UserEmailDto data)
+            throws OrcidMalformedException, UserEmailFailedException, UserNotFoundException {
+
+        /* mock */
+        if (user == null) {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+        }
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        when(timeSecretService.create(any(User.class)))
+                .thenReturn(TIME_SECRET_1);
+        doNothing()
+                .when(mailService)
+                .send(eq(user), anyString(), anyString(), any(Context.class));
+
+        /* test */
+        final ResponseEntity<UserDto> response = userEndpoint.updateEmail(userId, data);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    protected void updatePassword_generic(Long userId, String username, User user, UserDetailsDto userDetails,
+                                          UserPasswordDto data) throws OrcidMalformedException,
+            UserEmailFailedException, UserNotFoundException, BrokerUserCreationException {
+
+        /* mock */
+        if (user == null) {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.empty());
+        } else {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+        }
+        when(queueService.findUser(username))
+                .thenReturn(userDetails);
+        doNothing()
+                .when(queueService)
+                .modifyUserPassword(eq(user), any(CreateUserDto.class));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        doNothing()
+                .when(mailService)
+                .send(eq(user), anyString(), anyString(), any(Context.class));
+
+        /* test */
+        final ResponseEntity<UserDto> response = userEndpoint.updatePassword(userId, data);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
     }
 
 
