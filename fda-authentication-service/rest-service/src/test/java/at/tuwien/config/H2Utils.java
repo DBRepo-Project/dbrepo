@@ -1,6 +1,5 @@
 package at.tuwien.config;
 
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.codehaus.plexus.util.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;

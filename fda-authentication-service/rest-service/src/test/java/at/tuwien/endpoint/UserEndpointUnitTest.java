@@ -1,15 +1,15 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.endpoints.UserEndpoint;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.OrcidMalformedException;
-import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.exception.RoleUniqueException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.repositories.UserRepository;
+import at.tuwien.service.MailService;
+import at.tuwien.service.QueueService;
+import at.tuwien.service.TimeSecretService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,25 +27,34 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.thymeleaf.context.Context;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class UserEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private TimeSecretService timeSecretService;
+
+    @MockBean
+    private QueueService queueService;
+
+    @MockBean
+    private MailService mailService;
 
     @Bean
     @Primary
@@ -221,7 +230,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_2_FIRSTNAME)
                 .lastname(USER_2_LASTNAME)
                 .affiliation(USER_2_AFFILIATION)
-                .orcid(USER_2_ORCID)
+                .orcid(USER_2_ORCID_UNCOMPRESSED)
                 .build();
 
         /* test */
@@ -237,7 +246,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_UNCOMPRESSED)
                 .build();
 
         /* mock */
@@ -247,7 +256,12 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        update_generic(USER_1_ID, USER_1, request);
+        final UserDto response = update_generic(USER_1_ID, USER_1, request);
+        assertEquals(USER_1_ID, response.getId());
+        assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_FIRSTNAME, response.getFirstname());
+        assertEquals(USER_1_LASTNAME, response.getLastname());
+        assertEquals(USER_1_ORCID_UNCOMPRESSED, response.getOrcid());
     }
 
     @Test
@@ -257,7 +271,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_UNCOMPRESSED)
                 .build();
 
         /* mock */
@@ -279,17 +293,22 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_UNCOMPRESSED)
                 .build();
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
                 .thenReturn(Optional.of(USER_2));
-        when(userRepository.findById(USER_2_ID))
-                .thenReturn(Optional.of(USER_2));
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
-        update_generic(USER_2_ID, USER_2, request);
+        final UserDto response = update_generic(USER_1_ID, USER_1, request);
+        assertEquals(USER_1_ID, response.getId());
+        assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_FIRSTNAME, response.getFirstname());
+        assertEquals(USER_1_LASTNAME, response.getLastname());
+        assertEquals(USER_1_ORCID_UNCOMPRESSED, response.getOrcid());
     }
 
     @Test
@@ -299,7 +318,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_UNCOMPRESSED)
                 .build();
 
         /* mock */
@@ -309,7 +328,12 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        update_generic(USER_1_ID, USER_1, request);
+        final UserDto response = update_generic(USER_1_ID, USER_1, request);
+        assertEquals(USER_1_ID, response.getId());
+        assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_FIRSTNAME, response.getFirstname());
+        assertEquals(USER_1_LASTNAME, response.getLastname());
+        assertEquals(USER_1_ORCID_UNCOMPRESSED, response.getOrcid());
     }
 
     @Test
@@ -319,7 +343,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
                 .affiliation(USER_1_AFFILIATION)
-                .orcid(USER_1_ORCID)
+                .orcid(USER_1_ORCID_UNCOMPRESSED)
                 .build();
 
         /* mock */
@@ -353,6 +377,60 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(OrcidMalformedException.class, () -> {
             update_generic(USER_1_ID, USER_1, request);
+        });
+    }
+
+    @Test
+    public void register_anonymous_succeeds() throws UserNameExistsException, UserEmailFailedException,
+            BrokerUserCreationException, OrcidMalformedException, RoleNotFoundException, UserEmailExistsException,
+            NotAllowedException {
+
+        /* test */
+        final UserDto response = register_generic(USER_1_USERNAME, USER_1, null, USER_1_SIGNUP_REQUEST_DTO);
+        assertEquals(USER_1_ID, response.getId());
+        assertEquals(USER_1_USERNAME, response.getUsername());
+        assertEquals(USER_1_EMAIL, response.getEmail());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void register_researcher_fails() {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            register_generic(USER_2_USERNAME, USER_2, USER_1_PRINCIPAL, USER_2_SIGNUP_REQUEST_DTO);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void register_developer_fails() {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            register_generic(USER_1_USERNAME, USER_1, USER_2_PRINCIPAL, USER_1_SIGNUP_REQUEST_DTO);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void register_dataSteward_fails() {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_3_USERNAME))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            register_generic(USER_1_USERNAME, USER_1, USER_3_PRINCIPAL, USER_1_SIGNUP_REQUEST_DTO);
         });
     }
 
@@ -442,6 +520,29 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         /* test */
         final ResponseEntity<UserDto> response = userEndpoint.update(userId, data);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        return response.getBody();
+    }
+
+    protected UserDto register_generic(String username, User user, Principal principal, SignupRequestDto data)
+            throws OrcidMalformedException, UserNameExistsException, UserEmailFailedException,
+            BrokerUserCreationException, RoleNotFoundException, UserEmailExistsException, NotAllowedException {
+
+        /* mock */
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        doNothing()
+                .when(queueService)
+                .createUser(eq(username), eq(data));
+        when(timeSecretService.create(any(User.class)))
+                .thenReturn(TIME_SECRET_1);
+        doNothing()
+                .when(mailService)
+                .send(eq(user), anyString(), anyString(), any(Context.class));
+
+        /* test */
+        final ResponseEntity<UserDto> response = userEndpoint.register(data, principal);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();
     }

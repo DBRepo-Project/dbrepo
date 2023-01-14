@@ -1,5 +1,6 @@
 package at.tuwien;
 
+import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.entities.container.Container;
@@ -33,7 +34,8 @@ public abstract class BaseUnitTest {
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
-    public final static String USER_1_ORCID = "0000-0003-4216-302X";
+    public final static String USER_1_ORCID = "000000034216302X";
+    public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = true;
@@ -50,6 +52,8 @@ public abstract class BaseUnitTest {
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
             .titlesBefore(USER_1_TITLES_BEFORE)
             .titlesAfter(USER_1_TITLES_AFTER)
             .emailVerified(USER_1_VERIFIED)
@@ -57,6 +61,12 @@ public abstract class BaseUnitTest {
             .created(USER_1_CREATED)
             .roles(List.of(RoleType.ROLE_RESEARCHER))
             .lastModified(USER_1_LAST_MODIFIED)
+            .build();
+
+    public final static SignupRequestDto USER_1_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .email(USER_1_EMAIL)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -75,7 +85,8 @@ public abstract class BaseUnitTest {
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
-    public final static String USER_2_ORCID = "0000-0002-9272-6225";
+    public final static String USER_2_ORCID = "0000000292726225";
+    public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_2_VERIFIED = false;
@@ -90,11 +101,21 @@ public abstract class BaseUnitTest {
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .affiliation(USER_2_AFFILIATION)
+            .orcid(USER_2_ORCID)
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
             .roles(List.of(RoleType.ROLE_DEVELOPER))
             .lastModified(USER_2_LAST_MODIFIED)
+            .build();
+
+    public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
+            .username(USER_2_USERNAME)
+            .password(USER_2_PASSWORD)
+            .email(USER_2_EMAIL)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -129,6 +150,12 @@ public abstract class BaseUnitTest {
             .created(USER_3_CREATED)
             .roles(List.of())
             .lastModified(USER_3_LAST_MODIFIED)
+            .build();
+
+    public final static SignupRequestDto USER_3_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
+            .username(USER_3_USERNAME)
+            .password(USER_3_PASSWORD)
+            .email(USER_3_EMAIL)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()

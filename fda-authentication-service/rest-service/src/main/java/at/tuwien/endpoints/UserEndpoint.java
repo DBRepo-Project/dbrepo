@@ -30,6 +30,8 @@ import org.thymeleaf.context.Context;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,10 +79,15 @@ public class UserEndpoint {
     @Transactional
     @Timed(value = "user.create", description = "Time needed to create a user")
     @Operation(summary = "Create user")
-    public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data)
+    public ResponseEntity<UserDto> register(@NotNull @Valid @RequestBody SignupRequestDto data,
+                                            @Null Principal principal)
             throws UserEmailExistsException, UserNameExistsException, RoleNotFoundException, UserEmailFailedException,
-            BrokerUserCreationException, OrcidMalformedException {
-        log.debug("endpoint create user, data={}", data);
+            BrokerUserCreationException, OrcidMalformedException, NotAllowedException {
+        log.debug("endpoint create user, data={}, principal={}", data, principal);
+        if (principal != null) {
+            log.error("Failed to create user while being logged-in");
+            throw new NotAllowedException("Failed to create user while being logged-in");
+        }
         final User user = userService.create(data);
         queueService.createUser(user.getUsername(), data);
         final TimeSecret token = tokenService.create(user);
@@ -96,11 +103,16 @@ public class UserEndpoint {
 
     @PutMapping
     @Transactional
-    @Timed(value = "user.forgot", description = "Time needed to reset a user information")
-    @Operation(summary = "Forgot user information")
-    public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data)
-            throws UserNotFoundException, UserEmailFailedException, OrcidMalformedException {
-        log.debug("endpoint forgot user information, data={}", data);
+    @Timed(value = "user.forgot", description = "Time needed to request a new user password")
+    @Operation(summary = "Request a new user password")
+    public ResponseEntity<UserDto> forgot(@NotNull @Valid @RequestBody UserForgotDto data,
+                                          @Null Principal principal)
+            throws UserNotFoundException, UserEmailFailedException, OrcidMalformedException, NotAllowedException {
+        log.debug("endpoint request a new user password, data={}, principal={}", data, principal);
+        if (principal != null) {
+            log.error("Failed to request a new user password while being logged-in");
+            throw new NotAllowedException("Failed to request a new user password while being logged-in");
+        }
         final User user = userService.forgot(data);
         final TimeSecret token = tokenService.create(user);
         final Context context = new Context();
@@ -115,12 +127,17 @@ public class UserEndpoint {
 
     @PutMapping("/reset")
     @Transactional
-    @Timed(value = "user.reset", description = "Time needed to reset a user information")
-    @Operation(summary = "Reset user information")
+    @Timed(value = "user.reset", description = "Time needed to reset a user password")
+    @Operation(summary = "Reset user password")
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
-                      @NotNull HttpServletResponse httpServletResponse) throws UserEmailFailedException,
-            SecretInvalidException, UserNotFoundException, BrokerUserCreationException {
-        log.debug("endpoint reset user information, data={}", data);
+                      @NotNull HttpServletResponse httpServletResponse,
+                      @Null Principal principal) throws UserEmailFailedException,
+            SecretInvalidException, UserNotFoundException, BrokerUserCreationException, NotAllowedException {
+        log.debug("endpoint reset user information, data={}, principal={}", data, principal);
+        if (principal != null) {
+            log.error("Failed to reset user password while being logged-in");
+            throw new NotAllowedException("Failed to reset user password while being logged-in");
+        }
         final User user = tokenService.invalidate(data.getToken());
         final UserPasswordDto userPasswordDto = userMapper.userResetDtoToUserPasswordDto(data);
         userService.updatePassword(user.getId(), userPasswordDto);
