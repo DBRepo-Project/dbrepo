@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +34,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.thymeleaf.context.Context;
 
+import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -593,6 +595,22 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void updatePassword_researcherRabbitMqRoles_succeeds() throws UserNotFoundException, UserEmailFailedException,
+            OrcidMalformedException, BrokerUserCreationException {
+        final UserPasswordDto request = UserPasswordDto.builder()
+                .password(USER_1_PASSWORD)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        updatePassword_generic(USER_1_ID, USER_1_USERNAME, USER_1, USER_1_DETAILS_WITH_TAGS_DTO, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void updatePassword_differentUser_fails() {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
@@ -622,6 +640,146 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             updatePassword_generic(USER_1_ID, USER_1_USERNAME, null, USER_1_DETAILS_DTO, request);
+        });
+    }
+
+    @Test
+    public void forgot_anonymous_succeeds() throws UserNotFoundException, NotAllowedException, UserEmailFailedException,
+            OrcidMalformedException {
+        final UserForgotDto request = UserForgotDto.builder()
+                .username(USER_1_USERNAME)
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_1_USERNAME, USER_1_EMAIL))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        forgot_generic(USER_1, null, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void forgot_researcher_fails() {
+        final UserForgotDto request = UserForgotDto.builder()
+                .username(USER_1_USERNAME)
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_1_USERNAME, USER_1_EMAIL))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            forgot_generic(USER_1, USER_1_PRINCIPAL, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void forgot_developer_fails() {
+        final UserForgotDto request = UserForgotDto.builder()
+                .username(USER_2_USERNAME)
+                .email(USER_2_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_2_USERNAME, USER_2_EMAIL))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            forgot_generic(USER_2, USER_2_PRINCIPAL, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void forgot_dataSteward_fails() {
+        final UserForgotDto request = UserForgotDto.builder()
+                .username(USER_3_USERNAME)
+                .email(USER_3_EMAIL)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_3_USERNAME, USER_3_EMAIL))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            forgot_generic(USER_3, USER_3_PRINCIPAL, request);
+        });
+    }
+
+    @Test
+    public void reset_anonymous_succeeds() throws UserNotFoundException, NotAllowedException, UserEmailFailedException,
+            BrokerUserCreationException, SecretInvalidException {
+        final UserResetDto request = UserResetDto.builder()
+                .password(USER_1_PASSWORD)
+                .token(TOKEN_1_TOKEN)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_1_USERNAME, USER_1_EMAIL))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        reset_generic(USER_1, null, request);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void reset_researcher_fails() {
+        final UserResetDto request = UserResetDto.builder()
+                .password(USER_1_PASSWORD)
+                .token(TOKEN_1_TOKEN)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_1_USERNAME, USER_1_EMAIL))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            reset_generic(USER_1, USER_1_PRINCIPAL, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void reset_developer_fails() {
+        final UserResetDto request = UserResetDto.builder()
+                .password(USER_2_PASSWORD)
+                .token(TOKEN_2_TOKEN)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_2_USERNAME, USER_2_EMAIL))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            reset_generic(USER_2, USER_2_PRINCIPAL, request);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void reset_dataSteward_fails() {
+        final UserResetDto request = UserResetDto.builder()
+                .password(USER_3_PASSWORD)
+                .token(TOKEN_3_TOKEN)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsernameOrEmail(USER_3_USERNAME, USER_3_EMAIL))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            reset_generic(USER_3, USER_3_PRINCIPAL, request);
         });
     }
 
@@ -790,6 +948,47 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         final ResponseEntity<UserDto> response = userEndpoint.updatePassword(userId, data);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
+    }
+
+    protected void forgot_generic(User user, Principal principal, UserForgotDto data) throws UserNotFoundException,
+            NotAllowedException, UserEmailFailedException, OrcidMalformedException {
+
+        /* mock */
+        when(timeSecretService.create(any(User.class)))
+                .thenReturn(TIME_SECRET_1);
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        doNothing()
+                .when(mailService)
+                .send(eq(user), anyString(), anyString(), any(Context.class));
+
+        /* test */
+        final ResponseEntity<UserDto> response = userEndpoint.forgot(data, principal);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNotNull(response.getBody());
+    }
+
+    protected void reset_generic(User user, Principal principal, UserResetDto data) throws UserNotFoundException,
+            NotAllowedException, UserEmailFailedException, BrokerUserCreationException, SecretInvalidException {
+        final HttpServletResponse mock = new MockHttpServletResponse();
+
+        /* mock */
+        when(timeSecretService.invalidate(data.getToken()))
+                .thenReturn(user);
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+        when( userRepository.findById(user.getId()))
+                .thenReturn(Optional.of(user));
+        doNothing()
+                .when(mailService)
+                .send(eq(user), anyString(), anyString(), any(Context.class));
+
+        /* test */
+        userEndpoint.reset(data, mock, principal);
+        final String header = mock.getHeader("Location");
+        assertNotNull(header);
+        assertTrue(header.contains("/login"));
+        assertEquals(302, mock.getStatus());
     }
 
 

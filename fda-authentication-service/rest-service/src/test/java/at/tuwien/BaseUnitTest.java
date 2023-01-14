@@ -81,6 +81,11 @@ public abstract class BaseUnitTest {
             .tags(new String[]{})
             .build();
 
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{"administrator"})
+            .build();
+
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
@@ -197,12 +202,6 @@ public abstract class BaseUnitTest {
     public final static Instant TIME_SECRET_1_VALID_TO = Instant.now()
             .plus(1, ChronoUnit.DAYS);
 
-    public final static Long TIME_SECRET_2_ID = 2L;
-    public final static Boolean TIME_SECRET_2_PROCESSED = true;
-    public final static String TIME_SECRET_2_TOKEN = "blahblahblah";
-    public final static Instant TIME_SECRET_2_VALID_TO = Instant.now()
-            .plus(1, ChronoUnit.DAYS);
-
     public final static TimeSecret TIME_SECRET_1 = TimeSecret.builder()
             .id(TIME_SECRET_1_ID)
             .uid(USER_1_ID)
@@ -212,6 +211,12 @@ public abstract class BaseUnitTest {
             .validTo(TIME_SECRET_1_VALID_TO)
             .build();
 
+    public final static Long TIME_SECRET_2_ID = 2L;
+    public final static Boolean TIME_SECRET_2_PROCESSED = true;
+    public final static String TIME_SECRET_2_TOKEN = "blahblahblah";
+    public final static Instant TIME_SECRET_2_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
     public final static TimeSecret TIME_SECRET_2 = TimeSecret.builder()
             .id(TIME_SECRET_2_ID)
             .uid(USER_2_ID)
@@ -220,6 +225,12 @@ public abstract class BaseUnitTest {
             .processed(TIME_SECRET_2_PROCESSED)
             .validTo(TIME_SECRET_2_VALID_TO)
             .build();
+
+    public final static Long TIME_SECRET_3_ID = 3L;
+    public final static Boolean TIME_SECRET_3_PROCESSED = false;
+    public final static String TIME_SECRET_3_TOKEN = "blahblahblah";
+    public final static Instant TIME_SECRET_3_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
 
     public final static Long TOKEN_1_ID = 1L;
     public final static String TOKEN_1_TOKEN = TIME_SECRET_1_TOKEN;
@@ -239,6 +250,16 @@ public abstract class BaseUnitTest {
             .id(TOKEN_2_ID)
             .token(TOKEN_2_TOKEN)
             .expires(TOKEN_2_EXPIRES)
+            .build();
+
+    public final static Long TOKEN_3_ID = 3L;
+    public final static String TOKEN_3_TOKEN = TIME_SECRET_3_TOKEN;
+    public final static Instant TOKEN_3_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_3 = Token.builder()
+            .id(TOKEN_3_ID)
+            .token(TOKEN_3_TOKEN)
+            .expires(TOKEN_3_EXPIRES)
             .build();
 
     public final static String IMAGE_BROKER_IMAGE = "rabbitmq";
