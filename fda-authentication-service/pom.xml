@@ -196,7 +196,8 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>**/FdaContainerManagingApplication.class</exclude>
+                        <exclude>**/FdaAuthenticationServiceApplication.class</exclude>
+                        <exclude>**/ApiExceptionHandler.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
