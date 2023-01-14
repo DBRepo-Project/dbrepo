@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="database">
     <DBToolbar />
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
@@ -187,10 +187,10 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="createdUTC" />
                   </v-list-item-content>
-                  <v-list-item-title v-if="access.type" class="mt-2">
+                  <v-list-item-title v-if="access && access.type" class="mt-2">
                     Database Access
                   </v-list-item-title>
-                  <v-list-item-content v-if="access.type">
+                  <v-list-item-content v-if="access && access.type">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     {{ accessDescription.text }}
                   </v-list-item-content>
@@ -238,12 +238,6 @@ export default {
       loadingCitation: false,
       loadingDelete: false,
       editDbDialog: false,
-      access: {
-        type: null,
-        user: {
-          username: null
-        }
-      },
       identifier: {
         id: null,
         license: {
@@ -253,31 +247,6 @@ export default {
         creators: []
       },
       metadataLoading: false,
-      database: {
-        id: null,
-        name: null,
-        description: null,
-        is_public: null,
-        created: null,
-        contact: null,
-        identifier: null,
-        container: {
-          id: null,
-          name: null,
-          internal_name: null
-        },
-        license: {
-          uri: null,
-          identifier: null
-        },
-        creator: {
-          titles_before: null,
-          firstname: null,
-          lastname: null,
-          username: null,
-          titles_after: null
-        }
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -313,6 +282,12 @@ export default {
     user () {
       return this.$store.state.user
     },
+    access () {
+      return this.$store.state.access
+    },
+    database () {
+      return this.$store.state.database
+    },
     config () {
       if (this.token === null) {
         return {
@@ -336,10 +311,10 @@ export default {
       return formatTimestampUTCLabel(this.database.created)
     },
     isCreator () {
-      if (!this.user) {
+      if (!this.database) {
         return false
       }
-      if (!this.database.creator.username) {
+      if (!this.database.creator.username || !this.user || !this.user.username) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -384,7 +359,7 @@ export default {
       return this.identifier.id !== null
     },
     accessDescription () {
-      if (!this.access.type) {
+      if (!this.access) {
         return
       }
       switch (this.access.type) {
@@ -401,26 +376,9 @@ export default {
   },
   mounted () {
     this.loadingCitation = true
-    this.loadDatabase()
-      .then(() => this.loadIdentifier())
+    this.loadIdentifier()
   },
   methods: {
-    async loadDatabase () {
-      this.loading = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        if (!this.database.identifier) {
-          this.database.identifier = {
-            id: null
-          }
-        }
-        console.debug('database', res.data)
-      } catch (err) {
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
-    },
     closeDialog (event) {
       if (event.action === 'persisted') {
         this.loadDatabase()
@@ -450,7 +408,7 @@ export default {
       this.metadataLoading = false
     },
     async loadIdentifier () {
-      if (!this.database.identifier.id) {
+      if (!this.database || !this.database.identifier) {
         this.loadingCitation = false
         return
       }

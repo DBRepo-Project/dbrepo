@@ -100,9 +100,9 @@ export default {
       type: String,
       default: () => 'unit'
     },
-    databaseId: {
-      type: Number,
-      default: () => -1
+    database: {
+      type: Object,
+      default: () => null
     },
     tableId: {
       type: Number,
@@ -262,13 +262,16 @@ export default {
       await this.update()
     },
     async update () {
+      if (!this.database) {
+        return
+      }
       /* update column */
       try {
         const payload = {
           concept_uri: (!this.column.concept ? null : this.column.concept.uri),
           unit_uri: (!this.column.unit ? null : this.column.unit.uri)
         }
-        const res = await this.$axios.put(`/api/container/${this.databaseId}/database/${this.databaseId}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
+        const res = await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
         if (this.mode === 'unit') {
           if (res.data.unit_uri === null) {
             this.column[this.mode] = null

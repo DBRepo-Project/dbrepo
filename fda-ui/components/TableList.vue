@@ -181,7 +181,7 @@
         :column="column"
         :mode="mode"
         :table-id="tableDetails.id"
-        :database-id="database.id"
+        :database="database"
         @close="closed" />
     </v-dialog>
     <v-dialog v-model="dialogDelete" max-width="640">
@@ -216,7 +216,6 @@ export default {
       loadingDetails: false,
       loadingConsumers: false,
       error: false,
-      tables: [],
       panel: null,
       column: null,
       dialogSemantic: false,
@@ -224,15 +223,6 @@ export default {
       consumers: [],
       access: {
         type: null
-      },
-      database: {
-        id: null,
-        exchange_name: null,
-        is_public: null,
-        tables: [],
-        creator: {
-          username: null
-        }
       },
       tableDetails: {
         id: null,
@@ -287,6 +277,15 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    database () {
+      return this.$store.state.database
+    },
+    tables () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.tables
     },
     brokerConfig () {
       return {
@@ -343,8 +342,6 @@ export default {
   },
   mounted () {
     this.$root.$on('table-create', this.refresh)
-    this.loadAccess()
-    this.loadDatabase()
     this.pollConsumerStatus()
   },
   methods: {
@@ -361,38 +358,6 @@ export default {
     },
     hasConcept (item) {
       return item.concept !== null
-    },
-    async loadDatabase () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        console.debug('database', this.database)
-        this.tables = this.database.tables
-        console.debug('tables', this.tables)
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Could not get database details')
-      }
-      this.loading = false
-    },
-    async loadAccess () {
-      if (!this.token) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
-        this.access = res.data
-        console.debug('access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          this.error = true
-          this.$toast.error('Could not get database access permissions')
-        }
-      }
-      this.loading = false
     },
     columnName (column) {
       const filter = this.columnTypes.filter(t => t.value === column.column_type)
@@ -435,22 +400,6 @@ export default {
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
-    },
-    /**
-     * if tableId is given, open the table after refresh
-     */
-    async refresh (tableId) {
-      let res
-      try {
-        this.loading = true
-        res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
-        this.tables = res.data
-        this.loading = false
-        if (tableId) { this.openPanelByTableId(tableId) }
-      } catch (err) {
-        this.$toast.error('Could not load tables')
-      }
-      this.$store.commit('SET_TABLE', null)
     },
     async deleteTable () {
       try {
