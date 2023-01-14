@@ -25,7 +25,13 @@
       </v-toolbar-items>
     </v-toolbar>
     <v-progress-linear v-if="loadingContainers || loadingDatabases" :color="loadingColor" :indeterminate="!error" />
-    <v-card v-for="(container, idx) in filter(containers)" :key="idx" flat tile>
+    <v-card
+      v-for="(container, idx) in filter(containers)"
+      :key="idx"
+      :to="`/container/${container.id}/database/${container.database.id}`"
+      :disabled="!container.database"
+      flat
+      tile>
       <v-divider class="mx-4" />
       <v-card-title v-if="notInit(container)" v-text="container.name" />
       <v-card-title v-if="!notInit(container)">
@@ -209,13 +215,6 @@ export default {
       }
       this.loadingDatabases = false
       console.debug('containers with databases', this.containers)
-    },
-    loadDatabase (container) {
-      if (this.notInit(container)) {
-        console.warn('Container', container.id, 'not initialized')
-        return
-      }
-      this.$router.push(`/container/${container.id}/database/${container.database.id}`)
     },
     async startContainer (container) {
       try {

@@ -18,10 +18,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Where(clause = "username != 'system'")
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_users")
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "User.findAll",
+                query = "SELECT * FROM `mdb_users` WHERE `username` = 'system'",
+                resultClass = User.class)
+})
 public class User {
 
 
