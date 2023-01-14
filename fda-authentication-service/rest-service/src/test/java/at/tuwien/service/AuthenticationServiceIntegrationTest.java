@@ -20,7 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -59,7 +59,6 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(timeSecretRepository.findByToken(TIME_SECRET_1_TOKEN))
                 .thenReturn(Optional.of(TIME_SECRET_1));
-        assert !USER_1_VERIFIED;
 
         /* test */
         assertThrows(BadCredentialsException.class, () -> {
@@ -80,7 +79,6 @@ public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
         when(timeSecretRepository.findByToken(TIME_SECRET_2_TOKEN))
                 .thenReturn(Optional.of(TIME_SECRET_2));
-        assert USER_2_VERIFIED;
 
         /* test */
         assertThrows(BadCredentialsException.class, () -> {

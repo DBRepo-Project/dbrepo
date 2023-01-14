@@ -153,7 +153,7 @@ public abstract class BaseUnitTest {
     public final static String USER_3_USERNAME = "jdoe3";
     public final static String USER_3_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static Boolean USER_3_VERIFIED = false;
+    public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);

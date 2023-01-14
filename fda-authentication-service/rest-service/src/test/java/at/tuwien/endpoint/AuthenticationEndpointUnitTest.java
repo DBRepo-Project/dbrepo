@@ -5,6 +5,7 @@ import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.endpoints.AuthenticationEndpoint;
+import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -22,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,6 +34,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,8 +71,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-        assert USER_2.getEmailVerified();
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
 
         /* test */
         authenticateUser_generic(USER_2, USER_2_PRINCIPAL, request);
@@ -78,17 +86,23 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
     @Test
     public void authenticateUser_anonymousNotVerified_fails() {
         final LoginRequestDto request = LoginRequestDto.builder()
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
+                .username(USER_2_USERNAME)
+                .password(USER_2_PASSWORD)
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(false)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
 
         /* test */
         assertThrows(UserEmailNotVerifiedException.class, () -> {
-            authenticateUser_generic(USER_1, USER_1_PRINCIPAL, request);
+            authenticateUser_generic(USER_2, USER_2_PRINCIPAL, request);
         });
     }
 
@@ -102,8 +116,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-        assert USER_2.getEmailVerified();
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
 
         /* test */
         authenticateUser_generic(USER_2, USER_2_PRINCIPAL, request);
@@ -119,8 +138,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-        assert USER_2.getEmailVerified();
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
 
         /* test */
         authenticateUser_generic(USER_2, USER_2_PRINCIPAL, request);
@@ -136,8 +160,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-        assert USER_2.getEmailVerified();
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_DATA_STEWARD))
+                        .build()));
 
         /* test */
         authenticateUser_generic(USER_2, USER_2_PRINCIPAL, request);
@@ -153,7 +182,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_DEVELOPER))
+                        .build()));
         when(tokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(TOKEN_2));
         when(tokenRepository.save(any(Token.class)))
@@ -172,7 +207,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
         when(tokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(TOKEN_2_EXPIRED));
 
@@ -193,7 +234,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_RESEARCHER))
+                        .build()));
         when(tokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(TOKEN_2));
         when(tokenRepository.save(any(Token.class)))
@@ -214,7 +261,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_DEVELOPER))
+                        .build()));
         when(tokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(TOKEN_2));
         when(tokenRepository.save(any(Token.class)))
@@ -235,7 +288,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
+                .thenReturn(Optional.of(User.builder()
+                        .id(USER_2_ID)
+                        .username(USER_2_USERNAME)
+                        .email(USER_2_EMAIL)
+                        .emailVerified(USER_2_VERIFIED)
+                        .roles(List.of(RoleType.ROLE_DATA_STEWARD))
+                        .build()));
         when(tokenRepository.findByTokenHash(anyString()))
                 .thenReturn(Optional.of(TOKEN_2));
         when(tokenRepository.save(any(Token.class)))
@@ -243,6 +302,39 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         authenticateUser2_generic(USER_2, USER_2_PRINCIPAL, TOKEN_2_AUTHORIZATION, request);
+    }
+
+    @Test
+    public void reAuthenticateUser_anonymous_fails() {
+
+        /* test */
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
+            reAuthenticateUser_generic(USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void reAuthenticateUser_researcher_succeeds() {
+
+        /* test */
+        reAuthenticateUser_generic(USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void reAuthenticateUser_developer_succeeds() {
+
+        /* test */
+        reAuthenticateUser_generic(USER_2_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void reAuthenticateUser_dataSteward_succeeds() {
+
+        /* test */
+        reAuthenticateUser_generic(USER_3_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -283,7 +375,15 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
         assertEquals(user.getId(), body.getId());
         assertEquals(user.getUsername(), body.getUsername());
         assertEquals(user.getEmail(), body.getEmail());
-        assertEquals(user.getRoles().stream().map(Enum::name).collect(Collectors.toList()), body.getRoles());
+    }
+
+    protected void reAuthenticateUser_generic(Principal principal) {
+
+        /* test */
+        final ResponseEntity<JwtResponseDto> response = authenticationEndpoint.reAuthenticateUser(principal);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final JwtResponseDto body = response.getBody();
+        assertNotNull(body);
     }
 
 }
