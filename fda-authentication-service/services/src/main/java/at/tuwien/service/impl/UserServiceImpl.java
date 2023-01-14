@@ -111,10 +111,15 @@ public class UserServiceImpl implements UserService {
         final User user = userMapper.signupRequestDtoToUser(data);
         user.setEmailVerified(false);
         final List<RoleType> roles = new LinkedList<>(Arrays.asList(authenticationConfig.getDefaultRoles()));
-        final List<String> developers = Arrays.asList(authenticationConfig.getDeveloperUsernames());
+        final List<RoleType> superUserRoles = List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER, RoleType.ROLE_DATA_STEWARD);
+        final List<String> developers = Arrays.asList(authenticationConfig.getSuperUsers());
         if (developers.contains(data.getUsername())) {
-            log.info("Assign developer privileges to user with username {}", data.getUsername());
-            roles.add(RoleType.ROLE_DEVELOPER);
+            log.info("Assign all privileges to user with username {}", data.getUsername());
+            superUserRoles.forEach(superRole -> {
+                if (roles.stream().noneMatch(role -> role.name().equals(superRole.name()))) {
+                    roles.add(superRole);
+                }
+            });
         }
         user.setRoles(roles);
         user.setThemeDark(false);

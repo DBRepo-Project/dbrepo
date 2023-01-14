@@ -2,6 +2,7 @@ export const state = () => ({
   token: null,
   user: null,
   db: null,
+  access: null,
   table: null
 })
 
@@ -13,14 +14,13 @@ export const mutations = {
     state.token = token
   },
   SET_USER (state, user) {
-    state.user = null
-    if (user !== null) {
-      if (user.token) {
-        delete user.token
-      }
-      console.debug('set user', user)
-      state.user = user
+    if (user != null && user.token) {
+      delete user.token
     }
+    state.user = user
+  },
+  SET_ACCESS (state, access) {
+    state.access = access
   },
 
   /**

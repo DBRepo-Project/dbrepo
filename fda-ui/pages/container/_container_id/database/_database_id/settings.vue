@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="user">
     <DBToolbar ref="toolbar" />
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
@@ -169,13 +169,13 @@ export default {
       return this.$store.state.user
     },
     isCreator () {
-      if (this.database.creator.username === null || this.user.username === null) {
+      if (!this.user) {
+        return false
+      }
+      if (this.database.creator.username === null) {
         return false
       }
       return this.database.creator.username === this.user.username
-    },
-    publicLabel () {
-      return this.modifyVisibility.is_public ? 'Public' : 'Private'
     }
   },
   mounted () {

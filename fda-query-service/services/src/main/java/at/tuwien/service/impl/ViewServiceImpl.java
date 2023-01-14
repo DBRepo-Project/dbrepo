@@ -67,8 +67,8 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, principal.getName());
         }
         if (optional.isEmpty()) {
-            log.error("Failed to find view");
-            throw new ViewNotFoundException("Failed to find view");
+            log.error("Failed to find view with id {} and database with id {}", id, databaseId);
+            throw new ViewNotFoundException("Failed to find view with id " + id);
         }
         return optional.get();
     }

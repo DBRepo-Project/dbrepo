@@ -104,13 +104,6 @@
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
-              <!--              <v-btn-->
-              <!--                v-if="isDataSteward && hasIdentifier"-->
-              <!--                small-->
-              <!--                color="secondary"-->
-              <!--                @click="editDbDialog = true">-->
-              <!--                Update Database PID-->
-              <!--              </v-btn>-->
               <v-btn
                 v-if="isDataSteward && hasIdentifier"
                 small
@@ -343,7 +336,10 @@ export default {
       return formatTimestampUTCLabel(this.database.created)
     },
     isCreator () {
-      if (!this.database.creator.username || !this.user || !this.user.username) {
+      if (!this.user) {
+        return false
+      }
+      if (!this.database.creator.username) {
         return false
       }
       return this.database.creator.username === this.user.username

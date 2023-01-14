@@ -67,7 +67,7 @@ export default {
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
         this.loading = false
-        parent.resultId = res.data.id
+        // parent.resultId = res.data.id
       } catch (err) {
         console.error('Failed to execute query', err.response.data)
         this.$toast.error(err.response.data.message)
@@ -113,6 +113,8 @@ export default {
   }
 }
 </script>
-
-<style scoped>
+<style>
+.v-data-table {
+  border-radius: 0;
+}
 </style>

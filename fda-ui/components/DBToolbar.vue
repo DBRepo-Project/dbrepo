@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-toolbar v-if="db" flat>
+    <v-toolbar v-if="database" flat>
       <v-toolbar-title>
-        <span>{{ db.name }}</span>
+        <span>{{ database.name }}</span>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon
-              v-if="!db.is_public"
+              v-if="!database.is_public"
               color="primary"
               class="mb-1"
               right
@@ -15,7 +15,7 @@
               mdi-lock-outline
             </v-icon>
             <v-icon
-              v-if="db.is_public"
+              v-if="database.is_public"
               class="mb-1"
               right
               v-bind="attrs"
@@ -72,21 +72,7 @@ export default {
     return {
       tab: null,
       loading: false,
-      error: false,
-      access: {
-        type: null,
-        user: {
-          username: null
-        }
-      },
-      database: {
-        id: null,
-        is_public: null,
-        creator: {
-          id: null,
-          username: null
-        }
-      }
+      error: false
     }
   },
   computed: {
@@ -96,8 +82,11 @@ export default {
     loadingColor () {
       return 'primary'
     },
-    db () {
+    database () {
       return this.$store.state.db
+    },
+    access () {
+      return this.$store.state.access
     },
     user () {
       return this.$store.state.user
@@ -154,20 +143,20 @@ export default {
     }
   },
   mounted () {
-    if (this.database.id) {
-      return
+    if (!this.database) {
+      this.loadDatabase()
     }
-    this.loadDatabase()
-    this.loadAccess()
+    if (!this.access) {
+      this.loadAccess()
+    }
   },
   methods: {
     async loadDatabase () {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        console.debug('database', res.data)
         this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
       } catch (err) {
         console.error('Could not load database', err)
         this.$toast.error('Could not load database')
@@ -181,7 +170,7 @@ export default {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
-        this.access = res.data
+        this.$store.commit('SET_DATABASE', res.data)
         console.debug('access', this.access)
       } catch (err) {
         const { status } = err.response
