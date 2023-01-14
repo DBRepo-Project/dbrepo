@@ -123,7 +123,7 @@
       </v-menu>
     </v-app-bar>
     <v-main>
-      <v-container>
+      <v-container v-if="!loading">
         <nuxt />
       </v-container>
     </v-main>
@@ -153,6 +153,7 @@ export default {
       drawer: false,
       model: null,
       query: null,
+      loading: true,
       searchResults: [],
       databases: [],
       loadingUser: true,
@@ -203,33 +204,11 @@ export default {
       return this.$config.logo
     }
   },
-  watch: {
-    $route () {
-      this.loadDB()
-      if (this.user) {
-        this.setTheme()
-      }
-    },
-    query (val) {
-      if (!val) {
-        return
-      }
-      setTimeout(() => {
-        if (val !== this.query) {
-          return
-        }
-        this.queryDatabases(val)
-        this.queryTables(val)
-        this.queryColumns(val)
-      })
-    }
-  },
   mounted () {
-    this.loadDB()
     this.loadUser()
+    this.loadDB()
     this.loadContainers()
       .then(() => this.loadDatabases())
-    this.setTheme()
   },
   methods: {
     metadata (item) {
@@ -334,12 +313,16 @@ export default {
     },
     async loadUser () {
       if (!this.token) {
+        this.loading = false
         return
       }
       try {
         this.loadingUser = true
         const res = await this.$axios.put('/api/auth', {}, this.config)
         this.$store.commit('SET_USER', res.data)
+        console.debug('user information', this.user)
+        this.$vuetify.theme.dark = this.user.theme_dark
+        this.loading = false
       } catch (err) {
         const { status } = err.response
         if (status === 401) {
@@ -354,7 +337,6 @@ export default {
       }
       this.loadingUser = false
     },
-
     async loadDB () {
       if (this.$route.params.db_id && !this.db) {
         try {
@@ -364,13 +346,6 @@ export default {
           console.error('Failed to load database', err)
         }
       }
-    },
-    setTheme () {
-      if (!this.user || !this.user.theme_dark) {
-        this.$vuetify.theme.dark = false
-        return
-      }
-      this.$vuetify.theme.dark = this.user.theme_dark
     }
   }
 }

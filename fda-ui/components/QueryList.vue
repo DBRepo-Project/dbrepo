@@ -57,7 +57,7 @@
                         Execution Timestamp
                       </v-list-item-title>
                       <v-list-item-content>
-                        {{ executionUTC }}
+                        {{ createdTime }}
                       </v-list-item-content>
                       <v-list-item-title class="mt-2">
                         Type
@@ -132,8 +132,8 @@ export default {
     loadingColor () {
       return this.error ? 'error' : 'primary'
     },
-    executionUTC () {
-      return formatTimestampUTCLabel(this.queryDetails.execution)
+    createdTime () {
+      return formatTimestampUTCLabel(this.queryDetails.created)
     },
     creator () {
       return this.queryDetails.creator

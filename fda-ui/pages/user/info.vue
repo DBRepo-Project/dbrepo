@@ -10,13 +10,13 @@
               <v-row dense>
                 <v-col md="2">
                   <v-text-field
-                    v-model="user.id"
+                    v-model="model.id"
                     disabled
                     label="ID" />
                 </v-col>
                 <v-col md="4">
                   <v-text-field
-                    v-model="user.username"
+                    v-model="model.username"
                     disabled
                     label="Username" />
                 </v-col>
@@ -32,7 +32,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.titles_before"
+                    v-model="model.titles_before"
                     :disabled="error"
                     hint="e.g. Prof."
                     label="Titles Before" />
@@ -41,7 +41,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.firstname"
+                    v-model="model.firstname"
                     :disabled="error"
                     :rules="[v => !!v || $t('Required')]"
                     required
@@ -51,7 +51,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.lastname"
+                    v-model="model.lastname"
                     :disabled="error"
                     :rules="[v => !!v || $t('Required')]"
                     required
@@ -61,7 +61,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.titles_after"
+                    v-model="model.titles_after"
                     :disabled="error"
                     hint="e.g. BSc"
                     label="Titles After" />
@@ -70,7 +70,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.affiliation"
+                    v-model="model.affiliation"
                     :disabled="error"
                     hint="e.g. University of xyz"
                     label="Affiliation" />
@@ -79,7 +79,7 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="user.orcid"
+                    v-model="model.orcid"
                     :disabled="error"
                     maxlength="19"
                     hint="e.g. 0000-0002-1825-0097"
@@ -107,7 +107,7 @@
               <v-row dense>
                 <v-col cols="5">
                   <v-switch
-                    v-model="user.theme_dark"
+                    v-model="model.theme_dark"
                     inset
                     label="Dark Mode"
                     :disabled="error"
@@ -136,7 +136,18 @@ export default {
       valid1: false,
       valid2: false,
       error: false,
-      loading: false
+      loading: false,
+      model: {
+        id: null,
+        username: null,
+        firstname: null,
+        lastname: null,
+        titles_before: null,
+        titles_after: null,
+        affiliation: null,
+        orcid: null,
+        theme_dark: null
+      }
     }
   },
   computed: {
@@ -150,7 +161,7 @@ export default {
       if (!this.user.roles) {
         return null
       }
-      return this.user.roles.join(',')
+      return this.user.roles.join(', ')
     },
     config () {
       if (this.token === null) {
@@ -162,6 +173,15 @@ export default {
     }
   },
   mounted () {
+    this.model.id = this.user.id
+    this.model.username = this.user.username
+    this.model.firstname = this.user.firstname
+    this.model.lastname = this.user.lastname
+    this.model.titles_before = this.user.titles_before
+    this.model.titles_after = this.user.titles_after
+    this.model.affiliation = this.user.affiliation
+    this.model.orcid = this.user.orcid
+    this.model.theme_dark = this.user.theme_dark
   },
   methods: {
     submit () {
@@ -170,16 +190,17 @@ export default {
       try {
         this.loading = true
         const res = await this.$axios.put(`/api/user/${this.user.id}`, {
-          titles_before: this.user.titles_before,
-          titles_after: this.user.titles_after,
-          firstname: this.user.firstname,
-          lastname: this.user.lastname,
-          affiliation: this.user.affiliation,
-          orcid: this.user.orcid
+          titles_before: this.model.titles_before,
+          titles_after: this.model.titles_after,
+          firstname: this.model.firstname,
+          lastname: this.model.lastname,
+          affiliation: this.model.affiliation,
+          orcid: this.model.orcid
         }, this.config)
-        console.debug('update', res.data)
+        console.info('Updated user information')
+        console.debug('user information', res.data)
         this.error = false
-        this.$toast.success('Successfully updated user info')
+        this.$toast.success('Successfully updated user information')
       } catch (err) {
         console.error('update', err)
         this.$toast.error('Failed to update user info')
@@ -188,22 +209,18 @@ export default {
       this.loading = false
     },
     async toggleTheme () {
-      if (this.loading) {
-        return
-      }
       try {
-        this.loadingTheme = true
-        const res = await this.$axios.put(`/api/user/${this.user.id}/theme`, {
-          theme_dark: this.user.theme_dark
+        await this.$axios.put(`/api/user/${this.user.id}/theme`, {
+          theme_dark: this.model.theme_dark
         }, this.config)
-        console.debug('theme set', res.data)
-        this.$vuetify.theme.dark = this.user.theme_dark
-      } catch (err) {
-        console.error('theme set', err)
-        this.$toast.error('Failed to update theme')
+        this.$vuetify.theme.dark = this.model.theme_dark
+        console.info('Set theme to', this.model.theme_dark ? 'dark' : 'light')
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to update theme', error)
+        this.$toast.error('Failed to update theme: ' + message)
         this.error = true
       }
-      this.loadingTheme = false
     }
   }
 }

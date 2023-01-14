@@ -43,6 +43,7 @@ services:
       - metadata-db-data:/var/lib/mysql
     ports:
       - "3306:3306"
+      - "9100:9100"
     env_file:
       - .env
     logging:

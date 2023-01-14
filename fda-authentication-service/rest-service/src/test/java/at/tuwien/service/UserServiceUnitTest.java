@@ -22,6 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -43,7 +44,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
     private UserService userService;
 
     @Test
-    public void create_isDeveloper_succeeds() throws UserNameExistsException, RoleNotFoundException,
+    public void create_isSuperUser_succeeds() throws UserNameExistsException, RoleNotFoundException,
             UserEmailExistsException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .username(USER_1_USERNAME)
@@ -54,18 +55,18 @@ public class UserServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(authenticationConfig.getDefaultRoles())
                 .thenReturn(new RoleType[]{RoleType.ROLE_RESEARCHER});
-        when(authenticationConfig.getDeveloperUsernames())
+        when(authenticationConfig.getSuperUsers())
                 .thenReturn(new String[]{USER_1_USERNAME});
 
         /* test */
         final User response = userService.create(request);
         assertEquals(USER_1_USERNAME, response.getUsername());
         assertEquals(USER_1_EMAIL, response.getEmail());
-        assertEquals(List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER), response.getRoles());
+        assertEquals(List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER, RoleType.ROLE_DATA_STEWARD), response.getRoles());
     }
 
     @Test
-    public void create_isNotDeveloper_succeeds() throws UserNameExistsException, RoleNotFoundException,
+    public void create_isNotSuperUser_succeeds() throws UserNameExistsException, RoleNotFoundException,
             UserEmailExistsException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .username(USER_1_USERNAME)
@@ -76,7 +77,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(authenticationConfig.getDefaultRoles())
                 .thenReturn(new RoleType[]{RoleType.ROLE_RESEARCHER});
-        when(authenticationConfig.getDeveloperUsernames())
+        when(authenticationConfig.getSuperUsers())
                 .thenReturn(new String[]{});
 
         /* test */
@@ -98,7 +99,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(authenticationConfig.getDefaultRoles())
                 .thenReturn(new RoleType[]{});
-        when(authenticationConfig.getDeveloperUsernames())
+        when(authenticationConfig.getSuperUsers())
                 .thenReturn(new String[]{});
 
         /* test */
@@ -161,6 +162,44 @@ public class UserServiceUnitTest extends BaseUnitTest {
         assertEquals(USER_3_USERNAME, response.getUsername());
         assertEquals(USER_3_EMAIL, response.getEmail());
         assertEquals(List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER), response.getRoles());
+    }
+
+    @Test
+    public void findAll_succeeds() {
+
+        /* mock */
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        userRepository.save(USER_3);
+
+        /* test */
+        final List<User> response = userService.findAll();
+        assertEquals(USER_1, response.get(0));
+        assertEquals(USER_2, response.get(1));
+        assertEquals(USER_3, response.get(2));
+    }
+
+    @Test
+    public void find_succeeds() throws UserNotFoundException {
+
+        /* mock */
+        userRepository.save(USER_1);
+
+        /* test */
+        final User response = userService.find(USER_1_ID);
+        assertEquals(USER_1, response);
+    }
+
+    @Test
+    public void find_fails() {
+
+        /* mock */
+        userRepository.save(USER_1);
+
+        /* test */
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.find(USER_2_ID);
+        });
     }
 
 }

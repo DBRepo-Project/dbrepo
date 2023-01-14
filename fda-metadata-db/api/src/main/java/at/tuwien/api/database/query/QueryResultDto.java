@@ -1,5 +1,6 @@
 package at.tuwien.api.database.query;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class QueryResultDto {
     private Long id;
 
     @Schema(example = "1")
+    @JsonProperty("result_number")
     private Long resultNumber;
 
 }

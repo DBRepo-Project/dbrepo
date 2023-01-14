@@ -102,10 +102,7 @@ export default {
       version: null,
       edit: false,
       access: {
-        type: null,
-        user: {
-          username: null
-        }
+        type: null
       },
       error: false, // XXX: `error` is never changed
       options: {
@@ -192,6 +189,9 @@ export default {
       return this.edit && this.selection.length !== 0 && this.canModify
     },
     canModify () {
+      if (!this.user) {
+        return false
+      }
       if (this.table.creator.username === this.user.username) {
         return true
       }
@@ -201,6 +201,9 @@ export default {
       return this.access.type === 'write_all'
     },
     canRead () {
+      if (!this.user) {
+        return false
+      }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
@@ -216,6 +219,7 @@ export default {
   mounted () {
     this.loadProperties()
     this.loadData()
+    this.loadAccess()
   },
   methods: {
     async download () {
@@ -351,8 +355,21 @@ export default {
         })
         console.debug('rows', this.rows)
       } catch (err) {
-        console.error('failed to load data', err)
+        console.error('Failed to load data', err)
         this.$toast.error('Could not load table data')
+      }
+      this.loadingData = false
+    },
+    async loadAccess () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+        this.access = res.data
+        console.debug('access', this.access)
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to load access', error)
+        this.$toast.error('Failed to load access: ' + message)
       }
       this.loadingData = false
     }

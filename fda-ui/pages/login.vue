@@ -71,6 +71,17 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -91,12 +102,9 @@ export default {
         this.loading = true
         const res = await this.$axios.post('/api/auth', this.loginAccount)
         console.debug('login user', res.data)
-        this.$store.commit('SET_TOKEN', res.data.token)
-        const user = { ...res.data }
-        delete user.token
-        this.$store.commit('SET_USER', user)
-        this.$toast.success('Welcome back!')
-        this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
+        const { token } = res.data
+        this.$store.commit('SET_TOKEN', token)
+        await this.setUser()
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {
           if (err.response.status === 418) {
@@ -113,6 +121,18 @@ export default {
           console.error('login user failed', err)
           this.$toast.error('Login not successful')
         }
+      }
+    },
+    async setUser () {
+      try {
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.$store.commit('SET_USER', res.data)
+        this.$vuetify.theme.dark = res.data.theme_dark
+        await this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to load user information', error)
+        this.$toast.error('Failed to load user information: ' + message)
       }
       this.loading = false
     },
