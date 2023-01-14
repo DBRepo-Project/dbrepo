@@ -5,8 +5,6 @@ import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-
 @Getter
 @Configuration
 public class AuthenticationConfig {
@@ -18,6 +16,6 @@ public class AuthenticationConfig {
     private RoleType[] defaultRoles;
 
     @Value("${fda.superusers}")
-    private String[] developerUsernames;
+    private String[] superUsers;
 
 }
