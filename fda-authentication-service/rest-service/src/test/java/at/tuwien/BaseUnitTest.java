@@ -1,6 +1,7 @@
 package at.tuwien;
 
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -31,6 +32,8 @@ public abstract class BaseUnitTest {
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
+    public final static String USER_1_AFFILIATION = "TU Graz";
+    public final static String USER_1_ORCID = "0000-0003-4216-302X";
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = true;
@@ -69,6 +72,10 @@ public abstract class BaseUnitTest {
     public final static Long USER_2_ID = 2L;
     public final static String USER_2_EMAIL = "jane.doe@example.com";
     public final static String USER_2_USERNAME = "jdoe2";
+    public final static String USER_2_FIRSTNAME = "Jane";
+    public final static String USER_2_LASTNAME = "Doe";
+    public final static String USER_2_AFFILIATION = "TU Wien";
+    public final static String USER_2_ORCID = "0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_2_VERIFIED = false;
@@ -133,6 +140,14 @@ public abstract class BaseUnitTest {
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
+
+    public final static UserThemeSetDto USER_THEME_DARK_DTO = UserThemeSetDto.builder()
+            .themeDark(true)
+            .build();
+
+    public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
+            .themeDark(false)
+            .build();
 
     public final static Long TIME_SECRET_1_ID = 1L;
     public final static Boolean TIME_SECRET_1_PROCESSED = false;

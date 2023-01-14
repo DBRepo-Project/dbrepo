@@ -135,7 +135,7 @@ public class UserEndpoint {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Timed(value = "user.find", description = "Time needed to find a user")
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'READ_USER')")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
             OrcidMalformedException {
