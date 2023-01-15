@@ -146,8 +146,12 @@ def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save concept, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -164,8 +168,12 @@ def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_units(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:

@@ -9,6 +9,7 @@
           Assign a {{ subtitle }} to column <strong>{{ column.name }}</strong>
         </v-card-subtitle>
         <v-card-text>
+          <pre>{{ search === null ? 'null': 'not null' }}</pre>
           <v-autocomplete
             v-model="model"
             solo
@@ -115,6 +116,7 @@ export default {
       isLoading: false,
       saved: false,
       valid: false,
+      selected: false,
       model: {
         uri: null,
         name: null,
@@ -190,15 +192,15 @@ export default {
       }
     },
     model (newVal, oldVal) {
-      /* selected semantic concept or unit */
+      this.selected = this.search !== null
     },
     async search (val) {
-      if (!val) {
+      if (!val || this.selected) {
         return
       }
       this.searchTerm = val
       this.isLoading = true
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 2000))
       if (val !== this.searchTerm) {
         return
       }
@@ -224,11 +226,49 @@ export default {
         action: 'cancel'
       })
     },
-    remove () {
-      /* delete assignment */
-      this.update()
+    async remove () {
+      if (!this.database) {
+        return
+      }
+      /* update column */
+      let payload
+      if (this.mode === 'unit') {
+        payload = {
+          unit_uri: null,
+          concept_uri: (this.column.concept ? this.column.concept.uri : null)
+        }
+      } else if (this.mode === 'concept') {
+        payload = {
+          unit_uri: (this.column.unit ? this.column.unit.uri : null),
+          concept_uri: null
+        }
+      }
+      try {
+        await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
+        if (payload.unit_uri === null) {
+          this.column[this.mode] = null
+        }
+        if (payload.concept_uri === null) {
+          this.column[this.mode] = null
+        }
+        this.dialog = false
+        this.saved = true
+        console.info(`Removed semantics of column ${this.column.name}`)
+        this.$toast.success(`Removed semantics of column ${this.column.name}`)
+        this.$emit('close', {
+          success: true,
+          action: 'remove',
+          mode: this.mode
+        })
+        console.debug('column', this.column)
+      } catch (error) {
+        console.error('Failed to save column semantics', error)
+        const { message } = error.response
+        this.$toast.error('Failed to save column semantics: ' + message)
+      }
     },
     resetModel (name, uri) {
+      this.selected = false
       this.model = {
         name,
         uri,

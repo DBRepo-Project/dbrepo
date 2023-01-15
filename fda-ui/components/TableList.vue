@@ -42,7 +42,7 @@
                     <v-list-item-content v-text="database.exchange_name" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="tableDetails.queue_name">
                   <v-list-item-content>
                     <v-list-item-title>
                       Queue Name (AMQP/MQTT)
@@ -50,7 +50,7 @@
                     <v-list-item-content v-text="tableDetails.queue_name" />
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item>
+                <v-list-item v-if="tableDetails.routing_key">
                   <v-list-item-content>
                     <v-list-item-title>
                       Routing Key (AMQP/MQTT)
@@ -303,13 +303,22 @@ export default {
       return formatTimestampUTCLabel(this.tableDetails.created)
     },
     hasReadAccess () {
+      if (!this.database) {
+        return false
+      }
       if (this.database.is_public) {
         /* database is public */
         return true
       }
+      if (!this.user) {
+        return false
+      }
       if (this.database.creator.username === this.user.username) {
         /* user is creator of database */
         return true
+      }
+      if (!this.access) {
+        return false
       }
       if (this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all') {
         /* user has some level of access */
@@ -367,10 +376,6 @@ export default {
       return column.column_type
     },
     async details (table) {
-      if (table.id === this.tableDetails.id) {
-        /* prevent weird glitch of opening and collapsing simultaneously */
-        return
-      }
       /* use cache */
       this.tableDetails = table
       /* load remaining info */

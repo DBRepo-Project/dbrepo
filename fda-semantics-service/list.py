@@ -8,7 +8,6 @@ Created on Sat Dec  4 11:37:19 2021
 """
 import logging
 import rdflib
-import re
 import requests as rq
 
 
@@ -17,25 +16,27 @@ class List:
     def __init__(self, offline=False):
         rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
 
-        self.g = rdflib.Graph()
-        self.g.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
-        self.g.namespace_manager.bind('wd', 'http://www.wikidata.org/entity/')
-        self.g.namespace_manager.bind('wdt', 'http://www.wikidata.org/prop/direct/')
-        self.g.namespace_manager.bind('schema', 'http://schema.org/')
+        self.u = rdflib.Graph()
+        self.u.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
+        self.u.namespace_manager.bind('schema', 'http://schema.org/')
+        self.c = rdflib.Graph()
+        self.c.namespace_manager.bind('wd', 'http://www.wikidata.org/entity/')
+        self.c.namespace_manager.bind('wdt', 'http://www.wikidata.org/prop/direct/')
+        self.c.namespace_manager.bind('schema', 'http://schema.org/')
 
         if not offline:
             # ontology of measure
             rdf = rq.get('http://www.ontology-of-units-of-measure.org/data/om-2/',
                          headers={'Accept': 'application/rdf+xml'})
             rdf.raise_for_status()
-            self.g.parse(data=rdf.text, format='xml')
+            self.u.parse(data=rdf.text, format='xml')
 
             # wikidata
             rdf = rq.get('https://query.wikidata.org/sparql',
                          headers={'Accept': 'application/rdf+xml'})
             rdf.raise_for_status()
         else:
-            self.g.parse('ontologies/om-2.rdf', format='xml')
+            self.u.parse('ontologies/om-2.rdf', format='xml')
 
     def list_units(self, name, offset=0) -> []:
         name = name.lower()
@@ -49,7 +50,7 @@ class List:
             FILTER(CONTAINS(LCASE(?name), \"""" + name + """\"@en)) .
             FILTER(LANG(?name) = "en") .
         } LIMIT 10 OFFSET """ + str(offset)
-        qres = self.g.query(l_query)
+        qres = self.u.query(l_query)
         units = list()
         for row in qres:
             units.append({"uri": str(row.item), "symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
@@ -72,7 +73,7 @@ class List:
                 }
             }
         }"""
-        qres = self.g.query(l_query)
+        qres = self.c.query(l_query)
         units = list()
         for row in qres:
             units.append({"uri": str(row.item), "name": str(row.name), "comment": str(row.comment)})
@@ -88,7 +89,7 @@ class List:
             FILTER regex(str(?o),\"^""" + name + """$\","i") .
             } LIMIT 1
         """
-        qres = self.g.query(uri_query)
+        qres = self.u.query(uri_query)
         for row in qres:
             print(f"res: uri={row.uri}")
             return {"uri": str(row.uri)}
@@ -110,7 +111,7 @@ class List:
                 }
             }
         }"""
-        qres = self.g.query(uri_query)
+        qres = self.c.query(uri_query)
         for row in qres:
             print(f"res: uri={row.item}")
             return {"uri": str(row.item)}
