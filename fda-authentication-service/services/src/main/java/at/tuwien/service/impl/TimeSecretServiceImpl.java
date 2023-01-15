@@ -21,19 +21,19 @@ import java.util.Optional;
 public class TimeSecretServiceImpl implements TimeSecretService {
 
     private final UserRepository userRepository;
-    private final TimeSecretRepository tokenRepository;
+    private final TimeSecretRepository timeSecretRepository;
 
     @Autowired
-    public TimeSecretServiceImpl(UserRepository userRepository, TimeSecretRepository tokenRepository) {
+    public TimeSecretServiceImpl(UserRepository userRepository, TimeSecretRepository timeSecretRepository) {
         this.userRepository = userRepository;
-        this.tokenRepository = tokenRepository;
+        this.timeSecretRepository = timeSecretRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public TimeSecret find(String token) throws SecretInvalidException {
         /* check */
-        final Optional<TimeSecret> entity = tokenRepository.findByToken(token);
+        final Optional<TimeSecret> entity = timeSecretRepository.findByToken(token);
         if (entity.isEmpty()) {
             log.error("Failed to find token: {}", token);
             throw new SecretInvalidException("Failed to find token");
@@ -52,7 +52,7 @@ public class TimeSecretServiceImpl implements TimeSecretService {
                 .user(user)
                 .token(RandomStringUtils.randomAlphabetic(10))
                 .build();
-        final TimeSecret out = tokenRepository.save(token);
+        final TimeSecret out = timeSecretRepository.save(token);
         log.info("Created token with id {}", out.getId());
         log.trace("created token {}", out);
         return out;
@@ -62,18 +62,16 @@ public class TimeSecretServiceImpl implements TimeSecretService {
     @Transactional
     public User invalidate(String token) throws SecretInvalidException {
         /* check */
-        final TimeSecret token1 = find(token);
+        final TimeSecret timeSecret = find(token);
         /* verify */
-        final User user = token1.getUser();
+        final User user = timeSecret.getUser();
         user.setEmailVerified(true);
         userRepository.save(user);
         log.info("Verified user with username {}", user.getUsername());
-        log.trace("Verified user {}", user);
         /* invalidate */
-        token1.setProcessed(true);
-        final TimeSecret out = tokenRepository.save(token1);
+        timeSecret.setProcessed(true);
+        final TimeSecret out = timeSecretRepository.save(timeSecret);
         log.info("Invalidated token with id {}", out.getId());
-        log.trace("Invalidated token {}", out);
         return user;
     }
 

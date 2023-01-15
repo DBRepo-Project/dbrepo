@@ -21,6 +21,8 @@ import org.thymeleaf.context.Context;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+import java.security.Principal;
 
 @Log4j2
 @RestController
@@ -47,9 +49,14 @@ public class TimeSecretEndpoint {
     @Transactional
     @Timed(value = "email.verify", description = "Time needed to verify the user email")
     @Operation(summary = "verify user email")
-    public void verifyEmail(@RequestParam String token,
-                            HttpServletResponse httpServletResponse) throws SecretInvalidException {
-        log.debug("endpoint verify user email, token={}", token);
+    public void verifyEmail(@NotNull @RequestParam String token,
+                            @NotNull HttpServletResponse httpServletResponse,
+                            @Null Principal principal) throws SecretInvalidException, NotAllowedException {
+        log.debug("endpoint verify user email, token={}, principal={}", token, principal);
+        if (principal != null) {
+            log.error("Failed to verify e-mail while being logged-in");
+            throw new NotAllowedException("Failed to verify e-mail while being logged-in");
+        }
         tokenService.invalidate(token);
         httpServletResponse.setHeader("Location", securityConfig.getWebsite() + "/login?email_verified");
         log.debug("redirect user to website {}", securityConfig.getWebsite() + "/login?email_verified");
@@ -60,9 +67,14 @@ public class TimeSecretEndpoint {
     @Transactional
     @Timed(value = "email.resend", description = "Time needed to re-send the user email verification")
     @Operation(summary = "resend user token")
-    public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data)
-            throws UserNotFoundException, UserEmailFailedException, UserEmailAlreadyVerifiedException {
-        log.debug("endpoint resend user token, data={}", data);
+    public ResponseEntity<?> resend(@NotNull @Valid @RequestBody UserForgotDto data,
+                                    @Null Principal principal) throws UserNotFoundException, UserEmailFailedException,
+            UserEmailAlreadyVerifiedException, NotAllowedException {
+        log.debug("endpoint resend user token, data={}, principal={}", data, principal);
+        if (principal != null) {
+            log.error("Failed to verify e-mail while being logged-in");
+            throw new NotAllowedException("Failed to verify e-mail while being logged-in");
+        }
         final User user = userService.findByUsernameOrEmail(data.getUsername(), data.getEmail());
         if (user.getEmailVerified()) {
             log.error("Failed to resend user token for email {}, already verified", user.getEmail());
