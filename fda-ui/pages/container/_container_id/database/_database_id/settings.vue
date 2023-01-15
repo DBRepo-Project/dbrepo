@@ -41,7 +41,7 @@
             <v-alert
               v-if="database.is_public !== modifyVisibility.is_public"
               border="left"
-              color="info">
+              color="warning">
               <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
             </v-alert>
             <v-row dense>
@@ -91,7 +91,6 @@ export default {
       loading: false,
       editAccessDialog: false,
       editVisibilityDialog: false,
-      access: null,
       modifyVisibility: {
         is_public: null
       },
@@ -105,38 +104,6 @@ export default {
         { text: 'Action', value: 'action', sortable: false }
       ],
       accesses: [],
-      database: {
-        id: null,
-        name: null,
-        description: null,
-        is_public: null,
-        created: null,
-        contact: null,
-        accesses: [],
-        identifier: {
-          id: null,
-          license: {
-            identifier: null,
-            uri: null
-          }
-        },
-        container: {
-          id: null,
-          name: null,
-          internal_name: null
-        },
-        license: {
-          uri: null,
-          identifier: null
-        },
-        creator: {
-          titles_before: null,
-          firstname: null,
-          lastname: null,
-          username: null,
-          titles_after: null
-        }
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -151,8 +118,11 @@ export default {
     tab () {
       return 0
     },
-    db () {
-      return this.$store.state.db
+    database () {
+      return this.$store.state.database
+    },
+    access () {
+      return this.$store.state.access
     },
     token () {
       return this.$store.state.token
@@ -169,31 +139,22 @@ export default {
       return this.$store.state.user
     },
     isCreator () {
-      if (!this.user) {
+      if (!this.database || !this.user) {
         return false
       }
-      if (this.database.creator.username === null) {
+      if (this.database.creator.username === null || this.user.username === null) {
         return false
       }
       return this.database.creator.username === this.user.username
     }
   },
   mounted () {
-    this.loadDatabase()
+    if (!this.database) {
+      return
+    }
+    this.modifyVisibility.is_public = this.database.is_public
   },
   methods: {
-    async loadDatabase () {
-      this.loading = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        this.modifyVisibility.is_public = this.database.is_public
-        console.debug('database', res.data)
-      } catch (err) {
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
-    },
     closeDialog (event) {
       if (event.success) {
         this.loadDatabase()

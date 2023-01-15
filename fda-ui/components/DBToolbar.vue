@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <v-toolbar v-if="database" flat>
+  <div v-if="database">
+    <v-toolbar flat>
       <v-toolbar-title>
         <span>{{ database.name }}</span>
         <v-tooltip bottom>
@@ -28,34 +28,34 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!loading && canModify && isResearcher" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/import`">
+        <v-btn v-if="!loading && canModify && isResearcher" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
-        <v-btn v-if="!loading && canRead && isResearcher" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/query/create`">
+        <v-btn v-if="!loading && canRead && isResearcher" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="!loading && isOwner && isResearcher" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${databaseId}/view/create`">
+        <v-btn v-if="!loading && isOwner && isResearcher" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create`">
           <v-icon left>mdi-view-carousel-outline</v-icon> Create View
         </v-btn>
-        <v-btn v-if="!loading && canModify && isResearcher" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${databaseId}/table/create`">
+        <v-btn v-if="!loading && canModify && isResearcher" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/create`">
           <v-icon left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/info`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/info`">
             Info
           </v-tab>
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/table`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
             Tables
           </v-tab>
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/query`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query`">
             Subsets
           </v-tab>
-          <v-tab :to="`/container/${$route.params.container_id}/database/${databaseId}/view`">
+          <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view`">
             Views
           </v-tab>
-          <v-tab v-if="isOwner" :to="`/container/${$route.params.container_id}/database/${databaseId}/settings`">
+          <v-tab v-if="isOwner" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/settings`">
             Settings
           </v-tab>
         </v-tabs>
@@ -76,14 +76,11 @@ export default {
     }
   },
   computed: {
-    databaseId () {
-      return this.$route.params.database_id
-    },
     loadingColor () {
       return 'primary'
     },
     database () {
-      return this.$store.state.db
+      return this.$store.state.database
     },
     access () {
       return this.$store.state.access
@@ -95,8 +92,7 @@ export default {
       return this.$store.state.token
     },
     canModify () {
-      if (!this.user || !this.user.username) {
-        /* not yet loaded */
+      if (!this.user || !this.access || !this.database || !this.database.creator) {
         return false
       }
       if (this.database.creator.username === this.user.username) {
@@ -105,11 +101,13 @@ export default {
       return this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canRead () {
+      if (!this.access) {
+        return false
+      }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     isOwner () {
-      if (!this.user || !this.user.username) {
-        /* not yet loaded */
+      if (!this.user || !this.database || !this.database.creator) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -134,61 +132,6 @@ export default {
     databaseTooltip () {
       return this.database.is_public ? 'Public' : 'Private'
     }
-  },
-  watch: {
-    $route () {
-      if (this.database.id !== this.$route.params.database_id) {
-        this.loadDatabase()
-      }
-    }
-  },
-  mounted () {
-    if (!this.database) {
-      this.loadDatabase()
-    }
-    if (!this.access) {
-      this.loadAccess()
-    }
-  },
-  methods: {
-    async loadDatabase () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
-    },
-    async loadAccess () {
-      if (!this.user) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
-    }
   }
 }
 </script>
-
-<style scoped>
-#engine-logo {
-  width: 2em;
-  height: 2em;
-  margin-right: 1.25em;
-}
-</style>

@@ -94,12 +94,6 @@ export default {
       loadProgress: 0,
       error: false,
       queries: [],
-      database: {
-        is_public: null,
-        creator: {
-          username: null
-        }
-      },
       queryDetails: {
         id: null,
         doi: null,
@@ -129,6 +123,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    database () {
+      return this.$store.state.database
+    },
     loadingColor () {
       return this.error ? 'error' : 'primary'
     },
@@ -149,12 +146,9 @@ export default {
     }
   },
   mounted () {
-    this.loadDatabase()
-      .then(() => this.loadIdentifiers())
-      .then(() => {
-        this.simulateProgress()
-        this.loadQueries()
-      })
+    this.loadIdentifiers()
+    this.loadQueries()
+    this.simulateProgress()
   },
   methods: {
     async loadQueries () {
@@ -214,10 +208,16 @@ export default {
       this.queryDetails = query
     },
     isPublicOrOwner () {
+      if (!this.database) {
+        return false
+      }
       if (this.database.is_public) {
         return true
       }
       if (this.token === null) {
+        return false
+      }
+      if (!this.user) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -235,18 +235,6 @@ export default {
         }
         this.loadProgress = ((i * 100) / timeout) * 100
       }, ticks)
-    },
-    async loadDatabase () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        console.debug('database', this.database)
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Could not get database details')
-      }
-      this.loading = false
     }
   }
 }

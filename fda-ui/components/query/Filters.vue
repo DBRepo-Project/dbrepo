@@ -114,7 +114,7 @@ export default {
   },
   computed: {
     db () {
-      return this.$store.state.db
+      return this.$store.state.database
     }
   },
   methods: {

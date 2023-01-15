@@ -105,22 +105,19 @@ export default {
         const { token } = res.data
         this.$store.commit('SET_TOKEN', token)
         await this.setUser()
-      } catch (err) {
-        if (err.response !== undefined && err.response.status !== undefined) {
-          if (err.response.status === 418) {
-            this.$toast.error('Check your inbox and confirm your e-mail address')
-            console.error('user has not confirmed e-mail', err)
-            this.loading = false
-            return
-          } else if (err.response.status === 404) {
-            this.$toast.error('Username not found')
-            console.error('user has not confirmed e-mail', err)
-            this.loading = false
-            return
-          }
-          console.error('login user failed', err)
+      } catch (error) {
+        const { status } = error.response
+        if (status === 418) {
+          this.$toast.error('Check your inbox and confirm your e-mail address')
+          console.error('user has not confirmed e-mail', error)
+        } else if (status === 404) {
+          this.$toast.error('Username not found')
+          console.error('user has not confirmed e-mail', error)
+        } else {
           this.$toast.error('Login not successful')
+          console.error('login user failed', error)
         }
+        this.loading = false
       }
     },
     async setUser () {

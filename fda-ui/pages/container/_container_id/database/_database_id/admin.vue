@@ -62,7 +62,7 @@ export default {
       return 3
     },
     db () {
-      return this.$store.state.db
+      return this.$store.state.database
     },
     canDelete () {
       if (this.confirm === null) {

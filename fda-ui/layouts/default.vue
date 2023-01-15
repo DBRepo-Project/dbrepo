@@ -42,33 +42,6 @@
     </v-navigation-drawer>
     <v-app-bar fixed app>
       <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
-      <v-autocomplete
-        v-model="model"
-        :items="searchResults"
-        :loading="loadingSearch"
-        :search-input.sync="query"
-        hide-no-data
-        hide-selected
-        hide-details
-        item-text="name"
-        item-value="name"
-        solo
-        flat
-        single-line
-        label="Search ..."
-        return-object>
-        <template v-slot:item="data">
-          <template>
-            <v-list-item-icon>
-              <v-icon :title="metadata(data).text">{{ metadata(data).icon }}</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content @click="navigate(data)">
-              <v-list-item-title class="search-result-title">{{ metadata(data).title }}</v-list-item-title>
-              <v-list-item-subtitle class="search-result-subtitle">{{ metadata(data).subtitle }}</v-list-item-subtitle>
-            </v-list-item-content>
-          </template>
-        </template>
-      </v-autocomplete>
       <v-spacer />
       <v-btn
         v-if="!token"
@@ -123,7 +96,7 @@
       </v-menu>
     </v-app-bar>
     <v-main>
-      <v-container v-if="!loading">
+      <v-container>
         <nuxt />
       </v-container>
     </v-main>
@@ -175,8 +148,8 @@ export default {
     container () {
       return this.$store.state.container
     },
-    db () {
-      return this.$store.state.db
+    database () {
+      return this.$store.state.database
     },
     isDeveloper () {
       return isDeveloper(this.user)
@@ -192,6 +165,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    silentConfig () {
+      return {
+        headers: this.config.headers,
+        progress: false
+      }
+    },
     sandbox () {
       if (this.$config.sandbox === undefined) {
         console.debug('env sandbox not found, default to', false)
@@ -204,51 +183,80 @@ export default {
       return this.$config.logo
     }
   },
+  watch: {
+    '$route.params.database_id': {
+      handler (id, oldId) {
+        if (this.user) {
+          this.setTheme()
+        }
+        if (id !== oldId) {
+          this.loadDatabase()
+          this.loadAccess()
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
   mounted () {
     this.loadUser()
-    this.loadDB()
-    this.loadContainers()
-      .then(() => this.loadDatabases())
+    this.setTheme()
+    this.loadDatabase()
+    this.loadAccess()
   },
   methods: {
-    metadata (item) {
-      if (item.item.exchange !== undefined) {
-        /* is database */
-        return {
-          icon: 'mdi-database',
-          text: 'Database',
-          link: `/container/${item.item.id}/database/${item.item.id}`,
-          title: item.item.name,
-          subtitle: item.item.description
-        }
+    icon (record) {
+      if (!record || !record._source) {
+        return null
       }
-      if (item.item.topic !== undefined) {
-        /* is table */
-        return {
-          icon: 'mdi-table',
-          text: 'Table',
-          link: `/container/${item.item.tdbid}/database/${item.item.tdbid}/table/${item.item.id}`,
-          title: item.item.name,
-          subtitle: item.item.description
-        }
+      switch (record._index) {
+        case 'databaseindex':
+          return 'mdi-database'
+        case 'tableindex':
+          return 'mdi-table'
+        case 'columnindex':
+          return 'mdi-view-column-outline'
+        default:
+          return 'mdi-lock-clock'
       }
-      if (item.item.columnType !== undefined) {
-        /* is column */
-        return {
-          icon: 'mdi-view-column-outline',
-          text: 'Column',
-          link: `/container/${item.item.cdbid}/database/${item.item.cdbid}/table/${item.item.tid}`,
-          title: item.item.name,
-          subtitle: item.item.columnType
-        }
+    },
+    title (record) {
+      if (!record || !record._source) {
+        return null
       }
-      /* is identifier */
-      return {
-        icon: 'mdi-lock-clock',
-        text: 'Identifier',
-        link: `/pid/${item.item.id}`,
-        title: item.item.name,
-        subtitle: item.item.description
+      const { item } = record._source
+      return item.name
+    },
+    subtitle (record) {
+      if (!record || !record._source) {
+        return null
+      }
+      const { item } = record._source
+      switch (record._index) {
+        case 'databaseindex':
+          return item.description
+        case 'tableindex':
+          return item.description
+        case 'columnindex':
+          return item.columnType
+        default:
+          return item.description
+      }
+    },
+    link (record) {
+      if (!record || !record._source) {
+        return null
+      }
+      const { item } = record._source
+      switch (record._index) {
+        case 'databaseindex':
+          return `/container/${item.id}/database/${item.id}`
+        case 'tableindex':
+          return `/container/${item.tdbid}/database/${item.tdbid}/table/${item.id}`
+        case 'columnindex':
+          return `/container/${item.cdbid}/database/${item.cdbid}/table/${item.tid}`
+        default:
+          return `/pid/${item.id}`
       }
     },
     login () {
@@ -256,64 +264,34 @@ export default {
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
     navigate (item) {
-      this.$router.push(this.metadata(item).link)
+      this.$router.push(this.link(item))
     },
     logout () {
       this.$store.commit('SET_TOKEN', null)
       this.$store.commit('SET_USER', null)
+      this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
-    async queryDatabases (v) {
+    async searchIndizes () {
       this.loadingSearch = true
       try {
-        const res = await this.$axios.get(`/search/databaseindex,tableindex,columnindex/_search?q=${v}*&terminate_after=50`)
-        console.info('search results', res.data.hits.total.value)
-        console.debug('search results', res.data.hits.hits)
-        this.searchResults = res.data.hits.hits.map(h => h._source)
+        const res = await this.$axios.get('/search/databaseindex,tableindex,columnindex/_search?q=*&terminate_after=50')
+        const { hits } = res.data
+        console.info('search results', hits.total.value)
+        console.debug('search results', hits.hits)
+        if (!hits || !hits.hits) {
+          this.searchResults = []
+        } else {
+          this.searchResults = hits.hits
+        }
       } catch (err) {
         console.error('Failed to load search results', err)
       }
       this.loadingSearch = false
     },
-    async loadContainers () {
-      this.createDbDialog = false
-      try {
-        this.loadingContainers = true
-        const res = await this.$axios.get('/api/container/')
-        this.containers = res.data
-        console.debug('containers', this.containers)
-        this.error = false
-      } catch (err) {
-        console.error('containers', err)
-        this.error = true
-      }
-      this.loadingContainers = false
-    },
-    async loadDatabases () {
-      if (this.containers.length === 0) {
-        return
-      }
-      this.loading = true
-      for (const container of this.containers) {
-        try {
-          const res = await this.$axios.get(`/api/container/${container.id}/database`, this.config)
-          for (const info of res.data) {
-            info.container_id = container.id
-            this.databases.push(info)
-          }
-        } catch (err) {
-          if (err.response === undefined || err.response.status === undefined || err.response.status !== 401) {
-            console.error('Failed to load databases for container', err)
-          }
-        }
-      }
-      this.loading = false
-      console.debug('databases', this.databases)
-    },
     async loadUser () {
       if (!this.token) {
-        this.loading = false
         return
       }
       try {
@@ -337,15 +315,49 @@ export default {
       }
       this.loadingUser = false
     },
-    async loadDB () {
-      if (this.$route.params.db_id && !this.db) {
-        try {
-          const res = await this.$axios.get(`/api/database/${this.$route.params.db_id}`)
-          this.$store.commit('SET_DATABASE', res.data)
-        } catch (err) {
-          console.error('Failed to load database', err)
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
+    },
+    async loadAccess () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      if (!this.token) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
+        this.access = res.data
+        this.$store.commit('SET_ACCESS', res.data)
+        console.debug('access', this.access)
+      } catch (err) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
         }
       }
+      this.loading = false
+    },
+    setTheme () {
+      if (!this.user || !this.user.theme_dark) {
+        this.$vuetify.theme.dark = false
+        return
+      }
+      this.$vuetify.theme.dark = this.user.theme_dark
     }
   }
 }
