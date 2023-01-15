@@ -49,7 +49,7 @@ public class JwtUtils {
     public boolean validateJwtToken(String authToken) {
         try {
             final DecodedJWT jwt = JWT.decode(authToken);
-            return jwt.getExpiresAt().after(new Date());
+            return jwt.getExpiresAt().after(new Date(Instant.now().getEpochSecond()));
         } catch (JWTDecodeException e) {
             log.error("Invalid JWT signature: {}", e.getMessage());
         }

@@ -196,6 +196,7 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
+                        <exclude>at/tuwien/auth/MariaDbPassword.class</exclude>
                         <exclude>**/FdaAuthenticationServiceApplication.class</exclude>
                         <exclude>**/ApiExceptionHandler.class</exclude>
                     </excludes>
