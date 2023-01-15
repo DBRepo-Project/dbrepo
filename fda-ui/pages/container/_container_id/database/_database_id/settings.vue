@@ -41,7 +41,7 @@
             <v-alert
               v-if="database.is_public !== modifyVisibility.is_public"
               border="left"
-              color="info">
+              color="warning">
               <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
             </v-alert>
             <v-row dense>
@@ -147,6 +147,12 @@ export default {
       }
       return this.database.creator.username === this.user.username
     }
+  },
+  mounted () {
+    if (!this.database) {
+      return
+    }
+    this.modifyVisibility.is_public = this.database.is_public
   },
   methods: {
     closeDialog (event) {
