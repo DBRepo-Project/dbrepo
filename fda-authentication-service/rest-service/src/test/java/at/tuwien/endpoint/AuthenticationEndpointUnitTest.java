@@ -179,6 +179,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
                 .build();
+        final Token token = Token.builder()
+                .token(TOKEN_2_TOKEN)
+                .tokenHash(TOKEN_2_TOKEN_HASH)
+                .creator(USER_2_ID)
+                .expires(TOKEN_2_EXPIRES)
+                .lastUsed(null)
+                .build();
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -190,9 +197,9 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                         .roles(List.of(RoleType.ROLE_DEVELOPER))
                         .build()));
         when(tokenRepository.findByTokenHash(anyString()))
-                .thenReturn(Optional.of(TOKEN_2));
+                .thenReturn(Optional.of(token));
         when(tokenRepository.save(any(Token.class)))
-                .thenReturn(TOKEN_2);
+                .thenReturn(token);
 
         /* test */
         authenticateUser2_generic(USER_2, USER_2_PRINCIPAL, TOKEN_2_AUTHORIZATION, request);
@@ -231,6 +238,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
                 .build();
+        final Token token = Token.builder()
+                .token(TOKEN_2_TOKEN)
+                .tokenHash(TOKEN_2_TOKEN_HASH)
+                .creator(USER_2_ID)
+                .expires(TOKEN_2_EXPIRES)
+                .lastUsed(null)
+                .build();
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -242,9 +256,9 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                         .roles(List.of(RoleType.ROLE_RESEARCHER))
                         .build()));
         when(tokenRepository.findByTokenHash(anyString()))
-                .thenReturn(Optional.of(TOKEN_2));
+                .thenReturn(Optional.of(token));
         when(tokenRepository.save(any(Token.class)))
-                .thenReturn(TOKEN_2);
+                .thenReturn(token);
 
         /* test */
         authenticateUser2_generic(USER_2, USER_2_PRINCIPAL, TOKEN_2_AUTHORIZATION, request);
@@ -258,6 +272,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
                 .build();
+        final Token token = Token.builder()
+                .token(TOKEN_2_TOKEN)
+                .tokenHash(TOKEN_2_TOKEN_HASH)
+                .creator(USER_2_ID)
+                .expires(TOKEN_2_EXPIRES)
+                .lastUsed(null)
+                .build();
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -269,9 +290,9 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                         .roles(List.of(RoleType.ROLE_DEVELOPER))
                         .build()));
         when(tokenRepository.findByTokenHash(anyString()))
-                .thenReturn(Optional.of(TOKEN_2));
+                .thenReturn(Optional.of(token));
         when(tokenRepository.save(any(Token.class)))
-                .thenReturn(TOKEN_2);
+                .thenReturn(token);
 
         /* test */
         authenticateUser2_generic(USER_2, USER_2_PRINCIPAL, TOKEN_2_AUTHORIZATION, request);
@@ -285,6 +306,13 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
                 .build();
+        final Token token = Token.builder()
+                .token(TOKEN_2_TOKEN)
+                .tokenHash(TOKEN_2_TOKEN_HASH)
+                .creator(USER_2_ID)
+                .expires(TOKEN_2_EXPIRES)
+                .lastUsed(null)
+                .build();
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -296,9 +324,9 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
                         .roles(List.of(RoleType.ROLE_DATA_STEWARD))
                         .build()));
         when(tokenRepository.findByTokenHash(anyString()))
-                .thenReturn(Optional.of(TOKEN_2));
+                .thenReturn(Optional.of(token));
         when(tokenRepository.save(any(Token.class)))
-                .thenReturn(TOKEN_2);
+                .thenReturn(token);
 
         /* test */
         authenticateUser2_generic(USER_2, USER_2_PRINCIPAL, TOKEN_2_AUTHORIZATION, request);

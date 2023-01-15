@@ -240,23 +240,29 @@ public abstract class BaseUnitTest {
 
     public final static Long TOKEN_1_ID = 1L;
     public final static String TOKEN_1_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_1_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
     public final static String TOKEN_1_AUTHORIZATION = "Bearer " + TOKEN_1_TOKEN;
     public final static Instant TOKEN_1_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_1 = Token.builder()
             .id(TOKEN_1_ID)
             .token(TOKEN_1_TOKEN)
+            .tokenHash(TOKEN_1_TOKEN_HASH)
+            .creator(USER_1_ID)
             .expires(TOKEN_1_EXPIRES)
             .build();
 
     public final static Long TOKEN_2_ID = 2L;
     public final static String TOKEN_2_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_2_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
     public final static String TOKEN_2_AUTHORIZATION = "Bearer " + TOKEN_2_TOKEN;
     public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_2 = Token.builder()
             .id(TOKEN_2_ID)
             .token(TOKEN_2_TOKEN)
+            .tokenHash(TOKEN_2_TOKEN_HASH)
+            .creator(USER_2_ID)
             .expires(TOKEN_2_EXPIRES)
             .build();
 
@@ -268,12 +274,15 @@ public abstract class BaseUnitTest {
 
     public final static Long TOKEN_3_ID = 3L;
     public final static String TOKEN_3_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_3_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
     public final static String TOKEN_3_AUTHORIZATION = "Bearer " + TOKEN_3_TOKEN;
     public final static Instant TOKEN_3_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
 
     public final static Token TOKEN_3 = Token.builder()
             .id(TOKEN_3_ID)
             .token(TOKEN_3_TOKEN)
+            .tokenHash(TOKEN_3_TOKEN_HASH)
+            .creator(USER_3_ID)
             .expires(TOKEN_3_EXPIRES)
             .build();
 

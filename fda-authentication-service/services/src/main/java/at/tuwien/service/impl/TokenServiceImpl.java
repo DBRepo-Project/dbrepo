@@ -50,10 +50,6 @@ public class TokenServiceImpl implements TokenService {
     @Transactional
     public Token create(Principal principal) throws UserNotFoundException, TokenNotEligableException {
         final User user = userService.findByUsername(principal.getName());
-        if (user.getRoles().stream().noneMatch(r -> r.name().equals("ROLE_RESEARCHER") || r.name().equals("ROLE_DEVELOPER"))) {
-            log.error("User is not researcher or developer");
-            throw new TokenNotEligableException("User is not researcher or developer");
-        }
         final Instant expires = Instant.now().plus(365, ChronoUnit.DAYS);
         final String token = jwtUtils.generateJwtToken(principal.getName(), expires);
         final String tokenHash = DigestUtils.sha256Hex(token);
@@ -66,7 +62,6 @@ public class TokenServiceImpl implements TokenService {
         final Token entity = tokenRepository.save(tmp);
         entity.setToken(token);
         log.info("Created token with id {}", entity.getId());
-        log.debug("created token {}", entity);
         return entity;
     }
 
@@ -104,7 +99,6 @@ public class TokenServiceImpl implements TokenService {
         token.setExpires(Instant.now());
         tokenRepository.save(token);
         log.info("Deleted token with id {}", token.getId());
-        log.debug("deleted token {}", token);
     }
 
     @Override
