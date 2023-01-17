@@ -52,8 +52,8 @@ public class ImageEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "image.list", description = "Time needed to list the container images")
     @Operation(summary = "Find all images")
-    public ResponseEntity<List<ImageBriefDto>> findAll() {
-        log.debug("endpoint find all images");
+    public ResponseEntity<List<ImageBriefDto>> findAll(@NotNull Principal principal) {
+        log.debug("endpoint find all images, principal={}", principal);
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -71,9 +71,13 @@ public class ImageEndpoint {
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
-                                           Principal principal) throws ImageNotFoundException,
-            ImageAlreadyExistsException, DockerClientException, UserNotFoundException {
+                                           @NotNull Principal principal) throws ImageNotFoundException,
+            ImageAlreadyExistsException, DockerClientException, UserNotFoundException, ImageInvalidException {
         log.debug("endpoint create image, data={}, principal={}", data, principal);
+        if (data.getDefaultPort() == null) {
+            log.error("Failed to create image, default port is null");
+            throw new ImageInvalidException("Failed to create image, default port is null");
+        }
         final ContainerImage image = imageService.create(data, principal);
         final ImageDto dto = imageMapper.containerImageToImageDto(image);
         log.trace("create image resulted in image {}", dto);
@@ -89,7 +93,8 @@ public class ImageEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "image.find", description = "Time needed to find a container image")
     @Operation(summary = "Find some image")
-    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id) throws ImageNotFoundException {
+    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id,
+                                             @NotNull Principal principal) throws ImageNotFoundException {
         log.debug("endpoint find image, id={}", id);
         final ContainerImage image = imageService.find(id);
         final ImageDto dto = imageMapper.containerImageToImageDto(image);
@@ -108,10 +113,12 @@ public class ImageEndpoint {
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id,
-                                           @RequestBody @Valid ImageChangeDto changeDto)
+                                           @RequestBody @Valid ImageChangeDto changeDto,
+                                           @NotNull Principal principal)
             throws ImageNotFoundException {
-        log.debug("endpoint update image, id={}, changeDto={}", id, changeDto);
-        final ImageDto dto = imageMapper.containerImageToImageDto(imageService.update(id, changeDto));
+        log.debug("endpoint update image, id={}, changeDto={}, principal={}", id, changeDto, principal);
+        final ContainerImage image = imageService.update(id, changeDto);
+        final ImageDto dto = imageMapper.containerImageToImageDto(image);
         log.trace("update image resulted in image {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -127,11 +134,11 @@ public class ImageEndpoint {
     @Timed(value = "image.delete", description = "Time needed to delete a container image")
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id) throws ImageNotFoundException,
-            PersistenceException {
-        log.debug("endpoint delete image, id={}", id);
+    public ResponseEntity<?> delete(@NotNull @PathVariable Long id,
+                                    @NotNull Principal principal) throws ImageNotFoundException {
+        log.debug("endpoint delete image, id={}, principal={}", id, principal);
         imageService.delete(id);
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }
 

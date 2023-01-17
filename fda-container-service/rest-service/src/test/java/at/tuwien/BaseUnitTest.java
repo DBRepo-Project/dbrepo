@@ -282,6 +282,7 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_2_HASH)
             .ipAddress(CONTAINER_2_IP)
             .created(CONTAINER_2_CREATED)
+            .creator(USER_2)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;

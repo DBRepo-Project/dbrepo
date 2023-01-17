@@ -120,8 +120,7 @@ public class ImageServiceImpl implements ImageService {
         image.setJdbcMethod(changeDto.getJdbcMethod());
         /* update metadata db */
         final ContainerImage out = imageRepository.save(image);
-        log.info("Updated image {}", out.getId());
-        log.trace("updated image {}", out);
+        log.info("Updated image with id {}", out.getId());
         return out;
     }
 
