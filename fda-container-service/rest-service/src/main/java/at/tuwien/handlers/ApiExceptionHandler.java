@@ -36,6 +36,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.container.notallowed")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ContainerNotRunningException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerNotRunningException e, WebRequest request) {

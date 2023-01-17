@@ -2,16 +2,21 @@ package at.tuwien;
 
 import at.tuwien.api.container.image.ImageEnvItemDto;
 import at.tuwien.api.container.image.ImageEnvItemTypeDto;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
 
+import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
@@ -20,6 +25,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@gmail.com";
     public final static Boolean USER_1_EMAIL_VERIFIED = false;
@@ -30,6 +36,7 @@ public abstract class BaseUnitTest {
     public final static GrantedAuthority USER_1_AUTHORITY = new SimpleGrantedAuthority("ROLE_RESEARCHER");
 
     public final static User USER_1 = User.builder()
+            .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
@@ -39,6 +46,28 @@ public abstract class BaseUnitTest {
             .roles(List.of(USER_1_ROLE_TYPE))
             .build();
 
+    public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .password(USER_1_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{})
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{"administrator"})
+            .build();
+
+    public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
+            USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
+
+    public final static Long USER_2_ID = 2L;
     public final static String USER_2_USERNAME = "dev";
     public final static String USER_2_EMAIL = "dev@gmail.com";
     public final static Boolean USER_2_EMAIL_VERIFIED = false;
@@ -49,6 +78,7 @@ public abstract class BaseUnitTest {
     public final static GrantedAuthority USER_2_AUTHORITY = new SimpleGrantedAuthority("ROLE_DEVELOPER");
 
     public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .emailVerified(USER_2_EMAIL_VERIFIED)
@@ -58,6 +88,23 @@ public abstract class BaseUnitTest {
             .roles(List.of(USER_2_ROLE_TYPE))
             .build();
 
+    public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_2_USERNAME)
+            .tags(new String[]{})
+            .build();
+
+    public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
+            USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
+
+    public final static Long USER_3_ID = 3L;
     public final static String USER_3_USERNAME = "steward";
     public final static String USER_3_EMAIL = "steward@gmail.com";
     public final static Boolean USER_3_EMAIL_VERIFIED = false;
@@ -68,6 +115,7 @@ public abstract class BaseUnitTest {
     public final static GrantedAuthority USER_3_AUTHORITY = new SimpleGrantedAuthority("ROLE_DATA_STEWARD");
 
     public final static User USER_3 = User.builder()
+            .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .emailVerified(USER_3_EMAIL_VERIFIED)
@@ -76,6 +124,22 @@ public abstract class BaseUnitTest {
             .databasePassword(USER_3_DATABASE_PASSWORD)
             .roles(List.of(USER_3_ROLE_TYPE))
             .build();
+
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of())
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_3_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_3_USERNAME)
+            .tags(new String[]{})
+            .build();
+
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static String USER_4_USERNAME = "nobody";
     public final static String USER_4_EMAIL = "nobody@gmail.com";
@@ -198,6 +262,7 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_1_HASH)
             .ipAddress(CONTAINER_1_IP)
             .created(CONTAINER_1_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;

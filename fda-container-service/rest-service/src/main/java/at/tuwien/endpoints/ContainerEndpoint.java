@@ -107,13 +107,14 @@ public class ContainerEndpoint {
     @DeleteMapping("/{id}")
     @Transactional
     @Timed(value = "container.delete", description = "Time needed to delete the container")
-    @PreAuthorize("hasRole('ROLE_DEVELOPER') and hasPermission(#containerId, 'DELETE_CONTAINER')")
+    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId) throws ContainerNotFoundException,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
+                                    @NotNull Principal principal) throws ContainerNotFoundException,
             ContainerStillRunningException, ContainerAlreadyRemovedException {
-        log.debug("endpoint delete container, containerId={}", containerId);
+        log.debug("endpoint delete container, containerId={}, principal={}", containerId, principal);
         containerService.remove(containerId);
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }
 
