@@ -148,7 +148,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
             preparedStatement3.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create database {}, reason: {}", database, e.getMessage());
+            log.error("Failed to create database with internal name {}, reason: {}", database.getInternalName(), e.getMessage());
             throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();

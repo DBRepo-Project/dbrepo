@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
@@ -69,8 +68,9 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "database.list", description = "Time needed to list the databases")
     @Operation(summary = "List databases")
-    public ResponseEntity<List<DatabaseBriefDto>> list(@NotBlank @PathVariable("id") Long containerId) {
-        log.debug("endpoint list databases, containerId={}", containerId);
+    public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
+                                                       @NotNull Principal principal) {
+        log.debug("endpoint list databases, containerId={}, principal={}", containerId, principal);
         final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
@@ -89,9 +89,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DEVELOPER')")
     @Timed(value = "database.create", description = "Time needed to create a database")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseBriefDto> create(@NotBlank @PathVariable("id") Long containerId,
+    public ResponseEntity<DatabaseBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
                                                    @NotNull Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
@@ -118,10 +119,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{databaseId}/transfer")
     @Transactional
+    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DEVELOPER')")
     @Timed(value = "database.transfer", description = "Time needed to transfer a database visibility")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> transfer(@NotBlank @PathVariable("id") Long containerId,
-                                                @NotBlank @PathVariable Long databaseId,
+    public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
+                                                @NotNull @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
@@ -142,8 +144,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<DatabaseDto> findById(@NotBlank @PathVariable("id") Long containerId,
-                                                @NotBlank @PathVariable Long databaseId,
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("id") Long containerId,
+                                                @NotNull @PathVariable Long databaseId,
                                                 Principal principal)
             throws DatabaseNotFoundException, AccessDeniedException {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
@@ -168,10 +170,11 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{databaseId}")
     @Transactional
+    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Timed(value = "database.delete", description = "Time needed to delete a database")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotBlank @PathVariable("id") Long containerId,
-                                    @NotBlank @PathVariable Long databaseId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
+                                    @NotNull @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
             QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException, DatabaseConnectionException {

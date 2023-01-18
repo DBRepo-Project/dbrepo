@@ -99,7 +99,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
             .build();
 
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
@@ -122,6 +122,16 @@ public abstract class BaseUnitTest {
             .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
             .build();
+
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DATA_STEWARD")))
+            .build();
+
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -197,8 +207,8 @@ public abstract class BaseUnitTest {
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
 
-    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
-            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb",
+            "MARIADB_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -210,6 +220,7 @@ public abstract class BaseUnitTest {
             .ipAddress(CONTAINER_1_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
+            .creator(USER_1)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -233,6 +244,7 @@ public abstract class BaseUnitTest {
             .ipAddress(CONTAINER_2_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
+            .creator(USER_2)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -256,6 +268,7 @@ public abstract class BaseUnitTest {
             .ipAddress(CONTAINER_3_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
+            .creator(USER_3)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
@@ -282,15 +295,29 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long DATABASE_1_ID = 1L;
-    public final static String DATABASE_1_NAME = "Weather";
+    public final static String DATABASE_1_NAME = "Weather AT";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static String DATABASE_1_PUBLISHER = "TU Wien";
     public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
     public final static Boolean DATABASE_1_PUBLIC = false;
-    public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
+    public final static String DATABASE_1_INTERNALNAME = "weather_at";
+    public final static String DATABASE_1_EXCHANGE = "dbrepo" + CONTAINER_1_INTERNALNAME + "/" + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
+
+    public final static Database DATABASE_1 = Database.builder()
+            .id(DATABASE_1_ID)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .isPublic(DATABASE_1_PUBLIC)
+            .container(CONTAINER_1)
+            .created(DATABASE_1_CREATED)
+            .creator(USER_1)
+            .tables(List.of())
+            .lastModified(DATABASE_1_UPDATED)
+            .container(CONTAINER_1)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .build();
 
     public final static ExchangeDto DATABASE_EXCHANGE_1 = ExchangeDto.builder()
             .durable(false)
@@ -307,57 +334,12 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long DATABASE_2_ID = 2L;
-    public final static String DATABASE_2_NAME = "Weather AT";
+    public final static String DATABASE_2_NAME = "Weather DE";
     public final static Boolean DATABASE_2_PUBLIC = false;
-    public final static String DATABASE_2_INTERNALNAME = "weather_at";
-    public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
+    public final static String DATABASE_2_INTERNALNAME = "weather_de";
+    public final static String DATABASE_2_EXCHANGE = "dbrepo" + CONTAINER_2_INTERNALNAME + "/" + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_2_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_2_NAME)
-            .isPublic(DATABASE_2_PUBLIC)
-            .build();
-
-    public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "Weather";
-    public final static Boolean DATABASE_3_PUBLIC = false;
-    public final static String DATABASE_3_INTERNALNAME = "weather";
-    public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
-    public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_3_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_3_NAME)
-            .isPublic(DATABASE_3_PUBLIC)
-            .build();
-
-    public final static Long DATABASE_4_ID = 4L;
-    public final static String DATABASE_4_NAME = "Weather AT";
-    public final static Boolean DATABASE_4_PUBLIC = false;
-    public final static String DATABASE_4_INTERNALNAME = "weather_at";
-    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
-    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_4_UPDATED = Instant.now();
-
-    public final static DatabaseCreateDto DATABASE_4_CREATE = DatabaseCreateDto.builder()
-            .name(DATABASE_4_NAME)
-            .isPublic(DATABASE_4_PUBLIC)
-            .build();
-
-    public final static Database DATABASE_1 = Database.builder()
-            .id(DATABASE_1_ID)
-            .name(DATABASE_1_NAME)
-            .internalName(DATABASE_1_INTERNALNAME)
-            .isPublic(DATABASE_1_PUBLIC)
-            .container(CONTAINER_1)
-            .created(DATABASE_1_CREATED)
-            .creator(USER_1)
-            .tables(List.of())
-            .lastModified(DATABASE_1_UPDATED)
-            .container(CONTAINER_1)
-            .exchangeName(DATABASE_1_EXCHANGE)
-            .build();
 
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
@@ -366,12 +348,25 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_2_PUBLIC)
             .container(CONTAINER_2)
             .created(DATABASE_2_CREATED)
-            .creator(USER_1)
+            .creator(USER_2)
             .tables(List.of())
             .lastModified(DATABASE_2_UPDATED)
             .container(CONTAINER_2)
             .exchangeName(DATABASE_2_EXCHANGE)
             .build();
+
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
+            .build();
+
+    public final static Long DATABASE_3_ID = 3L;
+    public final static String DATABASE_3_NAME = "Weather";
+    public final static Boolean DATABASE_3_PUBLIC = true;
+    public final static String DATABASE_3_INTERNALNAME = "weather";
+    public final static String DATABASE_3_EXCHANGE = DATABASE_3_INTERNALNAME;
+    public final static Instant DATABASE_3_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_3_UPDATED = Instant.now();
 
     public final static Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
@@ -380,25 +375,16 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_3_PUBLIC)
             .container(CONTAINER_3)
             .created(DATABASE_3_CREATED)
-            .creator(USER_1)
+            .creator(USER_3)
             .tables(List.of())
             .lastModified(DATABASE_3_UPDATED)
             .container(CONTAINER_3)
             .exchangeName(DATABASE_3_EXCHANGE)
             .build();
 
-    public final static Database DATABASE_4 = Database.builder()
-            .id(DATABASE_4_ID)
-            .name(DATABASE_4_NAME)
-            .internalName(DATABASE_4_INTERNALNAME)
-            .isPublic(DATABASE_4_PUBLIC)
-            .container(CONTAINER_4)
-            .created(DATABASE_4_CREATED)
-            .creator(USER_1)
-            .tables(List.of())
-            .lastModified(DATABASE_4_UPDATED)
-            .container(CONTAINER_4)
-            .exchangeName(DATABASE_4_EXCHANGE)
+    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_3_NAME)
+            .isPublic(DATABASE_3_PUBLIC)
             .build();
 
     public final static Long TABLE_1_ID = 1L;

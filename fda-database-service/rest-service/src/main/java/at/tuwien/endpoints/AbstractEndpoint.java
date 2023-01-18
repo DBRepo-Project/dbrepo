@@ -37,7 +37,7 @@ public abstract class AbstractEndpoint {
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of().contains(permissionCode)) {
+        if (database.getIsPublic() && false) {
             log.trace("grant permission {} because database is public", permissionCode);
             return true;
         }
@@ -54,6 +54,12 @@ public abstract class AbstractEndpoint {
         if (database.getCreator().getUsername().equals(principal.getName())) {
             log.trace("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
                     database.getCreator().getUsername());
+            return true;
+        }
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (List.of("TRANSFER_DATABASE").contains(permissionCode) &&
+                authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DEVELOPER"))) {
+            log.debug("grant permission {} because user {} is developer", permissionCode, principal.getName());
             return true;
         }
         log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
@@ -86,6 +92,11 @@ public abstract class AbstractEndpoint {
             return true;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (List.of("CREATE_DATABASE").contains(permissionCode) &&
+                authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DEVELOPER"))) {
+            log.debug("grant permission {} because user {} is developer", permissionCode, principal.getName());
+            return true;
+        }
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
