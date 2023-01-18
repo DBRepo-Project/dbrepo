@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -333,6 +334,23 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void delete_developer_fails() {
+
+        /* mock */
+        doThrow(DataIntegrityViolationException.class)
+                .when(imageRepository)
+                .deleteById(IMAGE_1_ID);
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        assertThrows(ImageNotFoundException.class, () -> {
+            delete_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void delete_dataSteward_fails() {
 
@@ -495,7 +513,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
         assertNull(response.getBody());
     }
 
-    public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data, Principal principal) 
+    public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data, Principal principal)
             throws ImageNotFoundException {
 
         /* mock */

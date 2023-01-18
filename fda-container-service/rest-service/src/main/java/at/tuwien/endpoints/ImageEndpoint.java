@@ -134,10 +134,11 @@ public class ImageEndpoint {
     @Timed(value = "image.delete", description = "Time needed to delete a container image")
     @PreAuthorize("hasRole('DEVELOPER')")
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id,
+    public ResponseEntity<?> delete(@NotNull @PathVariable Long imageId,
                                     @NotNull Principal principal) throws ImageNotFoundException {
-        log.debug("endpoint delete image, id={}, principal={}", id, principal);
-        imageService.delete(id);
+        log.debug("endpoint delete image, id={}, principal={}", imageId, principal);
+        imageService.find(imageId);
+        imageService.delete(imageId);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
     }

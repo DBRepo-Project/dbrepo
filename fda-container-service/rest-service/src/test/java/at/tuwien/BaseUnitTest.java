@@ -2,7 +2,9 @@ package at.tuwien;
 
 import at.tuwien.api.container.image.ImageEnvItemDto;
 import at.tuwien.api.container.image.ImageEnvItemTypeDto;
+import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -25,14 +27,20 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
+
+    public final static GrantedAuthorityDto RESEARCHER_AUTHORITY_DTO = GrantedAuthorityDto.builder()
+            .authority("ROLE_RESEARCHER")
+            .build();
+
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@gmail.com";
+    public final static String USER_1_AFFILIATION = "TU Wien";
     public final static Boolean USER_1_EMAIL_VERIFIED = false;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static String USER_1_PASSWORD = "p455w0rdh45h";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static RoleType USER_1_ROLE_TYPE = RoleType.ROLE_RESEARCHER;
     public final static GrantedAuthority USER_1_AUTHORITY = new SimpleGrantedAuthority("ROLE_RESEARCHER");
 
     public final static User USER_1 = User.builder()
@@ -40,10 +48,23 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
+            .affiliation(USER_1_AFFILIATION)
             .themeDark(USER_1_THEME_DARK)
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .roles(List.of(USER_1_ROLE_TYPE))
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
+            .build();
+
+    public final static UserDto USER_1_DTO = UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_EMAIL_VERIFIED)
+            .affiliation(USER_1_AFFILIATION)
+            .themeDark(USER_1_THEME_DARK)
+            .password(USER_1_PASSWORD)
+            .roles(List.of("ROLE_RESEARCHER"))
+            .authorities(List.of(RESEARCHER_AUTHORITY_DTO))
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -156,6 +177,22 @@ public abstract class BaseUnitTest {
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
             .roles(List.of())
+            .build();
+
+    public final static Long USER_5_ID = 5L;
+    public final static String USER_5_USERNAME = "mweise";
+    public final static String USER_5_EMAIL = "mweise@gmail.com";
+    public final static Boolean USER_5_EMAIL_VERIFIED = false;
+    public final static Boolean USER_5_THEME_DARK = false;
+    public final static String USER_5_PASSWORD = "p455w0rdh45";
+    public final static String USER_5_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+
+    public final static UserDetailsDto USER_5_DETAILS_DTO = UserDetailsDto.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .email(USER_5_EMAIL)
+            .password(USER_5_PASSWORD)
+            .authorities(List.of())
             .build();
 
     public final static Long IMAGE_1_ID = 1L;

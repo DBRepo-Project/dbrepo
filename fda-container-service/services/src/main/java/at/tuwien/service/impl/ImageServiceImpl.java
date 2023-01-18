@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
@@ -84,7 +85,7 @@ public class ImageServiceImpl implements ImageService {
         final ContainerImage dto;
         try {
             dto = imageRepository.save(image);
-        } catch (ConstraintViolationException | DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
             log.error("Failed to create image: {}", e.getMessage());
             throw new ImageAlreadyExistsException("Failed to create image", e);
         }
@@ -129,14 +130,11 @@ public class ImageServiceImpl implements ImageService {
     public void delete(Long imageId) throws ImageNotFoundException {
         try {
             imageRepository.deleteById(imageId);
-        } catch (EntityNotFoundException | EmptyResultDataAccessException e) {
-            log.error("Failed to delete image with id {}, reason: {}", imageId, e.getMessage());
-            throw new ImageNotFoundException("Failed to delete image", e);
-        } catch (ConstraintViolationException e) {
+            log.info("Deleted image {}", imageId);
+        } catch (EntityNotFoundException | EmptyResultDataAccessException | DataIntegrityViolationException e) {
             log.error("Failed to delete image with id {} with constraint, reason: {}", imageId, e.getMessage());
             throw new ImageNotFoundException("Failed to delete image with constraint", e);
         }
-        log.info("Deleted image {}", imageId);
     }
 
     /**
@@ -185,12 +183,9 @@ public class ImageServiceImpl implements ImageService {
             response.awaitCompletion();
             log.info("Pulled image {}:{}", repository, tag);
             log.debug("pulled image {}:{} in {} seconds", repository, tag, Duration.between(now, Instant.now()).getSeconds());
-        } catch (NotFoundException | InternalServerErrorException e) {
+        } catch (NotFoundException | InternalServerErrorException | InterruptedException e) {
             log.warn("Failed to pull image {}:{}, reason: {}", repository, tag, e.getMessage());
             throw new ImageNotFoundException("Failed to pull image", e);
-        } catch (InterruptedException e) {
-            log.error("Failed to pull image {}:{} un-interrupted: {}", repository, tag, e.getMessage());
-            throw new ImageNotFoundException("failed to pull image", e);
         }
     }
 
