@@ -4,15 +4,14 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -65,9 +64,11 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private UserRepository userRepository;
 
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        afterEach();
+    private final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
+    @BeforeAll
+    public static void beforeAll() {
+        afterAll();
         /* create networks */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -83,28 +84,37 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
-        /* create container */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb")
-                        .withBinds(Bind.parse(bind)))
-                .withName(CONTAINER_1_NAME)
-                .withIpv4Address(CONTAINER_1_IP)
-                .withHostName(CONTAINER_1_INTERNALNAME)
-                .withVolumes()
-                .withEnv("MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit2", "MARIADB_PASSWORD=junit2")
-                .exec();
-        CONTAINER_1.setHash(response1.getId());
-        startContainer(CONTAINER_1);
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec()
+                .forEach(container -> {
+                    log.info("Delete container {}", Arrays.asList(container.getNames()));
+                    try {
+                        dockerClient.stopContainerCmd(container.getId()).exec();
+                    } catch (NotModifiedException e) {
+                        // ignore
+                    }
+                    dockerClient.removeContainerCmd(container.getId()).exec();
+                });
+        dockerClient.listNetworksCmd()
+                .exec()
+                .stream()
+                .filter(n -> n.getName().startsWith("fda"))
+                .forEach(network -> {
+                    log.info("Delete network {}", network.getName());
+                    dockerClient.removeNetworkCmd(network.getId()).exec();
+                });
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        afterEach();
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        DATABASE_1.setCreator(USER_1);
-        databaseRepository.save(DATABASE_1);
     }
 
     @AfterEach
@@ -122,38 +132,52 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                     }
                     dockerClient.removeContainerCmd(container.getId()).exec();
                 });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
     }
 
     @Test
     public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
-    public void create_multiple_fails() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+    public void create_multiple_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+        databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
 
         /* test */
-        create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         assertThrows(NotAllowedException.class, () -> {
             create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         });
     }
 
     @Test
-    public void create_creator_fails() {
+    public void create_creator_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+        databaseAccessRepository.save(DATABASE_1_OWNER_ACCESS);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -163,7 +187,16 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_same_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+        databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
@@ -171,7 +204,15 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_writeOwn_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO, DATABASE_2_WRITE_OWN_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
@@ -179,14 +220,29 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_writeAll_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO, DATABASE_3_WRITE_ALL_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
-    public void update_userNotFound_fails() {
+    public void update_userNotFound_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
@@ -195,7 +251,16 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_databaseNotFound_fails() {
+    public void update_databaseNotFound_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_2, CONTAINER_2_ENV);
+        DockerConfig.startContainer(CONTAINER_2);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -205,14 +270,29 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void delete_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         accessService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME);
     }
 
     @Test
-    public void delete_isOwner_fails() {
+    public void delete_isOwner_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -221,7 +301,13 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_notExists_fails() {
+    public void delete_notExists_fails() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {

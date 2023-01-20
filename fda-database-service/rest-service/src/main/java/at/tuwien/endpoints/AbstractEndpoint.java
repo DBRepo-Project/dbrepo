@@ -73,7 +73,6 @@ public abstract class AbstractEndpoint {
         try {
             container = containerService.find(containerId);
         } catch (ContainerNotFoundException e) {
-            log.error("Failed to find container");
             return false;
         }
         /* view-only operations are allowed on public databases */

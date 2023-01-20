@@ -15,6 +15,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
+import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -43,11 +44,27 @@ public abstract class BaseUnitTest {
     public final static String GATEWAY_IMAGE = "nginx";
     public final static String GATEWAY_TAG = "alpine";
 
-    public final static String SEARCH_NAME = "fda-search-mock-service";
-    public final static String SEARCH_IP = "172.29.0.3";
-    public final static String SEARCH_HOSTNAME = "fda-search-mock-service";
-    public final static String SEARCH_IMAGE = "elasticsearch";
-    public final static String SEARCH_TAG = "7.13.4";
+    public final static String CONTAINER_SEARCH_NAME = "fda-search-mock-service";
+    public final static String CONTAINER_SEARCH_INTERNAL_NAME = "search-mock-service";
+    public final static String CONTAINER_SEARCH_IP = "172.29.0.3";
+    public final static String CONTAINER_SEARCH_REPOSITORY = "elasticsearch";
+    public final static String CONTAINER_SEARCH_TAG = "7.13.4";
+
+    public final static String[] CONTAINER_SEARCH_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m",
+            "logger.level=WARN"};
+
+    public final static ContainerImage IMAGE_SEARCH = ContainerImage.builder()
+            .repository(CONTAINER_SEARCH_REPOSITORY)
+            .tag(CONTAINER_SEARCH_TAG)
+            .environment(List.of())
+            .build();
+
+    public final static Container CONTAINER_SEARCH = Container.builder()
+            .name(CONTAINER_SEARCH_NAME)
+            .internalName(CONTAINER_SEARCH_INTERNAL_NAME)
+            .ipAddress(CONTAINER_SEARCH_IP)
+            .image(IMAGE_SEARCH)
+            .build();
 
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "junit";
@@ -206,6 +223,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
+    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb",
             "MARIADB_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
@@ -230,6 +249,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_2_UPDATED = Instant.now();
+    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
             "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
@@ -254,6 +275,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_3_UPDATED = Instant.now();
+    public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
             "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
@@ -278,6 +301,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
     public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_4_UPDATED = Instant.now();
+    public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
             "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};

@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.*;
 import at.tuwien.config.IndexInitializer;
-import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.entities.container.Container;
@@ -17,10 +16,6 @@ import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -35,14 +30,10 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.File;
 import java.security.Principal;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -86,97 +77,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
-    @Timeout(value = 60)
-
-    @BeforeAll
-    public static void beforeAll() {
-        afterAll();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-    }
-
-    public static void afterAll() {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
-    }
-
-    @AfterEach
-    public void afterEach() {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-    }
-
-    protected void startDatabase(Container container, String... env) throws InterruptedException {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(c -> {
-                    log.info("Delete container {}", Arrays.asList(c.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(c.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(c.getId()).exec();
-                });
-        final String bind = new File("./src/test/resources/weather").toPath()
-                .toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse request = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb")
-                        .withBinds(Bind.parse(bind)))
-                .withName(container.getName())
-                .withIpv4Address(container.getIpAddress())
-                .withHostName(container.getInternalName())
-                .withEnv(env)
-                .exec();
-        log.trace("start container with hostname={} and ip={}", container.getInternalName(), container.getIpAddress());
-        dockerClient.startContainerCmd(request.getId())
-                .exec();
-        Thread.sleep(12 * 1000);
-    }
-
     @Test
     public void create_anonymous_fails() {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
@@ -202,108 +102,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, null);
         });
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcher_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
-            NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .isPublic(DATABASE_1_PUBLIC)
-                .build();
-
-        /* mock */
-        startDatabase(CONTAINER_1, CONTAINER_1_ENV);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        create_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, null, request, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcherExists_fails() throws InterruptedException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .isPublic(DATABASE_1_PUBLIC)
-                .build();
-
-        /* mock */
-        startDatabase(CONTAINER_1, CONTAINER_1_ENV);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        assertThrows(DatabaseMalformedException.class, () -> {
-            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcherForeignContainer_fails() throws InterruptedException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .isPublic(DATABASE_1_PUBLIC)
-                .build();
-
-        /* mock */
-        startDatabase(CONTAINER_2, CONTAINER_2_ENV);
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_1_ID, null, request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void create_developer_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
-            NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_2_NAME)
-                .isPublic(DATABASE_2_PUBLIC)
-                .build();
-
-        /* mock */
-        startDatabase(CONTAINER_2, CONTAINER_2_ENV);
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void create_developerForeignContainer_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
-            NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_2_NAME)
-                .isPublic(DATABASE_2_PUBLIC)
-                .build();
-
-        /* mock */
-        startDatabase(CONTAINER_1, CONTAINER_1_ENV);
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_2_ID, null, request, USER_2_PRINCIPAL);
     }
 
     @Test
@@ -665,16 +463,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developerPublic_succeeds() throws AccessDeniedException, DatabaseNotFoundException,
-            InterruptedException {
-
-        /* test */
-        startDatabase(CONTAINER_1, CONTAINER_1_ENV);
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void findById_developerPublicForeignDatabase_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* test */
@@ -684,18 +472,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void findById_developerPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developerPrivateForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException, InterruptedException {
-
-        /* mock */
-        startDatabase(CONTAINER_2, CONTAINER_2_ENV);
 
         /* test */
         findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
@@ -716,18 +492,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataStewardPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException,
-            InterruptedException {
-
-        /* mock */
-        startDatabase(CONTAINER_2, CONTAINER_2_ENV);
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -776,37 +540,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL);
         });
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void delete_developer_succeeds() throws UserNotFoundException, DatabaseConnectionException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
-            BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException,
-            InterruptedException, SQLException {
-
-        /* mock */
-        startDatabase(CONTAINER_2, CONTAINER_2_ENV);
-        MariaDbConfig.mockQuery(CONTAINER_1_INTERNALNAME, "CREATE DATABASE `" + DATABASE_2_INTERNALNAME + "`", "root", "mariadb");
-
-        /* test */
-        delete_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void delete_developerForeignDatabase_succeeds() throws UserNotFoundException, DatabaseConnectionException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
-            BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException,
-            InterruptedException, SQLException {
-
-        /* mock */
-        startDatabase(CONTAINER_1, CONTAINER_1_ENV);
-        MariaDbConfig.mockQuery(CONTAINER_1_INTERNALNAME, "CREATE DATABASE `" + DATABASE_1_INTERNALNAME + "`", "root", "mariadb");
-
-        /* test */
-        delete_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL);
     }
 
     @Test

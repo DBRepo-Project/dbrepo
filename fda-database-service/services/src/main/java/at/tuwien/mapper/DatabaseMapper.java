@@ -205,8 +205,22 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
+    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection, User user)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.trace("statement={}", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawFlushPrivileges(Connection connection) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("FLUSH PRIVILEGES;");
         log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());
