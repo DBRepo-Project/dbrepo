@@ -169,7 +169,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_creator_fails() throws InterruptedException {
+    public void create_owner_fails() throws InterruptedException {
 
         /* mock */
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);

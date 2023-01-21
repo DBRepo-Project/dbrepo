@@ -52,7 +52,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                             IdentifierService identifierService, IdentifierMapper identifierMapper,
                             MessageQueueService messageQueueService, AccessService accessService,
                             DatabaseAccessRepository databaseAccessRepository) {
-        super(databaseService, containerService);
+        super(databaseService, containerService, databaseAccessRepository);
         this.userService = userService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
@@ -117,21 +117,43 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                 .body(dto);
     }
 
-    @PutMapping("/{databaseId}/transfer")
+    @PutMapping("/{databaseId}/visibility")
     @Transactional
     @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DEVELOPER')")
-    @Timed(value = "database.transfer", description = "Time needed to transfer a database visibility")
+    @Timed(value = "database.visibility", description = "Time needed to modify a database visibility")
+    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable("id") Long containerId,
+                                                  @NotNull @PathVariable Long databaseId,
+                                                  @Valid @RequestBody DatabaseModifyVisibilityDto data,
+                                                  @NotNull Principal principal)
+            throws DatabaseNotFoundException, NotAllowedException {
+        log.debug("endpoint update database, containerId={}, databaseId={}, data={}, principal={}", containerId,
+                databaseId, data, principal);
+        if (!hasDatabasePermission(containerId, databaseId, "VISIBILITY_DATABASE", principal)) {
+            log.error("Missing database update visibility permission");
+            throw new NotAllowedException("Missing database update visibility permission");
+        }
+        final Database database = databaseService.visibility(containerId, databaseId, data);
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        log.trace("update database resulted in database {}", dto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
+    }
+
+    @PutMapping("/{databaseId}/transfer")
+    @Transactional
+    @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
         log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
                 databaseId, transferDto, principal);
         if (!hasDatabasePermission(containerId, databaseId, "TRANSFER_DATABASE", principal)) {
-            log.error("Missing database update permission");
-            throw new NotAllowedException("Missing database update permission");
+            log.error("Missing database transfer ownership permission");
+            throw new NotAllowedException("Missing database transfer ownership permission");
         }
         final Database database = databaseService.transfer(containerId, databaseId, transferDto);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -157,8 +179,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         } catch (IdentifierNotFoundException e) {
             // ignore
         }
-        if (principal != null && database.getCreator().getUsername().equals(principal.getName())) {
-            /* only creator sees the access rights */
+        if (principal != null && database.getOwner().getUsername().equals(principal.getName())) {
+            /* only owner sees the access rights */
             final List<DatabaseAccess> accesses = accessService.list(databaseId);
             dto.setAccesses(accesses.stream()
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)

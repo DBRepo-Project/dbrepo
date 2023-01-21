@@ -2,9 +2,11 @@ package at.tuwien;
 
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.LicenseDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -84,6 +86,22 @@ public abstract class BaseUnitTest {
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .build();
 
+    public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .emailVerified(USER_1_VERIFIED)
+            .themeDark(USER_1_THEME)
+            .build();
+
+    public final static UserDto USER_1_DTO = UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_VERIFIED)
+            .themeDark(USER_1_THEME)
+            .password(USER_1_PASSWORD)
+            .build();
+
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
@@ -110,6 +128,22 @@ public abstract class BaseUnitTest {
             .themeDark(USER_2_THEME)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDto USER_2_DTO = UserDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME)
+            .password(USER_2_PASSWORD)
+            .build();
+
+    public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -240,6 +274,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .creator(USER_1)
+            .owner(USER_1)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -266,6 +301,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .creator(USER_2)
+            .owner(USER_2)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -292,6 +328,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
             .creator(USER_3)
+            .owner(USER_3)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
@@ -334,10 +371,12 @@ public abstract class BaseUnitTest {
             .id(DATABASE_1_ID)
             .name(DATABASE_1_NAME)
             .internalName(DATABASE_1_INTERNALNAME)
+            .description(DATABASE_1_DESCRIPTION)
             .isPublic(DATABASE_1_PUBLIC)
             .container(CONTAINER_1)
             .created(DATABASE_1_CREATED)
             .creator(USER_1)
+            .owner(USER_1)
             .tables(List.of())
             .lastModified(DATABASE_1_UPDATED)
             .container(CONTAINER_1)
@@ -374,6 +413,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .created(DATABASE_2_CREATED)
             .creator(USER_2)
+            .owner(USER_2)
             .tables(List.of())
             .lastModified(DATABASE_2_UPDATED)
             .container(CONTAINER_2)
@@ -401,6 +441,7 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .created(DATABASE_3_CREATED)
             .creator(USER_3)
+            .owner(USER_3)
             .tables(List.of())
             .lastModified(DATABASE_3_UPDATED)
             .container(CONTAINER_3)

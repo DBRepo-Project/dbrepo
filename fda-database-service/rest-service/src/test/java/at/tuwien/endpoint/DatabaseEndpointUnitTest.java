@@ -298,98 +298,98 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void transfer_anonymous_fails() {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            transfer_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, null);
+            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, null);
         });
     }
 
     @Test
     @WithAnonymousUser
     public void transfer_anonymous2_fails() {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            transfer_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, null);
+            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, null);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void transfer_researcher_succeeds() throws NotAllowedException, DatabaseNotFoundException {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
-        transfer_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, USER_1_PRINCIPAL);
+        visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void transfer_researcherForeignDatabase_fails() {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            transfer_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_1_PRINCIPAL);
+            visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void transfer_developer_succeeds() throws NotAllowedException, DatabaseNotFoundException {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
-        transfer_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_2_PRINCIPAL);
+        visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void transfer_developerForeignDatabase_succeeds() throws NotAllowedException, DatabaseNotFoundException {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
-        transfer_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, USER_2_PRINCIPAL);
+        visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, request, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void transfer_dataSteward_fails() {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            transfer_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, request, USER_3_PRINCIPAL);
+            visibility_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void transfer_dataStewardForeignDatabase_fails() {
-        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            transfer_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_3_PRINCIPAL);
+            visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, request, USER_3_PRINCIPAL);
         });
     }
 
@@ -618,8 +618,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void transfer_generic(Long containerId, Container container, Long databaseId, Database database,
-                                 DatabaseTransferDto data, Principal principal) throws NotAllowedException,
+    public void visibility_generic(Long containerId, Container container, Long databaseId, Database database,
+                                   DatabaseModifyVisibilityDto data, Principal principal) throws NotAllowedException,
             DatabaseNotFoundException {
 
         /* mock */
@@ -633,7 +633,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(database);
 
         /* test */
-        final ResponseEntity<DatabaseDto> response = databaseEndpoint.transfer(containerId, databaseId, data, principal);
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.visibility(containerId, databaseId, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
     }

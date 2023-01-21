@@ -28,7 +28,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
@@ -256,7 +256,7 @@ public interface DatabaseMapper {
                 .huserid(user.getId())
                 .type(AccessType.WRITE_ALL)
                 .build();
-        log.debug("give default creator access to database with id {} to user with username {}", database.getId(), user.getUsername());
+        log.debug("give default owner access to database with id {} to user with username {}", database.getId(), user.getUsername());
         return access;
     }
 

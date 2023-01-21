@@ -6,13 +6,10 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
@@ -30,13 +27,9 @@ import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -151,7 +144,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
     }
 
     @Test
@@ -166,8 +159,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.startContainer(CONTAINER_2);
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
-        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, DATABASE_2);
     }
 
     @Test
@@ -180,12 +173,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.startContainer(CONTAINER_1);
         DockerConfig.createContainer(BIND, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
 
         /* test */
-        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, CONTAINER_2, DATABASE_2);
-        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, CONTAINER_1, DATABASE_1);
+        generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, DATABASE_2);
+        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
     }
 
     @Test
@@ -210,8 +201,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
         DockerConfig.startContainer(CONTAINER_SEARCH);
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3);
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
         containerRepository.save(CONTAINER_3);
@@ -294,16 +285,19 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         assertEquals(assertQueryId, response);
     }
 
-    protected void generic_create(Long containerId, DatabaseCreateDto createDto, Container container, Database database)
+    protected void generic_create(Long containerId, DatabaseCreateDto createDto, Database database)
             throws Exception {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        containerRepository.save(container);
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+        containerRepository.save(CONTAINER_3);
 
         /* test */
         final Database response = databaseService.create(containerId, createDto, principal);
         assertEquals(database.getName(), response.getName());
+        assertEquals(containerId, database.getId());
 //        final List<String> usernames = MariaDbConfig.getUsernames(container.getInternalName(), database.getInternalName(), "root", "mariadb");
 //        log.debug("usernames are {}", usernames);
 //        assertTrue(usernames.contains("root"));

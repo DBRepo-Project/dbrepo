@@ -1,9 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -79,10 +81,23 @@ public interface DatabaseService {
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
-     * @param transferDto The visibility
+     * @param data        The visibility
      * @return The database.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
+    Database visibility(Long containerId, Long databaseId, DatabaseModifyVisibilityDto data)
             throws DatabaseNotFoundException;
+
+    /**
+     * Updates the ownership of the database.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param data        The new owner.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found.
+     * @throws UserNotFoundException     The new owner was not found.
+     */
+    Database transfer(Long containerId, Long databaseId, DatabaseTransferDto data)
+            throws DatabaseNotFoundException, UserNotFoundException;
 }

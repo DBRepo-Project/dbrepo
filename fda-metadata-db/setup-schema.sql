@@ -93,9 +93,11 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     ip_address    character varying(255),
     created       timestamp              NOT NULL DEFAULT NOW(),
     created_by    bigint                 NOT NULL,
+    owned_by      bigint                 NOT NULL,
     LAST_MODIFIED timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -152,12 +154,14 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     description    TEXT,
     engine         character varying(20),
     is_public      BOOLEAN                NOT NULL DEFAULT TRUE,
-    created_by     bigint,
+    created_by     bigint                 NOT NULL,
+    owned_by       bigint                 NOT NULL,
     contact_person bigint,
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (UserID),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 ) WITH SYSTEM VERSIONING;
@@ -440,14 +444,6 @@ CREATE TABLE IF NOT EXISTS mdb_have_access
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     timestamp                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, database_id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS mdb_owns
-(
-    oUserID bigint REFERENCES mdb_users (UserID),
-    oDBID   bigint REFERENCES mdb_databases (ID),
-    created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (oUserID, oDBID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE VIEW IF NOT EXISTS mdb_invalid_tokens AS

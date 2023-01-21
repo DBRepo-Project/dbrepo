@@ -5,8 +5,8 @@ import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -60,6 +60,8 @@ public class DatabaseDto {
     private ContainerDto container;
 
     private List<DatabaseAccessDto> accesses;
+
+    private UserBriefDto owner;
 
     @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
