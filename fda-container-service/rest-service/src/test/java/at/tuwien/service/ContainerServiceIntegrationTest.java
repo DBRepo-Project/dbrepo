@@ -136,6 +136,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Container container = containerService.create(request, principal);
         assertEquals(CONTAINER_1_NAME, container.getName());
+        assertEquals(USER_1_USERNAME, container.getCreator().getUsername());
+        assertEquals(USER_1_USERNAME, container.getOwner().getUsername());
         assertEquals(1, userRepository.findAll().size());
     }
 

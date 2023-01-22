@@ -297,7 +297,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void transfer_anonymous_fails() {
+    public void visibility_anonymous_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -310,7 +310,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void transfer_anonymous2_fails() {
+    public void visibility_anonymous2_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -323,7 +323,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void transfer_researcher_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void visibility_researcher_succeeds() throws NotAllowedException, DatabaseNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -334,7 +334,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void transfer_researcherForeignDatabase_fails() {
+    public void visibility_researcherForeignDatabase_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -347,7 +347,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void transfer_developer_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void visibility_developer_succeeds() throws NotAllowedException, DatabaseNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -358,7 +358,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void transfer_developerForeignDatabase_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void visibility_developerForeignDatabase_succeeds() throws NotAllowedException, DatabaseNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -369,7 +369,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void transfer_dataSteward_fails() {
+    public void visibility_dataSteward_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -382,7 +382,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void transfer_dataStewardForeignDatabase_fails() {
+    public void visibility_dataStewardForeignDatabase_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();

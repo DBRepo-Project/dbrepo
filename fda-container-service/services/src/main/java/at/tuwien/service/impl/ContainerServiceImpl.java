@@ -99,6 +99,7 @@ public class ContainerServiceImpl implements ContainerService {
         log.trace("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
         container.setCreator(user);
+        container.setOwner(user);
         /* create the container */
         final CreateContainerResponse response1;
         try {

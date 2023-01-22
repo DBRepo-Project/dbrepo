@@ -44,7 +44,7 @@ public class AuthenticationServiceGatewayTest extends BaseUnitTest {
 
     @Test
     public void validate_succeeds() throws ServletException {
-        final ResponseEntity<UserDto> mock = ResponseEntity.status(HttpStatus.OK)
+        final ResponseEntity<UserDto> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(USER_1_DTO);
 
         /* mock */

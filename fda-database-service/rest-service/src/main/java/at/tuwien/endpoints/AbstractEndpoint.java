@@ -64,7 +64,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
-        if (List.of("TRANSFER_DATABASE").contains(permissionCode) && isDeveloper(authentication)) {
+        if (List.of("VISIBILITY_DATABASE").contains(permissionCode) && isDeveloper(authentication)) {
             log.debug("grant permission {} because user {} is developer", permissionCode, principal.getName());
             return true;
         }

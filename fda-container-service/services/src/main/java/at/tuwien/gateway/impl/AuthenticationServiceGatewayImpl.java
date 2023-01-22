@@ -33,7 +33,7 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
         try {
             final ResponseEntity<UserDto> response = restTemplate.exchange("/api/auth", HttpMethod.PUT,
                     new HttpEntity<>(null, headers), UserDto.class);
-            if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
                 log.error("Failed to validate token with status code {}", response.getStatusCode());
                 throw new ServletException("Failed to validate token");
             }
