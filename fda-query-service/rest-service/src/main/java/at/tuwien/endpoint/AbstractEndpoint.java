@@ -71,9 +71,9 @@ public abstract class AbstractEndpoint {
         }
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* modification operations are limited to the creator */
-        if (database.getCreator().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because user {} is creator {}", permissionCode, principal.getName(),
-                    database.getCreator().getUsername());
+        if (database.getOwner().getUsername().equals(principal.getName())) {
+            log.debug("grant permission {} because user {} is owner {}", permissionCode, principal.getName(),
+                    database.getOwner().getUsername());
             return true;
         }
         /* check view access */
@@ -88,7 +88,7 @@ public abstract class AbstractEndpoint {
                     permissionCode);
             return false;
         }
-        log.error("Failed to grant permission {} because database is not owner by the current user", permissionCode);
+        log.error("Failed to grant permission {} because database is not owned by the current user", permissionCode);
         return false;
     }
 

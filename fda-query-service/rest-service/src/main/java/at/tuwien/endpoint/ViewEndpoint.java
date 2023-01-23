@@ -87,8 +87,8 @@ public class ViewEndpoint extends AbstractEndpoint {
         log.debug("endpoint create view, containerId={}, databaseId={}, data={}, principal={}", containerId,
                 databaseId, data, principal);
         if (!hasDatabasePermission(containerId, databaseId, "CREATE_VIEW", principal)) {
-            log.error("Missing list views permission");
-            throw new NotAllowedException("Missing list views permission");
+            log.error("Missing create view permission");
+            throw new NotAllowedException("Missing create view permission");
         }
         final Database database = databaseService.find(containerId, databaseId);
         log.trace("create view for database {}", database);

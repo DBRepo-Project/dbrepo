@@ -40,6 +40,8 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
+
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "guest";
     public final static String USER_1_EMAIL = "junit@example.com";
@@ -129,12 +131,15 @@ public abstract class BaseUnitTest {
             .lastModified(USER_3_CREATED)
             .build();
 
-    public final static String DATABASE_NET = "fda-userdb";
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
+            .build();
 
-    public final static String BROKER_IMAGE = "fda-broker-service:latest";
-    public final static String BROKER_INTERNALNAME = "fda-broker-service";
-    public final static String BROKER_NET = "fda-public";
-    public final static String BROKER_IP = "172.29.0.2";
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -187,178 +192,6 @@ public abstract class BaseUnitTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
-    public final static Long IMAGE_BROKER_ID = 2L;
-    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
-    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
-    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
-    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_BROKER_JDBC = "mariadb";
-    public final static Integer IMAGE_BROKER_PORT = 15672;
-    public final static Long IMAGE_BROKER_SIZE = 12000L;
-    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
-    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
-
-    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
-            .id(IMAGE_BROKER_ID)
-            .repository(IMAGE_BROKER_REPOSITORY)
-            .tag(IMAGE_BROKER_TAG)
-            .hash(IMAGE_BROKER_HASH)
-            .compiled(IMAGE_BROKER_BUILT)
-            .dialect(IMAGE_BROKER_DIALECT)
-            .jdbcMethod(IMAGE_BROKER_JDBC)
-            .driverClass(IMAGE_BROKER_DRIVER)
-            .size(IMAGE_BROKER_SIZE)
-            .defaultPort(IMAGE_BROKER_PORT)
-            .build();
-
-    public final static Long CONTAINER_1_ID = 1L;
-    public final static String CONTAINER_1_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
-    public final static String CONTAINER_1_NAME = "u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=weather"};
-    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Container CONTAINER_1 = Container.builder()
-            .id(CONTAINER_1_ID)
-            .name(CONTAINER_1_NAME)
-            .internalName(CONTAINER_1_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_1_IMAGE)
-            .hash(CONTAINER_1_HASH)
-            .created(CONTAINER_1_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
-    public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=zoo"};
-    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-
-    public final static Container CONTAINER_2 = Container.builder()
-            .id(CONTAINER_2_ID)
-            .name(CONTAINER_2_NAME)
-            .internalName(CONTAINER_2_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_2_IMAGE)
-            .hash(CONTAINER_2_HASH)
-            .created(CONTAINER_2_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
-    public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
-
-    public final static Container CONTAINER_3 = Container.builder()
-            .id(CONTAINER_3_ID)
-            .name(CONTAINER_3_NAME)
-            .internalName(CONTAINER_3_INTERNALNAME)
-            .imageId(IMAGE_1_ID)
-            .image(CONTAINER_3_IMAGE)
-            .hash(CONTAINER_3_HASH)
-            .created(CONTAINER_3_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Long CONTAINER_BROKER_ID = 4L;
-    public final static String CONTAINER_BROKER_NAME = "fda-broker-service";
-    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
-    public final static String CONTAINER_BROKER_HASH = "deadbeef";
-    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
-
-    public final static Container CONTAINER_BROKER = Container.builder()
-            .id(CONTAINER_BROKER_ID)
-            .name(CONTAINER_BROKER_NAME)
-            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
-            .imageId(IMAGE_BROKER_ID)
-            .image(IMAGE_BROKER)
-            .hash(CONTAINER_BROKER_HASH)
-            .created(CONTAINER_BROKER_CREATED)
-            .creator(USER_1)
-            .build();
-
-    public final static Long DATABASE_1_ID = 1L;
-    public final static String DATABASE_1_NAME = "Weather";
-    public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
-    public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
-
-    public final static Long DATABASE_2_ID = 2L;
-    public final static String DATABASE_2_NAME = "Zoo";
-    public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_ID + "/" + DATABASE_2_ID;
-
-    public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "traffic";
-    public final static String DATABASE_3_INTERNALNAME = "traffic";
-    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_ID + "/" + DATABASE_3_ID;
-
-    public final static Long TABLE_1_ID = 1L;
-    public final static String TABLE_1_NAME = "Weather AUS";
-    public final static String TABLE_1_INTERNALNAME = "weather_aus";
-    public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
-    public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
-
-    public final static Long TABLE_2_ID = 2L;
-    public final static String TABLE_2_NAME = "Weather Location";
-    public final static String TABLE_2_INTERNALNAME = "weather_location";
-    public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
-    public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
-
-    public final static Long TABLE_3_ID = 3L;
-    public final static String TABLE_3_NAME = "Traffic Zürich";
-    public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
-    public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
-    public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
-
-    public final static Long TABLE_4_ID = 4L;
-    public final static String TABLE_4_NAME = "zoo";
-    public final static String TABLE_4_INTERNALNAME = "zoo";
-    public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
-    public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
-
-    public final static Long TABLE_5_ID = 5L;
-    public final static String TABLE_5_NAME = "names";
-    public final static String TABLE_5_INTERNALNAME = "names";
-    public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
-    public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
-
-    public final static Long TABLE_6_ID = 6L;
-    public final static String TABLE_6_NAME = "likes";
-    public final static String TABLE_6_INTERNALNAME = "likes";
-    public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
-    public final static String TABLE_6_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNALNAME;
-    public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
-
     public final static Long IMAGE_DATE_1_ID = 1L;
     public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_1_UNIX_FORMAT = "yyyy-MM-dd";
@@ -390,6 +223,166 @@ public abstract class BaseUnitTest {
             .example(IMAGE_DATE_2_EXAMPLE)
             .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
+
+    public final static Long IMAGE_BROKER_ID = 2L;
+    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
+    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
+    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_BROKER_JDBC = "mariadb";
+    public final static Integer IMAGE_BROKER_PORT = 15672;
+    public final static Long IMAGE_BROKER_SIZE = 12000L;
+    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
+
+    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
+            .id(IMAGE_BROKER_ID)
+            .repository(IMAGE_BROKER_REPOSITORY)
+            .tag(IMAGE_BROKER_TAG)
+            .hash(IMAGE_BROKER_HASH)
+            .compiled(IMAGE_BROKER_BUILT)
+            .dialect(IMAGE_BROKER_DIALECT)
+            .jdbcMethod(IMAGE_BROKER_JDBC)
+            .driverClass(IMAGE_BROKER_DRIVER)
+            .size(IMAGE_BROKER_SIZE)
+            .defaultPort(IMAGE_BROKER_PORT)
+            .build();
+
+    public final static Long CONTAINER_1_ID = 1L;
+    public final static String CONTAINER_1_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
+    public final static String CONTAINER_1_NAME = "u01";
+    public final static String CONTAINER_1_INTERNALNAME = "userdb-u01";
+    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=weather"};
+    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_1 = Container.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_1_IMAGE)
+            .hash(CONTAINER_1_HASH)
+            .ipAddress(CONTAINER_1_IP)
+            .created(CONTAINER_1_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_2_ID = 2L;
+    public final static String CONTAINER_2_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public final static String CONTAINER_2_NAME = "u02";
+    public final static String CONTAINER_2_INTERNALNAME = "userdb-u02";
+    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=zoo"};
+    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_2 = Container.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_2_IMAGE)
+            .hash(CONTAINER_2_HASH)
+            .ipAddress(CONTAINER_2_IP)
+            .created(CONTAINER_2_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_3_ID = 3L;
+    public final static String CONTAINER_3_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
+    public final static String CONTAINER_3_NAME = "u03";
+    public final static String CONTAINER_3_INTERNALNAME = "userdb-u03";
+    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_3 = Container.builder()
+            .id(CONTAINER_3_ID)
+            .name(CONTAINER_3_NAME)
+            .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_3_IMAGE)
+            .hash(CONTAINER_3_HASH)
+            .created(CONTAINER_3_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_4_ID = 4L;
+    public final static String CONTAINER_4_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
+    public final static String CONTAINER_4_NAME = "u04";
+    public final static String CONTAINER_4_INTERNALNAME = "userdb-u04";
+    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_4 = Container.builder()
+            .id(CONTAINER_4_ID)
+            .name(CONTAINER_4_NAME)
+            .internalName(CONTAINER_4_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_4_IMAGE)
+            .hash(CONTAINER_4_HASH)
+            .created(CONTAINER_4_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_BROKER_ID = 5L;
+    public final static String CONTAINER_BROKER_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_HASH = "deadbeef";
+    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
+    public final static String[] CONTAINER_BROKER_ENV = new String[]{};
+
+    public final static Container CONTAINER_BROKER = Container.builder()
+            .id(CONTAINER_BROKER_ID)
+            .name(CONTAINER_BROKER_NAME)
+            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
+            .imageId(IMAGE_BROKER_ID)
+            .image(IMAGE_BROKER)
+            .ipAddress(CONTAINER_BROKER_IP)
+            .hash(CONTAINER_BROKER_HASH)
+            .created(CONTAINER_BROKER_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long DATABASE_1_ID = 1L;
+    public final static String DATABASE_1_NAME = "Weather";
+    public final static String DATABASE_1_INTERNALNAME = "weather";
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_INTERNALNAME;
+    public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
+
+    public final static Long DATABASE_2_ID = 2L;
+    public final static String DATABASE_2_NAME = "Zoo";
+    public final static String DATABASE_2_INTERNALNAME = "zoo";
+    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_INTERNALNAME;
+
+    public final static Long DATABASE_3_ID = 3L;
+    public final static String DATABASE_3_NAME = "traffic";
+    public final static String DATABASE_3_INTERNALNAME = "traffic";
+    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_INTERNALNAME;
+
+    public final static Long TABLE_1_ID = 1L;
+    public final static String TABLE_1_NAME = "Weather AUS";
+    public final static String TABLE_1_INTERNALNAME = "weather_aus";
+    public final static String TABLE_1_DESCRIPTION = "Weather in the world";
+    public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
+    public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
 
     public final static Long COLUMN_1_1_ID = 1L;
     public final static Integer COLUMN_1_1_ORDINALPOS = 0;
@@ -460,456 +453,6 @@ public abstract class BaseUnitTest {
     public final static String COLUMN_1_5_FOREIGN_KEY = null;
     public final static String COLUMN_1_5_CHECK = null;
     public final static List<String> COLUMN_1_5_ENUM_VALUES = null;
-
-    public final static Long COLUMN_2_1_ID = 6L;
-    public final static Integer COLUMN_2_1_ORDINALPOS = 0;
-    public final static Boolean COLUMN_2_1_PRIMARY = true;
-    public final static String COLUMN_2_1_NAME = "location";
-    public final static String COLUMN_2_1_INTERNAL_NAME = "location";
-    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.STRING;
-    public final static Long COLUMN_2_1_DATE_FORMAT = null;
-    public final static Boolean COLUMN_2_1_NULL = false;
-    public final static Boolean COLUMN_2_1_UNIQUE = true;
-    public final static Boolean COLUMN_2_1_AUTO_GENERATED = false;
-    public final static String COLUMN_2_1_FOREIGN_KEY = null;
-    public final static String COLUMN_2_1_CHECK = null;
-    public final static List<String> COLUMN_2_1_ENUM_VALUES = null;
-
-    public final static Long COLUMN_2_2_ID = 7L;
-    public final static Integer COLUMN_2_2_ORDINALPOS = 0;
-    public final static Boolean COLUMN_2_2_PRIMARY = false;
-    public final static String COLUMN_2_2_NAME = "lat";
-    public final static String COLUMN_2_2_INTERNAL_NAME = "lat";
-    public final static TableColumnType COLUMN_2_2_TYPE = TableColumnType.DECIMAL;
-    public final static Long COLUMN_2_2_DATE_FORMAT = null;
-    public final static Boolean COLUMN_2_2_NULL = true;
-    public final static Boolean COLUMN_2_2_UNIQUE = false;
-    public final static Boolean COLUMN_2_2_AUTO_GENERATED = false;
-    public final static String COLUMN_2_2_FOREIGN_KEY = null;
-    public final static String COLUMN_2_2_CHECK = null;
-    public final static List<String> COLUMN_2_2_ENUM_VALUES = null;
-
-    public final static Long COLUMN_2_3_ID = 8L;
-    public final static Integer COLUMN_2_3_ORDINALPOS = 0;
-    public final static Boolean COLUMN_2_3_PRIMARY = false;
-    public final static String COLUMN_2_3_NAME = "lng";
-    public final static String COLUMN_2_3_INTERNAL_NAME = "lng";
-    public final static TableColumnType COLUMN_2_3_TYPE = TableColumnType.DECIMAL;
-    public final static Long COLUMN_2_3_DATE_FORMAT = null;
-    public final static Boolean COLUMN_2_3_NULL = true;
-    public final static Boolean COLUMN_2_3_UNIQUE = false;
-    public final static Boolean COLUMN_2_3_AUTO_GENERATED = false;
-    public final static String COLUMN_2_3_FOREIGN_KEY = null;
-    public final static String COLUMN_2_3_CHECK = null;
-    public final static List<String> COLUMN_2_3_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_1_ID = 9L;
-    public final static Integer COLUMN_4_1_ORDINALPOS = 0;
-    public final static Boolean COLUMN_4_1_PRIMARY = false;
-    public final static String COLUMN_4_1_NAME = "id";
-    public final static String COLUMN_4_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.NUMBER;
-    public final static Long COLUMN_4_1_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_1_NULL = false;
-    public final static Boolean COLUMN_4_1_UNIQUE = true;
-    public final static Boolean COLUMN_4_1_AUTO_GENERATED = true;
-    public final static String COLUMN_4_1_FOREIGN_KEY = null;
-    public final static String COLUMN_4_1_CHECK = null;
-    public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_2_ID = 10L;
-    public final static Integer COLUMN_4_2_ORDINALPOS = 1;
-    public final static Boolean COLUMN_4_2_PRIMARY = false;
-    public final static String COLUMN_4_2_NAME = "Animal Name";
-    public final static String COLUMN_4_2_INTERNAL_NAME = "animal_name";
-    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.STRING;
-    public final static Long COLUMN_4_2_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_2_NULL = true;
-    public final static Boolean COLUMN_4_2_UNIQUE = false;
-    public final static Boolean COLUMN_4_2_AUTO_GENERATED = false;
-    public final static String COLUMN_4_2_FOREIGN_KEY = null;
-    public final static String COLUMN_4_2_CHECK = null;
-    public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_3_ID = 11L;
-    public final static Integer COLUMN_4_3_ORDINALPOS = 2;
-    public final static Boolean COLUMN_4_3_PRIMARY = false;
-    public final static String COLUMN_4_3_NAME = "Hair";
-    public final static String COLUMN_4_3_INTERNAL_NAME = "hair";
-    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_3_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_3_NULL = true;
-    public final static Boolean COLUMN_4_3_UNIQUE = false;
-    public final static Boolean COLUMN_4_3_AUTO_GENERATED = false;
-    public final static String COLUMN_4_3_FOREIGN_KEY = null;
-    public final static String COLUMN_4_3_CHECK = null;
-    public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_4_ID = 12L;
-    public final static Integer COLUMN_4_4_ORDINALPOS = 3;
-    public final static Boolean COLUMN_4_4_PRIMARY = false;
-    public final static String COLUMN_4_4_NAME = "Feathers";
-    public final static String COLUMN_4_4_INTERNAL_NAME = "feathers";
-    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_4_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_4_NULL = true;
-    public final static Boolean COLUMN_4_4_UNIQUE = false;
-    public final static Boolean COLUMN_4_4_AUTO_GENERATED = false;
-    public final static String COLUMN_4_4_FOREIGN_KEY = null;
-    public final static String COLUMN_4_4_CHECK = null;
-    public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_5_ID = 13L;
-    public final static Integer COLUMN_4_5_ORDINALPOS = 4;
-    public final static Boolean COLUMN_4_5_PRIMARY = false;
-    public final static String COLUMN_4_5_NAME = "Bread";
-    public final static String COLUMN_4_5_INTERNAL_NAME = "bread";
-    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_5_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_5_NULL = true;
-    public final static Boolean COLUMN_4_5_UNIQUE = false;
-    public final static Boolean COLUMN_4_5_AUTO_GENERATED = false;
-    public final static String COLUMN_4_5_FOREIGN_KEY = null;
-    public final static String COLUMN_4_5_CHECK = null;
-    public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_6_ID = 14L;
-    public final static Integer COLUMN_4_6_ORDINALPOS = 5;
-    public final static Boolean COLUMN_4_6_PRIMARY = false;
-    public final static String COLUMN_4_6_NAME = "Eggs";
-    public final static String COLUMN_4_6_INTERNAL_NAME = "eggs";
-    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_6_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_6_NULL = true;
-    public final static Boolean COLUMN_4_6_UNIQUE = false;
-    public final static Boolean COLUMN_4_6_AUTO_GENERATED = false;
-    public final static String COLUMN_4_6_FOREIGN_KEY = null;
-    public final static String COLUMN_4_6_CHECK = null;
-    public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_7_ID = 15L;
-    public final static Integer COLUMN_4_7_ORDINALPOS = 6;
-    public final static Boolean COLUMN_4_7_PRIMARY = false;
-    public final static String COLUMN_4_7_NAME = "Milk";
-    public final static String COLUMN_4_7_INTERNAL_NAME = "milk";
-    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_7_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_7_NULL = true;
-    public final static Boolean COLUMN_4_7_UNIQUE = false;
-    public final static Boolean COLUMN_4_7_AUTO_GENERATED = false;
-    public final static String COLUMN_4_7_FOREIGN_KEY = null;
-    public final static String COLUMN_4_7_CHECK = null;
-    public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_8_ID = 16L;
-    public final static Integer COLUMN_4_8_ORDINALPOS = 7;
-    public final static Boolean COLUMN_4_8_PRIMARY = false;
-    public final static String COLUMN_4_8_NAME = "Water";
-    public final static String COLUMN_4_8_INTERNAL_NAME = "water";
-    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_8_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_8_NULL = true;
-    public final static Boolean COLUMN_4_8_UNIQUE = false;
-    public final static Boolean COLUMN_4_8_AUTO_GENERATED = false;
-    public final static String COLUMN_4_8_FOREIGN_KEY = null;
-    public final static String COLUMN_4_8_CHECK = null;
-    public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_9_ID = 17L;
-    public final static Integer COLUMN_4_9_ORDINALPOS = 8;
-    public final static Boolean COLUMN_4_9_PRIMARY = false;
-    public final static String COLUMN_4_9_NAME = "Airborne";
-    public final static String COLUMN_4_9_INTERNAL_NAME = "airborne";
-    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_9_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_9_NULL = true;
-    public final static Boolean COLUMN_4_9_UNIQUE = false;
-    public final static Boolean COLUMN_4_9_AUTO_GENERATED = false;
-    public final static String COLUMN_4_9_FOREIGN_KEY = null;
-    public final static String COLUMN_4_9_CHECK = null;
-    public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_10_ID = 18L;
-    public final static Integer COLUMN_4_10_ORDINALPOS = 9;
-    public final static Boolean COLUMN_4_10_PRIMARY = false;
-    public final static String COLUMN_4_10_NAME = "Waterborne";
-    public final static String COLUMN_4_10_INTERNAL_NAME = "waterborne";
-    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_10_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_10_NULL = true;
-    public final static Boolean COLUMN_4_10_UNIQUE = false;
-    public final static Boolean COLUMN_4_10_AUTO_GENERATED = false;
-    public final static String COLUMN_4_10_FOREIGN_KEY = null;
-    public final static String COLUMN_4_10_CHECK = null;
-    public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_11_ID = 19L;
-    public final static Integer COLUMN_4_11_ORDINALPOS = 10;
-    public final static Boolean COLUMN_4_11_PRIMARY = false;
-    public final static String COLUMN_4_11_NAME = "Aquantic";
-    public final static String COLUMN_4_11_INTERNAL_NAME = "aquatic";
-    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_11_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_11_NULL = true;
-    public final static Boolean COLUMN_4_11_UNIQUE = false;
-    public final static Boolean COLUMN_4_11_AUTO_GENERATED = false;
-    public final static String COLUMN_4_11_FOREIGN_KEY = null;
-    public final static String COLUMN_4_11_CHECK = null;
-    public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_12_ID = 20L;
-    public final static Integer COLUMN_4_12_ORDINALPOS = 11;
-    public final static Boolean COLUMN_4_12_PRIMARY = false;
-    public final static String COLUMN_4_12_NAME = "Predator";
-    public final static String COLUMN_4_12_INTERNAL_NAME = "predator";
-    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_12_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_12_NULL = true;
-    public final static Boolean COLUMN_4_12_UNIQUE = false;
-    public final static Boolean COLUMN_4_12_AUTO_GENERATED = false;
-    public final static String COLUMN_4_12_FOREIGN_KEY = null;
-    public final static String COLUMN_4_12_CHECK = null;
-    public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_13_ID = 21L;
-    public final static Integer COLUMN_4_13_ORDINALPOS = 12;
-    public final static Boolean COLUMN_4_13_PRIMARY = false;
-    public final static String COLUMN_4_13_NAME = "Backbone";
-    public final static String COLUMN_4_13_INTERNAL_NAME = "backbone";
-    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_13_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_13_NULL = true;
-    public final static Boolean COLUMN_4_13_UNIQUE = false;
-    public final static Boolean COLUMN_4_13_AUTO_GENERATED = false;
-    public final static String COLUMN_4_13_FOREIGN_KEY = null;
-    public final static String COLUMN_4_13_CHECK = null;
-    public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_14_ID = 22L;
-    public final static Integer COLUMN_4_14_ORDINALPOS = 13;
-    public final static Boolean COLUMN_4_14_PRIMARY = false;
-    public final static String COLUMN_4_14_NAME = "Breathes";
-    public final static String COLUMN_4_14_INTERNAL_NAME = "breathes";
-    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_14_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_14_NULL = true;
-    public final static Boolean COLUMN_4_14_UNIQUE = false;
-    public final static Boolean COLUMN_4_14_AUTO_GENERATED = false;
-    public final static String COLUMN_4_14_FOREIGN_KEY = null;
-    public final static String COLUMN_4_14_CHECK = null;
-    public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_15_ID = 23L;
-    public final static Integer COLUMN_4_15_ORDINALPOS = 14;
-    public final static Boolean COLUMN_4_15_PRIMARY = false;
-    public final static String COLUMN_4_15_NAME = "Venomous";
-    public final static String COLUMN_4_15_INTERNAL_NAME = "venomous";
-    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_15_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_15_NULL = true;
-    public final static Boolean COLUMN_4_15_UNIQUE = false;
-    public final static Boolean COLUMN_4_15_AUTO_GENERATED = false;
-    public final static String COLUMN_4_15_FOREIGN_KEY = null;
-    public final static String COLUMN_4_15_CHECK = null;
-    public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_16_ID = 24L;
-    public final static Integer COLUMN_4_16_ORDINALPOS = 15;
-    public final static Boolean COLUMN_4_16_PRIMARY = false;
-    public final static String COLUMN_4_16_NAME = "Fin";
-    public final static String COLUMN_4_16_INTERNAL_NAME = "fins";
-    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_16_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_16_NULL = true;
-    public final static Boolean COLUMN_4_16_UNIQUE = false;
-    public final static Boolean COLUMN_4_16_AUTO_GENERATED = false;
-    public final static String COLUMN_4_16_FOREIGN_KEY = null;
-    public final static String COLUMN_4_16_CHECK = null;
-    public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_17_ID = 25L;
-    public final static Integer COLUMN_4_17_ORDINALPOS = 16;
-    public final static Boolean COLUMN_4_17_PRIMARY = false;
-    public final static String COLUMN_4_17_NAME = "Legs";
-    public final static String COLUMN_4_17_INTERNAL_NAME = "legs";
-    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.NUMBER;
-    public final static Long COLUMN_4_17_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_17_NULL = true;
-    public final static Boolean COLUMN_4_17_UNIQUE = false;
-    public final static Boolean COLUMN_4_17_AUTO_GENERATED = false;
-    public final static String COLUMN_4_17_FOREIGN_KEY = null;
-    public final static String COLUMN_4_17_CHECK = null;
-    public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_18_ID = 26L;
-    public final static Integer COLUMN_4_18_ORDINALPOS = 17;
-    public final static Boolean COLUMN_4_18_PRIMARY = false;
-    public final static String COLUMN_4_18_NAME = "Tail";
-    public final static String COLUMN_4_18_INTERNAL_NAME = "tail";
-    public final static TableColumnType COLUMN_4_18_TYPE = TableColumnType.DECIMAL;
-    public final static Long COLUMN_4_18_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_18_NULL = true;
-    public final static Boolean COLUMN_4_18_UNIQUE = false;
-    public final static Boolean COLUMN_4_18_AUTO_GENERATED = false;
-    public final static String COLUMN_4_18_FOREIGN_KEY = null;
-    public final static String COLUMN_4_18_CHECK = null;
-    public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_19_ID = 27L;
-    public final static Integer COLUMN_4_19_ORDINALPOS = 18;
-    public final static Boolean COLUMN_4_19_PRIMARY = false;
-    public final static String COLUMN_4_19_NAME = "Domestic";
-    public final static String COLUMN_4_19_INTERNAL_NAME = "domestic";
-    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_19_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_19_NULL = true;
-    public final static Boolean COLUMN_4_19_UNIQUE = false;
-    public final static Boolean COLUMN_4_19_AUTO_GENERATED = false;
-    public final static String COLUMN_4_19_FOREIGN_KEY = null;
-    public final static String COLUMN_4_19_CHECK = null;
-    public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_20_ID = 28L;
-    public final static Integer COLUMN_4_20_ORDINALPOS = 19;
-    public final static Boolean COLUMN_4_20_PRIMARY = false;
-    public final static String COLUMN_4_20_NAME = "Cat Size";
-    public final static String COLUMN_4_20_INTERNAL_NAME = "catsize";
-    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOLEAN;
-    public final static Long COLUMN_4_20_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_20_NULL = true;
-    public final static Boolean COLUMN_4_20_UNIQUE = false;
-    public final static Boolean COLUMN_4_20_AUTO_GENERATED = false;
-    public final static String COLUMN_4_20_FOREIGN_KEY = null;
-    public final static String COLUMN_4_20_CHECK = null;
-    public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
-
-    public final static Long COLUMN_4_21_ID = 29L;
-    public final static Integer COLUMN_4_21_ORDINALPOS = 20;
-    public final static Boolean COLUMN_4_21_PRIMARY = false;
-    public final static String COLUMN_4_21_NAME = "Class Type";
-    public final static String COLUMN_4_21_INTERNAL_NAME = "class_type";
-    public final static TableColumnType COLUMN_4_21_TYPE = TableColumnType.DECIMAL;
-    public final static Long COLUMN_4_21_DATE_FORMAT = null;
-    public final static Boolean COLUMN_4_21_NULL = true;
-    public final static Boolean COLUMN_4_21_UNIQUE = false;
-    public final static Boolean COLUMN_4_21_AUTO_GENERATED = false;
-    public final static String COLUMN_4_21_FOREIGN_KEY = null;
-    public final static String COLUMN_4_21_CHECK = null;
-    public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
-
-    public final static Long COLUMN_5_1_ID = 23L;
-    public final static Integer COLUMN_5_1_ORDINALPOS = 0;
-    public final static Boolean COLUMN_5_1_PRIMARY = true;
-    public final static String COLUMN_5_1_NAME = "id";
-    public final static String COLUMN_5_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.NUMBER;
-    public final static Long COLUMN_5_1_DATE_FORMAT = null;
-    public final static Boolean COLUMN_5_1_NULL = false;
-    public final static Boolean COLUMN_5_1_UNIQUE = true;
-    public final static Boolean COLUMN_5_1_AUTO_GENERATED = true;
-    public final static String COLUMN_5_1_FOREIGN_KEY = null;
-    public final static String COLUMN_5_1_CHECK = null;
-    public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
-
-    public final static Long COLUMN_5_2_ID = 24L;
-    public final static Integer COLUMN_5_2_ORDINALPOS = 1;
-    public final static Boolean COLUMN_5_2_PRIMARY = false;
-    public final static String COLUMN_5_2_NAME = "firstname";
-    public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
-    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.STRING;
-    public final static Long COLUMN_5_2_DATE_FORMAT = null;
-    public final static Boolean COLUMN_5_2_NULL = false;
-    public final static Boolean COLUMN_5_2_UNIQUE = false;
-    public final static Boolean COLUMN_5_2_AUTO_GENERATED = false;
-    public final static String COLUMN_5_2_FOREIGN_KEY = null;
-    public final static String COLUMN_5_2_CHECK = null;
-    public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
-
-    public final static Long COLUMN_5_3_ID = 25L;
-    public final static Integer COLUMN_5_3_ORDINALPOS = 2;
-    public final static Boolean COLUMN_5_3_PRIMARY = false;
-    public final static String COLUMN_5_3_NAME = "lastname";
-    public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
-    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.STRING;
-    public final static Long COLUMN_5_3_DATE_FORMAT = null;
-    public final static Boolean COLUMN_5_3_NULL = false;
-    public final static Boolean COLUMN_5_3_UNIQUE = false;
-    public final static Boolean COLUMN_5_3_AUTO_GENERATED = false;
-    public final static String COLUMN_5_3_FOREIGN_KEY = null;
-    public final static String COLUMN_5_3_CHECK = null;
-    public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
-
-    public final static Long CONCEPT_1_ID = 1L;
-    public final static String CONCEPT_1_NAME = "Temperature";
-    public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
-
-    public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
-            .name(CONCEPT_1_NAME)
-            .created(CONCEPT_1_CREATED)
-            .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
-            .build();
-
-    public final static Long QUERY_1_ID = 1L;
-    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
-            "`weather_aus`";
-    public final static String QUERY_1_DOI = "1111/1";
-    public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
-    public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
-    public final static String QUERY_1_RESULT_HASH = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
-    public final static Instant QUERY_1_CREATED = Instant.now();
-    public final static Instant QUERY_1_EXECUTION = Instant.now();
-    public final static Boolean QUERY_1_PERSISTED = false;
-
-    public final static Query QUERY_1 = Query.builder()
-            .id(QUERY_1_ID)
-            .query(QUERY_1_STATEMENT)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .created(QUERY_1_CREATED)
-            .createdBy(USER_1_USERNAME)
-            .isPersisted(QUERY_1_PERSISTED)
-            .build();
-
-    public final static QueryDto QUERY_1_DTO = QueryDto.builder()
-            .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
-            .query(QUERY_1_STATEMENT)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .created(QUERY_1_CREATED)
-            .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID)
-            .creator(USER_1_DTO)
-            .build();
-
-    public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
-            .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
-            .query(QUERY_1_STATEMENT)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .created(QUERY_1_CREATED)
-            .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID)
-            .creator(USER_1_DTO)
-            .build();
-
-    public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather`;";
-    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
-    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
-    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
-    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
-    public final static Boolean QUERY_2_PERSISTED = true;
-
-    public final static Query QUERY_2 = Query.builder()
-            .id(QUERY_2_ID)
-            .query(QUERY_2_STATEMENT)
-            .resultHash(QUERY_2_RESULT_HASH)
-            .created(QUERY_2_CREATED)
-            .createdBy(USER_1_USERNAME)
-            .isPersisted(QUERY_2_PERSISTED)
-            .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
@@ -988,6 +531,70 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_1_5_ENUM_VALUES)
                     .build());
 
+    public final static Table TABLE_1 = Table.builder()
+            .id(TABLE_1_ID)
+            .created(Instant.now())
+            .internalName(TABLE_1_INTERNALNAME)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(TABLE_1_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Long TABLE_2_ID = 2L;
+    public final static String TABLE_2_NAME = "Weather Location";
+    public final static String TABLE_2_INTERNALNAME = "weather_location";
+    public final static String TABLE_2_DESCRIPTION = "Weather location";
+    public final static String TABLE_2_QUEUE_NAME =  DATABASE_1_EXCHANGE + "/" + TABLE_2_INTERNALNAME;
+    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
+    public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
+
+    public final static Long COLUMN_2_1_ID = 6L;
+    public final static Integer COLUMN_2_1_ORDINALPOS = 0;
+    public final static Boolean COLUMN_2_1_PRIMARY = true;
+    public final static String COLUMN_2_1_NAME = "location";
+    public final static String COLUMN_2_1_INTERNAL_NAME = "location";
+    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_2_1_DATE_FORMAT = null;
+    public final static Boolean COLUMN_2_1_NULL = false;
+    public final static Boolean COLUMN_2_1_UNIQUE = true;
+    public final static Boolean COLUMN_2_1_AUTO_GENERATED = false;
+    public final static String COLUMN_2_1_FOREIGN_KEY = null;
+    public final static String COLUMN_2_1_CHECK = null;
+    public final static List<String> COLUMN_2_1_ENUM_VALUES = null;
+
+    public final static Long COLUMN_2_2_ID = 7L;
+    public final static Integer COLUMN_2_2_ORDINALPOS = 0;
+    public final static Boolean COLUMN_2_2_PRIMARY = false;
+    public final static String COLUMN_2_2_NAME = "lat";
+    public final static String COLUMN_2_2_INTERNAL_NAME = "lat";
+    public final static TableColumnType COLUMN_2_2_TYPE = TableColumnType.DECIMAL;
+    public final static Long COLUMN_2_2_DATE_FORMAT = null;
+    public final static Boolean COLUMN_2_2_NULL = true;
+    public final static Boolean COLUMN_2_2_UNIQUE = false;
+    public final static Boolean COLUMN_2_2_AUTO_GENERATED = false;
+    public final static String COLUMN_2_2_FOREIGN_KEY = null;
+    public final static String COLUMN_2_2_CHECK = null;
+    public final static List<String> COLUMN_2_2_ENUM_VALUES = null;
+
+    public final static Long COLUMN_2_3_ID = 8L;
+    public final static Integer COLUMN_2_3_ORDINALPOS = 0;
+    public final static Boolean COLUMN_2_3_PRIMARY = false;
+    public final static String COLUMN_2_3_NAME = "lng";
+    public final static String COLUMN_2_3_INTERNAL_NAME = "lng";
+    public final static TableColumnType COLUMN_2_3_TYPE = TableColumnType.DECIMAL;
+    public final static Long COLUMN_2_3_DATE_FORMAT = null;
+    public final static Boolean COLUMN_2_3_NULL = true;
+    public final static Boolean COLUMN_2_3_UNIQUE = false;
+    public final static Boolean COLUMN_2_3_AUTO_GENERATED = false;
+    public final static String COLUMN_2_3_FOREIGN_KEY = null;
+    public final static String COLUMN_2_3_CHECK = null;
+    public final static List<String> COLUMN_2_3_ENUM_VALUES = null;
+
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(COLUMN_2_1_ORDINALPOS)
@@ -1033,6 +640,28 @@ public abstract class BaseUnitTest {
                     .isPrimaryKey(COLUMN_2_3_PRIMARY)
                     .enumValues(COLUMN_2_3_ENUM_VALUES)
                     .build());
+
+    public final static Table TABLE_2 = Table.builder()
+            .id(TABLE_2_ID)
+            .created(Instant.now())
+            .internalName(TABLE_2_INTERNALNAME)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(TABLE_2_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Long TABLE_3_ID = 3L;
+    public final static String TABLE_3_NAME = "Traffic Zürich";
+    public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
+    public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
+    public final static String TABLE_3_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_3_INTERNALNAME;
+    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
+    public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .tid(TABLE_3_ID)
@@ -1560,6 +1189,322 @@ public abstract class BaseUnitTest {
                     .enumValues(null)
                     .build());
 
+    public final static Table TABLE_3 = Table.builder()
+            .id(TABLE_3_ID)
+            .created(Instant.now())
+            .internalName(TABLE_3_INTERNALNAME)
+            .description(TABLE_3_DESCRIPTION)
+            .name(TABLE_3_NAME)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .tdbid(DATABASE_3_ID)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(TABLE_3_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Long TABLE_4_ID = 4L;
+    public final static String TABLE_4_NAME = "zoo";
+    public final static String TABLE_4_INTERNALNAME = "zoo";
+    public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
+    public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_4_INTERNALNAME;
+    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
+    public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
+
+    public final static Long COLUMN_4_1_ID = 9L;
+    public final static Integer COLUMN_4_1_ORDINALPOS = 0;
+    public final static Boolean COLUMN_4_1_PRIMARY = false;
+    public final static String COLUMN_4_1_NAME = "id";
+    public final static String COLUMN_4_1_INTERNAL_NAME = "id";
+    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_4_1_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_1_NULL = false;
+    public final static Boolean COLUMN_4_1_UNIQUE = true;
+    public final static Boolean COLUMN_4_1_AUTO_GENERATED = true;
+    public final static String COLUMN_4_1_FOREIGN_KEY = null;
+    public final static String COLUMN_4_1_CHECK = null;
+    public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_2_ID = 10L;
+    public final static Integer COLUMN_4_2_ORDINALPOS = 1;
+    public final static Boolean COLUMN_4_2_PRIMARY = false;
+    public final static String COLUMN_4_2_NAME = "Animal Name";
+    public final static String COLUMN_4_2_INTERNAL_NAME = "animal_name";
+    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_4_2_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_2_NULL = true;
+    public final static Boolean COLUMN_4_2_UNIQUE = false;
+    public final static Boolean COLUMN_4_2_AUTO_GENERATED = false;
+    public final static String COLUMN_4_2_FOREIGN_KEY = null;
+    public final static String COLUMN_4_2_CHECK = null;
+    public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_3_ID = 11L;
+    public final static Integer COLUMN_4_3_ORDINALPOS = 2;
+    public final static Boolean COLUMN_4_3_PRIMARY = false;
+    public final static String COLUMN_4_3_NAME = "Hair";
+    public final static String COLUMN_4_3_INTERNAL_NAME = "hair";
+    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_3_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_3_NULL = true;
+    public final static Boolean COLUMN_4_3_UNIQUE = false;
+    public final static Boolean COLUMN_4_3_AUTO_GENERATED = false;
+    public final static String COLUMN_4_3_FOREIGN_KEY = null;
+    public final static String COLUMN_4_3_CHECK = null;
+    public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_4_ID = 12L;
+    public final static Integer COLUMN_4_4_ORDINALPOS = 3;
+    public final static Boolean COLUMN_4_4_PRIMARY = false;
+    public final static String COLUMN_4_4_NAME = "Feathers";
+    public final static String COLUMN_4_4_INTERNAL_NAME = "feathers";
+    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_4_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_4_NULL = true;
+    public final static Boolean COLUMN_4_4_UNIQUE = false;
+    public final static Boolean COLUMN_4_4_AUTO_GENERATED = false;
+    public final static String COLUMN_4_4_FOREIGN_KEY = null;
+    public final static String COLUMN_4_4_CHECK = null;
+    public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_5_ID = 13L;
+    public final static Integer COLUMN_4_5_ORDINALPOS = 4;
+    public final static Boolean COLUMN_4_5_PRIMARY = false;
+    public final static String COLUMN_4_5_NAME = "Bread";
+    public final static String COLUMN_4_5_INTERNAL_NAME = "bread";
+    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_5_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_5_NULL = true;
+    public final static Boolean COLUMN_4_5_UNIQUE = false;
+    public final static Boolean COLUMN_4_5_AUTO_GENERATED = false;
+    public final static String COLUMN_4_5_FOREIGN_KEY = null;
+    public final static String COLUMN_4_5_CHECK = null;
+    public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_6_ID = 14L;
+    public final static Integer COLUMN_4_6_ORDINALPOS = 5;
+    public final static Boolean COLUMN_4_6_PRIMARY = false;
+    public final static String COLUMN_4_6_NAME = "Eggs";
+    public final static String COLUMN_4_6_INTERNAL_NAME = "eggs";
+    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_6_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_6_NULL = true;
+    public final static Boolean COLUMN_4_6_UNIQUE = false;
+    public final static Boolean COLUMN_4_6_AUTO_GENERATED = false;
+    public final static String COLUMN_4_6_FOREIGN_KEY = null;
+    public final static String COLUMN_4_6_CHECK = null;
+    public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_7_ID = 15L;
+    public final static Integer COLUMN_4_7_ORDINALPOS = 6;
+    public final static Boolean COLUMN_4_7_PRIMARY = false;
+    public final static String COLUMN_4_7_NAME = "Milk";
+    public final static String COLUMN_4_7_INTERNAL_NAME = "milk";
+    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_7_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_7_NULL = true;
+    public final static Boolean COLUMN_4_7_UNIQUE = false;
+    public final static Boolean COLUMN_4_7_AUTO_GENERATED = false;
+    public final static String COLUMN_4_7_FOREIGN_KEY = null;
+    public final static String COLUMN_4_7_CHECK = null;
+    public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_8_ID = 16L;
+    public final static Integer COLUMN_4_8_ORDINALPOS = 7;
+    public final static Boolean COLUMN_4_8_PRIMARY = false;
+    public final static String COLUMN_4_8_NAME = "Water";
+    public final static String COLUMN_4_8_INTERNAL_NAME = "water";
+    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_8_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_8_NULL = true;
+    public final static Boolean COLUMN_4_8_UNIQUE = false;
+    public final static Boolean COLUMN_4_8_AUTO_GENERATED = false;
+    public final static String COLUMN_4_8_FOREIGN_KEY = null;
+    public final static String COLUMN_4_8_CHECK = null;
+    public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_9_ID = 17L;
+    public final static Integer COLUMN_4_9_ORDINALPOS = 8;
+    public final static Boolean COLUMN_4_9_PRIMARY = false;
+    public final static String COLUMN_4_9_NAME = "Airborne";
+    public final static String COLUMN_4_9_INTERNAL_NAME = "airborne";
+    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_9_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_9_NULL = true;
+    public final static Boolean COLUMN_4_9_UNIQUE = false;
+    public final static Boolean COLUMN_4_9_AUTO_GENERATED = false;
+    public final static String COLUMN_4_9_FOREIGN_KEY = null;
+    public final static String COLUMN_4_9_CHECK = null;
+    public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_10_ID = 18L;
+    public final static Integer COLUMN_4_10_ORDINALPOS = 9;
+    public final static Boolean COLUMN_4_10_PRIMARY = false;
+    public final static String COLUMN_4_10_NAME = "Waterborne";
+    public final static String COLUMN_4_10_INTERNAL_NAME = "waterborne";
+    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_10_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_10_NULL = true;
+    public final static Boolean COLUMN_4_10_UNIQUE = false;
+    public final static Boolean COLUMN_4_10_AUTO_GENERATED = false;
+    public final static String COLUMN_4_10_FOREIGN_KEY = null;
+    public final static String COLUMN_4_10_CHECK = null;
+    public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_11_ID = 19L;
+    public final static Integer COLUMN_4_11_ORDINALPOS = 10;
+    public final static Boolean COLUMN_4_11_PRIMARY = false;
+    public final static String COLUMN_4_11_NAME = "Aquantic";
+    public final static String COLUMN_4_11_INTERNAL_NAME = "aquatic";
+    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_11_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_11_NULL = true;
+    public final static Boolean COLUMN_4_11_UNIQUE = false;
+    public final static Boolean COLUMN_4_11_AUTO_GENERATED = false;
+    public final static String COLUMN_4_11_FOREIGN_KEY = null;
+    public final static String COLUMN_4_11_CHECK = null;
+    public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_12_ID = 20L;
+    public final static Integer COLUMN_4_12_ORDINALPOS = 11;
+    public final static Boolean COLUMN_4_12_PRIMARY = false;
+    public final static String COLUMN_4_12_NAME = "Predator";
+    public final static String COLUMN_4_12_INTERNAL_NAME = "predator";
+    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_12_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_12_NULL = true;
+    public final static Boolean COLUMN_4_12_UNIQUE = false;
+    public final static Boolean COLUMN_4_12_AUTO_GENERATED = false;
+    public final static String COLUMN_4_12_FOREIGN_KEY = null;
+    public final static String COLUMN_4_12_CHECK = null;
+    public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_13_ID = 21L;
+    public final static Integer COLUMN_4_13_ORDINALPOS = 12;
+    public final static Boolean COLUMN_4_13_PRIMARY = false;
+    public final static String COLUMN_4_13_NAME = "Backbone";
+    public final static String COLUMN_4_13_INTERNAL_NAME = "backbone";
+    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_13_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_13_NULL = true;
+    public final static Boolean COLUMN_4_13_UNIQUE = false;
+    public final static Boolean COLUMN_4_13_AUTO_GENERATED = false;
+    public final static String COLUMN_4_13_FOREIGN_KEY = null;
+    public final static String COLUMN_4_13_CHECK = null;
+    public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_14_ID = 22L;
+    public final static Integer COLUMN_4_14_ORDINALPOS = 13;
+    public final static Boolean COLUMN_4_14_PRIMARY = false;
+    public final static String COLUMN_4_14_NAME = "Breathes";
+    public final static String COLUMN_4_14_INTERNAL_NAME = "breathes";
+    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_14_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_14_NULL = true;
+    public final static Boolean COLUMN_4_14_UNIQUE = false;
+    public final static Boolean COLUMN_4_14_AUTO_GENERATED = false;
+    public final static String COLUMN_4_14_FOREIGN_KEY = null;
+    public final static String COLUMN_4_14_CHECK = null;
+    public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_15_ID = 23L;
+    public final static Integer COLUMN_4_15_ORDINALPOS = 14;
+    public final static Boolean COLUMN_4_15_PRIMARY = false;
+    public final static String COLUMN_4_15_NAME = "Venomous";
+    public final static String COLUMN_4_15_INTERNAL_NAME = "venomous";
+    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_15_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_15_NULL = true;
+    public final static Boolean COLUMN_4_15_UNIQUE = false;
+    public final static Boolean COLUMN_4_15_AUTO_GENERATED = false;
+    public final static String COLUMN_4_15_FOREIGN_KEY = null;
+    public final static String COLUMN_4_15_CHECK = null;
+    public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_16_ID = 24L;
+    public final static Integer COLUMN_4_16_ORDINALPOS = 15;
+    public final static Boolean COLUMN_4_16_PRIMARY = false;
+    public final static String COLUMN_4_16_NAME = "Fin";
+    public final static String COLUMN_4_16_INTERNAL_NAME = "fins";
+    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_16_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_16_NULL = true;
+    public final static Boolean COLUMN_4_16_UNIQUE = false;
+    public final static Boolean COLUMN_4_16_AUTO_GENERATED = false;
+    public final static String COLUMN_4_16_FOREIGN_KEY = null;
+    public final static String COLUMN_4_16_CHECK = null;
+    public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_17_ID = 25L;
+    public final static Integer COLUMN_4_17_ORDINALPOS = 16;
+    public final static Boolean COLUMN_4_17_PRIMARY = false;
+    public final static String COLUMN_4_17_NAME = "Legs";
+    public final static String COLUMN_4_17_INTERNAL_NAME = "legs";
+    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_4_17_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_17_NULL = true;
+    public final static Boolean COLUMN_4_17_UNIQUE = false;
+    public final static Boolean COLUMN_4_17_AUTO_GENERATED = false;
+    public final static String COLUMN_4_17_FOREIGN_KEY = null;
+    public final static String COLUMN_4_17_CHECK = null;
+    public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_18_ID = 26L;
+    public final static Integer COLUMN_4_18_ORDINALPOS = 17;
+    public final static Boolean COLUMN_4_18_PRIMARY = false;
+    public final static String COLUMN_4_18_NAME = "Tail";
+    public final static String COLUMN_4_18_INTERNAL_NAME = "tail";
+    public final static TableColumnType COLUMN_4_18_TYPE = TableColumnType.DECIMAL;
+    public final static Long COLUMN_4_18_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_18_NULL = true;
+    public final static Boolean COLUMN_4_18_UNIQUE = false;
+    public final static Boolean COLUMN_4_18_AUTO_GENERATED = false;
+    public final static String COLUMN_4_18_FOREIGN_KEY = null;
+    public final static String COLUMN_4_18_CHECK = null;
+    public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_19_ID = 27L;
+    public final static Integer COLUMN_4_19_ORDINALPOS = 18;
+    public final static Boolean COLUMN_4_19_PRIMARY = false;
+    public final static String COLUMN_4_19_NAME = "Domestic";
+    public final static String COLUMN_4_19_INTERNAL_NAME = "domestic";
+    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_19_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_19_NULL = true;
+    public final static Boolean COLUMN_4_19_UNIQUE = false;
+    public final static Boolean COLUMN_4_19_AUTO_GENERATED = false;
+    public final static String COLUMN_4_19_FOREIGN_KEY = null;
+    public final static String COLUMN_4_19_CHECK = null;
+    public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_20_ID = 28L;
+    public final static Integer COLUMN_4_20_ORDINALPOS = 19;
+    public final static Boolean COLUMN_4_20_PRIMARY = false;
+    public final static String COLUMN_4_20_NAME = "Cat Size";
+    public final static String COLUMN_4_20_INTERNAL_NAME = "catsize";
+    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOLEAN;
+    public final static Long COLUMN_4_20_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_20_NULL = true;
+    public final static Boolean COLUMN_4_20_UNIQUE = false;
+    public final static Boolean COLUMN_4_20_AUTO_GENERATED = false;
+    public final static String COLUMN_4_20_FOREIGN_KEY = null;
+    public final static String COLUMN_4_20_CHECK = null;
+    public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
+
+    public final static Long COLUMN_4_21_ID = 29L;
+    public final static Integer COLUMN_4_21_ORDINALPOS = 20;
+    public final static Boolean COLUMN_4_21_PRIMARY = false;
+    public final static String COLUMN_4_21_NAME = "Class Type";
+    public final static String COLUMN_4_21_INTERNAL_NAME = "class_type";
+    public final static TableColumnType COLUMN_4_21_TYPE = TableColumnType.DECIMAL;
+    public final static Long COLUMN_4_21_DATE_FORMAT = null;
+    public final static Boolean COLUMN_4_21_NULL = true;
+    public final static Boolean COLUMN_4_21_UNIQUE = false;
+    public final static Boolean COLUMN_4_21_AUTO_GENERATED = false;
+    public final static String COLUMN_4_21_FOREIGN_KEY = null;
+    public final static String COLUMN_4_21_CHECK = null;
+    public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
+
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_1_ID)
                     .ordinalPosition(COLUMN_4_1_ORDINALPOS)
@@ -1876,6 +1821,70 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_4_21_ENUM_VALUES)
                     .build());
 
+    public final static Table TABLE_4 = Table.builder()
+            .id(TABLE_4_ID)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(TABLE_4_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Long TABLE_5_ID = 5L;
+    public final static String TABLE_5_NAME = "names";
+    public final static String TABLE_5_INTERNALNAME = "names";
+    public final static String TABLE_5_DESCRIPTION = "Some names dataset";
+    public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_5_INTERNALNAME;
+    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
+    public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
+
+    public final static Long COLUMN_5_1_ID = 23L;
+    public final static Integer COLUMN_5_1_ORDINALPOS = 0;
+    public final static Boolean COLUMN_5_1_PRIMARY = true;
+    public final static String COLUMN_5_1_NAME = "id";
+    public final static String COLUMN_5_1_INTERNAL_NAME = "id";
+    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.NUMBER;
+    public final static Long COLUMN_5_1_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_1_NULL = false;
+    public final static Boolean COLUMN_5_1_UNIQUE = true;
+    public final static Boolean COLUMN_5_1_AUTO_GENERATED = true;
+    public final static String COLUMN_5_1_FOREIGN_KEY = null;
+    public final static String COLUMN_5_1_CHECK = null;
+    public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
+
+    public final static Long COLUMN_5_2_ID = 24L;
+    public final static Integer COLUMN_5_2_ORDINALPOS = 1;
+    public final static Boolean COLUMN_5_2_PRIMARY = false;
+    public final static String COLUMN_5_2_NAME = "firstname";
+    public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
+    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_5_2_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_2_NULL = false;
+    public final static Boolean COLUMN_5_2_UNIQUE = false;
+    public final static Boolean COLUMN_5_2_AUTO_GENERATED = false;
+    public final static String COLUMN_5_2_FOREIGN_KEY = null;
+    public final static String COLUMN_5_2_CHECK = null;
+    public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
+
+    public final static Long COLUMN_5_3_ID = 25L;
+    public final static Integer COLUMN_5_3_ORDINALPOS = 2;
+    public final static Boolean COLUMN_5_3_PRIMARY = false;
+    public final static String COLUMN_5_3_NAME = "lastname";
+    public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
+    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.STRING;
+    public final static Long COLUMN_5_3_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_3_NULL = false;
+    public final static Boolean COLUMN_5_3_UNIQUE = false;
+    public final static Boolean COLUMN_5_3_AUTO_GENERATED = false;
+    public final static String COLUMN_5_3_FOREIGN_KEY = null;
+    public final static String COLUMN_5_3_CHECK = null;
+    public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
+
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(COLUMN_5_1_ORDINALPOS)
@@ -1921,6 +1930,28 @@ public abstract class BaseUnitTest {
                     .isPrimaryKey(COLUMN_5_3_PRIMARY)
                     .enumValues(COLUMN_5_3_ENUM_VALUES)
                     .build());
+
+    public final static Table TABLE_5 = Table.builder()
+            .id(TABLE_5_ID)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(TABLE_5_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Long TABLE_6_ID = 6L;
+    public final static String TABLE_6_NAME = "likes";
+    public final static String TABLE_6_INTERNAL_NAME = "likes";
+    public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
+    public final static String TABLE_6_TOPIC = DATABASE_2_EXCHANGE + "/" + TABLE_6_INTERNAL_NAME;
+    public final static String TABLE_6_ROUTING_KEY = TABLE_6_TOPIC + "/1";
+    public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
 
     public final static Long COLUMN_6_1_ID = 26L;
     public final static Integer COLUMN_6_1_ORDINALPOS = 0;
@@ -1981,93 +2012,90 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_6_2_ENUM_VALUES)
                     .build());
 
-    public final static Table TABLE_1 = Table.builder()
-            .id(TABLE_1_ID)
-            .created(Instant.now())
-            .internalName(TABLE_1_INTERNALNAME)
-            .description(TABLE_1_DESCRIPTION)
-            .name(TABLE_1_NAME)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .columns(TABLE_1_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_1_COLUMNS)
-            .build();
-
-    public final static Table TABLE_2 = Table.builder()
-            .id(TABLE_2_ID)
-            .created(Instant.now())
-            .internalName(TABLE_2_INTERNALNAME)
-            .description(TABLE_2_DESCRIPTION)
-            .name(TABLE_2_NAME)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(TABLE_2_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_2_COLUMNS)
-            .build();
-
-    public final static Table TABLE_3 = Table.builder()
-            .id(TABLE_3_ID)
-            .created(Instant.now())
-            .internalName(TABLE_3_INTERNALNAME)
-            .description(TABLE_3_DESCRIPTION)
-            .name(TABLE_3_NAME)
-            .lastModified(TABLE_3_LAST_MODIFIED)
-            .tdbid(DATABASE_3_ID)
-            .queueName(TABLE_3_QUEUE_NAME)
-            .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(TABLE_3_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_3_COLUMNS)
-            .build();
-
-    public final static Table TABLE_4 = Table.builder()
-            .id(TABLE_4_ID)
-            .created(Instant.now())
-            .internalName(TABLE_4_INTERNALNAME)
-            .description(TABLE_4_DESCRIPTION)
-            .name(TABLE_4_NAME)
-            .lastModified(TABLE_4_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(TABLE_4_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_4_COLUMNS)
-            .build();
-
-    public final static Table TABLE_5 = Table.builder()
-            .id(TABLE_5_ID)
-            .created(Instant.now())
-            .internalName(TABLE_5_INTERNALNAME)
-            .description(TABLE_5_DESCRIPTION)
-            .name(TABLE_5_NAME)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(TABLE_5_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_5_COLUMNS)
-            .build();
-
     public final static Table TABLE_6 = Table.builder()
             .id(TABLE_6_ID)
             .created(Instant.now())
-            .internalName(TABLE_6_INTERNALNAME)
+            .internalName(TABLE_6_INTERNAL_NAME)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
             .queueName(TABLE_6_TOPIC)
-            .routingKey(TABLE_6_TOPIC)
+            .routingKey(TABLE_6_ROUTING_KEY)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
+            .build();
+
+    public final static Long CONCEPT_1_ID = 1L;
+    public final static String CONCEPT_1_NAME = "Temperature";
+    public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
+            .name(CONCEPT_1_NAME)
+            .created(CONCEPT_1_CREATED)
+            .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
+            .build();
+
+    public final static Long QUERY_1_ID = 1L;
+    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
+            "`weather_aus`";
+    public final static String QUERY_1_DOI = "1111/1";
+    public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
+    public final static String QUERY_1_RESULT_HASH = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
+    public final static Instant QUERY_1_CREATED = Instant.now();
+    public final static Instant QUERY_1_EXECUTION = Instant.now();
+    public final static Boolean QUERY_1_PERSISTED = false;
+
+    public final static Query QUERY_1 = Query.builder()
+            .id(QUERY_1_ID)
+            .query(QUERY_1_STATEMENT)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .created(QUERY_1_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_1_PERSISTED)
+            .build();
+
+    public final static QueryDto QUERY_1_DTO = QueryDto.builder()
+            .id(QUERY_1_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
+            .query(QUERY_1_STATEMENT)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .created(QUERY_1_CREATED)
+            .execution(QUERY_1_EXECUTION)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
+            .build();
+
+    public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
+            .id(QUERY_1_ID)
+            .cid(QUERY_1_CONTAINER_ID)
+            .dbid(QUERY_1_DATABASE_ID)
+            .query(QUERY_1_STATEMENT)
+            .resultHash(QUERY_1_RESULT_HASH)
+            .created(QUERY_1_CREATED)
+            .execution(QUERY_1_EXECUTION)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
+            .build();
+
+    public final static Long QUERY_2_ID = 2L;
+    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather`;";
+    public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
+    public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
+    public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
+    public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Boolean QUERY_2_PERSISTED = true;
+
+    public final static Query QUERY_2 = Query.builder()
+            .id(QUERY_2_ID)
+            .query(QUERY_2_STATEMENT)
+            .resultHash(QUERY_2_RESULT_HASH)
+            .created(QUERY_2_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_2_PERSISTED)
             .build();
 
     public final static Long VIEW_1_ID = 1L;
@@ -2160,7 +2188,8 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
+            .owner(USER_1)
+            .tables(List.of()) /* TABLE_1, TABLE_2 */
             .views(List.of())
             .build();
 
@@ -2173,9 +2202,10 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
-            .creator(USER_1)
-            .tables(List.of(TABLE_4, TABLE_5, TABLE_6))
-            .views(List.of(VIEW_4))
+            .creator(USER_2)
+            .owner(USER_2)
+            .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
+            .views(List.of()) /* VIEW_4 */
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -2187,7 +2217,8 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .creator(USER_1)
+            .creator(USER_3)
+            .owner(USER_3)
             .tables(List.of())
             .views(List.of())
             .build();
@@ -2257,6 +2288,30 @@ public abstract class BaseUnitTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
             .build();
 
     public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
