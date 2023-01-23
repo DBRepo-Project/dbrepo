@@ -199,16 +199,16 @@ pull-metadata:
 
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
-test-authentication-service: build-backend-metadata-db build-authentication-database
+test-authentication-service: build-backend-metadata-db build-backend-authentication
 	docker system prune -f --volumes
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-identifier-service: build-backend-metadata-db build-identifier-database
+test-identifier-service: build-backend-metadata-db build-backend-identifier
 	docker system prune -f --volumes
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-container-service: build-backend-metadata-db build-container-database
+test-container-service: build-backend-metadata-db build-backend-container
 	docker system prune -f --volumes
 	docker pull mysql:8.0
 	mvn -f ./fda-container-service/pom.xml clean test verify
@@ -219,30 +219,30 @@ test-database-service: build-backend-metadata-db build-backend-database
 	docker pull nginx:alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-discovery-service: build-backend-metadata-db build-discovery-database
+test-discovery-service: build-backend-metadata-db build-backend-discovery
 	docker system prune -f --volumes
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-gateway-service: build-backend-metadata-db build-gateway-database
+test-gateway-service: build-backend-metadata-db build-backend-gateway
 	docker system prune -f --volumes
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-query-service: build-backend-metadata-db build-query-database
+test-query-service: build-backend-metadata-db build-backend-query
 	docker system prune -f --volumes
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-table-service: build-backend-metadata-db build-table-database
+test-table-service: build-backend-metadata-db build-backend-table
 	docker system prune -f --volumes
 	mvn -f ./fda-table-service/pom.xml clean test verify
 
-test-metadata-service: build-backend-metadata-db build-metadata-database
+test-metadata-service: build-backend-metadata-db build-backend-metadata
 	docker system prune -f --volumes
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
-test-semantics-service: build-semantics-service build-semantics-database
+test-semantics-service: build-semantics-service
 	bash ./fda-semantics-service/test.sh
 
-test-analyse-service: build-analyse-service build-analyse-database
+test-analyse-service: build-analyse-service
 	bash ./fda-analyse-service/test.sh
 
 coverage-frontend: clean build-frontend

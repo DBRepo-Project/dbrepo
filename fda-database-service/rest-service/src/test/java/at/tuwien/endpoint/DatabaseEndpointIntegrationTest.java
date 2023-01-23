@@ -6,6 +6,7 @@ import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseTransferDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.MariaDbConfig;
@@ -32,7 +33,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.security.Principal;
@@ -80,6 +80,9 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private DatabaseRepository databaseRepository;
+
+    @Autowired
+    private IdentifierRepository identifierRepository;
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
@@ -158,7 +161,8 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
     public void create_researcher_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException,
+            BrokerVirtualHostGrantException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
@@ -202,7 +206,8 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
     public void create_developer_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException,
+            BrokerVirtualHostGrantException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_2_NAME)
                 .isPublic(DATABASE_2_PUBLIC)
@@ -261,11 +266,52 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void transfer_self_succeeds() throws InterruptedException, UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username(USER_1_USERNAME)
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
+        DockerConfig.startContainer(CONTAINER_SEARCH);
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+
+        /* test */
+        transfer_generic(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void transfer_notOwner_fails() throws InterruptedException {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username(USER_2_USERNAME)
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
+        DockerConfig.startContainer(CONTAINER_SEARCH);
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            transfer_generic(CONTAINER_1_ID, DATABASE_1_ID, request, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void create_developerForeignContainer_succeeds() throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, InterruptedException,
+            BrokerVirtualHostGrantException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_2_NAME)
                 .isPublic(DATABASE_2_PUBLIC)
@@ -288,7 +334,7 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
     public void delete_developer_succeeds() throws UserNotFoundException, DatabaseConnectionException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
             BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException,
-            InterruptedException, SQLException {
+            InterruptedException, SQLException, BrokerVirtualHostGrantException {
 
         /* mock */
         DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
@@ -302,6 +348,34 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
         /* test */
         delete_generic(CONTAINER_2_ID, DATABASE_2_ID, USER_2_PRINCIPAL);
     }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void findById_succeeds() throws DatabaseNotFoundException, InterruptedException, AccessDeniedException {
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
+        DockerConfig.startContainer(CONTAINER_SEARCH);
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        userRepository.save(USER_1);
+        identifierRepository.save(IDENTIFIER_1);
+
+        /* test */
+        final DatabaseDto response = findById_generic(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
+        assertEquals(DATABASE_1_ID, response.getId());
+        assertEquals(DATABASE_1_NAME, response.getName());
+        assertEquals(DATABASE_1_EXCHANGE, response.getExchangeName());
+        assertEquals(DATABASE_1_DESCRIPTION, response.getDescription());
+        assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
+        final IdentifierDto identifier = response.getIdentifier();
+        assertEquals(IDENTIFIER_1_ID, identifier.getId());
+        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
+        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        assertEquals(IDENTIFIER_1_PUBLISHER, identifier.getPublisher());
+        assertEquals(IDENTIFIER_1_VISIBILITY_DTO, identifier.getVisibility());
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -310,7 +384,8 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
                                DatabaseCreateDto data, Principal principal) throws UserNotFoundException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException {
+            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            BrokerVirtualHostGrantException {
 
         /* mock */
         containerRepository.save(container);
@@ -329,7 +404,8 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
 
     public void delete_generic(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException,
+            BrokerVirtualHostGrantException {
 
         /* mock */
         doNothing()
@@ -363,5 +439,20 @@ public class DatabaseEndpointIntegrationTest extends BaseUnitTest {
         final DatabaseDto body = response.getBody();
         assertEquals(principal.getName(), body.getCreator().getUsername());
         assertEquals(data.getUsername(), body.getOwner().getUsername());
+    }
+
+    public DatabaseDto findById_generic(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
+
+        /* mock */
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+        databaseidxRepository.save(DATABASE_1);
+
+        /* test */
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.findById(containerId, databaseId, principal);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        return response.getBody();
     }
 }

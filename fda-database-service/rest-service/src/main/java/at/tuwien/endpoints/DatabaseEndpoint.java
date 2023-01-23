@@ -98,7 +98,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException {
+            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException,
+            BrokerVirtualHostGrantException {
         log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
                 principal);
         if (!hasContainerPermission(containerId, "CREATE_DATABASE", principal)) {
@@ -142,6 +143,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{databaseId}/transfer")
     @Transactional
+    @PreAuthorize("isAuthenticated()")
     @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
@@ -199,7 +201,8 @@ public class DatabaseEndpoint extends AbstractEndpoint {
                                     @NotNull @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException, DatabaseConnectionException {
+            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException,
+            DatabaseConnectionException, BrokerVirtualHostGrantException {
         log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
         final Database database = databaseService.findById(containerId, databaseId);

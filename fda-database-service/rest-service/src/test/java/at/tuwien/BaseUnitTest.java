@@ -1,12 +1,13 @@
 package at.tuwien;
 
+import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.ExchangeDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.database.*;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.api.user.*;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -16,6 +17,10 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.identifier.VisibilityType;
+import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,12 +37,24 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
+    public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
+
     public final static String BROKER_NAME = "fda-broker-service";
     public final static String BROKER_IP = "172.29.0.2";
     public final static String BROKER_HOSTNAME = "broker-service";
     public final static Integer BROKER_MANAGEMENT_PORT = 15672;
     public final static String BROKER_IMAGE = "rabbitmq";
     public final static String BROKER_TAG = "3-management-alpine";
+
+    public final static String VIRTUAL_HOST_NAME = "fda";
+    public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";
+    public final static String VIRTUAL_HOST_TAGS = "";
+
+    public final static CreateVirtualHostDto VIRTUAL_HOST_CREATE_DTO = CreateVirtualHostDto.builder()
+            .name(VIRTUAL_HOST_NAME)
+            .description(VIRTUAL_HOST_DESCRIPTION)
+            .tags(VIRTUAL_HOST_TAGS)
+            .build();
 
     public final static String GATEWAY_NAME = "fda-gateway-service";
     public final static String GATEWAY_IP = "172.29.0.3";
@@ -83,6 +100,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME)
             .password(USER_1_PASSWORD)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .build();
 
@@ -100,6 +118,8 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME)
             .password(USER_1_PASSWORD)
+            .roles(List.of("ROLE_RESEARCHER"))
+            .authorities(List.of(new GrantedAuthorityDto("ROLE_RESEARCHER")))
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -127,6 +147,7 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME)
             .password(USER_2_PASSWORD)
+            .roles(List.of(RoleType.ROLE_DATA_STEWARD))
             .databasePassword(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -137,6 +158,8 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME)
             .password(USER_2_PASSWORD)
+            .roles(List.of("ROLE_DATA_STEWARD"))
+            .authorities(List.of(new GrantedAuthorityDto("ROLE_DATA_STEWARD")))
             .build();
 
     public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
@@ -156,7 +179,7 @@ public abstract class BaseUnitTest {
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
-    public final static Long USER_3_ID = 2L;
+    public final static Long USER_3_ID = 3L;
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_PASSWORD = "junit3";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -171,18 +194,58 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_3_VERIFIED)
             .themeDark(USER_3_THEME)
             .password(USER_3_PASSWORD)
+            .roles(List.of(RoleType.ROLE_DEVELOPER))
             .databasePassword(USER_3_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDto USER_3_DTO = UserDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(USER_3_VERIFIED)
+            .themeDark(USER_3_THEME)
+            .password(USER_3_PASSWORD)
+            .roles(List.of("ROLE_DEVELOPER"))
+            .authorities(List.of(new GrantedAuthorityDto("ROLE_DEVELOPER")))
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DATA_STEWARD")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
+
+    public final static Long USER_4_ID = 4L;
+    public final static String USER_4_USERNAME = "junit4";
+    public final static String USER_4_PASSWORD = "junit4";
+    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE847AABCF49680A157D85D44A117E9";
+    public final static String USER_4_EMAIL = "junit4@ossdip.at";
+    public final static Boolean USER_4_VERIFIED = true;
+    public final static Boolean USER_4_THEME = false;
+
+    public final static User USER_4 = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .emailVerified(USER_4_VERIFIED)
+            .themeDark(USER_4_THEME)
+            .password(USER_4_PASSWORD)
+            .databasePassword(USER_4_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .password(USER_4_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
+            USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -359,8 +422,6 @@ public abstract class BaseUnitTest {
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather AT";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
-    public final static String DATABASE_1_PUBLISHER = "TU Wien";
-    public final static Integer DATABASE_1_PUBLICATION_YEAR = 2022;
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather_at";
     public final static String DATABASE_1_EXCHANGE = "dbrepo" + CONTAINER_1_INTERNALNAME + "/" + DATABASE_1_INTERNALNAME;
@@ -453,6 +514,18 @@ public abstract class BaseUnitTest {
             .isPublic(DATABASE_3_PUBLIC)
             .build();
 
+    public final static ExchangeUpdatePermissionsDto VIRTUAL_HOST_EXCHANGE_UPDATE_DTO = ExchangeUpdatePermissionsDto.builder()
+            .exchange(DATABASE_1_EXCHANGE)
+            .read(".*")
+            .write(".*")
+            .build();
+
+    public final static GrantVirtualHostPermissionsDto VIRTUAL_HOST_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
+            .read(".*")
+            .write(".*")
+            .configure(".*")
+            .build();
+
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "NYSE";
     public final static String TABLE_1_INTERNALNAME = "nyse";
@@ -539,6 +612,31 @@ public abstract class BaseUnitTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .build();
+
+    public final static Long IDENTIFIER_1_ID = 1L;
+    public final static String IDENTIFIER_1_PUBLISHER = "TU Wien";
+    public final static String IDENTIFIER_1_TITLE = "Some Identifier";
+    public final static String IDENTIFIER_1_DESCRIPTION = "Some Identifier is great";
+    public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
+    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
+    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
+    public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
+
+    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .database(DATABASE_1)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .title(IDENTIFIER_1_TITLE)
+            .type(IDENTIFIER_1_TYPE)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .creator(USER_1)
             .build();
 
 }

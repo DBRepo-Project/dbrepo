@@ -1,10 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.AccessTypeDto;
+import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -112,6 +115,18 @@ public class AccessServiceUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+        });
+    }
+
+    @Test
+    public void update_isOwner_fails() {
+        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
+                .type(AccessTypeDto.READ)
+                .build();
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME, request);
         });
     }
 

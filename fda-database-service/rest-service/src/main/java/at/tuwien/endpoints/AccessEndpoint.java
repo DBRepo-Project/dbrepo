@@ -112,7 +112,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     @DeleteMapping("/{username}")
     @Transactional
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
+    public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
                                     @NotNull Principal principal)
@@ -124,7 +124,7 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Missing revoke access permission");
             throw new NotAllowedException("Missing revoke access permission");
         }
-        accessService.find(databaseId, principal.getName());
+        accessService.find(databaseId, username);
         accessService.delete(containerId, databaseId, username);
         return ResponseEntity.accepted()
                 .build();

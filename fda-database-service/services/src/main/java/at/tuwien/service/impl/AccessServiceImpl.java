@@ -93,10 +93,9 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             dataSource.close();
         }
         /* update access */
-        final DatabaseAccess access = databaseMapper.databaseGiveAccessDtoToDatabaseAccess(database, user, accessDto);
-        final DatabaseAccess entity = databaseAccessRepository.save(access);
-        log.info("Gave access to database with id {} for user with username {}", databaseId, user.getId());
-        log.trace("gave access {} to database for user {}", entity, user);
+        final DatabaseAccess entity = databaseMapper.databaseGiveAccessDtoToDatabaseAccess(database, user, accessDto);
+        databaseAccessRepository.save(entity);
+        log.info("Gave access to database with id {} for user with username {}", databaseId, user.getUsername());
     }
 
     @Override
@@ -130,7 +129,6 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final DatabaseAccess access = databaseMapper.databaseModifyAccessDtoToDatabaseAccess(database, user, accessDto);
         final DatabaseAccess entity = databaseAccessRepository.save(access);
         log.info("Modified access to database with id {} for user with username {}", databaseId, username);
-        log.trace("modified access {} to database for user {}", entity, user);
     }
 
     @Override

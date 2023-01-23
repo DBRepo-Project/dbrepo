@@ -5,6 +5,7 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
@@ -68,7 +69,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void findById_succeeds() throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -82,7 +82,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void findById_notFound_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
@@ -96,7 +95,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void delete_notFound_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
@@ -106,7 +104,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, principal);
+            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
         });
     }
 
@@ -115,7 +113,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
@@ -123,7 +120,31 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1_ID, request, principal);
+            databaseService.create(CONTAINER_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void delete_image_fails() {
+        final ContainerImage image = ContainerImage.builder()
+                .repository("mysql")
+                .build();
+        final Container container = Container.builder()
+                .image(image)
+                .build();
+        final Database database = Database.builder()
+                .container(container)
+                .build();
+
+        /* mock */
+        when(containerRepository.findById(CONTAINER_1_ID))
+                .thenReturn(Optional.of(CONTAINER_1));
+        when(databaseRepository.findPublicOrMine(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(database));
+
+        /* test */
+        assertThrows(ImageNotSupportedException.class, () -> {
+            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
         });
     }
 
