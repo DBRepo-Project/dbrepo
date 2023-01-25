@@ -35,18 +35,11 @@ SELECT `location`, `lat`, `lng`
 FROM `weather_location`
 WHERE `location` = 'Albury');
 
-CREATE TABLE hs_weather_aus
-(
-    `date`        DATE             NOT NULL,
-    location      VARCHAR(255)     NULL,
-    mintemp       DOUBLE PRECISION NULL,
-    rainfall      DOUBLE PRECISION NULL,
-    `inserted_at` TIMESTAMP        NOT NULL,
-    `deleted_at`  TIMESTAMP,
-    `total`       BIGINT           NOT NULL
-);
-
-INSERT INTO hs_weather_aus (date, location, mintemp, rainfall, inserted_at, total)
-SELECT (date, location, mintemp, rainfall, '2023-01-25 17:21:00', 1)
-FROM weather_aus;
-
+CREATE VIEW `hs_weather_aus` AS
+SELECT *
+FROM (SELECT `id`, ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
+      FROM `weather_aus` FOR SYSTEM_TIME ALL
+      GROUP BY inserted_at, deleted_at
+      ORDER BY deleted_at DESC
+      LIMIT 50) AS v
+ORDER BY v.inserted_at, v.deleted_at ASC;

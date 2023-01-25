@@ -15,15 +15,14 @@ import at.tuwien.repository.jpa.TableRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.After;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -84,6 +83,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws InterruptedException {
+        afterEach();
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         h2Utils.runScript("schema.sql");
@@ -94,6 +94,11 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_1);
     }
 
+    @AfterEach
+    public void afterEach() {
+        DockerConfig.removeAllContainers();
+    }
+
     @Test
     public void findHistory_anonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
@@ -101,7 +106,56 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
         assertEquals(1, response.size());
-        assertEquals("INSERT", response.get(0).getEvent());
+        final TableHistoryDto history = response.get(0);
+        assertEquals("INSERT", history.getEvent());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findHistory_anonymous2_succeeds() throws UserNotFoundException, TableNotFoundException,
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* test */
+        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
+        assertEquals(1, response.size());
+        final TableHistoryDto history = response.get(0);
+        assertEquals("INSERT", history.getEvent());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void findHistory_researcher_succeeds() throws UserNotFoundException, TableNotFoundException,
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* test */
+        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+        assertEquals(1, response.size());
+        final TableHistoryDto history = response.get(0);
+        assertEquals("INSERT", history.getEvent());
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void findHistory_developer_succeeds() throws UserNotFoundException, TableNotFoundException,
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* test */
+        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_2_PRINCIPAL);
+        assertEquals(1, response.size());
+        final TableHistoryDto history = response.get(0);
+        assertEquals("INSERT", history.getEvent());
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void findHistory_dataSteward_succeeds() throws UserNotFoundException, TableNotFoundException,
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* test */
+        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_3_PRINCIPAL);
+        assertEquals(1, response.size());
+        final TableHistoryDto history = response.get(0);
+        assertEquals("INSERT", history.getEvent());
     }
 
 }
