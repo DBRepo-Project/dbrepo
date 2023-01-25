@@ -35,3 +35,18 @@ SELECT `location`, `lat`, `lng`
 FROM `weather_location`
 WHERE `location` = 'Albury');
 
+CREATE TABLE hs_weather_aus
+(
+    `date`        DATE             NOT NULL,
+    location      VARCHAR(255)     NULL,
+    mintemp       DOUBLE PRECISION NULL,
+    rainfall      DOUBLE PRECISION NULL,
+    `inserted_at` TIMESTAMP        NOT NULL,
+    `deleted_at`  TIMESTAMP,
+    `total`       BIGINT           NOT NULL
+);
+
+INSERT INTO hs_weather_aus (date, location, mintemp, rainfall, inserted_at, total)
+SELECT (date, location, mintemp, rainfall, '2023-01-25 17:21:00', 1)
+FROM weather_aus;
+
