@@ -136,23 +136,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_3);
     }
 
-    @AfterEach
-    public void afterEach() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-    }
-
     @Test
     public void updateConsumers_succeeds() throws AmqpException, IOException, InterruptedException {
 
