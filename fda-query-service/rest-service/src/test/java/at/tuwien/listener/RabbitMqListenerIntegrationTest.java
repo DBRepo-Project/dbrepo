@@ -22,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.print.Doc;
 import java.io.IOException;
 import java.util.*;
 
@@ -78,48 +79,15 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        /* broker */
+        DockerConfig.createAllNetworks();
         DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
         DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll
     public static void afterAll() {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @BeforeEach

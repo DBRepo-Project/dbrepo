@@ -204,7 +204,7 @@
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
-                        <exclude>**/FdaCitationServiceApplication.class</exclude>
+                        <exclude>**/FdaIdentifierServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
