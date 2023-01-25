@@ -53,7 +53,7 @@ public class AuthTokenFilterTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        h2Utils.runScript("view.sql");
+//        h2Utils.runScript("schema.sql");
     }
 
     @Test

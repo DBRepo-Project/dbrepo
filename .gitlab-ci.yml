@@ -111,6 +111,14 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
+    - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-authentication-service/report/target/site/jacoco-aggregate/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-authentication-service/report/target/site/jacoco-aggregate/jacoco.xml
 
 test-backend-identifier:
   stage: test-backend

@@ -1,5 +1,5 @@
-CREATE SEQUENCE `weather`.`qs_queries_seq`;
-CREATE TABLE `weather`.`qs_queries`
+CREATE SEQUENCE `qs_queries_seq`;
+CREATE TABLE `qs_queries`
 (
     `id`               bigint       not null primary key default nextval(`qs_queries_seq`),
     `created`          datetime     not null             default now(),
@@ -24,12 +24,15 @@ BEGIN
     INTO _sql;
     PREPARE stmt FROM _sql; EXECUTE stmt; DEALLOCATE PREPARE stmt; SET hash = @hash;
 END $$
+DELIMITER  $$
 CREATE PROCEDURE store_query(IN query TEXT, OUT queryId BIGINT)
 BEGIN
     DECLARE _username varchar(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', '');
     CALL _store_query(_username, query, queryId);
 END $$
-CREATE PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, OUT queryId BIGINT)
+DELIMITER  $$
+CREATE
+    DEFINER = 'root' PROCEDURE _store_query(IN _username VARCHAR(255), IN query TEXT, OUT queryId BIGINT)
 BEGIN
     DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256);
     DECLARE _query TEXT DEFAULT CONCAT('CREATE TABLE IF NOT EXISTS _tmp AS (', query, ')'); DROP TABLE IF EXISTS _tmp;
@@ -37,7 +40,7 @@ BEGIN
     SELECT COUNT(*) FROM _tmp INTO @count;
     INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`,
                               `result_number`)
-    SELECT _username, query, query, true, _queryhash, @hash, @count
-    WHERE NOT EXISTS(SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash);
-    SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash);
+    SELECT _username, query, query, false, _queryhash, @hash, @count
+    WHERE NOT EXISTS(SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
+    SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
 END $$

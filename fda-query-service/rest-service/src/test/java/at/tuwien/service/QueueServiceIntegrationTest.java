@@ -147,7 +147,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
         /* rabbitmq */
         final Connection connection = amqpConfig.connectionFactory().newConnection();
         this.channel = connection.createChannel();
-        channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.DIRECT);
+        channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.FANOUT);
         channel.queueDeclare(TABLE_1_QUEUE_NAME, true, false, false, null);
         channel.queueBind(TABLE_1_QUEUE_NAME, DATABASE_1_EXCHANGE, TABLE_1_ROUTING_KEY);
     }

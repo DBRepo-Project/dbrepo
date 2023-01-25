@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
@@ -72,6 +73,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
+    private final static String BIND_WEATHER = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
+    private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
@@ -84,36 +89,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .withEnableIpv6(false)
                 .exec();
         /* create container */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
-                .withName(CONTAINER_1_INTERNALNAME)
-                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
-                .withIpv4Address(CONTAINER_1_IP)
-                .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv(CONTAINER_1_ENV)
-                .exec();
-        CONTAINER_1.setHash(response.getId());
-        startContainer(CONTAINER_1);
-
-        /* create container */
-        final String bind2 = new File(
-                "./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response2 =
-                dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                        .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp")))
-                        .withName(CONTAINER_2_INTERNALNAME)
-                        .withIpv4Address(CONTAINER_2_IP)
-                        .withHealthcheck(CONTAINER_2_HEALTHCHECK)
-                        .withHostName(CONTAINER_2_INTERNALNAME)
-                        .withEnv(CONTAINER_2_ENV)
-                        .exec();
-        CONTAINER_1.setHash(response.getId());
-        CONTAINER_2.setHash(response2.getId());
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
     }
 
@@ -145,9 +123,16 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3));
         TABLE_1.setDatabase(DATABASE_1);
         TABLE_2.setDatabase(DATABASE_1);
         TABLE_3.setDatabase(DATABASE_1);
+        DATABASE_2.setTables(List.of(TABLE_4, TABLE_5, TABLE_6));
+        DATABASE_2.setViews(List.of(VIEW_4));
+        TABLE_4.setDatabase(DATABASE_2);
+        TABLE_5.setDatabase(DATABASE_2);
+        TABLE_6.setDatabase(DATABASE_2);
+        VIEW_4.setDatabase(DATABASE_2);
     }
 
     @Test
