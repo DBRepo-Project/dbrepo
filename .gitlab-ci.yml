@@ -111,7 +111,7 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
-    - "./.gitlab/cover2cover.py ./fda-authentication-service/rest-service/target/site/jacoco/jacoco.xml ./fda-authentication-service/rest-service/src/main/java/ ./fda-authentication-service/services/src/main/java/ > ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml"
+    - "./.gitlab/jacoco2cobertura.py ./fda-authentication-service/rest-service/target/site/jacoco/jacoco.xml ./fda-authentication-service/rest-service/src/main/java/ ./fda-authentication-service/services/src/main/java/ > ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml"
     - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
