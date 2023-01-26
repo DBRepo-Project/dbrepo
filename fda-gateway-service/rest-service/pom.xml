@@ -9,9 +9,9 @@
         <version>1.1.0-alpha</version>
     </parent>
 
-    <artifactId>gateway</artifactId>
+    <artifactId>rest-service</artifactId>
     <version>1.1.0-alpha</version>
-    <name>fda-gateway-service-gateway</name>
+    <name>fda-gateway-service-rest-service</name>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>
@@ -32,5 +32,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

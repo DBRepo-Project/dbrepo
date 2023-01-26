@@ -6,10 +6,10 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "at.tuwien")
-public class FdaGatewayServiceApplication {
+public class GatewayServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FdaGatewayServiceApplication.class, args);
+        SpringApplication.run(GatewayServiceApplication.class, args);
     }
 
 }
