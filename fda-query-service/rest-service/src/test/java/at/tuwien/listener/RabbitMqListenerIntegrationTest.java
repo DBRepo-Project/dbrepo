@@ -119,6 +119,7 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* pre-condition */
+        assertEquals(0, rabbitMqConfig.findAllConsumers().size());
         assertEquals(2, amqpConfig.getAmqpConsumers());
 
         /* test */
