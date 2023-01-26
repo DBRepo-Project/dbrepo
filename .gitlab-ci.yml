@@ -256,6 +256,15 @@ test-semantics-service:
     - build-semantics-service
   script:
     - "make test-semantics-service"
+    - "cat ./fda-semantics-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-semantics-service/report.xml
+    expire_in: 1 days
+    reports:
+      junit: ./fda-semantics-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-analyse-service:
   stage: test-backend
@@ -263,6 +272,15 @@ test-analyse-service:
     - build-analyse-service
   script:
     - "make test-analyse-service"
+    - "cat ./fda-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-analyse-service/report.xml
+    expire_in: 1 days
+    reports:
+      junit: ./fda-analyse-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 build-docker:
   stage: build-docker
