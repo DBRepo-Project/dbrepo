@@ -347,6 +347,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
         try {
             final Connection connection = dataSource.getConnection();
+            queryMapper.dropTemporaryTableSQL(connection, table)
+                    .executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to drop temporary table: {}", e.getMessage());
+            log.trace("failed to drop temporary table {}", table);
+            throw new TableMalformedException("Failed to drop temporary table", e);
+        } finally {
+            dataSource.close();
+        }
+        try {
+            final Connection connection = dataSource.getConnection();
             queryMapper.generateTemporaryTableSQL(connection, table)
                     .executeUpdate();
         } catch (SQLException e) {
@@ -368,17 +379,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.trace("failed to insert temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to insert temporary table", e);
-        }
-        try {
-            final Connection connection = dataSource.getConnection();
-            queryMapper.dropTemporaryTableSQL(connection, table)
-                    .executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to drop temporary table: {}", e.getMessage());
-            log.trace("failed to drop temporary table {}", table);
-            throw new TableMalformedException("Failed to drop temporary table", e);
-        } finally {
-            dataSource.close();
         }
     }
 

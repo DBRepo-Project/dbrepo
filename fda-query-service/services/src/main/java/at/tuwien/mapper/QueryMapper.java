@@ -112,7 +112,7 @@ public interface QueryMapper {
     }
 
     default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("DROP TABLE `")
+        final StringBuilder statement = new StringBuilder("DROP TABLE IF EXISTS `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())

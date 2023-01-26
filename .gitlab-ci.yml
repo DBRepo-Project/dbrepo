@@ -111,6 +111,7 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
+    - "./.gitlab/cover2cover.py ./fda-authentication-service/rest-service/target/site/jacoco/jacoco.xml ./fda-authentication-service/rest-service/src/main/java/ ./fda-authentication-service/services/src/main/java/ > ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml"
     - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -118,7 +119,7 @@ test-backend-authentication:
       - ./fda-authentication-service/report/target/site/jacoco-aggregate/
     expire_in: 1 days
     reports:
-      junit: ./fda-authentication-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-identifier:
