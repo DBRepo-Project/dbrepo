@@ -1,9 +1,0 @@
-# <!-- VERSION -->
-
-## Changelog
-
-<!-- CHANGELOG -->
-
-## Issues Resolved
-
-<!-- RESOLVED -->
