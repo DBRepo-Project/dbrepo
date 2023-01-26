@@ -39,13 +39,6 @@ public abstract class BaseUnitTest {
 
     public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
 
-    public final static String BROKER_NAME = "fda-broker-service";
-    public final static String BROKER_IP = "172.29.0.2";
-    public final static String BROKER_HOSTNAME = "broker-service";
-    public final static Integer BROKER_MANAGEMENT_PORT = 15672;
-    public final static String BROKER_IMAGE = "rabbitmq";
-    public final static String BROKER_TAG = "3-management-alpine";
-
     public final static String VIRTUAL_HOST_NAME = "fda";
     public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";
     public final static String VIRTUAL_HOST_TAGS = "";
@@ -298,6 +291,52 @@ public abstract class BaseUnitTest {
             .created(IMAGE_1_CREATED)
             .defaultPort(IMAGE_1_PORT)
             .compiled(IMAGE_1_UPDATED)
+            .build();
+
+    public final static Long IMAGE_BROKER_ID = 2L;
+    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
+    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
+    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
+    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
+    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
+    public final static String IMAGE_BROKER_JDBC = "mariadb";
+    public final static Integer IMAGE_BROKER_PORT = 15672;
+    public final static Long IMAGE_BROKER_SIZE = 12000L;
+    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
+
+    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
+            .id(IMAGE_BROKER_ID)
+            .repository(IMAGE_BROKER_REPOSITORY)
+            .tag(IMAGE_BROKER_TAG)
+            .hash(IMAGE_BROKER_HASH)
+            .compiled(IMAGE_BROKER_BUILT)
+            .dialect(IMAGE_BROKER_DIALECT)
+            .jdbcMethod(IMAGE_BROKER_JDBC)
+            .driverClass(IMAGE_BROKER_DRIVER)
+            .size(IMAGE_BROKER_SIZE)
+            .defaultPort(IMAGE_BROKER_PORT)
+            .build();
+
+    public final static Long CONTAINER_BROKER_ID = 5L;
+    public final static String CONTAINER_BROKER_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_HASH = "deadbeef";
+    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
+    public final static String[] CONTAINER_BROKER_ENV = new String[]{"RABBITMQ_DEFAULT_USER=fda", "RABBITMQ_DEFAULT_PASS=fda"};
+
+    public final static Container CONTAINER_BROKER = Container.builder()
+            .id(CONTAINER_BROKER_ID)
+            .name(CONTAINER_BROKER_NAME)
+            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
+            .imageId(IMAGE_BROKER_ID)
+            .image(IMAGE_BROKER)
+            .ipAddress(CONTAINER_BROKER_IP)
+            .hash(CONTAINER_BROKER_HASH)
+            .created(CONTAINER_BROKER_CREATED)
+            .creator(USER_1)
             .build();
 
     public final static String LICENSE_1_IDENTIFIER = "MIT";

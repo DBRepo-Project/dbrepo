@@ -3,19 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-    </dependencies>
     <parent>
         <groupId>at.tuwien</groupId>
         <artifactId>fda-discovery-service</artifactId>
         <version>1.1.0-alpha</version>
     </parent>
 
-    <artifactId>discovery</artifactId>
+    <artifactId>rest-service</artifactId>
     <version>1.1.0-alpha</version>
     <name>fda-discovery-service-discovery</name>
 
@@ -38,5 +32,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 
 </project>

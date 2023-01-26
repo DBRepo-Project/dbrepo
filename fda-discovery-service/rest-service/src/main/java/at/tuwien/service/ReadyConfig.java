@@ -1,4 +1,4 @@
-package at.tuwien.config;
+package at.tuwien.service;
 
 import com.google.common.io.Files;
 import org.springframework.beans.factory.annotation.Value;

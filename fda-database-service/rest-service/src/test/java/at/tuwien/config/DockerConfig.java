@@ -6,6 +6,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -14,6 +15,7 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @Log4j2
@@ -146,9 +148,67 @@ public class DockerConfig extends BaseUnitTest {
             case 4:
                 log.debug("container with id {} has a health check config", containerId);
                 return CONTAINER_4_HEALTHCHECK;
+            case 5:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_BROKER_HEALTHCHECK;
         }
         log.trace("container with id {} does not have a healthcheck config", containerId);
         return null;
+    }
+
+    public static void removeAllContainers() {
+        dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec()
+                .forEach(container -> {
+                    log.info("Delete container {}", Arrays.asList(container.getNames()));
+                    try {
+                        dockerClient.stopContainerCmd(container.getId()).exec();
+                    } catch (NotModifiedException e) {
+                        // ignore
+                    }
+                    dockerClient.removeContainerCmd(container.getId()).exec();
+                });
+        dockerClient.listVolumesCmd()
+                .withDanglingFilter(true)
+                .exec()
+                .getVolumes()
+                .forEach(volume -> {
+                    log.info("Delete volume {}", volume.getName());
+                    try {
+                        dockerClient.removeVolumeCmd(volume.getName()).exec();
+                    } catch (NotModifiedException e) {
+                        // ignore
+                    }
+                });
+    }
+
+    public static void removeAllNetworks() {
+        dockerClient.listNetworksCmd()
+                .exec()
+                .stream()
+                .filter(n -> n.getName().startsWith("fda"))
+                .forEach(network -> {
+                    log.info("Delete network {}", network.getName());
+                    dockerClient.removeNetworkCmd(network.getId()).exec();
+                });
+    }
+
+    public static void createAllNetworks () {
+        dockerClient.createNetworkCmd()
+                .withName("fda-userdb")
+                .withIpam(new Network.Ipam()
+                        .withConfig(new Network.Ipam.Config()
+                                .withSubnet("172.28.0.0/16")))
+                .withEnableIpv6(false)
+                .exec();
+        dockerClient.createNetworkCmd()
+                .withName("fda-public")
+                .withIpam(new Network.Ipam()
+                        .withConfig(new Network.Ipam.Config()
+                                .withSubnet("172.29.0.0/16")))
+                .withEnableIpv6(false)
+                .exec();
     }
 
 }

@@ -2,16 +2,11 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.IndexInitializer;
-import at.tuwien.config.MariaDbConfig;
-import at.tuwien.config.ReadyConfig;
+import at.tuwien.config.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -26,7 +21,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
-import java.util.Arrays;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,82 +50,40 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
-    private DatabaseRepository databaseRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     @Autowired
     private MariaDbServiceImpl databaseService;
+
+    @Autowired
+    private H2Utils h2Utils;
 
     private final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {
         afterAll();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
+        DockerConfig.createAllNetworks();
     }
 
     @AfterAll
     public static void afterAll() {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @BeforeEach
     public void beforeEach() {
         afterEach();
         /* metadata database */
+        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
     }
 
     @AfterEach
     public void afterEach() {
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
     }
 
     @Test
