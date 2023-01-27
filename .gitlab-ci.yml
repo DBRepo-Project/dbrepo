@@ -119,7 +119,7 @@ test-backend-authentication:
       - ./fda-authentication-service/report/target/site/jacoco-aggregate/
     expire_in: 1 days
     reports:
-      junit: ./fda-identifier-service/report/target/site/jacoco-aggregate/cobertura.xml
+      junit: ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-identifier:

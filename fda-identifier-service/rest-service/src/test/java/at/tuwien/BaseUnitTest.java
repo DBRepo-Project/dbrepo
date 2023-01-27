@@ -363,85 +363,6 @@ public abstract class BaseUnitTest {
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
 
-    public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
-            .id(CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .affiliation(CREATOR_1_AFFIL)
-            .build();
-
-    public final static Identifier IDENTIFIER_1 = Identifier.builder()
-            .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .queryId(IDENTIFIER_1_QUERY_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
-            .execution(IDENTIFIER_1_EXECUTION)
-            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .queryHash(IDENTIFIER_1_QUERY_HASH)
-            .resultHash(IDENTIFIER_1_RESULT_HASH)
-            .query(IDENTIFIER_1_QUERY)
-            .queryNormalized(IDENTIFIER_1_NORMALIZED)
-            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
-            .publisher(IDENTIFIER_1_PUBLISHER)
-            .type(IDENTIFIER_1_TYPE)
-            .build();
-
-    public final static Long IDENTIFIER_2_ID = 2L;
-    public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
-    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
-    public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
-    public final static String IDENTIFIER_2_TITLE = "Austria weather data";
-    public final static String IDENTIFIER_2_DOI = "10.1000/183";
-    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
-    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
-    public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
-    public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
-    public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
-    public final static Integer IDENTIFIER_2_PUBLICATION_DAY = 14;
-    public final static Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
-    public final static Integer IDENTIFIER_2_PUBLICATION_YEAR = 2022;
-    public final static String IDENTIFIER_2_QUERY_HASH = "abc";
-    public final static String IDENTIFIER_2_RESULT_HASH = "def";
-    public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";
-    public final static String IDENTIFIER_2_NORMALIZED = "SELECT `id` FROM `foobar`";
-    public final static Long IDENTIFIER_2_RESULT_NUMBER = 2L;
-    public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
-    public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
-    public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-
-    public final static Identifier IDENTIFIER_2 = Identifier.builder()
-            .id(IDENTIFIER_2_ID)
-            .containerId(IDENTIFIER_2_CONTAINER_ID)
-            .databaseId(IDENTIFIER_2_DATABASE_ID)
-            .queryId(IDENTIFIER_2_QUERY_ID)
-            .description(IDENTIFIER_2_DESCRIPTION)
-            .title(IDENTIFIER_2_TITLE)
-            .doi(IDENTIFIER_2_DOI)
-            .visibility(IDENTIFIER_2_VISIBILITY)
-            .created(IDENTIFIER_2_CREATED)
-            .lastModified(IDENTIFIER_2_MODIFIED)
-            .execution(IDENTIFIER_2_EXECUTION)
-            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
-            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
-            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-            .queryHash(IDENTIFIER_2_QUERY_HASH)
-            .resultHash(IDENTIFIER_2_RESULT_HASH)
-            .query(IDENTIFIER_2_QUERY)
-            .queryNormalized(IDENTIFIER_2_NORMALIZED)
-            .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
-            .publisher(IDENTIFIER_2_PUBLISHER)
-            .type(IDENTIFIER_2_TYPE)
-            .creator(USER_2)
-            .build();
-
     public final static Creator CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
             .pid(IDENTIFIER_1_ID)
@@ -502,6 +423,30 @@ public abstract class BaseUnitTest {
             .lastname(CREATOR_2_LASTNAME)
             .build();
 
+    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
+            .creators(List.of(CREATOR_1, CREATOR_2, CREATOR_3))
+            .build();
+
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
             .containerId(CONTAINER_1_ID)
@@ -554,6 +499,55 @@ public abstract class BaseUnitTest {
             .value(RELATED_IDENTIFIER_2_VALUE)
             .type(RELATED_IDENTIFIER_2_TYPE_DTO)
             .relation(RELATED_IDENTIFIER_2_RELATION)
+            .build();
+
+    public final static Long IDENTIFIER_2_ID = 2L;
+    public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
+    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
+    public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
+    public final static String IDENTIFIER_2_TITLE = "Austria weather data";
+    public final static String IDENTIFIER_2_DOI = "10.1000/183";
+    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
+    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
+    public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
+    public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
+    public final static Integer IDENTIFIER_2_PUBLICATION_DAY = 14;
+    public final static Integer IDENTIFIER_2_PUBLICATION_MONTH = 7;
+    public final static Integer IDENTIFIER_2_PUBLICATION_YEAR = 2022;
+    public final static String IDENTIFIER_2_QUERY_HASH = "abc";
+    public final static String IDENTIFIER_2_RESULT_HASH = "def";
+    public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";
+    public final static String IDENTIFIER_2_NORMALIZED = "SELECT `id` FROM `foobar`";
+    public final static Long IDENTIFIER_2_RESULT_NUMBER = 2L;
+    public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
+    public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
+
+    public final static Identifier IDENTIFIER_2 = Identifier.builder()
+            .id(IDENTIFIER_2_ID)
+            .containerId(IDENTIFIER_2_CONTAINER_ID)
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
+            .description(IDENTIFIER_2_DESCRIPTION)
+            .title(IDENTIFIER_2_TITLE)
+            .doi(IDENTIFIER_2_DOI)
+            .visibility(IDENTIFIER_2_VISIBILITY)
+            .created(IDENTIFIER_2_CREATED)
+            .lastModified(IDENTIFIER_2_MODIFIED)
+            .execution(IDENTIFIER_2_EXECUTION)
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_2_QUERY_HASH)
+            .resultHash(IDENTIFIER_2_RESULT_HASH)
+            .query(IDENTIFIER_2_QUERY)
+            .queryNormalized(IDENTIFIER_2_NORMALIZED)
+            .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .type(IDENTIFIER_2_TYPE)
+            .creator(USER_2)
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
