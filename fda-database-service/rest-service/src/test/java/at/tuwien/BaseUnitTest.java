@@ -56,7 +56,7 @@ public abstract class BaseUnitTest {
     public final static String GATEWAY_IMAGE = "nginx";
     public final static String GATEWAY_TAG = "alpine";
 
-    public final static String CONTAINER_SEARCH_NAME = "fda-search-mock-service";
+    public final static String CONTAINER_SEARCH_NAME = "search-mock-service";
     public final static String CONTAINER_SEARCH_INTERNAL_NAME = "search-mock-service";
     public final static String CONTAINER_SEARCH_IP = "172.29.0.3";
     public final static String CONTAINER_SEARCH_REPOSITORY = "elasticsearch";
