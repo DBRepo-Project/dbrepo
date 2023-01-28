@@ -8,7 +8,6 @@ import at.tuwien.exception.AmqpException;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
@@ -40,9 +39,6 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
-
-    @Autowired
-    private Channel channel;
 
     @Autowired
     private RabbitMqServiceImpl amqpService;

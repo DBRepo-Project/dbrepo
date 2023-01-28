@@ -463,7 +463,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather_at";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo" + CONTAINER_1_INTERNALNAME + "/" + DATABASE_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_INTERNALNAME + "/" + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
 

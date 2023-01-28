@@ -5,7 +5,7 @@ before_script:
   - "mvn --version"
   - "python3 --version"
   - "df / -h"
-  - "grep -rnw '@Test' | wc -l"
+  - "cat /etc/hosts"
 
 variables:
   HOSTALIASES: ./hosts
