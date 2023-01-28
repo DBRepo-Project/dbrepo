@@ -335,6 +335,19 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void exportResource_database_fails() {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_4_ID))
+                .thenReturn(Optional.of(IDENTIFIER_4));
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            identifierService.exportResource(IDENTIFIER_4_ID);
+        });
+    }
+
+    @Test
     public void publish_alreadyEveryone_fails() {
 
         /* mock */

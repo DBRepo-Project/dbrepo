@@ -231,24 +231,14 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {
             log.error("Failed to find identifier with id {} as it refers to a database and not a query", identifierId);
-            log.debug("failed to find identifier {}", identifier);
-            throw new IdentifierNotFoundException("Failed to find identifier");
+            throw new IdentifierRequestException("Failed to find identifier");
         }
-        /* export */
-        if (identifier.getType().equals(IdentifierType.SUBSET)) {
-            /* subset */
-            final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
-                    identifier.getDatabaseId(), identifier.getQueryId());
-            final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
-            log.trace("found resource {}", resource);
-            return resource;
-        } else if (identifier.getType().equals(IdentifierType.DATABASE)) {
-            /* database, we cannot export this to csv */
-            log.warn("Failed to export database to csv, fallback to default http redirect");
-            throw new IdentifierRequestException("Failed to export database to csv");
-        }
-        log.warn("Failed to export database, fallback to default http redirect");
-        throw new IdentifierRequestException("Failed to export database");
+        /* subset */
+        final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
+                identifier.getDatabaseId(), identifier.getQueryId());
+        final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
+        log.trace("found resource {}", resource);
+        return resource;
     }
 
     @Override
