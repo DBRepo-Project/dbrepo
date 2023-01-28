@@ -48,7 +48,8 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
-                                                    @RequestParam(required = false) Long qid) {
+                                                    @RequestParam(required = false) Long qid)
+            throws IdentifierNotFoundException {
         log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()

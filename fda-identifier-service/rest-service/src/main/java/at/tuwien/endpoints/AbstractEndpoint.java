@@ -36,10 +36,6 @@ public abstract class AbstractEndpoint {
             return false;
         }
         /* view-only operations are allowed on public databases */
-        if (database.getIsPublic() && List.of().contains(permissionCode)) {
-            log.trace("grant permission {} because database is public", permissionCode);
-            return true;
-        }
         if (principal == null) {
             log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;

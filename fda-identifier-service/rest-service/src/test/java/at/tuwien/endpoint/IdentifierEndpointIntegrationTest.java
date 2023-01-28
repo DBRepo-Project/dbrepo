@@ -1,48 +1,28 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
-import at.tuwien.endpoints.PersistenceEndpoint;
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.RelatedIdentifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.IdentifierService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -71,9 +51,6 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @Autowired
     private IdentifierEndpoint identifierEndpoint;
 
-    @Autowired
-    private EndpointConfig endpointConfig;
-
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
@@ -83,7 +60,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void list_anonymous_succeeds() {
+    public void list_anonymous_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
@@ -99,7 +76,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void list_anonymous2_succeeds() {
+    public void list_anonymous2_succeeds() throws IdentifierNotFoundException {
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(null, null);
@@ -108,7 +85,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcher_succeeds() {
+    public void list_researcher_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
@@ -124,7 +101,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherDatabaseId_succeeds() {
+    public void list_researcherDatabaseId_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
@@ -140,7 +117,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developer_succeeds() {
+    public void list_developer_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
@@ -156,7 +133,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataSteward_succeeds() {
+    public void list_dataSteward_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
@@ -187,7 +164,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId) {
+    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId) throws IdentifierNotFoundException {
 
         /* test */
         final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId);
