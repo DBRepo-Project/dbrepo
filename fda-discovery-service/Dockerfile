@@ -6,7 +6,8 @@ COPY ./pom.xml ./
 
 RUN mvn -fn -B dependency:go-offline > /dev/null
 
-COPY ./discovery ./discovery
+COPY ./rest-service ./rest-service
+COPY ./services ./services
 COPY ./report ./report
 
 # Make sure it compiles
@@ -25,8 +26,8 @@ RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./discovery/target/discovery-*.jar ./discovery-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./rest-service.jar
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./discovery-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./rest-service.jar"]
