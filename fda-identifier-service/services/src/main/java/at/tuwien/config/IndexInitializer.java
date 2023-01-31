@@ -1,8 +1,6 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.identifier.Identifier;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -31,17 +29,11 @@ public class IndexInitializer {
         if (environment.acceptsProfiles(Profiles.of("test-noelastic"))) {
             return;
         }
-        log.debug("creating tableindex");
-        IndexCoordinates tableIndex = IndexCoordinates.of("tableindex");
-        if (!elasticsearchOperations.indexOps(tableIndex).exists()) {
-            elasticsearchOperations.indexOps(tableIndex).create();
-            elasticsearchOperations.indexOps(tableIndex).createMapping(Table.class);
-        }
-        log.debug("creating columnindex");
-        IndexCoordinates columnIndex = IndexCoordinates.of("columnindex");
-        if (!elasticsearchOperations.indexOps(columnIndex).exists()) {
-            elasticsearchOperations.indexOps(columnIndex).create();
-            elasticsearchOperations.indexOps(columnIndex).createMapping(TableColumn.class);
+        log.debug("creating identifierindex");
+        IndexCoordinates identifierIndex = IndexCoordinates.of("identifierindex");
+        if (!elasticsearchOperations.indexOps(identifierIndex).exists()) {
+            elasticsearchOperations.indexOps(identifierIndex).create();
+            elasticsearchOperations.indexOps(identifierIndex).createMapping(Identifier.class);
         }
     }
 }

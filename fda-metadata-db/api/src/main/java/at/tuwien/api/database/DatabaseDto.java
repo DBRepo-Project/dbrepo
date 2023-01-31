@@ -6,7 +6,6 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -50,6 +49,8 @@ public class DatabaseDto {
     private String description;
 
     private List<TableBriefDto> tables;
+
+    private List<ViewBriefDto> views;
 
     @JsonProperty("is_public")
     @Schema(example = "true")

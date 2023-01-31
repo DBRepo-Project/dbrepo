@@ -8,8 +8,8 @@ import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.mapper.DocumentMapper;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.repository.elastic.IdentifieridxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.repository.jpa.RelatedIdentifierRepository;
 import at.tuwien.service.DatabaseService;
@@ -25,7 +25,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
@@ -37,28 +36,28 @@ import java.util.stream.Collectors;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final UserService userService;
-    private final DocumentMapper documentMapper;
     private final EndpointConfig endpointConfig;
     private final TemplateEngine templateEngine;
     private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
+    private final IdentifieridxRepository identifieridxRepository;
     private final RelatedIdentifierRepository relatedIdentifierRepository;
 
-    public IdentifierServiceImpl(UserService userService, DocumentMapper documentMapper, EndpointConfig endpointConfig,
-                                 TemplateEngine templateEngine, DatabaseService databaseService,
-                                 IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
-                                 IdentifierRepository identifierRepository,
+    public IdentifierServiceImpl(UserService userService, EndpointConfig endpointConfig, TemplateEngine templateEngine,
+                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
+                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
+                                 IdentifieridxRepository identifieridxRepository,
                                  RelatedIdentifierRepository relatedIdentifierRepository) {
         this.userService = userService;
-        this.documentMapper = documentMapper;
         this.endpointConfig = endpointConfig;
         this.templateEngine = templateEngine;
         this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
+        this.identifieridxRepository = identifieridxRepository;
         this.relatedIdentifierRepository = relatedIdentifierRepository;
     }
 
@@ -158,6 +157,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.trace("created identifier {}", identifier);
+        final Identifier elIdentifier = identifieridxRepository.save(identifier);
+        log.info("Created identifier with id {} in elastic search", elIdentifier.getId());
         return identifier;
     }
 
@@ -293,6 +294,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);
         log.trace("deleted identifier {}", identifier);
+        identifieridxRepository.deleteById(identifierId);
+        log.info("Deleted identifier with id {} in elastic search", identifierId);
     }
 
 }

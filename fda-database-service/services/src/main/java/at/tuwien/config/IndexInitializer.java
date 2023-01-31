@@ -20,11 +20,11 @@ public class IndexInitializer {
 
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        log.debug("creating index");
-        IndexCoordinates indexCoordinates = IndexCoordinates.of("databaseindex");
-        if (!elasticsearchOperations.indexOps(indexCoordinates).exists()) {
-            elasticsearchOperations.indexOps(indexCoordinates).create();
-            elasticsearchOperations.indexOps(indexCoordinates).createMapping(Database.class);
+        log.debug("creating databaseindex");
+        final IndexCoordinates databaseIndex = IndexCoordinates.of("databaseindex");
+        if (!elasticsearchOperations.indexOps(databaseIndex).exists()) {
+            elasticsearchOperations.indexOps(databaseIndex).create();
+            elasticsearchOperations.indexOps(databaseIndex).createMapping(Database.class);
         }
     }
 }

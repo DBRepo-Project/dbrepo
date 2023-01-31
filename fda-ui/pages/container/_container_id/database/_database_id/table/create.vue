@@ -150,7 +150,7 @@ export default {
         if (res.status === 201) {
           this.error = false
           this.$toast.success('Table created')
-          this.$root.$emit('table-create', res.data)
+          await this.loadDatabase()
           await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${res.data.id}`)
         } else {
           this.error = true
@@ -182,6 +182,21 @@ export default {
         return
       }
       this.createTable()
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     }
   }
 }

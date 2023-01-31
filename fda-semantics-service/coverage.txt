@@ -1,0 +1,13 @@
+Name                    Stmts   Miss  Cover
+-------------------------------------------
+app.py                    132     71    46%
+list.py                    56      0   100%
+onto_feat.py               41     26    37%
+save.py                    31     26    16%
+test/__init__.py            0      0   100%
+test/test_app.py           38      1    97%
+test/test_list.py          40      1    98%
+test/test_validate.py      18      1    94%
+validate.py                21      0   100%
+-------------------------------------------
+TOTAL                     377    126    67%

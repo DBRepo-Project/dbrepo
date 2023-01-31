@@ -3,6 +3,7 @@ package at.tuwien;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -11,8 +12,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @SpringBootApplication
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"at.tuwien.repository"})
-@EntityScan(basePackages = {"at.tuwien.entities"})
+@EntityScan(basePackages = "at.tuwien.entities")
+@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
+@EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
 public class FdaMetadataServiceApplication {
 
     public static void main(String[] args) {

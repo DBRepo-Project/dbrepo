@@ -322,6 +322,7 @@ export default {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
         this.resultId = res.data.id
         console.debug('view', res.data)
+        await this.loadDatabase()
       } catch (err) {
         console.error('Failed to create view', err)
         this.$toast.error(err.response.data.message)
@@ -363,6 +364,21 @@ export default {
         this.$toast.error('Could not get table details')
       }
       this.loadingColumns = false
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     }
   }
 }

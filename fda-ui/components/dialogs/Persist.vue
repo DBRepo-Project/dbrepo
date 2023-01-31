@@ -15,14 +15,14 @@
             <v-col>
               <v-text-field
                 id="title"
-                v-model="database.identifier.title"
+                v-model="identifier.title"
                 name="title"
                 :label="`${prefix} title *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
                 id="description"
-                v-model="database.identifier.description"
+                v-model="identifier.description"
                 name="description"
                 rows="2"
                 :label="`${prefix} description *`" />
@@ -32,7 +32,7 @@
             <v-col>
               <v-text-field
                 id="publisher"
-                v-model="database.identifier.publisher"
+                v-model="identifier.publisher"
                 name="publisher"
                 :label="`${prefix} publisher *`"
                 :rules="[v => !!v || $t('Required')]"
@@ -43,42 +43,28 @@
             <v-col cols="2">
               <v-text-field
                 id="publication-day"
-                v-model.number="database.identifier.publication_day"
+                v-model.number="identifier.publication_day"
                 type="number"
                 label="Publication day" />
             </v-col>
             <v-col cols="2">
               <v-text-field
                 id="publication-month"
-                v-model.number="database.identifier.publication_month"
+                v-model.number="identifier.publication_month"
                 type="number"
                 label="Publication month" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 id="publication-year"
-                v-model.number="database.identifier.publication_year"
+                v-model.number="identifier.publication_year"
                 type="number"
                 label="Publication year *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
           </v-row>
-          <v-row>
-            <v-col>
-              <v-select
-                id="visibility"
-                v-model="database.identifier.visibility"
-                :items="visibility"
-                item-value="value"
-                :disabled="database.is_public"
-                item-text="name"
-                :label="`${prefix} visibility *`"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
-          <v-row v-for="(creator,i) in database.identifier.creators" :key="`c-${i}`" dense>
+          <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
                 v-model="creator.firstname"
@@ -122,7 +108,7 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-for="(related,i) in database.identifier.related_identifiers" :key="`r-${i}`" dense>
+          <v-row v-for="(related,i) in identifier.related_identifiers" :key="`r-${i}`" dense>
             <v-col cols="4">
               <v-text-field
                 v-model="related.value"
@@ -201,14 +187,22 @@ export default {
       formValid: false,
       loading: false,
       error: false, // XXX: `error` is never changed
-      visibility: [{
-        name: 'Public',
-        value: 'everyone'
+      identifier: {
+        cid: null,
+        dbid: null,
+        qid: null,
+        title: null,
+        description: null,
+        publisher: null,
+        publication_year: null,
+        publication_month: null,
+        publication_day: null,
+        visibility: 'everyone',
+        type: null,
+        doi: null,
+        creators: [],
+        related_identifiers: []
       },
-      {
-        name: 'Only me',
-        value: 'self'
-      }],
       relatedTypes: [
         { value: 'DOI' },
         { value: 'URL' },
@@ -320,7 +314,7 @@ export default {
     if (this.database.identifier) {
       return
     }
-    this.database.identifier = {
+    this.identifier = {
       cid: parseInt(this.$route.params.container_id),
       dbid: parseInt(this.$route.params.database_id),
       qid: this.isSubset ? parseInt(this.$route.params.query_id) : null,
@@ -367,7 +361,7 @@ export default {
       this.loading = true
       let res
       try {
-        res = await this.$axios.post('/api/identifier', this.database.identifier, this.config)
+        res = await this.$axios.post('/api/identifier', this.identifier, this.config)
         console.debug('persist', res.data)
       } catch (err) {
         this.error = true

@@ -6,6 +6,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -18,6 +19,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(ViewKey.class)
+@Document(indexName = "viewindex", createIndex = false)
 @EntityListeners(AuditingEntityListener.class)
 @javax.persistence.Table(name = "mdb_view")
 public class View {
@@ -43,8 +45,8 @@ public class View {
     })
     private User creator;
 
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
     private Database database;
 

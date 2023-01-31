@@ -11,15 +11,8 @@
             <pre>{{ item.query }}</pre>
             <v-icon v-if="item.type === 'view'" title="Query from a view" class="pid-icon">mdi-gauge</v-icon>
             <v-icon v-if="item.identifier" color="primary" title="Query with metadata" class="pid-icon">mdi-lock-clock</v-icon>
-            <v-icon v-if="erroneous(item)" color="error" title="Query failed to execute" class="pid-icon">mdi-flash</v-icon>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
-            <v-alert
-              v-if="erroneous(item)"
-              border="left"
-              color="error">
-              This query failed to execute and did not produce a subset.
-            </v-alert>
             <v-row dense>
               <v-col>
                 <v-list dense>
@@ -200,9 +193,6 @@ export default {
         this.$toast.error('Failed to load identifiers')
       }
       this.loading = false
-    },
-    erroneous (query) {
-      return !query.result_hash
     },
     details (query) {
       this.queryDetails = query

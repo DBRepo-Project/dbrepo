@@ -238,14 +238,7 @@ export default {
       loadingCitation: false,
       loadingDelete: false,
       editDbDialog: false,
-      identifier: {
-        id: null,
-        license: {
-          identifier: null,
-          uri: null
-        },
-        creators: []
-      },
+      citation: null,
       metadataLoading: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -268,19 +261,25 @@ export default {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.identifier.description
+      return this.database.identifier.description
     },
     publisher () {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.identifier.publisher
+      return this.database.identifier.publisher
     },
     token () {
       return this.$store.state.token
     },
     user () {
       return this.$store.state.user
+    },
+    identifier () {
+      if (this.database) {
+        return this.$store.state.database.identifier
+      }
+      return null
     },
     access () {
       return this.$store.state.access
@@ -305,7 +304,7 @@ export default {
       return isDataSteward(this.user)
     },
     pid () {
-      return `${this.baseUrl}/pid/${this.identifier.id}`
+      return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -320,7 +319,7 @@ export default {
       return this.database.creator.username === this.user.username
     },
     language () {
-      return this.identifier.language
+      return this.database.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -338,12 +337,12 @@ export default {
       return formatUser(this.database.contact)
     },
     publication () {
-      if (this.identifier.publication_year === null) {
+      if (this.database.identifier.publication_year === null) {
         return null
-      } else if (this.identifier.publication_month !== null && this.identifier.publication_day !== null) {
-        return this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day
+      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
+        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
       } else {
-        return this.identifier.publication_year
+        return this.database.identifier.publication_year
       }
     },
     creator () {
@@ -353,10 +352,10 @@ export default {
       return this.database.creator.email_verified
     },
     hasIdentifier () {
-      if (this.identifier === null) {
-        return false
+      if ('identifier' in this.database && this.database.identifier) {
+        return 'id' in this.database.identifier
       }
-      return this.identifier.id !== null
+      return false
     },
     accessDescription () {
       if (!this.access) {
@@ -376,13 +375,12 @@ export default {
   },
   mounted () {
     this.loadingCitation = true
-    this.loadIdentifier()
+    this.loadCitation()
   },
   methods: {
-    closeDialog (event) {
+    async closeDialog (event) {
       if (event.action === 'persisted') {
-        this.loadDatabase()
-          .then(() => this.loadIdentifier())
+        await this.loadDatabase()
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
@@ -407,29 +405,28 @@ export default {
       }
       this.metadataLoading = false
     },
-    async loadIdentifier () {
+    async loadCitation () {
       if (!this.database || !this.database.identifier) {
         this.loadingCitation = false
         return
       }
       try {
         const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
-        this.identifier = res.data
-        this.database.identifier = res.data
-        this.identifier.affiliations = []
-        this.identifier.creators.forEach((personOrOrg) => {
+        this.citation = res.data
+        this.citation.affiliations = []
+        this.citation.creators.forEach((personOrOrg) => {
           const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
           if (affiliationId === -1) {
-            this.identifier.affiliations.push(personOrOrg.affiliation)
-            personOrOrg.affiliation_id = this.identifier.affiliations.indexOf(personOrOrg.affiliation) + 1
+            this.citation.affiliations.push(personOrOrg.affiliation)
+            personOrOrg.affiliation_id = this.citation.affiliations.indexOf(personOrOrg.affiliation) + 1
           } else {
             personOrOrg.affiliation_id = affiliationId + 1
           }
         })
-        console.debug('identifier', this.identifier)
+        console.debug('citation', this.citation)
       } catch (err) {
-        console.error('Failed to load identifier', err)
-        this.$toast.error('Failed to load identifier')
+        console.error('Failed to load citation', err)
+        this.$toast.error('Failed to load citation')
       }
       this.loadingCitation = false
     },
@@ -442,19 +439,28 @@ export default {
         await this.$axios.delete(`/api/identifier/${this.database.identifier.id}`, this.config)
         console.info('Deleted identifier with id ', this.database.identifier.id)
         this.$toast.success('Successfully deleted identifier with id ' + this.database.identifier.id)
-        this.identifier = {
-          id: null,
-          license: {
-            identifier: null,
-            uri: null
-          }
-        }
+        await this.loadDatabase()
       } catch (error) {
         const { message } = error.response
         console.error('Failed to delete identifier', error)
         this.$toast.error('Failed to delete identifier: ' + message)
       }
       this.loadingDelete = false
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     }
   }
 }

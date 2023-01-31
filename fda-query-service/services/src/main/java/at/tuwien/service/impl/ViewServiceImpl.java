@@ -7,6 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.ViewMapper;
+import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.ViewRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
@@ -33,15 +34,18 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     private final DatabaseMapper databaseMapper;
     private final ViewRepository viewRepository;
     private final DatabaseService databaseService;
+    private final ViewIdxRepository viewIdxRepository;
 
     @Autowired
     public ViewServiceImpl(ViewMapper viewMapper, UserService userService, DatabaseMapper databaseMapper,
-                           ViewRepository viewRepository, DatabaseService databaseService) {
+                           ViewRepository viewRepository, DatabaseService databaseService,
+                           ViewIdxRepository viewIdxRepository) {
         this.viewMapper = viewMapper;
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.viewRepository = viewRepository;
         this.databaseService = databaseService;
+        this.viewIdxRepository = viewIdxRepository;
     }
 
     @Override
@@ -98,6 +102,8 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         viewRepository.delete(view);
         log.info("Deleted view with id {}", view.getId());
         log.trace("deleted view {}", view);
+        viewIdxRepository.deleteById(id);
+        log.info("Deleted view with id {} in elastic search", id);
     }
 
     @Override
@@ -129,6 +135,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
                 .creator(user)
+                .database(database)
                 .query(data.getQuery())
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())
@@ -136,6 +143,8 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         final View view = viewRepository.save(entity);
         log.info("Created view with id {}", view.getId());
         log.trace("created view {}", view);
+        final View elView = viewIdxRepository.save(view);
+        log.info("Created view with id {} in elastic search", elView.getId());
         return view;
     }
 

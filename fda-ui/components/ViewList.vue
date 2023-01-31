@@ -44,7 +44,7 @@
           <v-row dense>
             <v-col>
               <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
-                More
+                View Data
               </v-btn>
               <v-btn v-if="isOwner" small color="error" @click="deleteView(viewDetails)">
                 Delete
@@ -67,7 +67,6 @@ export default {
       loadingDetails: false,
       error: false,
       panel: null,
-      views: [],
       viewDetails: {
         id: null,
         internal_name: null,
@@ -99,6 +98,12 @@ export default {
     database () {
       return this.$store.state.database
     },
+    views () {
+      if (!this.database) {
+        return []
+      }
+      return this.$store.state.database.views
+    },
     isOwner () {
       if (!this.user) {
         return false
@@ -120,20 +125,8 @@ export default {
     }
   },
   mounted () {
-    this.loadViews()
   },
   methods: {
-    async loadViews () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
-        this.views = res.data
-        console.debug('views', this.views)
-      } catch (err) {
-        console.error('Failed to load views', err)
-      }
-      this.loading = false
-    },
     async details (table) {
       if (table.id === this.viewDetails.id) {
         /* prevent weird glitch of opening and collapsing simultaneously */
@@ -165,7 +158,6 @@ export default {
         const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
         console.debug('deleted view', res.data)
         this.$toast.success(`Successfully deleted view with id ${view.id}`)
-        await this.loadViews()
       } catch (err) {
         this.$toast.error('Failed to delete view')
         console.error('Failed to delete view')

@@ -37,3 +37,4 @@ fda:
   ready.path: ./ready
   website: http://localhost:3000
   gateway.endpoint: http://localhost:9095
+  elastic.endpoint: localhost:9200

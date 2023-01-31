@@ -350,7 +350,6 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('table-create', this.refresh)
     this.pollConsumerStatus()
   },
   methods: {

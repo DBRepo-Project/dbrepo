@@ -62,12 +62,11 @@ public class Table {
     private String description;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "table")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 

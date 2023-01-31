@@ -90,11 +90,11 @@ export default {
         '^/pid': '/pid'
       }
     },
-    '/search': {
+    '/retrieve': {
       target: process.env.SEARCH || 'http://localhost:9200',
       changeOrigin: true,
       pathRewrite: {
-        '^/search': ''
+        '^/retrieve': ''
       }
     }
   },

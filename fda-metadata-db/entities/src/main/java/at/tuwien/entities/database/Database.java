@@ -38,7 +38,7 @@ public class Database {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "UserID")
     })
@@ -70,6 +70,7 @@ public class Database {
     })
     private User contact;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
