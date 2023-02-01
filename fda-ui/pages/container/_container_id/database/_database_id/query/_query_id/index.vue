@@ -139,7 +139,7 @@
                   </span>
                 </div>
               </v-list-item-content>
-              <Citation :pid="database.identifier.id" />
+              <Citation :pid="pid" />
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -332,6 +332,12 @@ export default {
     },
     loadingColor () {
       return this.error ? 'error' : 'primary'
+    },
+    pid () {
+      if (this.database.identifier) {
+        return this.database.identifier.id
+      }
+      return 0
     },
     token () {
       return this.$store.state.token

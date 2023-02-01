@@ -3,6 +3,7 @@ package at.tuwien.api.database.table;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -21,6 +22,12 @@ import java.util.List;
 @NoArgsConstructor
 @Document(indexName = "tableindex", createIndex = false)
 public class TableDto {
+
+    @JsonIgnore
+    private Long containerId;
+
+    @JsonIgnore
+    private Long databaseId;
 
     @NotNull
     private Long id;

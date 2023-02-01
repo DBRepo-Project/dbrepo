@@ -26,11 +26,12 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
-              <v-text-field
+              <v-textarea
                 v-model="tableCreate.description"
                 name="description"
                 label="Description *"
                 autocomplete="off"
+                rows="3"
                 :rules="[v => notEmpty(v) || $t('Required')]"
                 required />
             </v-col>
@@ -71,7 +72,6 @@ export default {
       description: null,
       loading: false,
       step: 1,
-      tableNames: [],
       error: false,
       tableCreate: {
         name: null,
@@ -102,6 +102,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    database () {
+      return this.$store.state.database
+    },
     isResearcher () {
       return isResearcher(this.user)
     },
@@ -123,7 +126,7 @@ export default {
       if (this.tableCreate.name.length < 3) {
         return true
       }
-      return !this.tableNames.includes(this.tableCreate.name.toString()
+      return !this.database.tables.map(t => t.internal_name).includes(this.tableCreate.name.toString()
         .normalize('NFKD')
         .toLowerCase()
         .trim()
@@ -133,10 +136,6 @@ export default {
     }
   },
   mounted () {
-    if (!this.isResearcher) {
-      return
-    }
-    this.listTables()
   },
   methods: {
     notEmpty,
@@ -161,19 +160,6 @@ export default {
         console.error('could not create table', err)
         this.$toast.error('Could not create table')
       }
-    },
-    async listTables () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
-        console.debug('tables', res.data)
-        this.tableNames = res.data.map(t => t.internal_name)
-      } catch (err) {
-        this.error = true
-        console.error('could not list tables', err)
-        this.$toast.error('Could not list tables')
-      }
-      this.loading = false
     },
     schemaClose (event) {
       console.debug('schema closed', event)

@@ -59,10 +59,11 @@ public interface StoreMapper {
         try {
             log.trace("mapped select one query '{}' to prepared statement", statement);
             final PreparedStatement pstmt = connection.prepareStatement(statement);
+            log.trace("queryId={}", queryId);
             pstmt.setLong(1, queryId);
             return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {},   reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }

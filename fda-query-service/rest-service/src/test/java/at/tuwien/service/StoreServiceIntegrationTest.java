@@ -76,7 +76,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     private QueryService queryService;
 
     @BeforeEach
-    public void beforeEach() throws SQLException, InterruptedException {
+    public void beforeEach() throws InterruptedException {
         afterEach();
         /* create network */
         dockerClient.createNetworkCmd()
@@ -101,10 +101,6 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         /* start */
         DockerConfig.startContainer(CONTAINER_1);
         TABLE_1.setDatabase(DATABASE_1);
-        /* mock */
-        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
-        log.debug("found queries in query store: {}", MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT `query_normalized`, `query_hash`, `result_hash` FROM `qs_queries`", "query_normalized", "query_hash", "result_hash"));
     }
 
     @AfterEach
@@ -161,11 +157,12 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findAll_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
-            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException, SQLException {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
         storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, null, USER_1_PRINCIPAL);
@@ -173,18 +170,19 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findAll_filterPersisted_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
-            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException, SQLException {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
         storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void insert_succeeds() throws UserNotFoundException, QueryStoreException,
+    public void insert_same_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, SQLException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
@@ -205,7 +203,50 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_succeeds() throws UserNotFoundException, QueryStoreException,
+    public void execute_different_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, QueryMalformedException, ColumnParseException {
+        final ExecuteStatementDto mock = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_2_STATEMENT)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, mock, USER_1_PRINCIPAL, 0L, 10L, null, null);
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        assertEquals(2L, response.getId()) /* new query inserted */;
+    }
+
+    @Test
+    public void execute_same_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, QueryMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        assertEquals(1L, response.getId()) /* no new query inserted */;
+    }
+
+    @Test
+    public void execute_dataChangeSameQuery_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, QueryMalformedException, ColumnParseException, SQLException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
@@ -217,31 +258,12 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
+        queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        MariaDbConfig.execute(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, "INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall) VALUES (4, '2008-12-04', 'Albury', 12.9, 0.2)");
 
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
-        log.debug("found queries in query store: {}", MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT `query_normalized`, `query_hash`, `result_hash` FROM `qs_queries`", "query_normalized", "query_hash", "result_hash"));
-        assertEquals(1L, response.getId()) /* new query inserted */;
-    }
-
-    @Test
-    public void execute_different_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, QueryMalformedException, ColumnParseException {
-        final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement(QUERY_2_STATEMENT)
-                .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-
-        /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
-        assertEquals(2L, response.getId()) /* new query inserted */;
+        assertEquals(2L, response.getId()) /* no new query inserted */;
     }
 
     @Test
@@ -300,11 +322,12 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findOne_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException {
+            DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, SQLException {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
         storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);

@@ -42,4 +42,14 @@ public class MariaDbConfig {
         }
         return rows;
     }
+
+    public static void execute(String hostname, String database, String query)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb")) {
+            final Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        }
+    }
 }

@@ -169,7 +169,7 @@ export default {
         return `/container/${item.id}/database/${item.id}`
       }
       if (this.isTable(item)) {
-        return `/container/${item.tdbid}/database/${item.tdbid}/table/${item.id}`
+        return `/container/${item.containerId}/database/${item.databaseId}/table/${item.id}`
       }
       if (this.isView(item)) {
         return `/container/${item.vdbid}/database/${item.vdbid}/view/${item.id}`

@@ -3,6 +3,7 @@ package at.tuwien.api.database.table.columns;
 import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,6 +21,15 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @Document(indexName = "columnindex", createIndex = false)
 public class ColumnDto {
+
+    @JsonIgnore
+    private Long containerId;
+
+    @JsonIgnore
+    private Long databaseId;
+
+    @JsonIgnore
+    private Long tableId;
 
     @NotNull
     private Long id;

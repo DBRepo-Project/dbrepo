@@ -40,6 +40,8 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
+            @Mapping(source = "tdbid", target = "containerId"),
+            @Mapping(source = "tdbid", target = "databaseId"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
@@ -52,6 +54,9 @@ public interface TableMapper {
     /* keep */
     @Mappings({
             @Mapping(target = "unique", source = "isUnique"),
+            @Mapping(target = "tableId", source = "tid"),
+            @Mapping(target = "containerId", source = "cdbid"),
+            @Mapping(target = "databaseId", source = "cdbid"),
             @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
