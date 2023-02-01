@@ -21,7 +21,6 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "tableindex", createIndex = false)
 @EntityListeners(AuditingEntityListener.class)
 @IdClass(TableKey.class)
 @javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {

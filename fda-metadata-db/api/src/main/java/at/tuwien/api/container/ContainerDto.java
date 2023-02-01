@@ -1,19 +1,15 @@
 package at.tuwien.api.container;
 
 import at.tuwien.api.container.image.ImageBriefDto;
-import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.List;
 
 @Getter
 @Setter
@@ -48,6 +44,7 @@ public class ContainerDto {
 
     @JsonProperty("ip_address")
     private String ipAddress;
+
 
     private ImageBriefDto image;
 

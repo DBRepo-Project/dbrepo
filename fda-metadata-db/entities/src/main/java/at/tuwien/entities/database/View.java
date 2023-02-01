@@ -19,7 +19,6 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @IdClass(ViewKey.class)
-@Document(indexName = "viewindex", createIndex = false)
 @EntityListeners(AuditingEntityListener.class)
 @javax.persistence.Table(name = "mdb_view")
 public class View {

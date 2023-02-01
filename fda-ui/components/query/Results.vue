@@ -108,7 +108,7 @@ export default {
       }
       console.debug('query result', data)
       this.result.rows = data.result
-      this.total = data.resultNumber
+      this.total = data.result_number
     }
   }
 }

@@ -1,6 +1,6 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.View;
+import at.tuwien.api.database.ViewDto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -33,7 +33,7 @@ public class IndexInitializer {
         final IndexCoordinates viewIndex = IndexCoordinates.of("viewindex");
         if (!elasticsearchOperations.indexOps(viewIndex).exists()) {
             elasticsearchOperations.indexOps(viewIndex).create();
-            elasticsearchOperations.indexOps(viewIndex).createMapping(View.class);
+            elasticsearchOperations.indexOps(viewIndex).createMapping(ViewDto.class);
         }
     }
 }

@@ -2,12 +2,11 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -20,6 +19,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "tableindex", createIndex = false)
 public class TableDto {
 
     @NotNull
@@ -39,22 +39,28 @@ public class TableDto {
 
     @NotBlank
     @JsonProperty("queue_name")
-    @Schema(example = "dbrepo/4/4/2")
+    @Schema(example = "dbrepo/air_quality/air_quality")
     private String queueName;
 
     @NotBlank
     @JsonProperty("routing_key")
-    @Schema(example = "dbrepo/4/4/2/1")
+    @Schema(example = "dbrepo/air_quality/air_quality/1")
     private String routingKey;
 
     @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 
+    @NotNull
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 
 }

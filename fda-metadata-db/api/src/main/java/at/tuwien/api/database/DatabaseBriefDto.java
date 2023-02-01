@@ -39,6 +39,7 @@ public class DatabaseBriefDto {
     @Schema(example = "mariadb:10.5")
     private String engine;
 
+    @org.springframework.data.annotation.Transient
     private ContainerBriefDto container;
 
     private UserBriefDto creator;

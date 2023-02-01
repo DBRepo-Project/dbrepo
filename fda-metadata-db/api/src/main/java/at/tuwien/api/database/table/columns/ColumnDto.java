@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "columnindex", createIndex = false)
 public class ColumnDto {
 
     @NotNull
@@ -52,6 +54,11 @@ public class ColumnDto {
     private ConceptDto concept;
 
     private UnitDto unit;
+
+    @NotNull
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
 
     @NotNull
     @Schema(example = "true")

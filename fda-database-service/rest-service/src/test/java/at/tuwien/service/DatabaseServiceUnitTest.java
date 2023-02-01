@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -37,7 +37,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;

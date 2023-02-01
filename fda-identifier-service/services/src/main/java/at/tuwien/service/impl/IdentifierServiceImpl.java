@@ -9,7 +9,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.IdentifierMapper;
-import at.tuwien.repository.elastic.IdentifieridxRepository;
+import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.repository.jpa.RelatedIdentifierRepository;
 import at.tuwien.service.DatabaseService;
@@ -42,13 +42,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final IdentifierMapper identifierMapper;
     private final QueryServiceGateway queryServiceGateway;
     private final IdentifierRepository identifierRepository;
-    private final IdentifieridxRepository identifieridxRepository;
+    private final IdentifierIdxRepository identifierIdxRepository;
     private final RelatedIdentifierRepository relatedIdentifierRepository;
 
     public IdentifierServiceImpl(UserService userService, EndpointConfig endpointConfig, TemplateEngine templateEngine,
                                  DatabaseService databaseService, IdentifierMapper identifierMapper,
                                  QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
-                                 IdentifieridxRepository identifieridxRepository,
+                                 IdentifierIdxRepository identifierIdxRepository,
                                  RelatedIdentifierRepository relatedIdentifierRepository) {
         this.userService = userService;
         this.endpointConfig = endpointConfig;
@@ -57,7 +57,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         this.identifierMapper = identifierMapper;
         this.queryServiceGateway = queryServiceGateway;
         this.identifierRepository = identifierRepository;
-        this.identifieridxRepository = identifieridxRepository;
+        this.identifierIdxRepository = identifierIdxRepository;
         this.relatedIdentifierRepository = relatedIdentifierRepository;
     }
 
@@ -157,8 +157,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
         log.trace("created identifier {}", identifier);
-        final Identifier elIdentifier = identifieridxRepository.save(identifier);
-        log.info("Created identifier with id {} in elastic search", elIdentifier.getId());
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
+        log.info("Created identifier with id {} in elastic search", identifier.getId());
         return identifier;
     }
 
@@ -262,10 +262,13 @@ public class IdentifierServiceImpl implements IdentifierService {
         entity.getCreators()
                 .forEach(creator -> creator.setPid(identifierId));
         /* update */
-        final Identifier entityUpdated = identifierRepository.save(entity);
+        final Identifier identifier = identifierRepository.save(entity);
         log.info("Updated identifier with id {}", identifierId);
-        log.trace("updated identifier {}", entityUpdated);
-        return entityUpdated;
+        log.trace("updated identifier {}", identifier);
+        /* elastic search */
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
+        log.info("Updated identifier with id {} in elastic search", identifierId);
+        return identifier;
     }
 
     @Override
@@ -282,6 +285,9 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier entity = identifierRepository.save(identifier);
         log.info("Published identifier with id {}", identifierId);
         log.trace("published identifier {}", entity);
+        /* elastic search */
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
+        log.info("Published identifier with id {} in elastic search", identifierId);
         return entity;
     }
 
@@ -294,7 +300,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);
         log.trace("deleted identifier {}", identifier);
-        identifieridxRepository.deleteById(identifierId);
+        /* elastic search */
+        identifierIdxRepository.deleteById(identifierId);
         log.info("Deleted identifier with id {} in elastic search", identifierId);
     }
 

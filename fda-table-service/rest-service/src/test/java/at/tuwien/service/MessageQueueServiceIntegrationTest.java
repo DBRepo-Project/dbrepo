@@ -2,27 +2,18 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.AmqpConfig;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.TableColumnidxRepository;
-import at.tuwien.repository.elastic.TableidxRepository;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.elastic.TableColumnIdxRepository;
+import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.utils.AmqpUtils;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,12 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,8 +31,6 @@ import static at.tuwien.config.DockerConfig.dockerClient;
 import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -60,10 +45,10 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private IndexInitializer indexInitializer;
 
     @MockBean
-    private TableidxRepository tableidxRepository;
+    private TableIdxRepository tableidxRepository;
 
     @MockBean
-    private TableColumnidxRepository tableColumnidxRepository;
+    private TableColumnIdxRepository tableColumnidxRepository;
 
     @MockBean
     private TableRepository tableRepository;

@@ -8,7 +8,6 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -21,7 +20,6 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "columnindex", createIndex = false)
 @IdClass(TableColumnKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
@@ -52,7 +50,6 @@ public class TableColumn implements Comparable<TableColumn> {
     @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
     private ContainerImageDate dateFormat;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
@@ -158,5 +155,20 @@ public class TableColumn implements Comparable<TableColumn> {
         }
         return name.substring(idx + 1)
                 .equals(this.internalName);
+    }
+
+    /**
+     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
+     * Custom equality function implementation.
+     *
+     * @param object The other column.
+     * @return True if columns are equal, false otherwise
+     */
+    public boolean equals(Object object) {
+        if (!(object instanceof TableColumn)) {
+            return false;
+        }
+        final TableColumn other = (TableColumn) object;
+        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid()) && this.getCdbid().equals(other.getCdbid());
     }
 }

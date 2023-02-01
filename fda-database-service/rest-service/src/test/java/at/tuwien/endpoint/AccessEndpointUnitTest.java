@@ -5,7 +5,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.entities.database.Database;
@@ -39,7 +39,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private Channel channel;

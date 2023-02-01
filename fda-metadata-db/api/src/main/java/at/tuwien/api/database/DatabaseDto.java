@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "databaseindex", createIndex = false)
 public class DatabaseDto {
 
     @NotNull
@@ -32,7 +34,7 @@ public class DatabaseDto {
 
     @NotBlank
     @JsonProperty("exchange_name")
-    @Schema(example = "dbrepo/4/4")
+    @Schema(example = "dbrepo/air_quality")
     private String exchangeName;
 
     @NotNull
@@ -56,8 +58,10 @@ public class DatabaseDto {
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @org.springframework.data.annotation.Transient
     private ImageDto image;
 
+    @org.springframework.data.annotation.Transient
     private ContainerDto container;
 
     private List<DatabaseAccessDto> accesses;

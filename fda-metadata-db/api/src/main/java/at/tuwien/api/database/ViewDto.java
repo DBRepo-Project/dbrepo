@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import java.time.Instant;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "viewindex", createIndex = false)
 public class ViewDto {
 
     @NotNull
@@ -26,6 +28,7 @@ public class ViewDto {
     private Long vdbid;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private DatabaseDto database;
 
     @NotBlank

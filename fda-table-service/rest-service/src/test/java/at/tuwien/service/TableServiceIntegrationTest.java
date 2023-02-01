@@ -1,13 +1,14 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.TableColumnidxRepository;
-import at.tuwien.repository.elastic.TableidxRepository;
+import at.tuwien.repository.elastic.TableColumnIdxRepository;
+import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -26,7 +27,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.security.Principal;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -67,13 +67,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
      * ElasticSearch not required in this test
      */
     @MockBean
-    private TableidxRepository tableidxRepository;
+    private TableIdxRepository tableidxRepository;
 
     /**
      * ElasticSearch not required in this test
      */
     @MockBean
-    private TableColumnidxRepository tableColumnidxRepository;
+    private TableColumnIdxRepository tableColumnidxRepository;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -223,8 +223,8 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(tableidxRepository.save(any(Table.class)))
-                .thenReturn(TABLE_1);
+        when(tableidxRepository.save(any(TableDto.class)))
+                .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
 
@@ -239,8 +239,8 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(tableidxRepository.save(any(Table.class)))
-                .thenReturn(TABLE_1);
+        when(tableidxRepository.save(any(TableDto.class)))
+                .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
 
@@ -260,7 +260,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(tableidxRepository)
-                .delete(any(Table.class));
+                .delete(any(TableDto.class));
 
         /* test */
         tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);

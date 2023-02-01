@@ -7,8 +7,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.elastic.DatabaseidxRepository;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
@@ -32,17 +32,17 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final DatabaseMapper databaseMapper;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
-    private final DatabaseidxRepository databaseidxRepository;
+    private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     public MariaDbServiceImpl(UserService userService, DatabaseMapper databaseMapper,
                               ContainerService containerService, DatabaseRepository databaseRepository,
-                              DatabaseidxRepository databaseidxRepository) {
+                              DatabaseIdxRepository databaseIdxRepository) {
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
-        this.databaseidxRepository = databaseidxRepository;
+        this.databaseIdxRepository = databaseIdxRepository;
     }
 
     @Override
@@ -109,9 +109,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.info("Deleted database with id {}", databaseId);
         log.trace("deleted database {}", database);
         // delete in database_index - elastic search
-        databaseidxRepository.delete(database);
+        databaseIdxRepository.deleteById(databaseId);
         log.info("Deleted database in elastic search with id {}", databaseId);
-        log.trace("deleted database in elastic search {}", database);
     }
 
     @Override
@@ -155,12 +154,12 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         log.info("Created user {} on database with creator access", user.getUsername());
         /* save in metadata database */
-        final Database dbdb = databaseRepository.save(database);
-        log.info("Created database with id {}", dbdb.getId());
+        final Database entity = databaseRepository.save(database);
+        log.info("Created database with id {}", entity.getId());
         /* save in database_index - elastic search */
-        final Database edb = databaseidxRepository.save(database);
-        log.info("Saved database in elastic search with id {}", edb.getId());
-        return dbdb;
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Saved database in elastic search with id {}", entity.getId());
+        return entity;
     }
 
     @Override
@@ -172,14 +171,13 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* map */
         database.setIsPublic(transferDto.getIsPublic());
         /* update entity in metadata database */
-        final Database dbdb = databaseRepository.save(database);
-        log.info("Updated database with id {}", dbdb.getId());
-        log.trace("updated database {}", dbdb);
+        final Database entity = databaseRepository.save(database);
+        log.info("Updated database with id {}", entity.getId());
+        log.trace("updated database {}", entity);
         // save in database_index - elastic search
-        final Database edb = databaseidxRepository.save(database);
-        log.info("Updated database in elastic search with id {}", edb.getId());
-        log.trace("updated database in elastic search {}", edb);
-        return dbdb;
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database in elastic search with id {}", entity.getId());
+        return entity;
     }
 
 }

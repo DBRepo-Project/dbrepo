@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -43,7 +43,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseRepository databaseRepository;

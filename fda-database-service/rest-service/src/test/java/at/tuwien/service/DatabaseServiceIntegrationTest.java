@@ -2,13 +2,14 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.DatabaseidxRepository;
+import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -45,10 +46,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
-    private DatabaseidxRepository databaseidxRepository;
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private Channel channel;
@@ -237,8 +238,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(databaseidxRepository.save(any(Database.class)))
-                .thenReturn(database);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(null);
         when(containerRepository.findById(containerId))
                 .thenReturn(Optional.of(container));
         when(databaseRepository.save(any(Database.class)))

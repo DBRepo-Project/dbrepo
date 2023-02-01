@@ -28,7 +28,6 @@
         </div>
       </v-card-text>
     </v-card>
-    <!--    <pre>{{ results }}</pre>-->
   </div>
 </template>
 
@@ -89,7 +88,7 @@ export default {
         return false
       }
       if ('_class' in item) {
-        return /at.tuwien.entities.database.Database/.test(item._class)
+        return /at.tuwien.api.database.DatabaseDto/.test(item._class)
       }
       return item.exchangeName !== undefined
     },
@@ -98,7 +97,7 @@ export default {
         return false
       }
       if ('_class' in item) {
-        return /at.tuwien.entities.database.table.Table/.test(item._class)
+        return /at.tuwien.api.database.table.TableDto/.test(item._class)
       }
       return false
     },
@@ -116,7 +115,7 @@ export default {
         return false
       }
       if ('_class' in item) {
-        return /at.tuwien.entities.database.View/.test(item._class)
+        return /at.tuwien.api.database.ViewDto/.test(item._class)
       }
       return false
     },
@@ -125,7 +124,7 @@ export default {
         return false
       }
       if ('_class' in item) {
-        return /at.tuwien.entities.identifier.Identifier/.test(item._class)
+        return /at.tuwien.api.identifier.IdentifierDto/.test(item._class)
       }
       return false
     },
@@ -133,9 +132,9 @@ export default {
       if (this.isDatabase(item)) {
         return item.isPublic
       } else if (this.isTable(item)) {
-        return this.isPublic(item.database)
+        return item.isPublic
       } else if (this.isColumn(item)) {
-        return null
+        return item.isPublic
       } else if (this.isView(item)) {
         return item.isPublic
       } else if (this.isIdentifier(item)) {

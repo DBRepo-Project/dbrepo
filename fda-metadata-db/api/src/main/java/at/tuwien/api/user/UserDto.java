@@ -22,6 +22,7 @@ public class UserDto {
     private Long id;
 
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     private List<GrantedAuthorityDto> authorities;
 
     @NotNull
@@ -49,34 +50,42 @@ public class UserDto {
 
     @NotNull
     @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
+    @org.springframework.data.annotation.Transient
     private List<String> roles;
 
     @NotNull
     @JsonProperty("theme_dark")
     @Schema(example = "true")
+    @org.springframework.data.annotation.Transient
     private Boolean themeDark;
 
     @EqualsAndHashCode.Exclude
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> containers;
 
     @EqualsAndHashCode.Exclude
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> databases;
 
     @EqualsAndHashCode.Exclude
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> identifiers;
 
+    @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
+    @org.springframework.data.annotation.Transient
     private String password;
 
     @NotNull
     @Schema(example = "jcarberry@brown.edu")
+    @org.springframework.data.annotation.Transient
     private String email;
 
     @NotNull
     @JsonProperty("email_verified")
     @Schema(example = "true")
+    @org.springframework.data.annotation.Transient
     private Boolean emailVerified;
 
 }

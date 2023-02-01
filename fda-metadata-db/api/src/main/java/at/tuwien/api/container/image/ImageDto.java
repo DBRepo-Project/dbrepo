@@ -33,6 +33,7 @@ public class ImageDto {
     @NotBlank
     @JsonProperty("driver_class")
     @Schema(example = "org.mariadb.jdbc.Driver")
+    @org.springframework.data.annotation.Transient
     private String driverClass;
 
     @JsonProperty("date_formats")
@@ -40,11 +41,13 @@ public class ImageDto {
 
     @NotBlank
     @Schema(example = "org.hibernate.dialect.MariaDBDialect")
+    @org.springframework.data.annotation.Transient
     private String dialect;
 
     @NotBlank
     @JsonProperty("jdbc_method")
     @Schema(example = "mariadb")
+    @org.springframework.data.annotation.Transient
     private String jdbcMethod;
 
     @Schema(example = "sha256:c5ec7353d87dfc35067e7bffeb25d6a0d52dad41e8b7357213e3b12d6e7ff78e")
@@ -63,6 +66,7 @@ public class ImageDto {
     private Integer defaultPort;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ImageEnvItemDto> environment;
 
 }

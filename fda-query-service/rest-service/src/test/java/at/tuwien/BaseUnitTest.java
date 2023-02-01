@@ -855,7 +855,8 @@ public abstract class BaseUnitTest {
     public final static String QUERY_1_DOI = "1111/1";
     public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
-    public final static String QUERY_1_RESULT_HASH = "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
+    public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
+    public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
     public final static Instant QUERY_1_CREATED = Instant.now();
     public final static Instant QUERY_1_EXECUTION = Instant.now();
     public final static Boolean QUERY_1_PERSISTED = false;
@@ -863,6 +864,7 @@ public abstract class BaseUnitTest {
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
             .query(QUERY_1_STATEMENT)
+            .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .createdBy(USER_1_USERNAME)
@@ -874,6 +876,7 @@ public abstract class BaseUnitTest {
             .cid(QUERY_1_CONTAINER_ID)
             .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
+            .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
@@ -886,6 +889,7 @@ public abstract class BaseUnitTest {
             .cid(QUERY_1_CONTAINER_ID)
             .dbid(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
+            .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
@@ -894,7 +898,8 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long QUERY_2_ID = 2L;
-    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather`;";
+    public final static String QUERY_2_STATEMENT = "SELECT `location` FROM `weather_aus`";
+    public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
     public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
@@ -905,6 +910,7 @@ public abstract class BaseUnitTest {
     public final static Query QUERY_2 = Query.builder()
             .id(QUERY_2_ID)
             .query(QUERY_2_STATEMENT)
+            .queryHash(QUERY_2_QUERY_HASH)
             .resultHash(QUERY_2_RESULT_HASH)
             .created(QUERY_2_CREATED)
             .createdBy(USER_1_USERNAME)

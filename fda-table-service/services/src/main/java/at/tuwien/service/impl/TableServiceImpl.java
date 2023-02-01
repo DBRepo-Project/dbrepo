@@ -12,8 +12,8 @@ import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.repository.elastic.TableColumnidxRepository;
-import at.tuwien.repository.elastic.TableidxRepository;
+import at.tuwien.repository.elastic.TableColumnIdxRepository;
+import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.ConceptRepository;
 import at.tuwien.repository.jpa.TableColumnRepository;
 import at.tuwien.repository.jpa.TableRepository;
@@ -46,16 +46,16 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final DatabaseService databaseService;
     private final ContainerService containerService;
     private final ConceptRepository conceptRepository;
-    private final TableidxRepository tableidxRepository;
+    private final TableIdxRepository tableIdxRepository;
     private final TableColumnRepository tableColumnRepository;
-    private final TableColumnidxRepository tableColumnidxRepository;
+    private final TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, UnitRepository unitRepository,
                             TableRepository tableRepository, DatabaseService databaseService,
                             ContainerService containerService, ConceptRepository conceptRepository,
-                            TableidxRepository tableidxRepository, TableColumnRepository tableColumnRepository,
-                            TableColumnidxRepository tableColumnidxRepository) {
+                            TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
+                            TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.unitRepository = unitRepository;
@@ -63,9 +63,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         this.databaseService = databaseService;
         this.containerService = containerService;
         this.conceptRepository = conceptRepository;
-        this.tableidxRepository = tableidxRepository;
+        this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
-        this.tableColumnidxRepository = tableColumnidxRepository;
+        this.tableColumnIdxRepository = tableColumnIdxRepository;
     }
 
     @Override
@@ -98,11 +98,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         log.info("Deleted table with id {}", table.getId());
         log.trace("deleted table {}", table);
         /* delete in database_index - elastic search */
-        tableidxRepository.delete(table);
+        tableIdxRepository.deleteById(tableId);
         /* delete in column_index - elastic search */
-        tableColumnidxRepository.deleteAll(table.getColumns());
+        table.getColumns()
+                .forEach(column -> tableColumnIdxRepository.deleteById(column.getId()));
         log.info("Deleted columns in elastic search with id {}", databaseId);
-        log.trace("deleted columns in elastic search {}", database);
     }
 
     @Override
@@ -200,11 +200,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         log.info("Created table with id {}", table.getId());
         log.trace("created table {}", table);
         /* save in database_index - elastic search */
-        final Table eTbl = tableidxRepository.save(entity);
+        tableIdxRepository.save(tableMapper.tableToTableDto(table));
         /* save in column_index - elastic search */
-        tableColumnidxRepository.saveAll(eTbl.getColumns());
-        log.info("Saved table with id {} in elastic search", eTbl.getId());
-        log.trace("saved database in elastic search {}", eTbl);
+        tableColumnIdxRepository.saveAll(tableMapper.tableToTableDto(table).getColumns());
+        log.info("Saved table with id {} in elastic search", table.getId());
         return table;
     }
 
@@ -235,6 +234,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final TableColumn out = tableColumnRepository.save(column);
         log.info("Updated table column with id {} of table with id {}", columnId, tableId);
         log.debug("updated table column {}", out);
+        /* save in database_index - elastic search */
+        table.getColumns().set(table.getColumns().indexOf(column), column);
+        tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        /* save in column_index - elastic search */
+        tableColumnIdxRepository.save(tableMapper.tableColumnToColumnDto(out));
         return out;
     }
 

@@ -1,5 +1,7 @@
 package at.tuwien.config;
 
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -32,16 +34,16 @@ public class IndexInitializer {
             return;
         }
         log.debug("creating tableindex");
-        IndexCoordinates tableIndex = IndexCoordinates.of("tableindex");
+        final IndexCoordinates tableIndex = IndexCoordinates.of("tableindex");
         if (!elasticsearchOperations.indexOps(tableIndex).exists()) {
             elasticsearchOperations.indexOps(tableIndex).create();
-            elasticsearchOperations.indexOps(tableIndex).createMapping(Table.class);
+            elasticsearchOperations.indexOps(tableIndex).createMapping(TableDto.class);
         }
         log.debug("creating columnindex");
-        IndexCoordinates columnIndex = IndexCoordinates.of("columnindex");
+        final IndexCoordinates columnIndex = IndexCoordinates.of("columnindex");
         if (!elasticsearchOperations.indexOps(columnIndex).exists()) {
             elasticsearchOperations.indexOps(columnIndex).create();
-            elasticsearchOperations.indexOps(columnIndex).createMapping(TableColumn.class);
+            elasticsearchOperations.indexOps(columnIndex).createMapping(ColumnDto.class);
         }
     }
 }

@@ -1,6 +1,6 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.api.identifier.IdentifierDto;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -30,10 +30,10 @@ public class IndexInitializer {
             return;
         }
         log.debug("creating identifierindex");
-        IndexCoordinates identifierIndex = IndexCoordinates.of("identifierindex");
+        final IndexCoordinates identifierIndex = IndexCoordinates.of("identifierindex");
         if (!elasticsearchOperations.indexOps(identifierIndex).exists()) {
             elasticsearchOperations.indexOps(identifierIndex).create();
-            elasticsearchOperations.indexOps(identifierIndex).createMapping(Identifier.class);
+            elasticsearchOperations.indexOps(identifierIndex).createMapping(IdentifierDto.class);
         }
     }
 }

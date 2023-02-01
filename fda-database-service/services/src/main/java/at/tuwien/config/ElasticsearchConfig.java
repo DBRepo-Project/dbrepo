@@ -34,4 +34,5 @@ public class ElasticsearchConfig {
     public ElasticsearchOperations elasticsearchTemplate() {
         return new ElasticsearchRestTemplate(client());
     }
+
 }

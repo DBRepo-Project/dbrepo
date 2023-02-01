@@ -104,8 +104,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                        Principal principal, Instant execution)
+    public Query insert(Long containerId, Long databaseId, ExecuteStatementDto metadata, Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
         /* find */

@@ -45,12 +45,14 @@ public interface TableMapper {
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
+            @Mapping(source = "database.isPublic", target = "isPublic"),
     })
     TableDto tableToTableDto(Table data);
 
     /* keep */
     @Mappings({
             @Mapping(target = "unique", source = "isUnique"),
+            @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 

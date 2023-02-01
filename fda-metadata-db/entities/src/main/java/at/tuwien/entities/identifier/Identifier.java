@@ -24,7 +24,6 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(indexName = "identifierindex", createIndex = false)
 @EntityListeners(AuditingEntityListener.class)
 @javax.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
