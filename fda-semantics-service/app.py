@@ -41,7 +41,7 @@ swagger_config = {
     'specs': [
         {
             'endpoint': 'api',
-            'route': '/api.json',
+            'route': '/api-semantics.json',
             'rule_filter': lambda rule: True,
             'model_filter': lambda tag: True,  # all in
         }
@@ -83,7 +83,7 @@ swagger = Swagger(app, config=swagger_config, template=template)
 
 
 @app.route('/api/semantics/concept', methods=['GET'], endpoint='concepts_suggest')
-@swag_from('get_concepts.yml')
+@swag_from('us-yml/get_concepts.yml')
 def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest concept, body=%s', request)
@@ -98,7 +98,7 @@ def suggest():
 
 
 @app.route('/api/semantics/unit', methods=['GET'], endpoint='units_suggest')
-@swag_from('get_units.yml')
+@swag_from('us-yml/get_units.yml')
 def suggest():
     query = request.args.get('q')
     logging.debug('endpoint suggest unit, body=%s', request)
@@ -113,7 +113,7 @@ def suggest():
 
 
 @app.route('/api/semantics/unit/<unit>/validate', methods=['GET'], endpoint='units_validate')
-@swag_from('get_unit_validate.yml')
+@swag_from('us-yml/get_unit_validate.yml')
 def validate(unit):
     logging.debug('endpoint validate unit, unit=%s, body=%s', unit, request)
     try:
@@ -127,7 +127,7 @@ def validate(unit):
 
 
 @app.route('/api/semantics/concept/<concept>/validate', methods=['GET'], endpoint='concepts_validate')
-@swag_from('get_concept_validate.yml')
+@swag_from('us-yml/get_concept_validate.yml')
 def validate(concept):
     logging.debug('endpoint validate concept, concept=%s, body=%s', concept, request)
     try:
@@ -141,13 +141,17 @@ def validate(concept):
 
 
 @app.route('/api/semantics/concept', methods=['POST'], endpoint='concepts_save')
-@swag_from('post_concept.yml')
+@swag_from('us-yml/post_concept.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save concept, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -159,13 +163,17 @@ def save_concept():
 
 
 @app.route('/api/semantics/unit', methods=['POST'], endpoint='units_save')
-@swag_from('post_unit.yml')
+@swag_from('us-yml/post_unit.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_units(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -177,7 +185,7 @@ def save_concept():
 
 
 @app.route('/api/semantics/ontology', methods=['GET'], endpoint='ontologies_get')
-@swag_from('get_ontologies.yml')
+@swag_from('us-yml/get_ontologies.yml')
 def get_ontologies():
     ontologies = list_ontologies()
     logging.info('Get ontologies resulted in list %d', len(ontologies))
@@ -185,7 +193,7 @@ def get_ontologies():
 
 
 @app.route('/api/semantics/ontology/<name>', methods=['GET'], endpoint='ontologies_get_ontology')
-@swag_from('get_ontology.yml')
+@swag_from('us-yml/get_ontology.yml')
 def get_ontologies(name):
     ontology = get_ontology(name)
     if ontology is None:

@@ -1,6 +1,6 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.table.Table;
+import at.tuwien.querystore.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,13 +14,13 @@ import java.util.Map;
 @Configuration
 public class MariaDbConfig {
 
-    public static void clearQueryStore(Table table) throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + table.getDatabase().getContainer().getInternalName() + "/" + table.getDatabase().getInternalName();
+    public static void insertQueryStore(String hostname, String database, Query query, String username) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
         log.trace("connect to database {}", jdbc);
         final Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb");
         final Statement statement = connection.createStatement();
-        statement.execute("DROP TABLE IF EXISTS qs_queries;");
-        statement.execute("DROP TABLE IF EXISTS qs_seq;");
+        statement.execute("INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number) VALUES ('" +
+                username + "', '" + query.getQuery() + "', '" + query.getQuery() + "', true, '" + query.getQueryHash() + "', '" + query.getResultHash() + "', " + query.getResultNumber() + ")");
         connection.close();
     }
 

@@ -68,14 +68,6 @@ export default {
       error: false,
       panel: null,
       views: [],
-      database: {
-        exchange: null,
-        is_public: null,
-        tables: [],
-        creator: {
-          username: null
-        }
-      },
       viewDetails: {
         id: null,
         internal_name: null,
@@ -104,9 +96,11 @@ export default {
     user () {
       return this.$store.state.user
     },
+    database () {
+      return this.$store.state.database
+    },
     isOwner () {
-      if (!this.user.username) {
-        /* not yet loaded */
+      if (!this.user) {
         return false
       }
       return this.database.creator.username === this.user.username
@@ -127,7 +121,6 @@ export default {
   },
   mounted () {
     this.loadViews()
-    this.loadDatabase()
   },
   methods: {
     async loadViews () {
@@ -138,17 +131,6 @@ export default {
         console.debug('views', this.views)
       } catch (err) {
         console.error('Failed to load views', err)
-      }
-      this.loading = false
-    },
-    async loadDatabase () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Failed to load database', err)
       }
       this.loading = false
     },

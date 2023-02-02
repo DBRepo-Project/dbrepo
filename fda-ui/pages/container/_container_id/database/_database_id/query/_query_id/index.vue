@@ -12,10 +12,10 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
+        <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="token && query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
@@ -151,14 +151,14 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="!query_statement" type="text" class="skeleton-large" />
+                <v-skeleton-loader v-if="!query_statement" type="text, text" />
                 <pre v-if="query_statement">{{ query_statement }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-medium" />
+                <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-large" />
                 <pre v-if="query_hash">{{ query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
@@ -186,15 +186,15 @@
                 Result Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-medium" />
-                <pre v-if="!metadataLoading">{{ result_hash }}</pre>
+                <v-skeleton-loader v-if="!result_hash" type="text" class="skeleton-large" />
+                <pre v-if="result_hash">{{ result_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Number
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-xsmall" />
-                <span v-if="!metadataLoading">{{ result_number }}</span>
+                <v-skeleton-loader v-if="result_number === null" type="text" class="skeleton-xsmall" />
+                <span v-if="result_number !== null">{{ result_number }}</span>
               </v-list-item-content>
             </v-list-item-content>
             <v-list-item-content v-if="erroneous">
@@ -336,6 +336,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    user () {
+      return this.$store.state.user
+    },
     config () {
       if (this.token === null) {
         return {
@@ -348,17 +351,26 @@ export default {
         progress: false
       }
     },
+    silentConfig () {
+      return {
+        headers: this.config.headers,
+        progress: false
+      }
+    },
     query_statement () {
-      return this.query.query ? this.query.query : this.identifier.query
+      if (this.identifier.id) {
+        return this.identifier.query
+      }
+      if (this.query.query) {
+        return this.query.query
+      }
+      return null
     },
     publisher () {
       if (this.database.publisher === null) {
         return 'NA'
       }
       return this.database.publisher
-    },
-    username () {
-      return this.$store.state.user && this.$store.state.user.username
     },
     database_visibility () {
       return this.database.is_public !== null ? this.database.is_public : false
@@ -412,13 +424,22 @@ export default {
       }
     },
     query_hash () {
-      return 'sha256:' + (this.identifier.id ? this.identifier.query_hash : this.query.query_hash)
+      if (this.identifier.query_hash) {
+        return `sha256:${this.identifier.query_hash}`
+      }
+      return `sha256:${this.query.query_hash}`
     },
     result_number () {
-      return this.identifier.id ? this.identifier.result_number : this.query.result_number
+      if (this.identifier.result_number) {
+        return this.identifier.result_number
+      }
+      return this.query.result_number
     },
     result_hash () {
-      return 'sha256:' + (this.identifier.id ? this.identifier.result_hash : this.query.result_hash)
+      if (this.identifier.result_hash) {
+        return `sha256:${this.identifier.result_hash}`
+      }
+      return `sha256:${this.query.result_hash}`
     },
     executionUTC () {
       return this.identifier.id ? formatTimestampUTCLabel(this.identifier.created) : formatTimestampUTCLabel(this.query.created)
@@ -431,6 +452,7 @@ export default {
     }
   },
   mounted () {
+    this.loadAccess()
     this.loadDatabase()
       .then(() => this.loadMetadata())
       .then(() => {
@@ -472,6 +494,24 @@ export default {
       this.downloadLoading = false
       this.metadataLoading = false
     },
+    async loadAccess () {
+      if (!this.user) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
+        this.access = res.data
+        console.debug('access', this.access)
+      } catch (err) {
+        const { status } = err.response
+        if (status !== 401 && status !== 403) {
+          console.error('Failed to check access', err)
+          this.$toast.error('Failed to check access')
+        }
+      }
+      this.loading = false
+    },
     simulateProgress () {
       if (this.loadProgress !== 0) {
         return
@@ -510,12 +550,13 @@ export default {
       this.loadingQuery = true
       try {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
-        console.debug('query', res.data)
+        console.info('load query', res.data)
         this.query = res.data
       } catch (err) {
-        if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('Could not load query', err)
-          this.$toast.error('Could not load query')
+        const { statusText, status } = err.response
+        if (status !== 401 && status !== 405) {
+          console.error('Failed to load query with status', status, 'and message', statusText)
+          this.$toast.error('Failed to load query: ' + statusText)
         }
         this.error = true
       }
@@ -528,6 +569,11 @@ export default {
         console.debug('database', res.data)
         this.database = res.data
       } catch (err) {
+        const { statusText, status } = err.response
+        if (status !== 401 && status !== 405) {
+          console.error('Failed to load database with status', status, 'and message', statusText)
+          this.$toast.error('Failed to load database: ' + statusText)
+        }
         this.error = true
       }
       this.loadingDatabase = false
@@ -536,7 +582,7 @@ export default {
       this.loadingSave = true
       try {
         const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
-        console.debug('query', res.data)
+        console.info('save query', res.data)
         this.query = res.data
       } catch (err) {
         console.error('Failed to save query', err)
@@ -589,17 +635,20 @@ pre {
 .v-card__text {
   font-size: initial;
 }
-.skeleton-large .v-skeleton-loader__text {
-  width: 400px;
+.skeleton-large > div {
+  width: 400px !important;
 }
-.skeleton-medium .v-skeleton-loader__text {
-  width: 200px;
+.skeleton-medium > div {
+  width: 200px !important;
 }
-.skeleton-small .v-skeleton-loader__text {
-  width: 100px;
+.skeleton-small > div {
+  width: 100px !important;
 }
-.skeleton-xsmall .v-skeleton-loader__text {
-  width: 50px;
+.skeleton-xsmall > div {
+  width: 50px !important;
+}
+.v-data-table {
+  border-radius: 0;
 }
 #back-btn {
   min-width: auto;

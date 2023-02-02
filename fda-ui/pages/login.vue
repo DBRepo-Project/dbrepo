@@ -71,6 +71,17 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
+    },
+    config () {
+      if (this.token === null) {
+        return {}
+      }
+      return {
+        headers: { Authorization: `Bearer ${this.token}` }
+      }
     }
   },
   mounted () {
@@ -91,28 +102,34 @@ export default {
         this.loading = true
         const res = await this.$axios.post('/api/auth', this.loginAccount)
         console.debug('login user', res.data)
-        this.$store.commit('SET_TOKEN', res.data.token)
-        const user = { ...res.data }
-        delete user.token
-        this.$store.commit('SET_USER', user)
-        this.$toast.success('Welcome back!')
-        this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
-      } catch (err) {
-        if (err.response !== undefined && err.response.status !== undefined) {
-          if (err.response.status === 418) {
-            this.$toast.error('Check your inbox and confirm your e-mail address')
-            console.error('user has not confirmed e-mail', err)
-            this.loading = false
-            return
-          } else if (err.response.status === 404) {
-            this.$toast.error('Username not found')
-            console.error('user has not confirmed e-mail', err)
-            this.loading = false
-            return
-          }
-          console.error('login user failed', err)
+        const { token } = res.data
+        this.$store.commit('SET_TOKEN', token)
+        await this.setUser()
+      } catch (error) {
+        const { status } = error.response
+        if (status === 418) {
+          this.$toast.error('Check your inbox and confirm your e-mail address')
+          console.error('user has not confirmed e-mail', error)
+        } else if (status === 404) {
+          this.$toast.error('Username not found')
+          console.error('user has not confirmed e-mail', error)
+        } else {
           this.$toast.error('Login not successful')
+          console.error('login user failed', error)
         }
+        this.loading = false
+      }
+    },
+    async setUser () {
+      try {
+        const res = await this.$axios.put('/api/auth', {}, this.config)
+        this.$store.commit('SET_USER', res.data)
+        this.$vuetify.theme.dark = res.data.theme_dark
+        await this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
+      } catch (error) {
+        const { message } = error.response
+        console.error('Failed to load user information', error)
+        this.$toast.error('Failed to load user information: ' + message)
       }
       this.loading = false
     },

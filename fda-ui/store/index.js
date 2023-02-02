@@ -1,28 +1,27 @@
 export const state = () => ({
   token: null,
   user: null,
-  db: null,
-  table: null
+  database: null,
+  table: null,
+  access: null
 })
 
 export const mutations = {
-  SET_DATABASE (state, db) {
-    state.db = db
+  SET_DATABASE (state, database) {
+    state.database = database
   },
   SET_TOKEN (state, token) {
     state.token = token
   },
   SET_USER (state, user) {
-    state.user = null
-    if (user !== null) {
-      if (user.token) {
-        delete user.token
-      }
-      console.debug('set user', user)
-      state.user = user
+    if (user != null && user.token) {
+      delete user.token
     }
+    state.user = user
   },
-
+  SET_ACCESS (state, access) {
+    state.access = access
+  },
   /**
    Workaround. Helps to go 'back' from table data view and
    have the accordion open on the same table

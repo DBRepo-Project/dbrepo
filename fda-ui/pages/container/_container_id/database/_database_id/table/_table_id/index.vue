@@ -101,12 +101,6 @@ export default {
       pickVersionDialog: null,
       version: null,
       edit: false,
-      access: {
-        type: null,
-        user: {
-          username: null
-        }
-      },
       error: false, // XXX: `error` is never changed
       options: {
         page: 1,
@@ -152,6 +146,12 @@ export default {
     user () {
       return this.$store.state.user
     },
+    database () {
+      return this.$store.state.database
+    },
+    access () {
+      return this.$store.state.access
+    },
     downloadConfig () {
       if (this.token === null) {
         return {
@@ -192,6 +192,9 @@ export default {
       return this.edit && this.selection.length !== 0 && this.canModify
     },
     canModify () {
+      if (!this.user || !this.access || !this.table || !this.table.creator) {
+        return false
+      }
       if (this.table.creator.username === this.user.username) {
         return true
       }
@@ -201,6 +204,9 @@ export default {
       return this.access.type === 'write_all'
     },
     canRead () {
+      if (!this.user || !this.access) {
+        return false
+      }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
@@ -351,7 +357,7 @@ export default {
         })
         console.debug('rows', this.rows)
       } catch (err) {
-        console.error('failed to load data', err)
+        console.error('Failed to load data', err)
         this.$toast.error('Could not load table data')
       }
       this.loadingData = false
