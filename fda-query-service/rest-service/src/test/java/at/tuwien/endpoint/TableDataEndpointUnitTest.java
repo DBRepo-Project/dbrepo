@@ -5,6 +5,7 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -47,9 +48,6 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    @Autowired
-    private TableDataEndpoint dataEndpoint;
-
     @MockBean
     private QueryServiceImpl queryService;
 
@@ -57,10 +55,16 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
     private AccessService accessService;
 
     @MockBean
     private TableService tableService;
+
+    @Autowired
+    private TableDataEndpoint dataEndpoint;
 
     @Test
     public void import_publicAnonymous_fails() {

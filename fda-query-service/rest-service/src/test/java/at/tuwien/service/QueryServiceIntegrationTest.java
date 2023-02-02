@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
@@ -53,6 +54,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

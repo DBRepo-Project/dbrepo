@@ -1,5 +1,6 @@
 package at.tuwien;
 
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -131,11 +132,6 @@ public abstract class BaseUnitTest {
 
     public final static String DATABASE_NET = "fda-userdb";
 
-    public final static String BROKER_IMAGE = "fda-broker-service:latest";
-    public final static String BROKER_INTERNALNAME = "fda-broker-service";
-    public final static String BROKER_NET = "fda-public";
-    public final static String BROKER_IP = "172.29.0.2";
-
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
@@ -211,6 +207,18 @@ public abstract class BaseUnitTest {
             .driverClass(IMAGE_BROKER_DRIVER)
             .size(IMAGE_BROKER_SIZE)
             .defaultPort(IMAGE_BROKER_PORT)
+            .build();
+
+    public final static Long IMAGE_ELASTIC_ID = 3L;
+    public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
+    public final static String IMAGE_ELASTIC_TAG = "7.13.4";
+    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN"};
+    public final static String IMAGE_ELASTIC_CMD = "elasticsearch";
+
+    public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
+            .id(IMAGE_ELASTIC_ID)
+            .repository(IMAGE_ELASTIC_REPOSITORY)
+            .tag(IMAGE_ELASTIC_TAG)
             .build();
 
     public final static Long CONTAINER_1_ID = 1L;
@@ -293,6 +301,24 @@ public abstract class BaseUnitTest {
             .image(IMAGE_BROKER)
             .hash(CONTAINER_BROKER_HASH)
             .created(CONTAINER_BROKER_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_ELASTIC_ID = 5L;
+    public final static String CONTAINER_ELASTIC_NAME = "fda-elastic-service";
+    public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "search-mock-service";
+    public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
+    public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
+    public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Container CONTAINER_ELASTIC = Container.builder()
+            .id(CONTAINER_ELASTIC_ID)
+            .name(CONTAINER_ELASTIC_NAME)
+            .internalName(CONTAINER_ELASTIC_INTERNAL_NAME)
+            .imageId(IMAGE_ELASTIC_ID)
+            .image(IMAGE_ELASTIC)
+            .hash(CONTAINER_ELASTIC_HASH)
+            .created(CONTAINER_ELASTIC_CREATED)
             .creator(USER_1)
             .build();
 
@@ -2096,6 +2122,16 @@ public abstract class BaseUnitTest {
             .query(VIEW_1_QUERY)
             .build();
 
+    public final static ViewDto VIEW_1_DTO = ViewDto.builder()
+            .id(VIEW_1_ID)
+            .isInitialView(VIEW_1_INITIAL_VIEW)
+            .name(VIEW_1_NAME)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .vdbid(VIEW_1_DATABASE_ID)
+            .isPublic(VIEW_1_PUBLIC)
+            .query(VIEW_1_QUERY)
+            .build();
+
     public final static Long VIEW_2_ID = 2L;
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
@@ -2116,6 +2152,16 @@ public abstract class BaseUnitTest {
             .query(VIEW_2_QUERY)
             .build();
 
+    public final static ViewDto VIEW_2_DTO = ViewDto.builder()
+            .id(VIEW_2_ID)
+            .isInitialView(VIEW_2_INITIAL_VIEW)
+            .name(VIEW_2_NAME)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .vdbid(VIEW_2_DATABASE_ID)
+            .isPublic(VIEW_2_PUBLIC)
+            .query(VIEW_2_QUERY)
+            .build();
+
     public final static Long VIEW_3_ID = 3L;
     public final static Boolean VIEW_3_INITIAL_VIEW = false;
     public final static String VIEW_3_NAME = "JUnit3";
@@ -2131,6 +2177,16 @@ public abstract class BaseUnitTest {
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
             .vcid(VIEW_3_CONTAINER_ID)
+            .vdbid(VIEW_3_DATABASE_ID)
+            .isPublic(VIEW_3_PUBLIC)
+            .query(VIEW_3_QUERY)
+            .build();
+
+    public final static ViewDto VIEW_3_DTO = ViewDto.builder()
+            .id(VIEW_3_ID)
+            .isInitialView(VIEW_3_INITIAL_VIEW)
+            .name(VIEW_3_NAME)
+            .internalName(VIEW_3_INTERNAL_NAME)
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
             .query(VIEW_3_QUERY)

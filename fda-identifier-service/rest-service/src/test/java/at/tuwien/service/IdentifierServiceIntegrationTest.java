@@ -2,10 +2,13 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
+import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import lombok.extern.log4j.Log4j2;
@@ -27,14 +30,23 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
+
+    @MockBean
+    private QueryServiceGateway queryServiceGateway;
 
     @Autowired
     private IdentifierServiceImpl identifierService;
@@ -50,9 +62,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private CreatorRepository creatorRepository;
-
-    @MockBean
-    private QueryServiceGateway queryServiceGateway;
 
     @Autowired
     private UserRepository userRepository;
@@ -121,6 +130,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         when(queryServiceGateway.find(CONTAINER_2_ID, DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_2_DTO);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_2_DTO);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, principal, bearer);
@@ -240,6 +251,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Transactional(readOnly = true)
     public void update_succeeds() throws IdentifierNotFoundException {
 
+        /* mock */
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_1_DTO);
+
         /* test */
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
         assertEquals(IDENTIFIER_1_ID, response.getId());
@@ -255,6 +270,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void publish_everyone_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
         identifierRepository.save(IDENTIFIER_2);
 
+        /* mock */
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_2_DTO);
+
         /* test */
         identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
     }
@@ -262,6 +281,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void publish_trusted_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
         identifierRepository.save(IDENTIFIER_2);
+
+        /* mock */
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_2_DTO);
 
         /* test */
         identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.TRUSTED);
@@ -284,6 +307,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_2_DTO);
 
         /* test */
         assertThrows(IdentifierAlreadyPublishedException.class, () -> {
@@ -293,6 +318,11 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void delete_succeeds() throws IdentifierNotFoundException {
+
+        /* mock */
+        doNothing()
+                .when(identifierIdxRepository)
+                        .deleteById(IDENTIFIER_1_ID);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);

@@ -1,6 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -30,6 +31,9 @@ public class StoreMapperTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

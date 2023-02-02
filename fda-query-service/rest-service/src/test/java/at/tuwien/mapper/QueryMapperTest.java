@@ -3,6 +3,7 @@ package at.tuwien.mapper;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.DockerConfig;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -55,6 +56,9 @@ public class QueryMapperTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

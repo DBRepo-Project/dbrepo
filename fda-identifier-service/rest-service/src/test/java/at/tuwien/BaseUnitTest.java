@@ -4,6 +4,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
@@ -52,6 +53,16 @@ public abstract class BaseUnitTest {
             .lastModified(USER_1_LAST_MODIFIED)
             .build();
 
+    public final static UserDto USER_1_DTO = UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .email(USER_1_EMAIL)
+            .roles(List.of("ROLE_RESEARCHER"))
+            .emailVerified(USER_1_EMAIL_VERIFIED)
+            .themeDark(USER_1_THEME_DARK)
+            .build();
+
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
@@ -84,6 +95,16 @@ public abstract class BaseUnitTest {
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
             .lastModified(USER_2_LAST_MODIFIED)
+            .build();
+
+    public final static UserDto USER_2_DTO = UserDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .password(USER_2_PASSWORD)
+            .email(USER_2_EMAIL)
+            .roles(List.of("ROLE_RESEARCHER"))
+            .emailVerified(USER_2_EMAIL_VERIFIED)
+            .themeDark(USER_2_THEME_DARK)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -370,6 +391,27 @@ public abstract class BaseUnitTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
+    public final static CreatorDto IDENTIFIER_1_CREATOR_1_DTO = CreatorDto.builder()
+            .id(CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .affiliation(CREATOR_1_AFFIL)
+            .build();
+
+    public final static Creator IDENTIFIER_1_CREATOR_2 = Creator.builder()
+            .id(CREATOR_2_ID)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
+            .affiliation(CREATOR_2_AFFIL)
+            .build();
+
+    public final static CreatorDto IDENTIFIER_1_CREATOR_2_DTO = CreatorDto.builder()
+            .id(CREATOR_2_ID)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
+            .affiliation(CREATOR_2_AFFIL)
+            .build();
+
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
             .containerId(IDENTIFIER_1_CONTAINER_ID)
@@ -391,6 +433,32 @@ public abstract class BaseUnitTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
+            .creators(List.of(IDENTIFIER_1_CREATOR_1, IDENTIFIER_1_CREATOR_2))
+            .build();
+
+    public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .creator(USER_1_DTO)
+            .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO, IDENTIFIER_1_CREATOR_2_DTO))
             .build();
 
     public final static Long IDENTIFIER_2_ID = 2L;
@@ -440,6 +508,31 @@ public abstract class BaseUnitTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
             .creator(USER_2)
+            .build();
+
+    public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_2_ID)
+            .containerId(IDENTIFIER_2_CONTAINER_ID)
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
+            .description(IDENTIFIER_2_DESCRIPTION)
+            .title(IDENTIFIER_2_TITLE)
+            .doi(IDENTIFIER_2_DOI)
+            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
+            .created(IDENTIFIER_2_CREATED)
+            .lastModified(IDENTIFIER_2_MODIFIED)
+            .execution(IDENTIFIER_2_EXECUTION)
+            .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_2_QUERY_HASH)
+            .resultHash(IDENTIFIER_2_RESULT_HASH)
+            .query(IDENTIFIER_2_QUERY)
+            .queryNormalized(IDENTIFIER_2_NORMALIZED)
+            .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .type(IDENTIFIER_2_TYPE_DTO)
+            .creator(USER_2_DTO)
             .build();
 
     public final static Creator CREATOR_1 = Creator.builder()
@@ -500,25 +593,6 @@ public abstract class BaseUnitTest {
             .orcid(CREATOR_2_ORCID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
-            .build();
-
-    public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
-            .id(IDENTIFIER_1_ID)
-            .containerId(CONTAINER_1_ID)
-            .databaseId(DATABASE_1_ID)
-            .queryId(IDENTIFIER_1_QUERY_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_TITLE)
-            .doi(IDENTIFIER_1_DOI)
-            .publisher(IDENTIFIER_1_PUBLISHER)
-            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
-            .type(IDENTIFIER_1_TYPE_DTO)
-            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
-            .created(IDENTIFIER_1_CREATED)
-            .lastModified(IDENTIFIER_1_MODIFIED)
-            .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()

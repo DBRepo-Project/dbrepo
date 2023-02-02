@@ -3,10 +3,13 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
+import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
@@ -34,11 +37,14 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class IdentifierServiceUnitTest extends BaseUnitTest {
 
-    @Autowired
-    private IdentifierService identifierService;
-
     @MockBean
     private IdentifierRepository identifierRepository;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     private DatabaseService databaseService;
@@ -48,6 +54,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private UserService userService;
+
+    @Autowired
+    private IdentifierService identifierService;
 
     @Test
     public void findAll_succeeds() {
@@ -129,6 +138,8 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1);
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(IDENTIFIER_1);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_1_DTO);
 
 
         /* test */
@@ -144,6 +155,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         doNothing()
                 .when(identifierRepository)
                 .delete(IDENTIFIER_1);
+        doNothing()
+                .when(identifierIdxRepository)
+                .deleteById(IDENTIFIER_1_ID);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);

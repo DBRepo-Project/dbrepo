@@ -2,11 +2,14 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -48,6 +51,12 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
@@ -133,6 +142,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(viewRepository.save(any(View.class)))
                 .thenReturn(VIEW_3);
+        when(viewIdxRepository.save(any(ViewDto.class)))
+                .thenReturn(VIEW_3_DTO);
 
         /* test */
         final View response = viewService.create(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -175,6 +186,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(viewRepository.save(any(View.class)))
                 .thenReturn(VIEW_1);
+        when(viewIdxRepository.save(any(ViewDto.class)))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         final View response = viewService.create(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
