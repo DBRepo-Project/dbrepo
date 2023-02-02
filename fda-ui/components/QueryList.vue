@@ -160,8 +160,8 @@ export default {
         console.debug('queries', this.queries)
       } catch (err) {
         this.error = true
-        console.error('Connection to query store failed', err.response.data)
-        this.$toast.error(err.response.data.message)
+        console.error('Connection to query store failed', err.response.index)
+        this.$toast.error(err.response.index.message)
       }
       this.loading = false
     },
@@ -189,7 +189,7 @@ export default {
         this.queries = queries
         console.debug('identifier queries', queries)
       } catch (err) {
-        console.error('Failed to load identifiers', err.response.data)
+        console.error('Failed to load identifiers', err.response.index)
         this.$toast.error('Failed to load identifiers')
       }
       this.loading = false

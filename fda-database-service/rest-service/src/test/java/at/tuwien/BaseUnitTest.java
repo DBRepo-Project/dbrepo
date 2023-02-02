@@ -176,6 +176,18 @@ public abstract class BaseUnitTest {
             .compiled(IMAGE_1_UPDATED)
             .build();
 
+    public final static Long IMAGE_ELASTIC_ID = 3L;
+    public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
+    public final static String IMAGE_ELASTIC_TAG = "7.13.4";
+    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN"};
+    public final static String IMAGE_ELASTIC_CMD = "elasticsearch";
+
+    public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
+            .id(IMAGE_ELASTIC_ID)
+            .repository(IMAGE_ELASTIC_REPOSITORY)
+            .tag(IMAGE_ELASTIC_TAG)
+            .build();
+
     public final static String LICENSE_1_IDENTIFIER = "MIT";
     public final static String LICENSE_1_URI = "https://opensource.org/licenses/MIT";
 
@@ -281,6 +293,24 @@ public abstract class BaseUnitTest {
             .image(IMAGE_1)
             .build();
 
+    public final static Long CONTAINER_ELASTIC_ID = 5L;
+    public final static String CONTAINER_ELASTIC_NAME = "fda-elastic-service";
+    public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "search-mock-service";
+    public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
+    public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
+    public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
+
+    public final static Container CONTAINER_ELASTIC = Container.builder()
+            .id(CONTAINER_ELASTIC_ID)
+            .name(CONTAINER_ELASTIC_NAME)
+            .internalName(CONTAINER_ELASTIC_INTERNAL_NAME)
+            .imageId(IMAGE_ELASTIC_ID)
+            .image(IMAGE_ELASTIC)
+            .hash(CONTAINER_ELASTIC_HASH)
+            .created(CONTAINER_ELASTIC_CREATED)
+            .creator(USER_1)
+            .build();
+
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
@@ -291,6 +321,15 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
+
+    public final static DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
+            .id(DATABASE_1_ID)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .description(DATABASE_1_DESCRIPTION)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .created(DATABASE_1_CREATED)
+            .build();
 
     public final static ExchangeDto DATABASE_EXCHANGE_1 = ExchangeDto.builder()
             .durable(false)
@@ -308,11 +347,21 @@ public abstract class BaseUnitTest {
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Weather AT";
+    public final static String DATABASE_2_DESCRIPTION = "Weather in Austria";
     public final static Boolean DATABASE_2_PUBLIC = false;
     public final static String DATABASE_2_INTERNALNAME = "weather_at";
     public final static String DATABASE_2_EXCHANGE = "fda." + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_2_UPDATED = Instant.now();
+
+    public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
+            .id(DATABASE_2_ID)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .description(DATABASE_2_DESCRIPTION)
+            .exchangeName(DATABASE_2_EXCHANGE)
+            .created(DATABASE_2_CREATED)
+            .build();
 
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_2_NAME)

@@ -156,7 +156,7 @@ export default {
     async deleteView (view) {
       try {
         const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
-        console.debug('deleted view', res.data)
+        console.debug('deleted view', res.index)
         this.$toast.success(`Successfully deleted view with id ${view.id}`)
       } catch (err) {
         this.$toast.error('Failed to delete view')

@@ -69,8 +69,8 @@ export default {
         this.loading = false
         parent.resultId = res.data.id
       } catch (err) {
-        console.error('Failed to execute query', err.response.data)
-        this.$toast.error(err.response.data.message)
+        console.error('Failed to execute query', err.response.index)
+        this.$toast.error(err.response.index.message)
         this.loading = false
       }
     },
@@ -98,7 +98,7 @@ export default {
         this.loading = false
       } catch (err) {
         console.error('failed to execute query', err)
-        this.$toast.error('Failed to execute query: ' + err.response.data.message)
+        this.$toast.error('Failed to execute query: ' + err.response.index.message)
         this.loading = false
       }
     },

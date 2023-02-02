@@ -5,7 +5,7 @@ import at.tuwien.amqp.RabbitMqConsumer;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.config.DockerConfig;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.repository.jpa.DatabaseRepository;
@@ -57,7 +57,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private RabbitMqConsumer rabbitMqConsumer;

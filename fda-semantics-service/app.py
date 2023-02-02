@@ -141,17 +141,13 @@ def validate(concept):
 
 
 @app.route('/api/semantics/concept', methods=['POST'], endpoint='concepts_save')
-@swag_from('us-yml/post_concept.yml')
+@swag_from('post_concept.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save concept, body=%s', input_json)
     try:
-        uri = input_json['uri']
-        name = input_json['name']
-        if uri is None:
-            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
-        if name is None:
-            return jsonify({'status': 'error', 'message': 'name is null'}), 400
+        uri = str(input_json['uri'])
+        name = str(input_json['name'])
         if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -163,17 +159,13 @@ def save_concept():
 
 
 @app.route('/api/semantics/unit', methods=['POST'], endpoint='units_save')
-@swag_from('us-yml/post_unit.yml')
+@swag_from('post_unit.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
-        uri = input_json['uri']
-        name = input_json['name']
-        if uri is None:
-            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
-        if name is None:
-            return jsonify({'status': 'error', 'message': 'name is null'}), 400
+        uri = str(input_json['uri'])
+        name = str(input_json['name'])
         if insert_mdb_units(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -185,7 +177,7 @@ def save_concept():
 
 
 @app.route('/api/semantics/ontology', methods=['GET'], endpoint='ontologies_get')
-@swag_from('us-yml/get_ontologies.yml')
+@swag_from('get_ontologies.yml')
 def get_ontologies():
     ontologies = list_ontologies()
     logging.info('Get ontologies resulted in list %d', len(ontologies))
@@ -193,7 +185,7 @@ def get_ontologies():
 
 
 @app.route('/api/semantics/ontology/<name>', methods=['GET'], endpoint='ontologies_get_ontology')
-@swag_from('us-yml/get_ontology.yml')
+@swag_from('get_ontology.yml')
 def get_ontologies(name):
     ontology = get_ontology(name)
     if ontology is None:

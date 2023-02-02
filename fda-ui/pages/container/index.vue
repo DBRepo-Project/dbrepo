@@ -43,7 +43,7 @@
         <div class="db-tags">
           <v-chip v-if="!notInit(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
           <v-chip v-if="!notInit(container) && !container.database.is_public" small color="red" outlined>Private</v-chip>
-          <v-chip small outlined>Database</v-chip>
+          <v-chip v-if="identifierCreated(container)" small outlined>Database</v-chip>
           <v-chip v-if="identifierCreated(container)" small outlined v-text="identifierCreated(container)" />
         </div>
         <div v-text="identifierDescription(container)" />

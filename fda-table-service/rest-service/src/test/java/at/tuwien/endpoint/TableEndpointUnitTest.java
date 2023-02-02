@@ -1,7 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.DatabaseNotFoundException;
@@ -44,7 +44,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
      * ElasticSearch not required in this test
      */
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     /**
      * ElasticSearch not required in this test

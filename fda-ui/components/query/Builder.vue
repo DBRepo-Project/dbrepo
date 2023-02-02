@@ -325,7 +325,7 @@ export default {
         await this.loadDatabase()
       } catch (err) {
         console.error('Failed to create view', err)
-        this.$toast.error(err.response.data.message)
+        this.$toast.error(err.response.index.message)
       }
       this.loadingQuery = false
       await this.$refs.queryResults.reExecute(this.resultId)

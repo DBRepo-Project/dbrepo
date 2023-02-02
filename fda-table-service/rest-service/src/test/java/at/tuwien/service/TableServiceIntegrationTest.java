@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.config.DockerConfig;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
@@ -61,7 +61,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
      * ElasticSearch not required in this test
      */
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     /**
      * ElasticSearch not required in this test
