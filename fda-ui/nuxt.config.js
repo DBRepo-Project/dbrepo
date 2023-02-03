@@ -78,7 +78,8 @@ export default {
     version: process.env.VERSION || 'latest',
     logo: process.env.LOGO || '/logo.png',
     mailVerify: process.env.MAIL_VERIFY || false,
-    tokenMax: process.env.TOKEN_MAX || 5
+    tokenMax: process.env.TOKEN_MAX || 5,
+    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic'
   },
 
   proxy: {

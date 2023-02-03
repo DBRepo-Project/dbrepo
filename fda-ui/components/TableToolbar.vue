@@ -199,13 +199,18 @@ export default {
       this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
       this.selection = []
       /* reload */
-      await this.loadData()
+      this.$emit('reload', {
+        success: true
+      })
     },
     close (event) {
       console.debug('closed edit/create tuple dialog', event)
       this.editTupleDialog = false
+      this.selection = []
       if (event.success) {
-        this.loadData()
+        this.$emit('reload', {
+          success: true
+        })
       }
     }
   }

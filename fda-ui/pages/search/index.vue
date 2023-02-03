@@ -51,6 +51,14 @@ export default {
         return `${this.results.length} results`
       }
       return `${this.results.length} result`
+    },
+    elasticConfig () {
+      return {
+        auth: {
+          username: 'elastic',
+          password: this.$config.elasticPassword
+        }
+      }
     }
   },
   watch: {
@@ -74,7 +82,7 @@ export default {
       }
       this.loading = true
       try {
-        const res = await this.$axios.get(`/retrieve/databaseindex,tableindex,columnindex,identifierindex,viewindex/_search?q=${v}*&terminate_after=50`)
+        const res = await this.$axios.get(`/retrieve/databaseindex,tableindex,columnindex,identifierindex,viewindex/_search?q=${v}*&terminate_after=50`, this.elasticConfig)
         console.info('search results', res.data.hits.total.value)
         console.debug('search results for', this.$route.query.q, 'are', res.data.hits.hits)
         this.results = res.data.hits.hits.map(h => h._source)

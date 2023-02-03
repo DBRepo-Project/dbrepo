@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserDetailsDto;
@@ -16,4 +17,6 @@ public interface IdentifierMapper {
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     IdentifierDto identifierToIdentifierDto(Identifier data);
+
+    IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 }

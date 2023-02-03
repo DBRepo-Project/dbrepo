@@ -10,7 +10,7 @@ from list import List
 from validate import validator
 from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_units
-from onto_feat import search_ontologies, list_ontologies, get_ontology
+from onto_feat import list_ontologies, get_ontology
 from prometheus_flask_exporter import PrometheusMetrics
 
 dictConfig({
@@ -140,14 +140,34 @@ def validate(concept):
         return jsonify(res), 500
 
 
+@app.route('/api/semantics/concept', methods=['PUT'], endpoint='concepts_label')
+@swag_from('us-yml/put_concept.yml')
+def get_concept_label():
+    input_json = request.get_json()
+    logging.debug('endpoint read concept, body=%s', input_json)
+    try:
+        uri = input_json['uri']
+        res = list.get_concept_label(uri)
+        logging.info('suggest concept result: %s', res)
+        return jsonify(res), 200
+    except Exception as e:
+        logging.error('Failed to suggest concept: %s', e)
+        res = {'success': False, 'message': str(e), 'status': 500}
+        return jsonify(res), 500
+
+
 @app.route('/api/semantics/concept', methods=['POST'], endpoint='concepts_save')
-@swag_from('post_concept.yml')
+@swag_from('us-yml/post_concept.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save concept, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_concepts(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -159,13 +179,17 @@ def save_concept():
 
 
 @app.route('/api/semantics/unit', methods=['POST'], endpoint='units_save')
-@swag_from('post_unit.yml')
+@swag_from('us-yml/post_unit.yml')
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
-        uri = str(input_json['uri'])
-        name = str(input_json['name'])
+        uri = input_json['uri']
+        name = input_json['name']
+        if uri is None:
+            return jsonify({'status': 'error', 'message': 'uri is null'}), 400
+        if name is None:
+            return jsonify({'status': 'error', 'message': 'name is null'}), 400
         if insert_mdb_units(uri, name) > 0:
             return jsonify({'uri': uri}), 201
         else:
@@ -177,7 +201,7 @@ def save_concept():
 
 
 @app.route('/api/semantics/ontology', methods=['GET'], endpoint='ontologies_get')
-@swag_from('get_ontologies.yml')
+@swag_from('us-yml/get_ontologies.yml')
 def get_ontologies():
     ontologies = list_ontologies()
     logging.info('Get ontologies resulted in list %d', len(ontologies))
@@ -185,7 +209,7 @@ def get_ontologies():
 
 
 @app.route('/api/semantics/ontology/<name>', methods=['GET'], endpoint='ontologies_get_ontology')
-@swag_from('get_ontology.yml')
+@swag_from('us-yml/get_ontology.yml')
 def get_ontologies(name):
     ontology = get_ontology(name)
     if ontology is None:

@@ -12,6 +12,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class IndexConfig {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
+    @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
         log.debug("creating databaseindex");

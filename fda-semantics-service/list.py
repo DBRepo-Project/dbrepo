@@ -8,6 +8,7 @@ Created on Sat Dec  4 11:37:19 2021
 """
 import logging
 import rdflib
+import re
 import requests as rq
 
 
@@ -41,7 +42,7 @@ class List:
     def list_units(self, name, offset=0) -> []:
         name = name.lower()
         logging.info(f"list units for unit name {name}")
-        l_query = """SELECT DISTINCT ?item ?symbol ?name ?comment
+        l_query = """SELECT DISTINCT ?unit ?symbol ?name ?comment
         WHERE {
             ?unit om:symbol ?symbol .
             ?unit rdfs:label ?name .
@@ -53,7 +54,8 @@ class List:
         qres = self.u.query(l_query)
         units = list()
         for row in qres:
-            units.append({"uri": str(row.item), "symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
+            units.append(
+                {"uri": str(row.unit), "symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
         return units
 
     def list_concepts(self, name) -> []:
@@ -64,7 +66,7 @@ class List:
             SERVICE <https://query.wikidata.org/sparql> {
                 SELECT ?item ?name ?comment
                 WHERE {
-                    ?item wdt:P279* wd:Q1183543 .
+                    ?item wdt:P31/wdt:P279* wd:Q3054889 .
                     ?item rdfs:label ?name .
                     ?item schema:description ?comment .
                     FILTER(LANG(?comment) = "en") .
@@ -94,21 +96,21 @@ class List:
             print(f"res: uri={row.uri}")
             return {"uri": str(row.uri)}
 
-    def get_concept_uri(self, name) -> {}:
-        name = name.lower()
-        logging.info(f"get url for concept name {name}")
+    def get_concept_label(self, uri) -> {}:
+        m = re.search('https://www.wikidata.org/entity/(.+?)', uri)
+        if not m:
+            raise Exception("Did not match wikidata uri")
+        entity = m.group(1)
+        logging.info(f"get label for entity {entity}")
         uri_query = """SELECT DISTINCT ?item ?name ?comment
         WHERE { 
             SERVICE <https://query.wikidata.org/sparql> {
-                SELECT ?item ?name ?comment
+                SELECT ?label
                 WHERE {
-                    ?item wdt:P279* wd:Q1183543 .
-                    ?item rdfs:label ?name .
-                    ?item schema:description ?comment .
-                    FILTER(LANG(?comment) = "en") .
-                    FILTER(LANG(?name) = "en") .
-                    FILTER regex(?name, \"^""" + name + """$\", "i") .
-                }
+                  wd:""" + entity + """ rdfs:label ?label .
+                  FILTER (langMatches(lang(?label), "EN" ) )
+                } 
+                LIMIT 1
             }
         }"""
         qres = self.c.query(uri_query)

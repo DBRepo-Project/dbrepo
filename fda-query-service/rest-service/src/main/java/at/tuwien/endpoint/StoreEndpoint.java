@@ -3,7 +3,9 @@ package at.tuwien.endpoint;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.QueryConfig;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
@@ -34,16 +36,21 @@ public class StoreEndpoint extends AbstractEndpoint {
     private final QueryMapper queryMapper;
     private final UserService userService;
     private final StoreService storeService;
+    private final IdentifierMapper identifierMapper;
+    private final IdentifierService identifierService;
 
     @Autowired
     public StoreEndpoint(QueryConfig queryConfig, UserMapper userMapper, QueryMapper queryMapper,
                          UserService userService, StoreService storeService, DatabaseService databaseService,
-                         IdentifierService identifierService, TableService tableService, AccessService accessService) {
+                         IdentifierService identifierService, TableService tableService, AccessService accessService,
+                         IdentifierMapper identifierMapper, IdentifierService identifierService1) {
         super(tableService, accessService, databaseService, identifierService, queryConfig);
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
         this.storeService = storeService;
+        this.identifierMapper = identifierMapper;
+        this.identifierService = identifierService1;
     }
 
     @GetMapping
@@ -63,16 +70,17 @@ public class StoreEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing view all queries permission");
         }
         final List<Query> queries = storeService.findAll(containerId, databaseId, persisted, principal);
+        final List<Identifier> identifiers = identifierService.findAll();
         final List<User> users = userService.findAll();
         final List<QueryBriefDto> dto = queries.stream()
                 .map(q -> {
                     final QueryBriefDto brief = queryMapper.queryToQueryBriefDto(q);
-                    final Optional<User> optional = users.stream().filter(u -> {
-                        u.getId();
-                        q.getCreatedBy();
-                        return false;
-                    }).findFirst();
-                    optional.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
+                    final Optional<User> optional1 = users.stream().filter(u -> u.getUsername().equals(q.getCreatedBy()))
+                            .findFirst();
+                    final Optional<Identifier> optional2 = identifiers.stream().filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
+                            .findFirst();
+                    optional1.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
+                    optional2.ifPresent(identifier -> brief.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
                     return brief;
                 })
                 .collect(Collectors.toList());

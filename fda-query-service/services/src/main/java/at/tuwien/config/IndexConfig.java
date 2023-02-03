@@ -13,6 +13,7 @@ import org.springframework.core.env.Profiles;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class IndexConfig {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
+    @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
         if (environment.acceptsProfiles(Profiles.of("test-noelastic"))) {

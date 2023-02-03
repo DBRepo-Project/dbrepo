@@ -67,11 +67,10 @@
                 </v-list-item-title>
                 <v-list-item-content class="amqp-consumer">
                   <span v-if="justCreated">Creating consumers ...</span>
-                  <v-skeleton-loader v-if="loadingConsumers" type="text" class="skeleton-small" />
-                  <div v-if="!loadingConsumers">
-                    <span v-if="!justCreated" v-text="`${consumersUp}/${consumersTotal}`" />
+                  <v-skeleton-loader v-if="!justCreated && loadingConsumers" type="text" class="skeleton-small" />
+                  <div v-if="!justCreated && !loadingConsumers">
+                    <span v-text="`${consumersUp}/${consumersTotal}`" />
                     <v-badge
-                      v-if="!justCreated"
                       class="ml-1"
                       :color="consumersState.color"
                       :content="consumersState.text" />

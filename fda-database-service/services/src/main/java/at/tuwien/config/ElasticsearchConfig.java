@@ -25,6 +25,7 @@ public class ElasticsearchConfig {
     public RestHighLevelClient client() {
         final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
                 .connectedTo(elasticEndpoint)
+                .withBasicAuth(elasticUsername, elasticPassword)
                 .build();
         return RestClients.create(clientConfiguration)
                 .rest();

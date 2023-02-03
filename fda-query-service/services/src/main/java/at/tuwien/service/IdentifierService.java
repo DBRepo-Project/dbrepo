@@ -3,6 +3,8 @@ package at.tuwien.service;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
 
+import java.util.List;
+
 public interface IdentifierService {
 
     /**
@@ -13,4 +15,6 @@ public interface IdentifierService {
      * @return The identifier.
      */
     Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException;
+
+    List<Identifier> findAll();
 }

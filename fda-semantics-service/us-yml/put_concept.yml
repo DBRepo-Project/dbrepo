@@ -1,0 +1,29 @@
+summary:
+description: This is a simple API for saving concept
+consumes:
+  - application/json
+produces:
+  - application/json
+requestBody:
+  content:
+    application/json:
+      schema:
+        required:
+          - uri
+          - name
+        type: object
+        properties:
+          uri:
+            type: string
+            example: https://www.wikidata.org/wiki/Q35120
+responses:
+  200:
+    description: OK
+  201:
+    description: Created
+  405:
+    description: Invalid input
+  409:
+    description: Concept already present
+tags:
+  - concepts-endpoint

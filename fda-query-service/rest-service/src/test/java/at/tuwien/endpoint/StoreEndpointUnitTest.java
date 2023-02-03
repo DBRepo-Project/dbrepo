@@ -3,12 +3,14 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
+import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.UserService;
@@ -66,6 +68,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     private UserService userService;
 
     @MockBean
+    private IdentifierRepository identifierRepository;
+
+    @MockBean
     private DatabaseService databaseService;
 
     @MockBean
@@ -84,6 +89,8 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .findAll();
         doReturn(DATABASE_1, DATABASE_1).when(databaseService)
                 .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(identifierRepository.findAll())
+                .thenReturn(List.of());
 
         /* test */
         final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal);
@@ -93,6 +100,39 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         final QueryBriefDto query = response.getBody().get(0);
         assertEquals(QUERY_1_ID, query.getId());
         assertEquals(QUERY_1_STATEMENT, query.getQuery());
+        assertNull(query.getIdentifier());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void findAll_withIdentifier_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication();
+
+        /* mock */
+        doReturn(List.of(QUERY_1)).when(storeService)
+                .findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal);
+        doReturn(Collections.singletonList(USER_1)).when(userService)
+                .findAll();
+        doReturn(DATABASE_1, DATABASE_1).when(databaseService)
+                .find(CONTAINER_1_ID, DATABASE_1_ID);
+        when(identifierRepository.findAll())
+                .thenReturn(List.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<List<QueryBriefDto>> response = storeEndpoint.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, principal);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        final QueryBriefDto query = response.getBody().get(0);
+        assertEquals(QUERY_1_ID, query.getId());
+        assertEquals(QUERY_1_STATEMENT, query.getQuery());
+        final IdentifierBriefDto identifier = query.getIdentifier();
+        assertNotNull(identifier);
+        assertEquals(IDENTIFIER_1_ID, identifier.getId());
+        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
+        assertEquals(QUERY_1_ID, identifier.getQueryId());
+        assertEquals(DATABASE_1_ID, identifier.getDatabaseId());
     }
 
     @Test

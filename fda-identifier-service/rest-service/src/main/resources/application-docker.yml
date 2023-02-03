@@ -37,4 +37,7 @@ fda:
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   website: "${WEBSITE}"
-  elastic.endpoint: search-service:9200
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: "${ELASTIC_PASSWORD}"

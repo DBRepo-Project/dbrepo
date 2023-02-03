@@ -2,83 +2,47 @@
   <div>
     <v-progress-linear v-if="loading || error" :color="loadingColor" :value="loadProgress" />
     <v-tabs-items>
-      <v-card v-if="!loading && queries.length === 0" flat>
+      <v-card v-if="!loading && queries.length === 0 && !error" flat>
         <v-card-text v-text="emptyMessage" />
       </v-card>
-      <v-expansion-panels v-if="queries.length > 0" accordion>
-        <v-expansion-panel v-for="(item, i) in queries" :key="i" @click="details(item)">
-          <v-expansion-panel-header>
-            <pre>{{ item.query }}</pre>
-            <v-icon v-if="item.type === 'view'" title="Query from a view" class="pid-icon">mdi-gauge</v-icon>
-            <v-icon v-if="item.identifier" color="primary" title="Query with metadata" class="pid-icon">mdi-lock-clock</v-icon>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <v-row dense>
-              <v-col>
-                <v-list dense>
-                  <v-list-item v-if="queryDetails.identifier">
-                    <v-list-item-icon>
-                      <v-icon>mdi-lock-clock</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content v-if="queryDetails.identifier">
-                      <v-list-item-title>
-                        Persistent Identifier
-                      </v-list-item-title>
-                      <v-list-item-content>
-                        <a :href="`${baseUrl}/pid/${queryDetails.identifier.id}`">{{ baseUrl }}/pid/{{ queryDetails.identifier.id }}</a>
-                      </v-list-item-content>
-                      <v-list-item-title class="mt-2">
-                        Title
-                      </v-list-item-title>
-                      <v-list-item-content>
-                        {{ queryDetails.identifier.title }}
-                      </v-list-item-content>
-                    </v-list-item-content>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-icon>
-                      <v-icon>mdi-text-short</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                      <v-list-item-title>
-                        Query Statement
-                      </v-list-item-title>
-                      <v-list-item-content>
-                        <pre>{{ queryDetails.query }}</pre>
-                      </v-list-item-content>
-                      <v-list-item-title class="mt-2">
-                        Execution Timestamp
-                      </v-list-item-title>
-                      <v-list-item-content>
-                        {{ createdTime }}
-                      </v-list-item-content>
-                      <v-list-item-title class="mt-2">
-                        Type
-                      </v-list-item-title>
-                      <v-list-item-content>
-                        {{ queryType }}
-                      </v-list-item-content>
-                    </v-list-item-content>
-                  </v-list-item>
-                </v-list>
-              </v-col>
-            </v-row>
-            <v-row dense>
-              <v-col>
-                <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/${item.id}`">
-                  More
-                </v-btn>
-              </v-col>
-            </v-row>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-      </v-expansion-panels>
+      <div v-if="!loading && !error">
+        <div v-for="(item,i) in queries" :key="i">
+          <v-divider v-if="i !== 0" class="mx-4" />
+          <v-list-item-group>
+            <v-list-item two-line :to="link(item)">
+              <v-list-item-content>
+                <v-list-item-title v-text="created(item)" />
+                <v-list-item-subtitle class="mt-2">
+                  <pre>{{ item.query }}</pre>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </div>
+      </div>
+      <div v-if="!loading && error">
+        <!-- show identifiers when error -->
+        <div v-for="(item,i) in identifiers" :key="i">
+          <v-divider v-if="i !== 0" class="mx-4" />
+          <v-list-item-group>
+            <v-list-item two-line :to="link(item)">
+              <v-list-item-content>
+                <v-list-item-title v-text="item.title" />
+                <v-list-item-subtitle class="mt-2">
+                  <pre>{{ item.query }}</pre>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </div>
+      </div>
+      <pre>{{ identifiers }}</pre>
     </v-tabs-items>
   </div>
 </template>
 
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   data () {
@@ -87,15 +51,7 @@ export default {
       loadProgress: 0,
       error: false,
       queries: [],
-      queryDetails: {
-        id: null,
-        doi: null,
-        queryHash: null,
-        execution: null,
-        created: null,
-        columns: [],
-        type: null
-      }
+      identifiers: []
     }
   },
   computed: {
@@ -122,14 +78,8 @@ export default {
     loadingColor () {
       return this.error ? 'error' : 'primary'
     },
-    createdTime () {
-      return formatTimestampUTCLabel(this.queryDetails.created)
-    },
     creator () {
       return this.queryDetails.creator
-    },
-    queryType () {
-      return 'Query' + (this.queryDetails.type === 'view' ? ' was executed by a view' : '')
     },
     emptyMessage () {
       if (this.isPublicOrOwner()) {
@@ -139,11 +89,28 @@ export default {
     }
   },
   mounted () {
-    this.loadIdentifiers()
     this.loadQueries()
+    this.loadIdentifiers()
     this.simulateProgress()
   },
   methods: {
+    formatCreator (creator) {
+      return formatUser(creator)
+    },
+    async loadIdentifiers () {
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}&type=subset`, this.config)
+        this.identifiers = res.data
+        console.debug('identifiers', this.identifiers)
+      } catch (error) {
+        this.error = true
+        console.error('Failed to load identifiers', error)
+        const { message } = error.response
+        this.$toast.error(`Failed to load identifiers: ${message}`)
+      }
+      this.loading = false
+    },
     async loadQueries () {
       if (!this.isPublicOrOwner()) {
         return
@@ -151,12 +118,7 @@ export default {
       try {
         this.loading = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
-        res.data.forEach((query) => {
-          if (this.queries.filter(q => q.id === query.id).length > 0) {
-            return
-          }
-          this.queries.push(query)
-        })
+        this.queries = res.data
         console.debug('queries', this.queries)
       } catch (err) {
         this.error = true
@@ -165,37 +127,11 @@ export default {
       }
       this.loading = false
     },
-    async loadIdentifiers () {
-      if (!this.isPublicOrOwner()) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}`, this.config)
-        const identifiers = res.data.filter(i => i.type === 'subset')
-        const queries = identifiers.map((identifier) => {
-          const query = {
-            id: identifier.query_id,
-            identifier,
-            type: identifier.type,
-            query: identifier.query,
-            query_hash: identifier.query_hash,
-            result_hash: identifier.result_hash,
-            created: identifier.created,
-            execution: identifier.execution
-          }
-          return query
-        })
-        this.queries = queries
-        console.debug('identifier queries', queries)
-      } catch (err) {
-        console.error('Failed to load identifiers', err.response.index)
-        this.$toast.error('Failed to load identifiers')
-      }
-      this.loading = false
+    created (query) {
+      return formatTimestampUTCLabel(query.created)
     },
-    details (query) {
-      this.queryDetails = query
+    link (query) {
+      return `${this.baseUrl}/pid/${query.id}`
     },
     isPublicOrOwner () {
       if (!this.database) {

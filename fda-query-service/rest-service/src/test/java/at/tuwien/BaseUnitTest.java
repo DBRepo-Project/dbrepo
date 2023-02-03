@@ -5,6 +5,9 @@ import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.identifier.CreatorDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -12,6 +15,10 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.identifier.Creator;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
@@ -2331,5 +2338,51 @@ public abstract class BaseUnitTest {
             }})
             .build();
 
+    public final static Long IDENTIFIER_1_ID = 1L;
+    public final static Long IDENTIFIER_1_QUERY_ID = QUERY_1_ID;
+    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
+    public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
+    public final static String IDENTIFIER_1_DESCRIPTION = "Selecting all from the weather Australia table";
+    public final static String IDENTIFIER_1_TITLE = "Australia weather data";
+    public final static String IDENTIFIER_1_DOI = "10.1000/182";
+    public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
+    public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352);
+    public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352);
+    public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352);
+    public final static Integer IDENTIFIER_1_PUBLICATION_MONTH = 5;
+    public final static Integer IDENTIFIER_1_PUBLICATION_YEAR = 2022;
+    public final static String IDENTIFIER_1_QUERY_HASH = "abc";
+    public final static String IDENTIFIER_1_RESULT_HASH = "def";
+    public final static String IDENTIFIER_1_QUERY = "SELECT `id` FROM `foobar`";
+    public final static String IDENTIFIER_1_NORMALIZED = "SELECT `id` FROM `foobar`";
+    public final static Long IDENTIFIER_1_RESULT_NUMBER = 2L;
+    public final static String IDENTIFIER_1_PUBLISHER = "Australian Government";
+    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
+
+    public final static Identifier IDENTIFIER_1 = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
+            .creators(List.of())
+            .build();
 
 }

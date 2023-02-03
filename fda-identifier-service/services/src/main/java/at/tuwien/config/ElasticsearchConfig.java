@@ -15,10 +15,17 @@ public class ElasticsearchConfig {
     @Value("${fda.elastic.endpoint}")
     private String elasticEndpoint;
 
+    @Value("${fda.elastic.username}")
+    private String elasticUsername;
+
+    @Value("${fda.elastic.password}")
+    private String elasticPassword;
+
     @Bean
     public RestHighLevelClient client() {
         ClientConfiguration clientConfiguration = ClientConfiguration.builder()
                 .connectedTo(elasticEndpoint)
+                .withBasicAuth(elasticUsername, elasticPassword)
                 .build();
 
         return RestClients.create(clientConfiguration).rest();

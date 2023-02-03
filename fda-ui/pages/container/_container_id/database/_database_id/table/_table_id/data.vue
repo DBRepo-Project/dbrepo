@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TableToolbar :table="table" :selection="selection" />
+    <TableToolbar :table="table" :selection="selection" @reload="loadData" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
         <strong>Versioning</strong>

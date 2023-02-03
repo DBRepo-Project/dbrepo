@@ -40,4 +40,7 @@ eureka:
 fda:
   ready.path: ./ready
   gateway.endpoint: http://localhost:9095
-  elastic.endpoint: localhost:9200
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: elastic

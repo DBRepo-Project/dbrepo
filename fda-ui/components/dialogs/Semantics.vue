@@ -19,10 +19,12 @@
               solo
               flat
               dense
+              clearable
               single-line
               hide-details
-              placeholder="Search or provide URI..." />
-            <v-btn icon small class="ml-2" type="submit" @click="retrieveConcept">
+              placeholder="Search or provide URI..."
+              @click:clear="concept = null" />
+            <v-btn icon class="ml-2" type="submit" @click="retrieveConcepts">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </v-toolbar>
@@ -51,10 +53,12 @@
               solo
               flat
               dense
+              clearable
               single-line
               hide-details
-              placeholder="Search or provide URI..." />
-            <v-btn icon small class="ml-2" type="submit" @click="retrieveUnit">
+              placeholder="Search or provide URI..."
+              @click:clear="unit = null" />
+            <v-btn icon class="ml-2" type="submit" @click="retrieveUnits">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </v-toolbar>
@@ -76,13 +80,6 @@
         </v-list-item-group>
       </v-card-text>
       <v-card-actions>
-        <v-btn
-          v-if="canRemove"
-          class="mb-2 ml-2"
-          color="error"
-          @click="remove">
-          Remove
-        </v-btn>
         <v-spacer />
         <v-btn
           class="mb-2"
@@ -92,7 +89,6 @@
         <v-btn
           color="primary"
           class="mb-2 mr-2"
-          :disabled="!canSave"
           @click="save">
           Save
         </v-btn>
@@ -169,36 +165,15 @@ export default {
           value: entry
         }
       })
-    },
-    canRemove () {
-      return this.column[this.mode] !== null
-    },
-    canSave () {
-      return ('uri' in this.unit || 'uri' in this.concept)
     }
   },
   watch: {
-    async search (val) {
-      if (!val || this.selected) {
-        return
-      }
-      this.searchTerm = val
-      this.isLoading = true
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      if (val !== this.searchTerm) {
-        return
-      }
-      try {
-        const res = await this.$axios.get(`/api/semantics/${this.mode}?q=${val}`, this.config)
-        this.entries = res.data
-        console.debug('suggest', res.data)
-      } catch (err) {
-        console.error('suggest', err)
-      }
-      this.isLoading = false
+    column () {
+      this.reset()
     }
   },
   mounted () {
+    this.reset()
   },
   methods: {
     cancel () {
@@ -229,18 +204,15 @@ export default {
       this.concepts = []
       console.debug('selected concept', this.concept)
     },
-    async remove () {
-      if (!this.database) {
-        return
-      }
+    async remove (mode) {
       /* update column */
       let payload
-      if (this.mode === 'unit') {
+      if (mode === 'unit') {
         payload = {
           unit_uri: null,
           concept_uri: (this.column.concept ? this.column.concept.uri : null)
         }
-      } else if (this.mode === 'concept') {
+      } else if (mode === 'concept') {
         payload = {
           unit_uri: (this.column.unit ? this.column.unit.uri : null),
           concept_uri: null
@@ -249,37 +221,21 @@ export default {
       try {
         await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
         if (payload.unit_uri === null) {
-          this.column[this.mode] = null
+          this.column[mode] = null
         }
         if (payload.concept_uri === null) {
-          this.column[this.mode] = null
+          this.column[mode] = null
         }
-        this.dialog = false
-        this.saved = true
-        console.info(`Removed semantics of column ${this.column.name}`)
-        this.$toast.success(`Removed semantics of column ${this.column.name}`)
-        this.$emit('close', {
-          success: true,
-          action: 'remove',
-          mode: this.mode
-        })
+        console.info(`Removed ${mode} of column ${this.column.name}`)
+        this.$toast.success(`Removed ${mode} of column ${this.column.name}`)
         console.debug('column', this.column)
       } catch (error) {
-        console.error('Failed to save column semantics', error)
+        console.error(`Failed to save column ${mode}`, error)
         const { message } = error.response
-        this.$toast.error('Failed to save column semantics: ' + message)
+        this.$toast.error(`Failed to save column ${mode}: ` + message)
       }
     },
-    resetModel (name, uri) {
-      this.selected = false
-      this.model = {
-        name,
-        uri,
-        symbol: null,
-        comment: null
-      }
-    },
-    async retrieveConcept () {
+    async retrieveConcepts () {
       this.loadingConcept = true
       try {
         const res = await this.$axios.get(`/api/semantics/concept?q=${this.searchConcept}`, this.config)
@@ -292,7 +248,7 @@ export default {
       }
       this.loadingConcept = false
     },
-    async retrieveUnit () {
+    async retrieveUnits () {
       this.loadingUnit = true
       try {
         const res = await this.$axios.get(`/api/semantics/unit?q=${this.searchUnit}`, this.config)
@@ -307,8 +263,10 @@ export default {
     },
     async save () {
       for (const mode in { unit: 0, concept: 0 }) {
-        if (this[mode].name == null || this[mode].uri == null) {
-          return
+        if (this[mode] === null || this[mode].name === null || this[mode].uri === null) {
+          console.warn(`Delete ${mode} because object, name or uri is null`)
+          await this.remove(mode)
+          continue
         }
         try {
           const res = await this.$axios.post(`/api/semantics/${mode}`, {
@@ -328,44 +286,37 @@ export default {
             this.$toast.error(`Failed to save ${mode}: ` + message)
           }
         }
-        await this.update(mode)
+      }
+      await this.update()
+    },
+    reset () {
+      if (this.column.concept) {
+        this.searchConcept = this.column.concept.uri
+        this.concept = this.column.concept
+      } else {
+        this.searchConcept = null
+        this.concept = null
+      }
+      if (this.column.unit) {
+        this.searchUnit = this.column.unit.uri
+        this.unit = this.column.unit
+      } else {
+        this.searchUnit = null
+        this.unit = null
       }
     },
-    async update (mode) {
+    async update () {
       try {
         const payload = {
-          concept_uri: this.concept.uri,
-          unit_uri: this.unit.uri
+          concept_uri: this.concept === null ? null : this.concept.uri,
+          unit_uri: this.unit === null ? null : this.unit.uri
         }
         const res = await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
-        if (mode === 'unit') {
-          if (res.data.unit_uri === null) {
-            this.column[mode] = null
-          } else {
-            this.column[mode] = {
-              name: this[mode].name,
-              uri: res.data.unit_uri
-            }
-          }
-        }
-        if (mode === 'concept') {
-          if (res.data.concept_uri === null) {
-            this.column[mode] = null
-          } else {
-            this.column[mode] = {
-              name: this[mode].name,
-              uri: res.data.concept_uri
-            }
-          }
-        }
-        this.dialog = false
-        this.saved = true
-        console.info(`Updated semantics of column ${this.column.name}`)
-        this.$toast.success(`Updated semantics of column ${this.column.name}`)
+        this.column.concept = (payload.concept_uri === null ? null : this.concept)
+        this.column.unit = (payload.unit_uri === null ? null : this.unit)
         this.$emit('close', {
           success: true,
           action: 'assign',
-          mode,
           data: res.data
         })
         console.debug('column', this.column)

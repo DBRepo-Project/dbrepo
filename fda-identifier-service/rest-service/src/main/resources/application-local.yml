@@ -19,7 +19,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: authentication-service
+    name: identifier-service
   cloud:
     loadbalancer.ribbon.enabled: false
 server.port: 9096
@@ -31,10 +31,13 @@ logging:
     at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: authentication-service
+  instance.hostname: identifier-service
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
-  website: http://localhost:3000
   gateway.endpoint: http://localhost:9095
-  elastic.endpoint: localhost:9200
+  website: http://localhost:3000
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: elastic

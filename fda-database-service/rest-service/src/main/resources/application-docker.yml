@@ -39,8 +39,8 @@ eureka:
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   elastic:
-    endpoint: "${SEARCH_ENDPOINT}"
-    username: "${SEARCH_USERNAME}"
-    password: "${SEARCH_PASSWORD}"
+    endpoint: search-service:9200
+    username: elastic
+    password: "${ELASTIC_PASSWORD}"
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
