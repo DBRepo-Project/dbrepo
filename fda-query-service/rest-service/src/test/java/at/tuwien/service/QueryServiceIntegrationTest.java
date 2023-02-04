@@ -75,9 +75,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        afterEach();
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        afterAll();
         /* create network */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -124,8 +124,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         TABLE_3.setDatabase(DATABASE_1);
     }
 
-    @AfterEach
-    public void afterEach() {
+    @AfterAll
+    public static void afterAll() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)

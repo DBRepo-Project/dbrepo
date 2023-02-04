@@ -69,3 +69,4 @@ BEGIN
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
 END $$
+DELIMITER ;
