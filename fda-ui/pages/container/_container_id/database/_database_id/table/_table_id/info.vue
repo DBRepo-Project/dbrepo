@@ -66,15 +66,11 @@
                   AMQP Consumer(s)
                 </v-list-item-title>
                 <v-list-item-content class="amqp-consumer">
-                  <span v-if="justCreated">Creating consumers ...</span>
-                  <v-skeleton-loader v-if="!justCreated && loadingConsumers" type="text" class="skeleton-small" />
-                  <div v-if="!justCreated && !loadingConsumers">
-                    <span v-text="`${consumersUp}/${consumersTotal}`" />
-                    <v-badge
-                      class="ml-1"
-                      :color="consumersState.color"
-                      :content="consumersState.text" />
-                  </div>
+                  <span v-text="`${consumersUp}/${consumersTotal}`" />
+                  <v-badge
+                    class="ml-1"
+                    :color="consumersState.color"
+                    :content="consumersState.text" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
@@ -164,9 +160,6 @@ export default {
     user () {
       return this.$store.state.user
     },
-    justCreated () {
-      return new Date().getTime() - new Date(this.table.created).getTime() <= 60000
-    },
     hasReadAccess () {
       if (!this.database) {
         return false
@@ -201,18 +194,24 @@ export default {
       return this.$store.state.access
     },
     consumersState () {
+      if (this.consumersTotal === 0 || this.consumersTotal - this.consumersUp > 0 || this.loadingConsumers) {
+        return { color: 'warning', text: 'pending' }
+      }
       if (this.consumersTotal === 0) {
         return { color: 'error', text: 'down' }
-      }
-      if (this.consumersTotal - this.consumersUp > 0) {
-        return { color: 'warning', text: 'up' }
       }
       return { color: 'success', text: 'up' }
     },
     consumersTotal () {
+      if (this.loadingConsumers) {
+        return 0
+      }
       return this.consumers.length
     },
     consumersUp () {
+      if (this.loadingConsumers) {
+        return 0
+      }
       return this.consumers.filter(c => c.active).length
     },
     canModify () {

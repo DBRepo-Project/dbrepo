@@ -8,7 +8,6 @@ Created on Sat Dec  4 11:37:19 2021
 """
 import logging
 import rdflib
-import re
 import requests as rq
 
 
@@ -41,7 +40,7 @@ class List:
 
     def list_units(self, name, offset=0) -> []:
         name = name.lower()
-        logging.info(f"list units for unit name {name}")
+        logging.debug(f"list units for unit name {name}")
         l_query = """SELECT DISTINCT ?unit ?symbol ?name ?comment
         WHERE {
             ?unit om:symbol ?symbol .
@@ -56,11 +55,12 @@ class List:
         for row in qres:
             units.append(
                 {"uri": str(row.unit), "symbol": str(row.symbol), "name": str(row.name), "comment": str(row.comment)})
+        logging.debug(f"res: units={units}")
         return units
 
     def list_concepts(self, name) -> []:
         name = name.lower()
-        logging.info(f"list concepts for concepts name {name}")
+        logging.debug(f"list concepts for concepts name {name}")
         l_query = """SELECT DISTINCT ?item ?name ?comment
         WHERE { 
             SERVICE <https://query.wikidata.org/sparql> {
@@ -76,15 +76,16 @@ class List:
             }
         }"""
         qres = self.c.query(l_query)
-        units = list()
+        concepts = list()
         for row in qres:
-            units.append({"uri": str(row.item), "name": str(row.name), "comment": str(row.comment)})
-        return units
+            concepts.append({"uri": str(row.item), "name": str(row.name), "comment": str(row.comment)})
+        logging.debug(f"res: concepts={concepts}")
+        return concepts
 
     def get_unit_uri(self, name) -> {}:
         name = name.replace('(', '\\\\(')
         name = name.replace(')', '\\\\)')
-        logging.info(f"get url for unit name {name}")
+        logging.debug(f"get url for unit name {name}")
         uri_query = """SELECT ?uri
         WHERE {
             ?uri rdfs:label ?o .
@@ -93,16 +94,12 @@ class List:
         """
         qres = self.u.query(uri_query)
         for row in qres:
-            print(f"res: uri={row.uri}")
+            logging.debug(f"res: uri={row.uri}")
             return {"uri": str(row.uri)}
 
-    def get_concept_label(self, uri) -> {}:
-        m = re.search('https?://www.wikidata.org/entity/(.+?)', uri)
-        if not m:
-            raise Exception("Did not match wikidata uri")
-        entity = m.group(1)
-        logging.info(f"get label for entity {entity}")
-        uri_query = """SELECT DISTINCT ?item ?name ?comment
+    def get_concept_label(self, entity) -> {}:
+        logging.debug(f"get label for entity {entity}")
+        uri_query = """SELECT DISTINCT ?label
         WHERE { 
             SERVICE <https://query.wikidata.org/sparql> {
                 SELECT ?label
@@ -115,5 +112,18 @@ class List:
         }"""
         qres = self.c.query(uri_query)
         for row in qres:
-            print(f"res: uri={row.item}")
-            return {"uri": str(row.item)}
+            logging.debug(f"res: label={row.label}")
+            return {"label": str(row.label)}
+
+    def get_unit_label(self, uri) -> {}:
+        logging.debug(f"get label for uri {uri}")
+        uri_query = """SELECT ?label
+            WHERE {
+              <""" + uri + """> rdfs:label ?label .
+              FILTER (langMatches(lang(?label), "EN" ) )
+            } 
+            LIMIT 1"""
+        qres = self.u.query(uri_query)
+        for row in qres:
+            logging.debug(f"res: label={row.label}")
+            return {"label": str(row.label)}

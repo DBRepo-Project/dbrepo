@@ -41,10 +41,12 @@ ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false
 ENV SEARCH=http://search-service:9200
 ENV SHARED_FILESYSTEM=/tmp
-ENV LOGO=/logo.png
+ENV LOGO="/logo.png"
 ENV MAIL_VERIFY=false
 ENV ELASTIC_PASSWORD=elastic
 ENV VERSION="${TAG}"
+ENV TITLE="Database Repository"
+ENV ICON="/favicon.ico"
 
 COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh

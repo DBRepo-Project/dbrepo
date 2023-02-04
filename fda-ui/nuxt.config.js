@@ -8,6 +8,9 @@ if (process.env.SANDBOX) {
   console.info('[FDA] Running in sandbox environment')
 }
 
+const configTitle = process.env.TITLE || 'Database Repository'
+const configIcon = process.env.ICON || '/favicon.ico'
+
 export default {
   target: 'server',
   ssr: false,
@@ -21,15 +24,14 @@ export default {
   },
 
   head: {
-    titleTemplate: '%s - Database Repository (Sandbox)',
-    title: 'FAIR Data Austria',
+    title: configTitle,
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: configIcon }
     ]
   },
 

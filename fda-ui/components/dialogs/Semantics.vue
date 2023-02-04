@@ -24,7 +24,7 @@
               hide-details
               placeholder="Search or provide URI..."
               @click:clear="concept = null" />
-            <v-btn icon class="ml-2" type="submit" @click="retrieveConcepts">
+            <v-btn v-if="!searchConceptContainsUri" icon class="ml-2" type="submit" @click="retrieveConcepts">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </v-toolbar>
@@ -58,7 +58,7 @@
               hide-details
               placeholder="Search or provide URI..."
               @click:clear="unit = null" />
-            <v-btn icon class="ml-2" type="submit" @click="retrieveUnits">
+            <v-btn v-if="!searchUnitContainsUri" icon class="ml-2" type="submit" @click="retrieveUnits">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </v-toolbar>
@@ -89,6 +89,7 @@
         <v-btn
           color="primary"
           class="mb-2 mr-2"
+          :loading="loadingSave"
           @click="save">
           Save
         </v-btn>
@@ -117,6 +118,7 @@ export default {
     return {
       dialog: false,
       saved: false,
+      loadingSave: false,
       validConcept: false,
       validUnit: false,
       loadingConcept: false,
@@ -165,6 +167,18 @@ export default {
           value: entry
         }
       })
+    },
+    searchUnitContainsUri () {
+      if (!this.searchUnit) {
+        return false
+      }
+      return this.searchUnit.startsWith('http')
+    },
+    searchConceptContainsUri () {
+      if (!this.searchConcept) {
+        return false
+      }
+      return this.searchConcept.startsWith('http')
     }
   },
   watch: {
@@ -226,8 +240,6 @@ export default {
         if (payload.concept_uri === null) {
           this.column[mode] = null
         }
-        console.info(`Removed ${mode} of column ${this.column.name}`)
-        this.$toast.success(`Removed ${mode} of column ${this.column.name}`)
         console.debug('column', this.column)
       } catch (error) {
         console.error(`Failed to save column ${mode}`, error)
@@ -262,7 +274,9 @@ export default {
       this.loadingUnit = false
     },
     async save () {
+      this.loadingSave = true
       for (const mode in { unit: 0, concept: 0 }) {
+        await this.loadLabelIfNecessary(mode)
         if (this[mode] === null || this[mode].name === null || this[mode].uri === null) {
           console.warn(`Delete ${mode} because object, name or uri is null`)
           await this.remove(mode)
@@ -288,6 +302,7 @@ export default {
         }
       }
       await this.update()
+      this.loadingSave = false
     },
     reset () {
       if (this.column.concept) {
@@ -324,6 +339,37 @@ export default {
         console.error('Failed to update column', error)
         const { message } = error.response
         this.$toast.error('Failed to update column: ' + message)
+      }
+    },
+    async loadLabelIfNecessary (mode) {
+      const uri = (mode === 'unit' ? this.searchUnit : this.searchConcept)
+      if (uri === null) {
+        this[mode] = null
+        return
+      }
+      console.debug('load label for mode', mode)
+      if (this[mode] !== null && 'uri' in this[mode] && this[mode].uri !== null && this[mode].uri === uri) {
+        return
+      }
+      try {
+        const res = await this.$axios.put(`/api/semantics/${mode}`, { uri }, this.config)
+        const { label } = res.data
+        this[mode] = {
+          uri,
+          name: label
+        }
+        console.debug(`${mode}`, this[mode])
+      } catch (error) {
+        console.error('Failed to load label', error)
+        const { message, status } = error.response
+        if (status === 400) {
+          console.error(`Failed to retrieve ${mode}, not a valid entity`, error)
+          this.$toast.error(`Failed to retrieve ${mode}, not a valid entity: ` + message)
+        } else {
+          console.error(`Failed to retrieve ${mode}`, error)
+          this.$toast.error(`Failed to retrieve ${mode}: ` + message)
+        }
+        this.$toast.error('Failed to load label: ' + message)
       }
     },
     submit () {
