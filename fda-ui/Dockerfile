@@ -44,8 +44,9 @@ ENV SHARED_FILESYSTEM=/tmp
 ENV LOGO=/logo.png
 ENV MAIL_VERIFY=false
 ENV ELASTIC_PASSWORD=elastic
+ENV VERSION="${TAG}"
 
 COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
 
-ENTRYPOINT [ "sh", "VERSION=${TAG}", "/app/docker-entrypoint.sh" ]
+ENTRYPOINT [ "sh", "/app/docker-entrypoint.sh" ]

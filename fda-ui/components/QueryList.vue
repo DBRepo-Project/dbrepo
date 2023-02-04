@@ -9,13 +9,23 @@
         <div v-for="(item,i) in queries" :key="i">
           <v-divider v-if="i !== 0" class="mx-4" />
           <v-list-item-group>
-            <v-list-item two-line :to="link(item)">
+            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
               <v-list-item-content>
-                <v-list-item-title v-text="created(item)" />
+                <v-list-item-title v-text="title(item)" />
                 <v-list-item-subtitle class="mt-2">
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-action>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon v-if="item.identifier" color="primary" v-bind="attrs" v-on="on">
+                      mdi-lock-clock
+                    </v-icon>
+                  </template>
+                  <span>Persisted</span>
+                </v-tooltip>
+              </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
         </div>
@@ -36,7 +46,6 @@
           </v-list-item-group>
         </div>
       </div>
-      <pre>{{ identifiers }}</pre>
     </v-tabs-items>
   </div>
 </template>
@@ -127,11 +136,29 @@ export default {
       }
       this.loading = false
     },
-    created (query) {
-      return formatTimestampUTCLabel(query.created)
+    title (query) {
+      if (query.identifier === null) {
+        return formatTimestampUTCLabel(query.created)
+      }
+      return query.identifier.title
     },
     link (query) {
-      return `${this.baseUrl}/pid/${query.id}`
+      if (query.identifier === null) {
+        return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${query.id}`
+      }
+      return null
+    },
+    navigate (query) {
+      if (query.identifier === null) {
+        return
+      }
+      return `/pid/${query.identifier.id}`
+    },
+    clazz (query) {
+      if (query.identifier === null) {
+        return null
+      }
+      return 'primary--text'
     },
     isPublicOrOwner () {
       if (!this.database) {

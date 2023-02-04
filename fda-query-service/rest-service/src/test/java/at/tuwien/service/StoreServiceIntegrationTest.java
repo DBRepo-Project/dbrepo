@@ -246,6 +246,45 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void execute_emptyResult_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, QueryMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` WHERE `location` = 'Vienna'")
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        assertEquals(1L, response.getId()) /* new query inserted */;
+    }
+
+    @Test
+    public void execute_emptyResultTwice_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, QueryMalformedException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` WHERE `location` = 'Vienna'")
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        assertEquals(1L, response.getId()) /* no new query inserted */;
+    }
+
+    @Test
     public void execute_dataChangeSameQuery_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, QueryMalformedException, ColumnParseException, SQLException {

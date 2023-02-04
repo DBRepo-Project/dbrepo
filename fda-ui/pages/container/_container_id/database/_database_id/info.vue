@@ -466,6 +466,15 @@ export default {
 }
 </script>
 <style>
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
 }

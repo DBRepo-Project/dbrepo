@@ -202,6 +202,9 @@ export default {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
     },
+    created (created) {
+      return formatTimestampUTCLabel(created)
+    },
     async deleteTable () {
       try {
         this.loading = true

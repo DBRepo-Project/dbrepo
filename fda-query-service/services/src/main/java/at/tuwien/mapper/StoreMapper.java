@@ -41,6 +41,7 @@ public interface StoreMapper {
         if (persisted != null) {
             statement += " WHERE `is_persisted` = ?";
         }
+        statement += " ORDER BY `created` DESC";
         try {
             log.trace("mapped select all query '{}' to prepared statement", statement);
             final PreparedStatement preparedStatement = connection.prepareStatement(statement);

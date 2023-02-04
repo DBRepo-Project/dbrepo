@@ -73,7 +73,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional(readOnly = true)
     public List<Table> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException {
         final Database database = databaseService.find(containerId, databaseId);
-        return tableRepository.findByDatabase(database);
+        return tableRepository.findByDatabaseOrderByCreatedDesc(database);
     }
 
     @Override
