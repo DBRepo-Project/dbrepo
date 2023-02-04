@@ -97,7 +97,7 @@ class List:
             return {"uri": str(row.uri)}
 
     def get_concept_label(self, uri) -> {}:
-        m = re.search('https://www.wikidata.org/entity/(.+?)', uri)
+        m = re.search('https?://www.wikidata.org/entity/(.+?)', uri)
         if not m:
             raise Exception("Did not match wikidata uri")
         entity = m.group(1)

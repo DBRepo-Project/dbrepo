@@ -75,9 +75,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
+    @BeforeEach
+    public void beforeEach() throws InterruptedException {
+        afterEach();
         /* create network */
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
@@ -118,10 +118,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         CONTAINER_2.setHash(response2.getId());
         DockerConfig.startContainer(CONTAINER_1);
         DockerConfig.startContainer(CONTAINER_2);
+        /* metadata db */
+        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_1);
+        TABLE_3.setDatabase(DATABASE_1);
     }
 
-    @AfterAll
-    public static void afterAll() {
+    @AfterEach
+    public void afterEach() {
         /* stop containers and remove them */
         dockerClient.listContainersCmd()
                 .withShowAll(true)
@@ -144,13 +148,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                     log.info("Delete network {}", network.getName());
                     dockerClient.removeNetworkCmd(network.getId()).exec();
                 });
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_1);
-        TABLE_3.setDatabase(DATABASE_1);
     }
 
     @Test

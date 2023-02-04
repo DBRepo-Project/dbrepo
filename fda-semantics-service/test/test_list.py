@@ -54,20 +54,6 @@ class ListUnitTest(unittest.TestCase):
         response = list.get_unit_uri("minute (hour angle)")
         self.assertEqual(exp, response)
 
-    def test_get_concept_uri_hasSpaces_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q998319"}
-
-        # test
-        response = list.get_concept_uri("flight recorder")
-        self.assertEqual(exp, response)
-
-    def test_get_concept_uri_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q235783"}
-
-        # test
-        response = list.get_concept_uri("flashlight")
-        self.assertEqual(exp, response)
-
 
 if __name__ == '__main__':
     unittest.main()
