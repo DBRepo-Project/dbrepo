@@ -43,6 +43,18 @@ public abstract class BaseUnitTest {
             .minus(1, ChronoUnit.DAYS);
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
 
+    public final static GrantedAuthorityDto AUTHORITY_RESEARCHER_DTO = GrantedAuthorityDto.builder()
+            .authority("ROLE_RESEARCHER")
+            .build();
+
+    public final static GrantedAuthorityDto AUTHORITY_DEVELOPER_DTO = GrantedAuthorityDto.builder()
+            .authority("ROLE_DEVELOPER")
+            .build();
+
+    public final static GrantedAuthorityDto AUTHORITY_DATA_STEWARD_DTO = GrantedAuthorityDto.builder()
+            .authority("ROLE_DATA_STEWARD")
+            .build();
+
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -61,6 +73,7 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .password(USER_1_PASSWORD)
             .email(USER_1_EMAIL)
+            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
             .roles(List.of("ROLE_RESEARCHER"))
             .emailVerified(USER_1_EMAIL_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
@@ -105,6 +118,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
             .email(USER_2_EMAIL)
+            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
             .roles(List.of("ROLE_RESEARCHER"))
             .emailVerified(USER_2_EMAIL_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
@@ -402,6 +416,7 @@ public abstract class BaseUnitTest {
 
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
+            .pid(IDENTIFIER_1_ID)
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .affiliation(CREATOR_1_AFFIL)
@@ -416,6 +431,7 @@ public abstract class BaseUnitTest {
 
     public final static Creator IDENTIFIER_1_CREATOR_2 = Creator.builder()
             .id(CREATOR_2_ID)
+            .pid(IDENTIFIER_1_ID)
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .affiliation(CREATOR_2_AFFIL)
@@ -482,7 +498,7 @@ public abstract class BaseUnitTest {
     public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
-    public final static String IDENTIFIER_2_TITLE = "Austria weather data";
+    public final static String IDENTIFIER_2_TITLE = "Australian weather data";
     public final static String IDENTIFIER_2_DOI = "10.1000/183";
     public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
     public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
@@ -497,9 +513,39 @@ public abstract class BaseUnitTest {
     public final static String IDENTIFIER_2_QUERY = "SELECT `id` FROM `foobar`";
     public final static String IDENTIFIER_2_NORMALIZED = "SELECT `id` FROM `foobar`";
     public final static Long IDENTIFIER_2_RESULT_NUMBER = 2L;
-    public final static String IDENTIFIER_2_PUBLISHER = "Austrian Government";
+    public final static String IDENTIFIER_2_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
+
+    public final static Creator IDENTIFIER_2_CREATOR_1 = Creator.builder()
+            .id(CREATOR_1_ID)
+            .pid(IDENTIFIER_2_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .affiliation(CREATOR_1_AFFIL)
+            .build();
+
+    public final static CreatorDto IDENTIFIER_2_CREATOR_1_DTO = CreatorDto.builder()
+            .id(CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .affiliation(CREATOR_1_AFFIL)
+            .build();
+
+    public final static Creator IDENTIFIER_2_CREATOR_2 = Creator.builder()
+            .id(CREATOR_2_ID)
+            .pid(IDENTIFIER_2_ID)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
+            .affiliation(CREATOR_2_AFFIL)
+            .build();
+
+    public final static CreatorDto IDENTIFIER_2_CREATOR_2_DTO = CreatorDto.builder()
+            .id(CREATOR_2_ID)
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
+            .affiliation(CREATOR_2_AFFIL)
+            .build();
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
@@ -524,6 +570,7 @@ public abstract class BaseUnitTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
             .creator(USER_2)
+            .creators(List.of(IDENTIFIER_2_CREATOR_1, IDENTIFIER_2_CREATOR_2))
             .build();
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
@@ -549,6 +596,7 @@ public abstract class BaseUnitTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .creator(USER_2_DTO)
+            .creators(List.of(IDENTIFIER_2_CREATOR_1_DTO, IDENTIFIER_2_CREATOR_2_DTO))
             .build();
 
     public final static Creator CREATOR_1 = Creator.builder()

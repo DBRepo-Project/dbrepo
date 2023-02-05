@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
@@ -27,6 +28,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;

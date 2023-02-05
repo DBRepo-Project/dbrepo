@@ -96,8 +96,7 @@ public interface DatabaseService {
      * @return The database.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      * @throws UserNotFoundException     The new user was not found in the metadata database.
-     * @throws NotAllowedException       Transfer of the ownership failed because user is not owner
      */
     Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException;
+            throws DatabaseNotFoundException, UserNotFoundException;
 }

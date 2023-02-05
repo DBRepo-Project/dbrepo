@@ -2,6 +2,7 @@ package at.tuwien.gateway;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.repository.jpa.UserRepository;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AuthenticationServiceGatewayTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private ReadyConfig readyConfig;

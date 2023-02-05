@@ -2,6 +2,7 @@ package at.tuwien.auth;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.H2Utils;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.repository.jpa.UserRepository;
@@ -34,6 +35,9 @@ public class AuthTokenFilterTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
     private ReadyConfig readyConfig;

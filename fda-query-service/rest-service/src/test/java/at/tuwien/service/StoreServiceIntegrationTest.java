@@ -40,6 +40,9 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
     private Channel channel;
 
     @MockBean

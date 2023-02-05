@@ -11,6 +11,7 @@ public interface AuthenticationServiceGateway {
      *
      * @param token The token
      * @return User details on success
+     * @throws ServletException The token failed to validate at the Authentication Service.
      */
     UserDetails validate(String token) throws ServletException;
 }

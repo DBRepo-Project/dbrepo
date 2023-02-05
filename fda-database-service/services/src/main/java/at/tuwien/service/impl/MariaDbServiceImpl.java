@@ -188,14 +188,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, UserNotFoundException {
         /* check */
         final Database entity = findById(containerId, databaseId);
         final User user = userService.findByUsername(transferDto.getUsername());
-        if (!entity.getOwner().getId().equals(user.getId())) {
-            log.error("Failed to transfer ownership because user with id {} is not owner of database with id {}", user.getId(), entity.getId());
-            throw new NotAllowedException("Failed to transfer ownership");
-        }
         /* update in metadata database */
         entity.setOwner(user);
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));

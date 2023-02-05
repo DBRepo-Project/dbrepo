@@ -81,11 +81,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws InterruptedException {
         afterEach();
-        /* create networks */
         DockerConfig.createAllNetworks();
-        /* create container */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
         /* metadata database */
         h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
@@ -119,8 +115,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_multiple_fails() throws InterruptedException, UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
+    public void create_multiple_fails() throws InterruptedException {
 
         /* mock */
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
@@ -132,7 +127,6 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
 
         /* test */
-        create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         assertThrows(NotAllowedException.class, () -> {
             create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
         });

@@ -7,8 +7,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -22,11 +20,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.util.*;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +35,9 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;

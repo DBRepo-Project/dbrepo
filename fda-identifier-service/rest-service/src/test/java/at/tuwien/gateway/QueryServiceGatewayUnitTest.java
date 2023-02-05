@@ -2,6 +2,7 @@ package at.tuwien.gateway;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
@@ -32,6 +33,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class QueryServiceGatewayUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private ReadyConfig readyConfig;

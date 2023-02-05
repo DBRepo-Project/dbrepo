@@ -2,6 +2,7 @@ package at.tuwien.auth;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.H2Utils;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.repository.jpa.UserRepository;
@@ -31,6 +32,9 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AuthTokenFilterTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private ReadyConfig readyConfig;
