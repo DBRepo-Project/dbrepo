@@ -395,7 +395,7 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
-    public final static Long CONTAINER_ELASTIC_ID = 5L;
+    public final static Long CONTAINER_ELASTIC_ID = 6L;
     public final static String CONTAINER_ELASTIC_NAME = "fda-elastic-service";
     public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "search-mock-service";
     public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
@@ -409,6 +409,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_ELASTIC_ID)
             .image(IMAGE_ELASTIC)
             .hash(CONTAINER_ELASTIC_HASH)
+            .ipAddress(CONTAINER_ELASTIC_IP)
             .created(CONTAINER_ELASTIC_CREATED)
             .creator(USER_1)
             .build();
@@ -1094,6 +1095,20 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Table TABLE_1_NOCOLS = Table.builder()
+            .id(TABLE_1_ID)
+            .created(Instant.now())
+            .internalName(TABLE_1_INTERNALNAME)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(List.of())
+            .creator(USER_1)
+            .build();
+
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(COLUMN_2_1_ORDINALPOS)
@@ -1151,6 +1166,20 @@ public abstract class BaseUnitTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(TABLE_2_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Table TABLE_2_NOCOLS = Table.builder()
+            .id(TABLE_2_ID)
+            .created(Instant.now())
+            .internalName(TABLE_2_INTERNALNAME)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(List.of())
             .creator(USER_1)
             .build();
 
@@ -1691,6 +1720,20 @@ public abstract class BaseUnitTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(TABLE_3_COLUMNS)
+            .creator(USER_1)
+            .build();
+
+    public final static Table TABLE_3_NOCOLS = Table.builder()
+            .id(TABLE_3_ID)
+            .created(Instant.now())
+            .internalName(TABLE_3_INTERNALNAME)
+            .description(TABLE_3_DESCRIPTION)
+            .name(TABLE_3_NAME)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(List.of())
             .creator(USER_1)
             .build();
 

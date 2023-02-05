@@ -152,7 +152,7 @@ public class DockerConfig extends BaseUnitTest {
                 });
     }
 
-    public static void createAllNetworks () {
+    public static void createAllNetworks() {
         dockerClient.createNetworkCmd()
                 .withName("fda-userdb")
                 .withIpam(new Network.Ipam()

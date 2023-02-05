@@ -46,9 +46,6 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
-    private IndexConfig indexInitializer;
-
-    @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
     @MockBean

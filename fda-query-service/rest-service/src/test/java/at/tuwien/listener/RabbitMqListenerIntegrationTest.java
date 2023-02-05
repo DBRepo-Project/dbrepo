@@ -98,9 +98,9 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
         DATABASE_1.setTables(List.of());
         databaseRepository.save(DATABASE_1);
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3));
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
-        tableRepository.save(TABLE_3);
+        tableRepository.save(TABLE_1_NOCOLS);
+        tableRepository.save(TABLE_2_NOCOLS);
+        tableRepository.save(TABLE_3_NOCOLS);
     }
 
     @Test
