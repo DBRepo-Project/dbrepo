@@ -26,7 +26,6 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (optional.isEmpty()) {
-            log.error("Failed to find identifier for database id {} query id {}", databaseId, queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         return optional.get();

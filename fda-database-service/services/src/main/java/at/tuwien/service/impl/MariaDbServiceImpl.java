@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -121,16 +122,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
         final Container container = containerService.find(containerId);
         if (container.getDatabase() != null) {
-            log.error("Currently we only support one database per container.");
-            throw new DatabaseMalformedException("Currently only one database per container is supported");
+            log.error("Failed to create database {} in container with id {}, only one database per container", createDto.getName(), containerId);
+            throw new DatabaseMalformedException("Failed to create database " + createDto.getName() + " in container with id " + containerId + ", only one database per container");
         }
         final User root = databaseMapper.containerToPrivilegedUser(container);
         final User user = userService.findByUsername(principal.getName());
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
+        database.setId(containerId);
         database.setContainer(container);
-        final User creator = userService.findByUsername(principal.getName());
-        database.setCreator(creator);
+        final User owner = userService.findByUsername(principal.getName());
+        database.setCreator(owner);
+        database.setOwner(owner);
         database.setExchangeName("dbrepo/" + database.getInternalName());
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
@@ -143,16 +146,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             preparedStatement1.executeUpdate();
             final PreparedStatement preparedStatement2 = databaseMapper.rawGrantCreatorAccessQuery(connection, user);
             preparedStatement2.executeUpdate();
-            /* grant read-only access */
-            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection);
+            final PreparedStatement preparedStatement3 = databaseMapper.rawFlushPrivileges(connection);
             preparedStatement3.executeUpdate();
+            /* grant read-only access */
+            final PreparedStatement preparedStatement4 = databaseMapper.rawGrantDefaultReadonlyAccessQuery(connection, user);
+            preparedStatement4.executeUpdate();
+            final PreparedStatement preparedStatement5 = databaseMapper.rawFlushPrivileges(connection);
+            preparedStatement5.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to create database {}, reason: {}", database, e.getMessage());
+            log.error("Failed to create database with internal name {}, reason: {}", database.getInternalName(), e.getMessage());
             throw new DatabaseMalformedException("Failed to create database", e);
         } finally {
             dataSource.close();
         }
-        log.info("Created user {} on database with creator access", user.getUsername());
+        log.info("Created user {} on database with owner access", user.getUsername());
         /* save in metadata database */
         final Database entity = databaseRepository.save(database);
         log.info("Created database with id {}", entity.getId());
@@ -164,17 +171,33 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
+    public Database visibility(Long containerId, Long databaseId, DatabaseModifyVisibilityDto data)
             throws DatabaseNotFoundException {
         /* check */
         final Database database = findById(containerId, databaseId);
         /* map */
-        database.setIsPublic(transferDto.getIsPublic());
+        database.setIsPublic(data.getIsPublic());
         /* update entity in metadata database */
         final Database entity = databaseRepository.save(database);
-        log.info("Updated database with id {}", entity.getId());
-        log.trace("updated database {}", entity);
+        log.info("Updated database visibility to {} with id {}", data.getIsPublic(), entity.getId());
         // save in database_index - elastic search
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database in elastic search with id {}", entity.getId());
+        return entity;
+    }
+
+    @Override
+    public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
+        /* check */
+        final Database entity = findById(containerId, databaseId);
+        final User user = userService.findByUsername(transferDto.getUsername());
+        if (!entity.getOwner().getId().equals(user.getId())) {
+            log.error("Failed to transfer ownership because user with id {} is not owner of database with id {}", user.getId(), entity.getId());
+            throw new NotAllowedException("Failed to transfer ownership");
+        }
+        /* update in metadata database */
+        entity.setOwner(user);
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
         log.info("Updated database in elastic search with id {}", entity.getId());
         return entity;

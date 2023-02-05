@@ -76,7 +76,11 @@ public interface QueryMapper {
             int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
             for (int i = 0; i < columns.size(); i++) {
-                map.put(columns.get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), columns.get(i)));
+                final Object object = dataColumnToObject(result.getObject(idx[0]++), columns.get(i));
+                if (object == null) {
+                    log.warn("result set for column {} is empty (=null)", columns.get(0).getInternalName());
+                }
+                map.put(columns.get(i).getInternalName(), object);
             }
             resultList.add(map);
         }
@@ -108,7 +112,7 @@ public interface QueryMapper {
     }
 
     default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("DROP TABLE `")
+        final StringBuilder statement = new StringBuilder("DROP TABLE IF EXISTS `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -776,7 +780,6 @@ public interface QueryMapper {
     @Transactional(readOnly = true)
     default Object dataColumnToObject(Object data, TableColumn column) throws DateTimeException {
         if (data == null) {
-            log.warn("data is null");
             return null;
         }
         switch (column.getColumnType()) {

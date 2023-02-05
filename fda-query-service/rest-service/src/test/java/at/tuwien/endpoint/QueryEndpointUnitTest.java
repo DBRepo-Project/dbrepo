@@ -87,6 +87,26 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void execute_emptyStatement_fails() {
+        final String statement = null;
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+        });
+    }
+
+    @Test
+    public void execute_blankStatement_fails() {
+        final String statement = "";
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+        });
+    }
+
+    @Test
     public void execute_forbiddenKeyword2_fails() {
         final String statement = "SELECT * FROM `weather_aus` w";
 

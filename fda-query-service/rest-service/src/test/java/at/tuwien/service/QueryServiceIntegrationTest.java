@@ -10,10 +10,6 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -37,7 +33,6 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -75,48 +70,18 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
+    private final static String BIND_WEATHER = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
+    private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
         /* create network */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        /* create container */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
-                .withName(CONTAINER_1_INTERNALNAME)
-                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
-                .withIpv4Address(CONTAINER_1_IP)
-                .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv(CONTAINER_1_ENV)
-                .exec();
-        CONTAINER_1.setHash(response.getId());
-        startContainer(CONTAINER_1);
-
-        /* create container */
-        final String bind2 = new File(
-                "./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response2 =
-                dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                        .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind2), Bind.parse("/tmp:/tmp")))
-                        .withName(CONTAINER_2_INTERNALNAME)
-                        .withIpv4Address(CONTAINER_2_IP)
-                        .withHealthcheck(CONTAINER_2_HEALTHCHECK)
-                        .withHostName(CONTAINER_2_INTERNALNAME)
-                        .withEnv(CONTAINER_2_ENV)
-                        .exec();
-        CONTAINER_1.setHash(response.getId());
-        CONTAINER_2.setHash(response2.getId());
+        DockerConfig.createAllNetworks();
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
         /* metadata db */
         TABLE_1.setDatabase(DATABASE_1);
@@ -126,28 +91,22 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @AfterAll
     public static void afterAll() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3));
+        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_1);
+        TABLE_3.setDatabase(DATABASE_1);
+        DATABASE_2.setTables(List.of(TABLE_4, TABLE_5, TABLE_6));
+        DATABASE_2.setViews(List.of(VIEW_4));
+        TABLE_4.setDatabase(DATABASE_2);
+        TABLE_5.setDatabase(DATABASE_2);
+        TABLE_6.setDatabase(DATABASE_2);
+        VIEW_4.setDatabase(DATABASE_2);
     }
 
     @Test

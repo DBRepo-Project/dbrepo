@@ -5,7 +5,6 @@ import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.api.user.UserDetailsDto;
@@ -15,7 +14,6 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.VisibilityType;
@@ -45,8 +43,26 @@ import java.util.Map;
 
 import static java.time.temporal.ChronoUnit.*;
 
+/**
+ * Database 1
+ * <ul>
+ * <li>Table 1</li>
+ * <li>Table 2</li>
+ * <li>Table 3</li>
+ * </ul>
+ * <p>
+ * Database 2
+ * <ul>
+ * <li>Table 4</li>
+ * <li>Table 5</li>
+ * <li>Table 6</li>
+ * <li>View 4</li>
+ * </ul>
+ */
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
+
+    public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
 
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_USERNAME = "guest";
@@ -137,7 +153,15 @@ public abstract class BaseUnitTest {
             .lastModified(USER_3_CREATED)
             .build();
 
-    public final static String DATABASE_NET = "fda-userdb";
+    public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
+            .build();
+
+    public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
+            USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -176,6 +200,38 @@ public abstract class BaseUnitTest {
                     .type(ContainerImageEnvironmentItemType.PASSWORD)
                     .build());
 
+    public final static Long IMAGE_DATE_1_ID = 1L;
+    public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_1_UNIX_FORMAT = "yyyy-MM-dd";
+    public final static String IMAGE_DATE_1_DATABASE_FORMAT = "%Y-%c-%d";
+    public final static String IMAGE_DATE_1_EXAMPLE = "2022-01-30";
+    public final static Boolean IMAGE_DATE_1_HAS_TIME = false;
+
+    public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_1_ID)
+            .iid(IMAGE_DATE_1_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
+            .example(IMAGE_DATE_1_EXAMPLE)
+            .hasTime(IMAGE_DATE_1_HAS_TIME)
+            .build();
+
+    public final static Long IMAGE_DATE_2_ID = 2L;
+    public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
+    public final static String IMAGE_DATE_2_DATABASE_FORMAT = "%d.%c.%y";
+    public final static String IMAGE_DATE_2_EXAMPLE = "30.01.2022";
+    public final static Boolean IMAGE_DATE_2_HAS_TIME = false;
+
+    public final static ContainerImageDate IMAGE_DATE_2 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_2_ID)
+            .iid(IMAGE_DATE_2_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
+            .example(IMAGE_DATE_2_EXAMPLE)
+            .hasTime(IMAGE_DATE_2_HAS_TIME)
+            .build();
+
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .repository(IMAGE_1_REPOSITORY)
@@ -188,6 +244,7 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
+            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2))
             .build();
 
     public final static Long IMAGE_BROKER_ID = 2L;
@@ -200,8 +257,6 @@ public abstract class BaseUnitTest {
     public final static Integer IMAGE_BROKER_PORT = 15672;
     public final static Long IMAGE_BROKER_SIZE = 12000L;
     public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
-    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
 
     public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
             .id(IMAGE_BROKER_ID)
@@ -247,6 +302,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
+            .ipAddress(CONTAINER_1_IP)
             .created(CONTAINER_1_CREATED)
             .creator(USER_1)
             .build();
@@ -270,6 +326,7 @@ public abstract class BaseUnitTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
+            .ipAddress(CONTAINER_2_IP)
             .created(CONTAINER_2_CREATED)
             .creator(USER_1)
             .build();
@@ -281,6 +338,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
     public final static String CONTAINER_3_IP = "172.28.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -293,12 +352,36 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
-    public final static Long CONTAINER_BROKER_ID = 4L;
-    public final static String CONTAINER_BROKER_NAME = "fda-broker-service";
+    public final static Long CONTAINER_4_ID = 4L;
+    public final static String CONTAINER_4_HASH = "deadbeef";
+    public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
+    public final static String CONTAINER_4_NAME = "u04";
+    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
+    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static Container CONTAINER_4 = Container.builder()
+            .id(CONTAINER_4_ID)
+            .name(CONTAINER_4_NAME)
+            .internalName(CONTAINER_4_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_4_IMAGE)
+            .hash(CONTAINER_4_HASH)
+            .created(CONTAINER_4_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_BROKER_ID = 5L;
+    public final static String CONTAINER_BROKER_NAME = "broker-service";
     public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
     public final static String CONTAINER_BROKER_IP = "172.29.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
     public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
+    public final static String[] CONTAINER_BROKER_ENV = new String[]{};
 
     public final static Container CONTAINER_BROKER = Container.builder()
             .id(CONTAINER_BROKER_ID)
@@ -306,6 +389,7 @@ public abstract class BaseUnitTest {
             .internalName(CONTAINER_BROKER_INTERNAL_NAME)
             .imageId(IMAGE_BROKER_ID)
             .image(IMAGE_BROKER)
+            .ipAddress(CONTAINER_BROKER_IP)
             .hash(CONTAINER_BROKER_HASH)
             .created(CONTAINER_BROKER_CREATED)
             .creator(USER_1)
@@ -332,24 +416,24 @@ public abstract class BaseUnitTest {
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_ID + "/" + DATABASE_2_ID;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_INTERNALNAME;
 
     public final static Long DATABASE_3_ID = 3L;
     public final static String DATABASE_3_NAME = "traffic";
     public final static String DATABASE_3_INTERNALNAME = "traffic";
-    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_ID + "/" + DATABASE_3_ID;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_INTERNALNAME;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_1_INTERNALNAME;
     public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
 
@@ -357,7 +441,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_2_INTERNALNAME;
     public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
 
@@ -365,7 +449,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_3_NAME = "Traffic Zürich";
     public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_3_INTERNALNAME;
     public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
 
@@ -373,7 +457,7 @@ public abstract class BaseUnitTest {
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_4_INTERNALNAME;
     public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
 
@@ -381,48 +465,17 @@ public abstract class BaseUnitTest {
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
+    public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_5_INTERNALNAME;
     public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_6_ID = 6L;
     public final static String TABLE_6_NAME = "likes";
-    public final static String TABLE_6_INTERNALNAME = "likes";
+    public final static String TABLE_6_INTERNAL_NAME = "likes";
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
-    public final static String TABLE_6_TOPIC = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNALNAME;
+    public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_6_INTERNAL_NAME;
+    public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME + "/1";
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
-
-    public final static Long IMAGE_DATE_1_ID = 1L;
-    public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_1_UNIX_FORMAT = "yyyy-MM-dd";
-    public final static String IMAGE_DATE_1_DATABASE_FORMAT = "%Y-%c-%d";
-    public final static String IMAGE_DATE_1_EXAMPLE = "2022-01-30";
-    public final static Boolean IMAGE_DATE_1_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_1 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_1_ID)
-            .iid(IMAGE_DATE_1_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
-            .example(IMAGE_DATE_1_EXAMPLE)
-            .hasTime(IMAGE_DATE_1_HAS_TIME)
-            .build();
-
-    public final static Long IMAGE_DATE_2_ID = 2L;
-    public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
-    public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
-    public final static String IMAGE_DATE_2_DATABASE_FORMAT = "%d.%c.%y";
-    public final static String IMAGE_DATE_2_EXAMPLE = "30.01.2022";
-    public final static Boolean IMAGE_DATE_2_HAS_TIME = false;
-
-    public final static ContainerImageDate IMAGE_DATE_2 = ContainerImageDate.builder()
-            .id(IMAGE_DATE_2_ID)
-            .iid(IMAGE_DATE_2_IMAGE_ID)
-            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
-            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
-            .example(IMAGE_DATE_2_EXAMPLE)
-            .hasTime(IMAGE_DATE_2_HAS_TIME)
-            .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
     public final static Integer COLUMN_1_1_ORDINALPOS = 0;
@@ -1027,6 +1080,20 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_1_5_ENUM_VALUES)
                     .build());
 
+    public final static Table TABLE_1 = Table.builder()
+            .id(TABLE_1_ID)
+            .created(Instant.now())
+            .internalName(TABLE_1_INTERNALNAME)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(TABLE_1_COLUMNS)
+            .creator(USER_1)
+            .build();
+
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(COLUMN_2_1_ORDINALPOS)
@@ -1073,9 +1140,23 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_2_3_ENUM_VALUES)
                     .build());
 
+    public final static Table TABLE_2 = Table.builder()
+            .id(TABLE_2_ID)
+            .created(Instant.now())
+            .internalName(TABLE_2_INTERNALNAME)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(TABLE_2_COLUMNS)
+            .creator(USER_1)
+            .build();
+
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(0)
                     .autoGenerated(true)
                     .columnType(TableColumnType.NUMBER)
@@ -1090,7 +1171,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(1)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1105,7 +1186,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(2)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1120,7 +1201,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(3)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -1135,7 +1216,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(4)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1150,7 +1231,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(5)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1165,7 +1246,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(6)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1180,7 +1261,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(7)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1195,7 +1276,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(8)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1210,7 +1291,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(9)
                     .autoGenerated(false)
                     .columnType(TableColumnType.STRING)
@@ -1225,7 +1306,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(10)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -1240,7 +1321,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(11)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1255,7 +1336,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(12)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1270,7 +1351,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(13)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1285,7 +1366,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(14)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1300,7 +1381,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(15)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1315,7 +1396,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(16)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1330,7 +1411,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(17)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1345,7 +1426,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(18)
                     .autoGenerated(false)
                     .columnType(TableColumnType.STRING)
@@ -1360,7 +1441,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(19)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -1375,7 +1456,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(20)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1390,7 +1471,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(21)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1405,7 +1486,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(22)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1420,7 +1501,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(23)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1435,7 +1516,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(24)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1450,7 +1531,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(25)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1465,7 +1546,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(26)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1480,7 +1561,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(27)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1495,7 +1576,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(28)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1510,7 +1591,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(29)
                     .autoGenerated(false)
                     .columnType(TableColumnType.STRING)
@@ -1525,7 +1606,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(30)
                     .autoGenerated(false)
                     .columnType(TableColumnType.STRING)
@@ -1540,7 +1621,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(31)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1555,7 +1636,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(32)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1570,7 +1651,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(33)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1585,7 +1666,7 @@ public abstract class BaseUnitTest {
                     .build(),
             TableColumn.builder()
                     .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_3_ID)
+                    .cdbid(DATABASE_1_ID)
                     .ordinalPosition(34)
                     .autoGenerated(false)
                     .columnType(TableColumnType.NUMBER)
@@ -1598,6 +1679,20 @@ public abstract class BaseUnitTest {
                     .checkExpression(null)
                     .enumValues(null)
                     .build());
+
+    public final static Table TABLE_3 = Table.builder()
+            .id(TABLE_3_ID)
+            .created(Instant.now())
+            .internalName(TABLE_3_INTERNALNAME)
+            .description(TABLE_3_DESCRIPTION)
+            .name(TABLE_3_NAME)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(TABLE_3_COLUMNS)
+            .creator(USER_1)
+            .build();
 
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_1_ID)
@@ -1915,6 +2010,20 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_4_21_ENUM_VALUES)
                     .build());
 
+    public final static Table TABLE_4 = Table.builder()
+            .id(TABLE_4_ID)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(TABLE_4_COLUMNS)
+            .creator(USER_1)
+            .build();
+
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(COLUMN_5_1_ORDINALPOS)
@@ -1960,6 +2069,20 @@ public abstract class BaseUnitTest {
                     .isPrimaryKey(COLUMN_5_3_PRIMARY)
                     .enumValues(COLUMN_5_3_ENUM_VALUES)
                     .build());
+
+    public final static Table TABLE_5 = Table.builder()
+            .id(TABLE_5_ID)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(TABLE_5_COLUMNS)
+            .creator(USER_1)
+            .build();
 
     public final static Long COLUMN_6_1_ID = 26L;
     public final static Integer COLUMN_6_1_ORDINALPOS = 0;
@@ -2020,91 +2143,16 @@ public abstract class BaseUnitTest {
                     .enumValues(COLUMN_6_2_ENUM_VALUES)
                     .build());
 
-    public final static Table TABLE_1 = Table.builder()
-            .id(TABLE_1_ID)
-            .created(Instant.now())
-            .internalName(TABLE_1_INTERNALNAME)
-            .description(TABLE_1_DESCRIPTION)
-            .name(TABLE_1_NAME)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .columns(TABLE_1_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_1_COLUMNS)
-            .build();
-
-    public final static Table TABLE_2 = Table.builder()
-            .id(TABLE_2_ID)
-            .created(Instant.now())
-            .internalName(TABLE_2_INTERNALNAME)
-            .description(TABLE_2_DESCRIPTION)
-            .name(TABLE_2_NAME)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(TABLE_2_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_2_COLUMNS)
-            .build();
-
-    public final static Table TABLE_3 = Table.builder()
-            .id(TABLE_3_ID)
-            .created(Instant.now())
-            .internalName(TABLE_3_INTERNALNAME)
-            .description(TABLE_3_DESCRIPTION)
-            .name(TABLE_3_NAME)
-            .lastModified(TABLE_3_LAST_MODIFIED)
-            .tdbid(DATABASE_3_ID)
-            .queueName(TABLE_3_QUEUE_NAME)
-            .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(TABLE_3_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_3_COLUMNS)
-            .build();
-
-    public final static Table TABLE_4 = Table.builder()
-            .id(TABLE_4_ID)
-            .created(Instant.now())
-            .internalName(TABLE_4_INTERNALNAME)
-            .description(TABLE_4_DESCRIPTION)
-            .name(TABLE_4_NAME)
-            .lastModified(TABLE_4_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(TABLE_4_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_4_COLUMNS)
-            .build();
-
-    public final static Table TABLE_5 = Table.builder()
-            .id(TABLE_5_ID)
-            .created(Instant.now())
-            .internalName(TABLE_5_INTERNALNAME)
-            .description(TABLE_5_DESCRIPTION)
-            .name(TABLE_5_NAME)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(TABLE_5_COLUMNS)
-            .creator(USER_1)
-            .columns(TABLE_5_COLUMNS)
-            .build();
-
     public final static Table TABLE_6 = Table.builder()
             .id(TABLE_6_ID)
             .created(Instant.now())
-            .internalName(TABLE_6_INTERNALNAME)
+            .internalName(TABLE_6_INTERNAL_NAME)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_6_TOPIC)
-            .routingKey(TABLE_6_TOPIC)
+            .queueName(TABLE_6_QUEUE_NAME)
+            .routingKey(TABLE_6_ROUTING_KEY)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
             .build();
@@ -2229,7 +2277,8 @@ public abstract class BaseUnitTest {
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
+            .owner(USER_1)
+            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
             .views(List.of())
             .build();
 
@@ -2242,9 +2291,10 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
-            .creator(USER_1)
-            .tables(List.of(TABLE_4, TABLE_5, TABLE_6))
-            .views(List.of(VIEW_4))
+            .creator(USER_2)
+            .owner(USER_2)
+            .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
+            .views(List.of()) /* VIEW_4 */
             .build();
 
     public final static Database DATABASE_3 = Database.builder()
@@ -2256,7 +2306,8 @@ public abstract class BaseUnitTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .creator(USER_1)
+            .creator(USER_3)
+            .owner(USER_3)
             .tables(List.of())
             .views(List.of())
             .build();
@@ -2326,6 +2377,30 @@ public abstract class BaseUnitTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
             .build();
 
     public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()

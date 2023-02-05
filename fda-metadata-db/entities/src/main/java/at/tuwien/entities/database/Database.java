@@ -32,8 +32,6 @@ public class Database {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "databases-sequence")
-    @GenericGenerator(name = "databases-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -43,9 +41,15 @@ public class Database {
     })
     private User creator;
 
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "owned_by", referencedColumnName = "UserID")
+    })
+    private User owner;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })

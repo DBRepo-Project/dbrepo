@@ -129,7 +129,7 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_hasNoContainer_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_hasNoContainer_succeeds() throws ImageNotFoundException {
 
         /* test */
         imageService.delete(IMAGE_1_ID);
@@ -138,11 +138,20 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_noContainer_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_noContainer_succeeds() throws ImageNotFoundException {
 
         /* test */
         imageService.delete(IMAGE_1_ID);
         assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
+    }
+
+    @Test
+    public void pull_fails() {
+
+        /* test */
+        assertThrows(ImageNotFoundException.class, () -> {
+            imageService.pull("un1c0rn", "v420.420");
+        });
     }
 
 }

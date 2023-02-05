@@ -3,6 +3,7 @@ package at.tuwien.repository;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -70,75 +71,25 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
+    static final String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
         /* create network */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
+        DockerConfig.createAllNetworks();
         /* create elastic search */
-        final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_ELASTIC_REPOSITORY + ":" + IMAGE_ELASTIC_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-public"))
-                .withName(CONTAINER_ELASTIC_NAME)
-                .withIpv4Address(CONTAINER_ELASTIC_IP)
-                .withHostName(CONTAINER_ELASTIC_INTERNAL_NAME)
-                .withEnv(IMAGE_ELASTIC_ENV)
-                .withCmd(IMAGE_ELASTIC_CMD)
-                .exec();
-        CONTAINER_ELASTIC.setHash(response1.getId());
-        dockerClient.startContainerCmd(response1.getId()).exec();
+        DockerConfig.createContainer(null, CONTAINER_ELASTIC, IMAGE_ELASTIC_ENV);
+        DockerConfig.startContainer(CONTAINER_ELASTIC);
         /* create container */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
-        final CreateContainerResponse response = dockerClient.createContainerCmd(IMAGE_1_REPOSITORY + ":" + IMAGE_1_TAG)
-                .withHostConfig(hostConfig.withNetworkMode("fda-userdb").withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp")))
-                .withName(CONTAINER_1_INTERNALNAME)
-                .withHealthcheck(CONTAINER_1_HEALTHCHECK)
-                .withIpv4Address(CONTAINER_1_IP)
-                .withHostName(CONTAINER_1_INTERNALNAME)
-                .withEnv(CONTAINER_1_ENV)
-                .exec();
-        CONTAINER_1.setHash(response.getId());
-        startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
     }
 
     @AfterAll
     public static void afterAll() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @Test

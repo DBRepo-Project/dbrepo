@@ -2,6 +2,7 @@ package at.tuwien.api.container;
 
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,10 +46,11 @@ public class ContainerDto {
     @JsonProperty("ip_address")
     private String ipAddress;
 
-
     private ImageBriefDto image;
 
     private Integer port;
+
+    private UserBriefDto owner;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21.678396092Z")

@@ -1,11 +1,9 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.database.query.ExportDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 @Service

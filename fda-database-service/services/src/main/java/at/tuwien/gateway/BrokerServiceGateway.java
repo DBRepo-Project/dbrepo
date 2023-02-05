@@ -2,13 +2,10 @@ package at.tuwien.gateway;
 
 
 import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
-import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
-
-import java.util.List;
+import at.tuwien.exception.BrokerVirtualHostGrantException;
 
 public interface BrokerServiceGateway {
 
@@ -25,18 +22,18 @@ public interface BrokerServiceGateway {
      *
      * @param username The username of the user.
      * @param data     The grant data.
-     * @throws BrokerVirtualHostCreationException The queue service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostGrantException The queue service did not respond within the 3s timeout.
      */
     void grantPermission(String username, ExchangeUpdatePermissionsDto data)
-            throws BrokerVirtualHostCreationException;
+            throws BrokerVirtualHostGrantException;
 
     /**
      * Grants a user permission at a virtual host in the queue service.
      *
      * @param username The username of the user.
      * @param data     The grant data.
-     * @throws BrokerVirtualHostCreationException The queue service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostGrantException The queue service did not respond within the 3s timeout.
      */
     void grantPermission(String username, GrantVirtualHostPermissionsDto data)
-            throws BrokerVirtualHostCreationException;
+            throws BrokerVirtualHostGrantException;
 }

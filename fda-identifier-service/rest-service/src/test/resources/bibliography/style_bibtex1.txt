@@ -1,6 +1,6 @@
 @misc{dbrepo2022,
   author = {Mustermann, Max},
-  title = {Australia weather data},
+  title = {Austrian weather data},
   howpublished = {\url{http://localhost:3000/pid/1}},
   month = {5},
   year = {2022}

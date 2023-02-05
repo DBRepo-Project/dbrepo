@@ -1,7 +1,5 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.UserDetailsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.auth.MariaDbPassword;
@@ -14,11 +12,10 @@ import at.tuwien.exception.UserNameExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repositories.UserRepository;
-import at.tuwien.service.QueueService;
 import at.tuwien.service.UserService;
-import joptsimple.internal.Strings;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,16 +33,14 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
-    private final QueueService queueService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationConfig authenticationConfig;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, QueueService queueService, UserRepository userRepository,
+    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
                            PasswordEncoder passwordEncoder, AuthenticationConfig authenticationConfig) {
         this.userMapper = userMapper;
-        this.queueService = queueService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationConfig = authenticationConfig;
@@ -128,9 +123,9 @@ public class UserServiceImpl implements UserService {
         final User entity;
         try {
             entity = userRepository.save(user);
-        } catch (ConstraintViolationException e) {
-            log.error("Failed to create user");
-            throw new UserNameExistsException("Failed to create user", e);
+        } catch (DataIntegrityViolationException e) {
+            log.error("Failed to create user with username {}", data.getUsername());
+            throw new UserNameExistsException("Failed to create user with username " + data.getUsername(), e);
         }
         log.info("Created user with id {}", entity.getId());
         log.trace("created user {}", entity);
@@ -181,7 +176,7 @@ public class UserServiceImpl implements UserService {
      * @param orcid The ORCID.
      * @return True if the ORCID provided is valid, false otherwise.
      */
-    protected static Boolean validateOrcid(String orcid) {
+    public Boolean validateOrcid(String orcid) {
         if (orcid == null) {
             return true;
         }
@@ -225,12 +220,12 @@ public class UserServiceImpl implements UserService {
         final User entity;
         try {
             entity = userRepository.save(user);
-        } catch (DuplicateKeyException e) {
+        } catch (DataIntegrityViolationException e) {
             log.error("Failed to assign roles, must be unique");
             throw new RoleUniqueException("Failed to assign roles", e);
         }
-        log.info("Updated user with id {}", entity.getId());
-        log.trace("updated user {}", entity);
+        log.info("Updated roles of user with id {}", entity.getId());
+        log.trace("roles={}", data.getRoles());
         return entity;
     }
 
@@ -242,8 +237,8 @@ public class UserServiceImpl implements UserService {
         /* save */
         user.setThemeDark(data.getThemeDark());
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
-        log.trace("updated user {}", entity);
+        log.info("Updated theme of user with id {}", entity.getId());
+        log.trace("theme={}", data);
     }
 
     @Override
@@ -252,16 +247,6 @@ public class UserServiceImpl implements UserService {
             BrokerUserCreationException {
         /* check */
         final User user = find(id);
-        /* modify */
-        final UserDetailsDto details = queueService.findUser(user.getUsername());
-        final CreateUserDto modifyDto = userMapper.userPasswordDtoToCreateUserDto(data);
-        if (details.getTags().length > 0) {
-            final String tags = Strings.join(details.getTags(), ",");
-            log.debug("found tags, setting the tags={}", tags);
-            modifyDto.setTags(tags);
-        }
-        queueService.modifyUserPassword(user, modifyDto);
-        log.info("Updated broker service password for user with id {}", user.getId());
         /* save */
         final String passwd = passwordEncoder.encode(data.getPassword());
         log.trace("encoded updated user password {}", passwd);
@@ -269,7 +254,7 @@ public class UserServiceImpl implements UserService {
         user.setDatabasePassword(MariaDbPassword.encode(data.getPassword()));
         log.trace("mapped password {} to updated user {}", passwd, user);
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
+        log.info("Updated password of user with id {}", entity.getId());
         return entity;
     }
 
@@ -280,10 +265,10 @@ public class UserServiceImpl implements UserService {
         final User user = find(id);
         /* save */
         user.setEmail(data.getEmail());
-        log.debug("mapped email {} to updated user {}", data, user);
+        user.setEmailVerified(false);
+        log.trace("mapped email {} to updated user {}", data, user);
         final User entity = userRepository.save(user);
-        log.info("Updated user with id {}", entity.getId());
-        log.debug("updated user {}", entity);
+        log.info("Updated email of user with id {}", entity.getId());
         return entity;
     }
 

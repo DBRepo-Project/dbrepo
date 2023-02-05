@@ -104,6 +104,21 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void create_noAccessGiveAccess_fails() {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.empty());
+
+        /* test */
+        assertThrows(UserNotFoundException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
     public void find_anonymous_fails() {
 
         /* test */
@@ -205,6 +220,8 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_readOwnerUserNotFound_fails() {
 
         /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.empty());
 

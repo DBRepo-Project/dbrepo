@@ -34,8 +34,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("authenticated user {}", userDetails);
         }
         filterChain.doFilter(request, response);
     }
@@ -46,7 +46,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
      * @param request The request.
      * @return The token.
      */
-    private String parseJwt(HttpServletRequest request) {
+    String parseJwt(HttpServletRequest request) {
         String headerAuth = request.getHeader("Authorization");
         if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
             return headerAuth.substring(7, headerAuth.length());

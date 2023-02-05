@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
@@ -50,7 +49,8 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                     @RequestParam(required = false) Long qid,
-                                                    @RequestParam(required = false) IdentifierTypeDto type) {
+                                                    @RequestParam(required = false) IdentifierTypeDto type)
+            throws IdentifierNotFoundException {
         log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()

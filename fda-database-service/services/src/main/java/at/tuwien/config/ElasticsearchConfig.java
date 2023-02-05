@@ -1,5 +1,6 @@
 package at.tuwien.config;
 
+import lombok.extern.log4j.Log4j2;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.springframework.data.elasticsearch.client.RestClients;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 
+@Log4j2
 @Configuration
 public class ElasticsearchConfig {
 
@@ -23,6 +25,7 @@ public class ElasticsearchConfig {
 
     @Bean
     public RestHighLevelClient client() {
+        log.debug("elastic endpoint={}", elasticEndpoint);
         final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
                 .connectedTo(elasticEndpoint)
                 .withBasicAuth(elasticUsername, elasticPassword)

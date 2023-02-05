@@ -6,6 +6,7 @@ import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
@@ -14,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,9 +33,10 @@ public class AccessEndpoint extends AbstractEndpoint {
     private final DatabaseMapper databaseMapper;
 
     @Autowired
-    public AccessEndpoint(DatabaseService databaseService, ContainerService containerService,
-                          AccessService accessService, DatabaseMapper databaseMapper) {
-        super(databaseService, containerService);
+    public AccessEndpoint(DatabaseAccessRepository databaseAccessRepository, DatabaseService databaseService,
+                          ContainerService containerService, AccessService accessService,
+                          DatabaseMapper databaseMapper) {
+        super(databaseService, containerService, databaseAccessRepository);
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
     }
@@ -111,7 +112,7 @@ public class AccessEndpoint extends AbstractEndpoint {
     @DeleteMapping("/{username}")
     @Transactional
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
+    public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
                                     @NotNull Principal principal)
@@ -123,7 +124,7 @@ public class AccessEndpoint extends AbstractEndpoint {
             log.error("Missing revoke access permission");
             throw new NotAllowedException("Missing revoke access permission");
         }
-        accessService.find(databaseId, principal.getName());
+        accessService.find(databaseId, username);
         accessService.delete(containerId, databaseId, username);
         return ResponseEntity.accepted()
                 .build();

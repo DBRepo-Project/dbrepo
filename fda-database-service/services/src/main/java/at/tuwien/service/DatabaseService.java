@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -79,10 +80,24 @@ public interface DatabaseService {
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
-     * @param transferDto The visibility
+     * @param data        The visibility
      * @return The database.
-     * @throws DatabaseNotFoundException The database was not found.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     */
+    Database visibility(Long containerId, Long databaseId, DatabaseModifyVisibilityDto data)
+            throws DatabaseNotFoundException;
+
+    /**
+     * Transfer ownership of a database
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param transferDto The payload with the new owner.
+     * @return The database.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws UserNotFoundException     The new user was not found in the metadata database.
+     * @throws NotAllowedException       Transfer of the ownership failed because user is not owner
      */
     Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
-            throws DatabaseNotFoundException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException;
 }

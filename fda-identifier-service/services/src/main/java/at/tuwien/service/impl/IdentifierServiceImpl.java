@@ -27,6 +27,7 @@ import org.thymeleaf.exceptions.TemplateInputException;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.security.Principal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,9 +64,9 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId) {
+    public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         if (databaseId != null && queryId != null) {
-            return identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+            return List.of(find(databaseId, queryId));
         } else if (databaseId == null && queryId != null) {
             return identifierRepository.findByQueryId(queryId);
         } else if (databaseId != null && queryId == null) {
@@ -76,13 +77,13 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        final List<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+    public Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+        final Optional<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (identifier.isEmpty()) {
             log.error("Failed to find identifier with query id {}", queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
-        return identifier.get(0);
+        return identifier.get();
     }
 
     @Override
@@ -102,12 +103,12 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.error("Identifier cannot restrict the result set");
             throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
         }
-        /* find */
-        final List<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(data.getDbid(), data.getQid());
-        if (!optional.isEmpty()) {
-            log.error("Identifier already issued for database {} and query id {}", data.getDbid(), data.getQid());
-            log.debug("identifier already exists similar to request {}", data);
-            throw new IdentifierAlreadyExistsException("Identifier exists");
+        if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDbid(), IdentifierType.DATABASE)) {
+            log.error("Identifier already issued for database with id {}", data.getDbid());
+            throw new IdentifierAlreadyExistsException("Database identifier already exists");
+        } else if (data.getType().equals(IdentifierTypeDto.SUBSET) && identifierRepository.existsByDatabaseIdAndQueryIdAndType(data.getDbid(), data.getQid(), IdentifierType.SUBSET)) {
+            log.error("Identifier already issued for database with id {} and query with id {}", data.getDbid(), data.getQid());
+            throw new IdentifierAlreadyExistsException("Subset identifier already exists");
         }
         /* identifier */
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
@@ -130,9 +131,6 @@ public class IdentifierServiceImpl implements IdentifierService {
         } else if (data.getType().equals(IdentifierTypeDto.DATABASE)) {
             log.debug("identifier describes a database");
             tmp.setVisibility(identifierMapper.databaseToVisibilityType(database));
-        } else {
-            log.error("Failed to map identifier type: {}", data.getType());
-            throw new IdentifierPublishingNotAllowedException("Failed to map identifier type");
         }
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(tmp);
@@ -146,12 +144,15 @@ public class IdentifierServiceImpl implements IdentifierService {
                 })
                 .collect(Collectors.toList()));
         if (data.getRelatedIdentifiers() != null) {
+            entity.setRelated(new LinkedList<>());
             data.getRelatedIdentifiers()
                     .forEach(r -> {
                         final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
                         id.setIid(entity.getId());
                         id.setCreator(creator);
-                        relatedIdentifierRepository.save(id);
+                        final RelatedIdentifier relatedIdentifier = relatedIdentifierRepository.save(id);
+                        log.debug("identifier add related with id {}", relatedIdentifier.getId());
+                        entity.getRelated().add(relatedIdentifier);
                     });
         }
         final Identifier identifier = identifierRepository.save(entity);
@@ -231,24 +232,14 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {
             log.error("Failed to find identifier with id {} as it refers to a database and not a query", identifierId);
-            log.debug("failed to find identifier {}", identifier);
-            throw new IdentifierNotFoundException("Failed to find identifier");
+            throw new IdentifierRequestException("Failed to find identifier");
         }
-        /* export */
-        if (identifier.getType().equals(IdentifierType.SUBSET)) {
-            /* subset */
-            final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
-                    identifier.getDatabaseId(), identifier.getQueryId());
-            final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
-            log.trace("found resource {}", resource);
-            return resource;
-        } else if (identifier.getType().equals(IdentifierType.DATABASE)) {
-            /* database, we cannot export this to csv */
-            log.warn("Failed to export database to csv, fallback to default http redirect");
-            throw new IdentifierRequestException("Failed to export database to csv");
-        }
-        log.warn("Failed to export database, fallback to default http redirect");
-        throw new IdentifierRequestException("Failed to export database");
+        /* subset */
+        final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
+                identifier.getDatabaseId(), identifier.getQueryId());
+        final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
+        log.trace("found resource {}", resource);
+        return resource;
     }
 
     @Override
@@ -278,8 +269,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(identifierId);
         if (identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
             /* once published, the identifier cannot be reverted, it is persistent! */
-            log.error("Identifier is already published");
-            throw new IdentifierAlreadyPublishedException("Identifier is already published");
+            log.error("Identifier with id {} is already published for everyone", identifier.getId());
+            throw new IdentifierAlreadyPublishedException("Identifier with id " + identifier.getId() + " is already published for everyone");
         }
         identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(visibility));
         final Identifier entity = identifierRepository.save(identifier);

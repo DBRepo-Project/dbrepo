@@ -35,3 +35,5 @@ zipp==3.11.0
 zope.event==4.6
 zope.interface==5.5.2
 html5lib==1.1
+pytest==7.2.1
+coverage==7.1.0

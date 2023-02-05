@@ -35,3 +35,11 @@ SELECT `location`, `lat`, `lng`
 FROM `weather_location`
 WHERE `location` = 'Albury');
 
+CREATE VIEW `hs_weather_aus` AS
+SELECT *
+FROM (SELECT `id`, ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
+      FROM `weather_aus` FOR SYSTEM_TIME ALL
+      GROUP BY inserted_at, deleted_at
+      ORDER BY deleted_at DESC
+      LIMIT 50) AS v
+ORDER BY v.inserted_at, v.deleted_at ASC;
