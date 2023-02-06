@@ -10,8 +10,6 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -26,9 +24,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
-import java.util.Arrays;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2

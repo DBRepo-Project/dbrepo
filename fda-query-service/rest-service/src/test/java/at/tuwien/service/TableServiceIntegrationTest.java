@@ -53,6 +53,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
+    @MockBean
+    private TableRepository tableRepository;
+
     @Autowired
     private ImageRepository imageRepository;
 
@@ -61,9 +64,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private DatabaseRepository databaseRepository;
-
-    @Autowired
-    private TableRepository tableRepository;
 
     @Autowired
     private TableService tableService;
@@ -95,7 +95,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        tableRepository.save(TABLE_1);
     }
 
     @AfterEach
@@ -106,6 +105,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void findHistory_anonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* mock */
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
@@ -119,6 +122,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     public void findHistory_anonymous2_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
+        /* mock */
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
         assertEquals(1, response.size());
@@ -130,6 +137,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void findHistory_researcher_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* mock */
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
@@ -143,6 +154,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     public void findHistory_developer_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
+        /* mock */
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_2_PRINCIPAL);
         assertEquals(1, response.size());
@@ -154,6 +169,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void findHistory_dataSteward_succeeds() throws UserNotFoundException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* mock */
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_3_PRINCIPAL);

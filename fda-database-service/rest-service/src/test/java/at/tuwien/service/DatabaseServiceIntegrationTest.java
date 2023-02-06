@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.*;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
@@ -27,6 +28,8 @@ import java.sql.SQLException;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -43,7 +46,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexConfig;
 
-    @Autowired
+    @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
@@ -93,10 +96,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
@@ -106,12 +109,13 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_inSequence_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         DockerConfig.createContainer(BIND, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO)
+                .thenReturn(DATABASE_2_DTO);
 
         /* test */
         generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
@@ -122,12 +126,13 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_outOfSequence_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         DockerConfig.createContainer(BIND, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO)
+                .thenReturn(DATABASE_2_DTO);
 
         /* test */
         generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, DATABASE_2);
@@ -138,13 +143,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_queryStore_succeeds() throws SQLException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
 
         /* test */
         generic_create(QUERY_1_STATEMENT, 1L);
@@ -154,13 +154,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_queryStoreSameQueryHash_succeeds() throws SQLException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
 
         /* test */
         generic_create(QUERY_1_STATEMENT, 1L);
@@ -172,8 +167,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_systemProcedure_succeeds() throws SQLException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
 
@@ -185,8 +178,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_systemProcedure_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
 
@@ -200,8 +191,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_userProcedureRoot_succeeds() throws SQLException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
 
@@ -213,8 +202,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_userProcedureUser_succeeds() throws SQLException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
 
@@ -253,14 +240,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         final Database response = databaseService.create(containerId, createDto, principal);
         assertEquals(database.getName(), response.getName());
         assertEquals(containerId, database.getId());
-//        final List<String> usernames = MariaDbConfig.getUsernames(container.getInternalName(), database.getInternalName(), "root", "mariadb");
-//        log.debug("usernames are {}", usernames);
-//        assertTrue(usernames.contains("root"));
-//        assertTrue(usernames.contains(USER_1_USERNAME));
-//        for (String username : usernames) {
-//            final String privileges = MariaDbConfig.getPrivileges(container.getInternalName(), database.getInternalName(), username, "root", "mariadb");
-//            log.debug("user {} has privileges: {}", username, privileges);
-//        }
     }
 
     protected void generic_system_create(String username, String password) throws SQLException {
@@ -279,11 +258,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_user_create(String username, String password) throws InterruptedException, SQLException {
 
         /* mock */
-        final String bind = new File(
-                "./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-        log.trace("container bind {}", bind);
         containerRepository.save(CONTAINER_3);
-        createContainer(bind, CONTAINER_3, CONTAINER_3_ENV);
+        createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
         startContainer(CONTAINER_3);
 
         /* test */

@@ -8,6 +8,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.entities.database.Database;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
@@ -25,9 +26,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static java.time.temporal.ChronoUnit.HOURS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -52,12 +57,6 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @MockBean
-    private ImageRepository imageRepository;
-
-    @MockBean
-    private ContainerRepository containerRepository;
-
-    @MockBean
     private UserRepository userRepository;
 
     @MockBean
@@ -71,24 +70,45 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private QueryService queryService;
 
-    @BeforeEach
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-    }
+    final static Database DATABASE_1 = Database.builder() /* overlaps the DATABASE_1 without tables set */
+            .id(DATABASE_1_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(true)
+            .name(DATABASE_1_NAME)
+            .container(CONTAINER_1)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .creator(USER_1)
+            .owner(USER_1)
+            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
+            .views(List.of())
+            .build();
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException, SQLException {
+    public static void beforeAll() {
         afterAll();
+        DockerConfig.createAllNetworks();
+    }
+
+    @BeforeEach
+    public void beforeEach() throws InterruptedException, SQLException {
+        afterEach();
         DockerConfig.createAllNetworks();
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
-        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
         /* metadata database */
         TABLE_1.setDatabase(DATABASE_1);
     }
 
     @AfterAll
     public static void afterAll() {
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
+    }
+
+    @AfterEach
+    public void afterEach() {
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
     }
@@ -103,7 +123,8 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
-        storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, null, USER_1_PRINCIPAL);
+        final List<Query> queries = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, null, USER_1_PRINCIPAL);
+        assertEquals(1, queries.size());
     }
 
     @Test
@@ -116,7 +137,8 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
-        storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, USER_1_PRINCIPAL);
+        final List<Query> queries = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, USER_1_PRINCIPAL);
+        assertEquals(1, queries.size());
     }
 
     @Test
@@ -132,6 +154,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
 
         /* test */
         final Query response = storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);

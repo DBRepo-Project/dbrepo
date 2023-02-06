@@ -29,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class AccessServiceUnitTest extends BaseUnitTest {
 
@@ -43,31 +42,16 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
+    private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
-    private DatabaseRepository databaseRepository;
-
-    @Autowired
     private AccessService accessService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @BeforeEach
-    public void beforeEach() {
-        /* metadata database */
-        imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-    }
 
     @Test
     public void list_succeeds() throws AccessDeniedException {
@@ -123,6 +107,12 @@ public class AccessServiceUnitTest extends BaseUnitTest {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(AccessTypeDto.READ)
                 .build();
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
