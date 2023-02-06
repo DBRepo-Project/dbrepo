@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TableToolbar :table="table" :selection="selection" @reload="loadData" />
+    <TableToolbar :selection="selection" @reload="loadData" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
         <strong>Versioning</strong>
@@ -23,10 +23,10 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-card>
+      <v-progress-linear v-if="loadingData || error" :value="loadProgress" :color="error ? 'error' : 'primary'" />
       <v-data-table
         :headers="headers"
         :items="rows"
-        :loading="loadingData"
         :options.sync="options"
         :server-items-length="total"
         :footer-props="footerProps">
@@ -52,6 +52,7 @@ export default {
     return {
       loading: true,
       loadingData: true,
+      loadProgress: 0,
       editTupleDialog: false,
       total: 0,
       footerProps: {
@@ -61,9 +62,6 @@ export default {
       dateMenu: false,
       timeMenu: false,
       selection: [],
-      table: {
-        name: null
-      },
       pickVersionDialog: null,
       version: null,
       tab: null,
@@ -89,6 +87,12 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    database () {
+      return this.$store.state.database
+    },
+    table () {
+      return this.$store.state.table
     },
     config () {
       if (this.token === null) {
@@ -179,8 +183,8 @@ export default {
   },
   mounted () {
     this.loadData()
-    this.loadTable()
-      .then(() => this.loadProperties())
+    this.simulateProgress()
+    this.loadProperties()
   },
   methods: {
     async download () {
@@ -275,18 +279,6 @@ export default {
       }
       this.loading = false
     },
-    async loadTable () {
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
-        this.table = res.data
-        console.debug('table', this.table)
-      } catch (error) {
-        console.error('Failed to load table', error)
-        const { message } = error.response
-        this.$toast.error('Failed to load table: ' + message)
-      }
-      this.loading = false
-    },
     async loadData () {
       try {
         this.loadingData = true
@@ -314,10 +306,33 @@ export default {
         console.debug('rows', this.rows)
       } catch (error) {
         console.error('Failed to load data', error)
-        const { message } = error.response
-        this.$toast.error('Failed to load data: ' + message)
+        this.error = true
+        this.loadProgress = 100
+        const { status, data } = error.response
+        const { message, code } = data
+        if (status === 423) {
+          console.error('Database is offline', code)
+          this.$toast.error('Database is offline: ' + message)
+        } else {
+          console.error('Failed to load data', code)
+          this.$toast.error('Failed to load data: ' + message)
+        }
       }
       this.loadingData = false
+    },
+    simulateProgress () {
+      if (this.loadProgress !== 0) {
+        return
+      }
+      const timeout = 30 * 1000 /* ms */
+      const ticks = 100 /* ms */
+      let i = 0
+      setInterval(() => {
+        if (i++ >= timeout && !this.error) {
+          return
+        }
+        this.loadProgress = ((i * 100) / timeout) * 100
+      }, ticks)
     }
   }
 }

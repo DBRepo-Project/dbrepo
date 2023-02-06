@@ -1,11 +1,11 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading || error" :color="loadingColor" :value="loadProgress" />
+    <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :value="loadProgress" />
     <v-tabs-items>
-      <v-card v-if="!loading && queries.length === 0 && !error" flat>
+      <v-card v-if="!loadingQueries && queries.length === 0 && !error" flat>
         <v-card-text v-text="emptyMessage" />
       </v-card>
-      <div v-if="!loading && !error">
+      <div v-if="!loadingQueries && !error">
         <div v-for="(item,i) in queries" :key="i">
           <v-divider v-if="i !== 0" class="mx-4" />
           <v-list-item-group>
@@ -16,26 +16,16 @@
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
               </v-list-item-content>
-              <v-list-item-action>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon v-if="item.identifier" color="primary" v-bind="attrs" v-on="on">
-                      mdi-lock-clock
-                    </v-icon>
-                  </template>
-                  <span>Persisted</span>
-                </v-tooltip>
-              </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
         </div>
       </div>
-      <div v-if="!loading && error">
+      <div v-if="!loadingIdentifiers && loadingQueries">
         <!-- show identifiers when error -->
         <div v-for="(item,i) in identifiers" :key="i">
           <v-divider v-if="i !== 0" class="mx-4" />
           <v-list-item-group>
-            <v-list-item two-line :to="link(item)">
+            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
               <v-list-item-content>
                 <v-list-item-title v-text="item.title" />
                 <v-list-item-subtitle class="mt-2">
@@ -56,7 +46,8 @@ import { formatTimestampUTCLabel, formatUser } from '@/utils'
 export default {
   data () {
     return {
-      loading: false,
+      loadingQueries: false,
+      loadingIdentifiers: false,
       loadProgress: 0,
       error: false,
       queries: [],
@@ -108,7 +99,7 @@ export default {
     },
     async loadIdentifiers () {
       try {
-        this.loading = true
+        this.loadingIdentifiers = true
         const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}&type=subset`, this.config)
         this.identifiers = res.data
         console.debug('identifiers', this.identifiers)
@@ -118,14 +109,11 @@ export default {
         const { message } = error.response
         this.$toast.error(`Failed to load identifiers: ${message}`)
       }
-      this.loading = false
+      this.loadingIdentifiers = false
     },
     async loadQueries () {
-      if (!this.isPublicOrOwner()) {
-        return
-      }
       try {
-        this.loading = true
+        this.loadingQueries = true
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
@@ -134,7 +122,7 @@ export default {
         console.error('Connection to query store failed', err.response.index)
         this.$toast.error(err.response.index.message)
       }
-      this.loading = false
+      this.loadingQueries = false
     },
     title (query) {
       if (query.identifier === null) {
@@ -142,23 +130,32 @@ export default {
       }
       return query.identifier.title
     },
-    link (query) {
-      if (query.identifier === null) {
-        return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${query.id}`
+    link (queryOrIdentifier) {
+      if (queryOrIdentifier.identifier === null) {
+        return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
+      }
+      if ('query_id' in queryOrIdentifier) {
+        return null
       }
       return null
     },
-    navigate (query) {
-      if (query.identifier === null) {
+    navigate (queryOrIdentifier) {
+      if (queryOrIdentifier.identifier === null) {
         return
       }
-      return `/pid/${query.identifier.id}`
+      if ('query_id' in queryOrIdentifier) {
+        return `/pid/${queryOrIdentifier.id}`
+      }
+      return `/pid/${queryOrIdentifier.identifier.id}`
     },
-    clazz (query) {
-      if (query.identifier === null) {
+    clazz (queryOrIdentifier) {
+      if (!('identifier' in queryOrIdentifier) || queryOrIdentifier.identifier === null) {
         return null
       }
-      return 'primary--text'
+      if ('query_id' in queryOrIdentifier || queryOrIdentifier.identifier) {
+        return 'primary--text'
+      }
+      return null
     },
     isPublicOrOwner () {
       if (!this.database) {

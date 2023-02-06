@@ -32,33 +32,33 @@ public class TableDto {
     @NotNull
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "name is required")
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "internalName is required")
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
-    @NotNull
+    @NotNull(message = "creator is required")
     private UserBriefDto creator;
 
-    @NotBlank
+    @NotBlank(message = "queueName is required")
     @JsonProperty("queue_name")
     @Schema(example = "dbrepo/air_quality/air_quality")
     private String queueName;
 
-    @NotBlank
+    @NotBlank(message = "routingKey is required")
     @JsonProperty("routing_key")
     @Schema(example = "dbrepo/air_quality/air_quality/1")
     private String routingKey;
 
-    @NotBlank
+    @NotBlank(message = "description is required")
     @Schema(example = "Air Quality in Austria")
     private String description;
 
-    @NotNull
+    @NotNull(message = "isPublic is required")
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
@@ -66,7 +66,7 @@ public class TableDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
-    @NotNull
+    @NotNull(message = "columns are required")
     @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 

@@ -1,10 +1,10 @@
 <template>
   <div>
-    <TableToolbar :table="table" :selection="selection" />
+    <TableToolbar :selection="selection" />
     <v-data-table
+      v-if="table"
       class="full-width"
       disable-sort
-      :loading="loading"
       hide-default-footer
       :items-per-page="-1"
       :headers="headers"
@@ -54,6 +54,7 @@
       </template>
     </v-data-table>
     <v-dialog
+      v-if="table && database"
       v-model="dialogSemantic"
       persistent
       max-width="640">
@@ -75,18 +76,9 @@ export default {
   },
   data () {
     return {
-      loading: true,
       selection: [],
       column: null,
       dialogSemantic: false,
-      table: {
-        name: null,
-        description: null,
-        columns: [],
-        creator: {
-          username: null
-        }
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`, activeClass: '' },
@@ -138,6 +130,9 @@ export default {
     database () {
       return this.$store.state.database
     },
+    table () {
+      return this.$store.state.table
+    },
     access () {
       return this.$store.state.access
     },
@@ -168,21 +163,8 @@ export default {
     }
   },
   mounted () {
-    this.loadTable()
   },
   methods: {
-    async loadTable () {
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
-        this.table = res.data
-        console.debug('table', this.table)
-      } catch (error) {
-        console.error('Failed to load table', error)
-        const { message } = error.response
-        this.$toast.error('Failed to load table: ' + message)
-      }
-      this.loading = false
-    },
     columnName (column) {
       const filter = this.columnTypes.filter(t => t.value === column.column_type)
       if (filter.length > 0) {

@@ -50,7 +50,10 @@ function isDataSteward (user) {
 }
 
 function formatUser (user) {
-  if (user.firstname === undefined || user.lastname === undefined) {
+  if (!user) {
+    return null
+  }
+  if (!('firstname' in user) || !('lastname' in user)) {
     return user.username
   }
   if (user.firstname === null || user.lastname === null) {

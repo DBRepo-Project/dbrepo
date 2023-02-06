@@ -34,7 +34,6 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-progress-linear v-if="loadingQuery || loadingIdentifier || loadingDatabase || error" :color="loadingColor" :value="loadProgress" />
     <v-card flat tile>
       <v-card-title>
         Subset Information
@@ -319,7 +318,6 @@ export default {
       metadataLoading: false,
       downloadLoading: false,
       error: false,
-      loadProgress: 0,
       promises: []
     }
   },
@@ -334,8 +332,8 @@ export default {
       return this.error ? 'error' : 'primary'
     },
     pid () {
-      if (this.database.identifier) {
-        return this.database.identifier.id
+      if (this.query.identifier) {
+        return this.query.identifier.id
       }
       return 0
     },
@@ -517,20 +515,6 @@ export default {
         }
       }
       this.loading = false
-    },
-    simulateProgress () {
-      if (this.loadProgress !== 0) {
-        return
-      }
-      const timeout = 30 * 1000 /* ms */
-      const ticks = 100 /* ms */
-      let i = 0
-      setInterval(() => {
-        if (i++ >= timeout && !this.error) {
-          return
-        }
-        this.loadProgress = ((i * 100) / timeout) * 100
-      }, ticks)
     },
     async downloadData () {
       this.downloadLoading = true

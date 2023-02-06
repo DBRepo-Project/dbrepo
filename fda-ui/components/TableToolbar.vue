@@ -1,5 +1,5 @@
 <template>
-  <div v-if="database">
+  <div v-if="table">
     <v-toolbar flat>
       <v-toolbar-title>
         <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
@@ -60,12 +60,6 @@ export default {
     EditTuple
   },
   props: {
-    table: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
     selection: {
       type: Array,
       default: () => {
@@ -88,6 +82,9 @@ export default {
     },
     database () {
       return this.$store.state.database
+    },
+    table () {
+      return this.$store.state.table
     },
     access () {
       return this.$store.state.access

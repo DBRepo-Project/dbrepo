@@ -104,8 +104,9 @@
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
+              <!--                v-if="isDataSteward && hasIdentifier"-->
               <v-btn
-                v-if="isDataSteward && hasIdentifier"
+                v-if="false"
                 small
                 :loading="loadingDelete"
                 color="error"

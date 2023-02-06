@@ -1,5 +1,7 @@
 package at.tuwien.api.database.table;
 
+import at.tuwien.api.database.table.columns.ColumnBriefDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -7,6 +9,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,4 +38,7 @@ public class TableBriefDto {
     @NotNull(message = "creator is required")
     private UserBriefDto creator;
 
+    @NotNull(message = "columns are required")
+    @org.springframework.data.annotation.Transient
+    private List<ColumnBriefDto> columns;
 }

@@ -1,6 +1,7 @@
 package at.tuwien.api.container.image;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -66,6 +67,8 @@ public class ImageDto {
     private Integer defaultPort;
 
     @NotNull
+    @JsonIgnore
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     private List<ImageEnvItemDto> environment;
 

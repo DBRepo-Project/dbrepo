@@ -91,7 +91,7 @@ export default {
   },
   computed: {
     loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
+      return this.error ? 'error' : 'primary'
     },
     token () {
       return this.$store.state.token

@@ -2218,6 +2218,7 @@ public abstract class BaseUnitTest {
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .query(VIEW_1_QUERY)
+            .creator(USER_1)
             .build();
 
     public final static ViewDto VIEW_1_DTO = ViewDto.builder()
@@ -2248,6 +2249,7 @@ public abstract class BaseUnitTest {
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
+            .creator(USER_1)
             .build();
 
     public final static ViewDto VIEW_2_DTO = ViewDto.builder()
@@ -2266,7 +2268,7 @@ public abstract class BaseUnitTest {
     public final static String VIEW_3_INTERNAL_NAME = "junit3";
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
-    public final static Boolean VIEW_3_PUBLIC = true;
+    public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `mock_view` m on m.`location` = w.`location`";
 
     public final static View VIEW_3 = View.builder()
@@ -2278,6 +2280,7 @@ public abstract class BaseUnitTest {
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
             .query(VIEW_3_QUERY)
+            .creator(USER_1)
             .build();
 
     public final static ViewDto VIEW_3_DTO = ViewDto.builder()

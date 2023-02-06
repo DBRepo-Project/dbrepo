@@ -125,7 +125,7 @@ export default {
         const res = await this.$axios.put('/api/auth', {}, this.config)
         this.$store.commit('SET_USER', res.data)
         this.$vuetify.theme.dark = res.data.theme_dark
-        await this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
+        await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
         const { message } = error.response
         console.error('Failed to load user information', error)

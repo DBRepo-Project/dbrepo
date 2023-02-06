@@ -64,15 +64,14 @@
                     :loading="loadingTables"
                     return-object
                     label="Table"
-                    :rules="[v => !!v || $t('Required')]"
-                    @change="loadColumns" />
+                    :rules="[v => !!v || $t('Required')]" />
                 </v-col>
                 <v-col cols="6">
                   <v-select
                     v-model="select"
                     item-text="name"
                     :disabled="!table || isExecuted || loadingTables"
-                    :items="selectItems"
+                    :items="columns"
                     :loading="loadingColumns"
                     label="Columns"
                     :rules="[v => !!v || $t('Required')]"
@@ -148,7 +147,6 @@ export default {
   data () {
     return {
       table: {},
-      tables: [],
       views: [],
       foundForbiddenKeywords: [],
       forbiddenKeywords: [
@@ -206,6 +204,21 @@ export default {
     tableId () {
       return this.table.id
     },
+    columns () {
+      if (!this.table) {
+        return []
+      }
+      return this.table.columns
+    },
+    tables () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.tables
+    },
+    database () {
+      return this.$store.state.database
+    },
     viewLink () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
     },
@@ -255,43 +268,15 @@ export default {
     }
   },
   mounted () {
-    this.loadTables()
-      .then(() => this.selectTable())
-      .then(() => this.loadColumns())
-    this.loadViews()
+    this.selectTable()
   },
   methods: {
-    async loadTables () {
-      try {
-        this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
-        this.tables = res.data
-        console.debug('tables', this.tables)
-      } catch (err) {
-        this.$toast.error('Could not list table')
-      }
-      this.loadingTables = false
-    },
     validViewName (name) {
       if (!name) {
         return false
       }
       const names = this.views.map(v => v.name)
       return names.includes(name.toLowerCase())
-    },
-    async loadViews () {
-      if (this.mode !== 'view') {
-        return
-      }
-      try {
-        this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
-        this.views = res.data
-        console.debug('views', this.views)
-      } catch (err) {
-        this.$toast.error('Could not list views')
-      }
-      this.loadingTables = false
     },
     selectTable () {
       if (this.$route.query.tid === undefined) {
@@ -342,7 +327,7 @@ export default {
       }
       try {
         this.loadingQuery = true
-        const res = await this.$axios.post(url, data)
+        const res = await this.$axios.post(url, data, { progress: false })
         if (res && !res.error) {
           this.query = res.data
         }
@@ -350,20 +335,6 @@ export default {
         console.log(e)
       }
       this.loadingQuery = false
-    },
-    async loadColumns () {
-      if (!this.tableId) {
-        return
-      }
-      try {
-        this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.tableId}`, this.config)
-        this.tableDetails = res.data
-        this.buildQuery()
-      } catch (err) {
-        this.$toast.error('Could not get table details')
-      }
-      this.loadingColumns = false
     },
     async loadDatabase () {
       if (!this.$route.params.container_id || !this.$route.params.database_id) {

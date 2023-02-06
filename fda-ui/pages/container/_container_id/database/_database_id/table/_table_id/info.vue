@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TableToolbar :table="table" :selection="selection" />
+    <TableToolbar :selection="selection" />
     <v-card flat tile>
       <v-list>
         <v-list-item>
@@ -11,8 +11,8 @@
                   Table ID
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ table.id }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-xsmall" />
+                  <span v-if="table && table.id">{{ table.id }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-xsmall" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
@@ -22,8 +22,9 @@
                   Table Description
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ table.description }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="table && table.description">{{ table.description }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" />
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
@@ -33,30 +34,30 @@
                   Exchange Name (AMQP/MQTT)
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ database.exchange_name }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="database && database.exchange_name">{{ database.exchange_name }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
-            <v-list-item v-if="table.queue_name">
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>
                   Queue Name (AMQP/MQTT)
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ table.queue_name }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="table && table.queue_name">{{ table.queue_name }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
-            <v-list-item v-if="table.routing_key">
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>
                   Routing Key (AMQP/MQTT)
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ table.routing_key }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="table && table.routing_key">{{ table.routing_key }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
@@ -80,19 +81,19 @@
                   Table Creator
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="table && table.creator">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
-            <v-list-item v-if="createdUTC">
+            <v-list-item>
               <v-list-item-content>
                 <v-list-item-title>
                   Table Creation
                 </v-list-item-title>
                 <v-list-item-content>
-                  <span v-if="!loading">{{ createdUTC }}</span>
-                  <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                  <span v-if="table && table.created">{{ createdUTC }}</span>
+                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-small" />
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
@@ -113,25 +114,9 @@ export default {
   },
   data () {
     return {
-      loading: true,
       loadingConsumers: false,
       selection: [],
       consumers: [],
-      database: {
-        exchange_name: null,
-        creator: {
-          username: null
-        },
-        created: null
-      },
-      table: {
-        name: null,
-        description: null,
-        columns: [],
-        creator: {
-          username: null
-        }
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`, activeClass: '' },
@@ -159,6 +144,12 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    database () {
+      return this.$store.state.database
+    },
+    table () {
+      return this.$store.state.table
     },
     hasReadAccess () {
       if (!this.database) {
@@ -247,36 +238,10 @@ export default {
     }
   },
   mounted () {
-    this.loadDatabase()
-    this.loadTable()
-      .then(() => this.pollConsumerStatus(true))
-    setInterval(() => this.pollConsumerStatus(false), 5000)
+    this.pollConsumerStatus(true)
+    setInterval(() => this.pollConsumerStatus(false), 5 * 1000)
   },
   methods: {
-    async loadTable () {
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
-        this.table = res.data
-        console.debug('table', this.table)
-      } catch (error) {
-        console.error('Failed to load table', error)
-        const { message } = error.response
-        this.$toast.error('Failed to load table: ' + message)
-      }
-      this.loading = false
-    },
-    async loadDatabase () {
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.database = res.data
-        console.debug('database', this.table)
-      } catch (error) {
-        console.error('Failed to load database', error)
-        const { message } = error.response
-        this.$toast.error('Failed to load database: ' + message)
-      }
-      this.loading = false
-    },
     formatCreator (creator) {
       return formatUser(creator)
     },
@@ -287,6 +252,9 @@ export default {
       return table.creator.username === this.user.username
     },
     async pollConsumerStatus (first) {
+      if (this.table === null || this.table.queue_name === null) {
+        return
+      }
       try {
         this.loadingConsumers = first
         const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)

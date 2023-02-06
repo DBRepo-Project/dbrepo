@@ -1,7 +1,13 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
-      <v-list-item>
+      <div>
+        <v-img
+          contain
+          class="logo"
+          :src="logo" />
+      </div>
+      <v-list-item class="mt-2">
         <v-list-item-content>
           <v-list-item-subtitle>
             {{ version }}
@@ -33,12 +39,6 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <div>
-        <v-img
-          contain
-          class="logo"
-          :src="logo" />
-      </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">
       <v-app-bar fixed app>
@@ -161,6 +161,9 @@ export default {
     container () {
       return this.$store.state.container
     },
+    table () {
+      return this.$store.state.table
+    },
     database () {
       return this.$store.state.database
     },
@@ -209,6 +212,15 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    '$route.params.table_id': {
+      handler (id, oldId) {
+        if (id !== oldId) {
+          this.loadTable()
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
   mounted () {
@@ -216,6 +228,7 @@ export default {
     this.setTheme()
     this.loadDatabase()
       .then(() => this.loadIdentifier())
+    this.loadTable()
     this.loadAccess()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
@@ -273,6 +286,21 @@ export default {
       } catch (err) {
         console.error('Could not load database', err)
         this.$toast.error('Could not load database')
+      }
+      this.loading = false
+    },
+    async loadTable () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
+        this.$store.commit('SET_TABLE', res.data)
+        console.debug('table', this.table)
+      } catch (err) {
+        console.error('Could not load table', err)
+        this.$toast.error('Could not load table')
       }
       this.loading = false
     },

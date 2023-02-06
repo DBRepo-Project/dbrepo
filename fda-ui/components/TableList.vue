@@ -9,10 +9,9 @@
     <div v-for="(item,i) in tables" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item three-line :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+        <v-list-item two-line :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
-            <v-list-item-subtitle v-text="formatCreator(item.creator)" />
             <v-list-item-subtitle class="mt-2" v-text="item.description" />
           </v-list-item-content>
         </v-list-item>
@@ -22,7 +21,7 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   data () {
@@ -150,9 +149,6 @@ export default {
     this.pollConsumerStatus()
   },
   methods: {
-    formatCreator (creator) {
-      return formatUser(creator)
-    },
     pick (item, mode) {
       this.column = item
       this.mode = mode

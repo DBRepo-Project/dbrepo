@@ -343,7 +343,7 @@ export default {
     },
     async loadLabelIfNecessary (mode) {
       const uri = (mode === 'unit' ? this.searchUnit : this.searchConcept)
-      if (uri === null) {
+      if (uri === null || uri === '') {
         this[mode] = null
         return
       }

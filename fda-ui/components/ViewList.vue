@@ -9,10 +9,9 @@
     <div v-for="(item,i) in views" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item three-line :to="`/api/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${item.id}`">
+        <v-list-item two-line :class="clazz(item)" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${item.id}`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
-            <v-list-item-subtitle v-text="formatCreator(item.creator)" />
             <v-list-item-subtitle class="mt-2">
               <pre>{{ item.query }}</pre>
             </v-list-item-subtitle>
@@ -24,7 +23,7 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   data () {
@@ -93,9 +92,6 @@ export default {
   mounted () {
   },
   methods: {
-    formatCreator (creator) {
-      return formatUser(creator)
-    },
     async details (table) {
       if (table.id === this.viewDetails.id) {
         /* prevent weird glitch of opening and collapsing simultaneously */
@@ -131,6 +127,12 @@ export default {
         this.$toast.error('Failed to delete view')
         console.error('Failed to delete view')
       }
+    },
+    clazz (view) {
+      if (view.is_public === false) {
+        return null
+      }
+      return 'primary--text'
     }
   }
 }

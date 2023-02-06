@@ -363,6 +363,7 @@ export default {
       try {
         res = await this.$axios.post('/api/identifier', this.identifier, this.config)
         console.debug('persist', res.data)
+        await this.loadDatabase()
       } catch (err) {
         this.error = true
         this.loading = false
@@ -389,6 +390,21 @@ export default {
       } catch (err) {
         this.$toast.error('Failed load user data')
         console.error('load user data failed', err)
+      }
+      this.loading = false
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     }

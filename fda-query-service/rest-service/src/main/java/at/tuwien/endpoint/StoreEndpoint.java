@@ -4,6 +4,7 @@ import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.UserMapper;
@@ -77,9 +78,11 @@ public class StoreEndpoint extends AbstractEndpoint {
                     final QueryBriefDto brief = queryMapper.queryToQueryBriefDto(q);
                     final Optional<User> optional1 = users.stream().filter(u -> u.getUsername().equals(q.getCreatedBy()))
                             .findFirst();
-                    final Optional<Identifier> optional2 = identifiers.stream().filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
-                            .findFirst();
                     optional1.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
+                    final Optional<Identifier> optional2 = identifiers.stream()
+                            .filter(i -> i.getType().equals(IdentifierType.SUBSET))
+                            .filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
+                            .findFirst();
                     optional2.ifPresent(identifier -> brief.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
                     return brief;
                 })
@@ -109,6 +112,12 @@ public class StoreEndpoint extends AbstractEndpoint {
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
+        try {
+            final Identifier identifier = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
+            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
+        } catch (IdentifierNotFoundException e) {
+            /* ignore */
+        }
         log.trace("find query resulted in query {}", dto);
         return ResponseEntity.ok(dto);
     }
