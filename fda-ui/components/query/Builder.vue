@@ -45,9 +45,19 @@
           <v-row>
             <v-col>
               <v-switch
-                v-if="isView"
                 v-model="view.is_public"
                 :label="`${view.is_public ? 'Public' : 'Private'} view`" />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text v-if="!isView">
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-model="timestamp"
+                clearable
+                hint="YYYY-MM-dd HH:mm:ss"
+                label="Timestamp" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -63,7 +73,7 @@
                     item-text="name"
                     :loading="loadingTables"
                     return-object
-                    label="Table"
+                    label="Table *"
                     :rules="[v => !!v || $t('Required')]"
                     @change="loadColumns" />
                 </v-col>
@@ -74,7 +84,7 @@
                     :disabled="!table || isExecuted || loadingTables"
                     :items="selectItems"
                     :loading="loadingColumns"
-                    label="Columns"
+                    label="Columns *"
                     :rules="[v => !!v || $t('Required')]"
                     return-object
                     multiple
@@ -150,6 +160,7 @@ export default {
       table: {},
       tables: [],
       views: [],
+      timestamp: null,
       foundForbiddenKeywords: [],
       forbiddenKeywords: [
         '\\*',
@@ -312,7 +323,10 @@ export default {
         await this.createView()
         return
       }
-      await this.$refs.queryResults.executeFirstTime(this, this.sql)
+      if (this.timestamp === '') {
+        this.timestamp = null
+      }
+      await this.$refs.queryResults.executeFirstTime(this, this.sql, this.timestamp)
     },
     async createView () {
       this.loadingQuery = true

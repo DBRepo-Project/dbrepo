@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -168,7 +170,26 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
-        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, USER_1_PRINCIPAL, null);
+        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void insert_timestamp_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .timestamp(Instant.now().plus(1, ChronoUnit.SECONDS))
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+
+        /* test */
+        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -186,7 +207,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
-        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, null, null);
+        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, null);
     }
 
     @Test
@@ -203,7 +224,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, USER_1_PRINCIPAL, null);
+            storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_RESULT_DTO, request, USER_1_PRINCIPAL);
         });
     }
 

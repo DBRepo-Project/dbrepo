@@ -74,16 +74,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
             TableMalformedException {
-        final Instant timestamp;
-        if (statement.getTimestamp() != null) {
-            log.debug("query execution provided");
-            timestamp = statement.getTimestamp();
-            log.trace("timestamp={}", timestamp);
-        } else {
-            timestamp = Instant.now();
-            log.trace("timestamp={}", timestamp);
-        }
-        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, timestamp);
+        final Query query = storeService.insert(containerId, databaseId, null, statement, principal);
         return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
