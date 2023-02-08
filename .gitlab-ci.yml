@@ -111,6 +111,14 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-authentication-service/report/target/site/jacoco-aggregate/
+      - ./fda-authentication-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-authentication-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-identifier:
   stage: test-backend
@@ -118,6 +126,14 @@ test-backend-identifier:
     - build-backend-authentication
   script:
     - "make test-identifier-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-identifier-service/report/target/site/jacoco-aggregate/
+      - ./fda-identifier-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-identifier-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-container:
   stage: test-backend
@@ -125,6 +141,14 @@ test-backend-container:
     - build-backend-container
   script:
     - "make test-container-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-container-service/report/target/site/jacoco-aggregate/
+      - ./fda-container-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-container-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-database:
   stage: test-backend
@@ -133,6 +157,14 @@ test-backend-database:
   script:
     - "docker pull elasticsearch:7.13.4"
     - "make test-database-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-database-service/report/target/site/jacoco-aggregate/
+      - ./fda-database-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-database-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-discovery:
   stage: test-backend
@@ -140,6 +172,14 @@ test-backend-discovery:
     - build-backend-discovery
   script:
     - "make test-discovery-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-discovery-service/report/target/site/jacoco-aggregate/
+      - ./fda-discovery-service/discovery/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-discovery-service/discovery/target/surefire-reports/TEST-*.xml
 
 test-backend-query:
   stage: test-backend
@@ -147,6 +187,14 @@ test-backend-query:
     - build-backend-query
   script:
     - "make test-query-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-query-service/report/target/site/jacoco-aggregate/
+      - ./fda-query-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-query-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-table:
   stage: test-backend
@@ -154,6 +202,14 @@ test-backend-table:
     - build-backend-table
   script:
     - "make test-table-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-table-service/report/target/site/jacoco-aggregate/
+      - ./fda-table-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-table-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-metadata:
   stage: test-backend
@@ -161,6 +217,14 @@ test-backend-metadata:
     - build-backend-metadata
   script:
     - "make test-metadata-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-metadata-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
 
 test-backend-gateway:
   stage: test-backend
@@ -168,6 +232,14 @@ test-backend-gateway:
     - build-backend-gateway
   script:
     - "make test-gateway-service"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-gateway-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/gateway/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-gateway-service/gateway/target/surefire-reports/TEST-*.xml
 
 test-semantics-service:
   stage: test-backend

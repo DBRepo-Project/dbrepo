@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.sql.*;
 import java.time.Instant;
@@ -68,7 +69,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         } finally {
             dataSource.close();
         }
-
     }
 
     @Override
@@ -105,9 +105,9 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Override
     @Transactional(readOnly = true)
     public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                        Principal principal, Instant execution)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+                        Principal principal) throws QueryStoreException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException,
+            TableMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
@@ -128,12 +128,9 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata.getStatement());
-            callableStatement.setString("_username", creator.getUsername());
-            callableStatement.setString("query", metadata.getStatement());
-            callableStatement.registerOutParameter("queryId", Types.BIGINT);
+            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata);
             callableStatement.executeUpdate();
-            final Long queryId = callableStatement.getLong("queryId");
+            final Long queryId = callableStatement.getLong(4);
             callableStatement.close();
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
