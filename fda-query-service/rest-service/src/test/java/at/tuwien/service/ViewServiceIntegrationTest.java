@@ -162,13 +162,20 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());
         final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT l.* FROM `weather_location` l", "location", "lat", "lng");
-        assertEquals("Albury", resultSet.get(0).get("location"));
-        assertEquals("-36.0653583", resultSet.get(0).get("lat"));
-        assertEquals("146.9112214", resultSet.get(0).get("lng"));
-        assertEquals("Sydney", resultSet.get(1).get("location"));
-        assertEquals("-33.847927", resultSet.get(1).get("lat"));
-        assertEquals("150.6517942", resultSet.get(1).get("lng"));
+                "SELECT l.`location`, l.`lat`, l.`lng` FROM `weather_location` l ORDER BY l.`location` ASC", "location", "lat", "lng");
+        assertEquals(3, resultSet.size());
+        final Map<String, String> row0 = resultSet.get(0);
+        assertEquals("Albury", row0.get("location"));
+        assertEquals("-36.0653583", row0.get("lat"));
+        assertEquals("146.9112214", row0.get("lng"));
+        final Map<String, String> row1 = resultSet.get(1);
+        assertEquals("Melbourne", row1.get("location"));
+        assertEquals("null", row1.get("lat"));
+        assertEquals("null", row1.get("lng"));
+        final Map<String, String> row2 = resultSet.get(2);
+        assertEquals("Sydney", row2.get("location"));
+        assertEquals("-33.847927", row2.get("lat"));
+        assertEquals("150.6517942", row2.get("lng"));
     }
 
 }
