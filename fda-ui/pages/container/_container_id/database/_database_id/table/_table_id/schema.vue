@@ -182,9 +182,28 @@ export default {
       this.column = item
       this.dialogSemantic = true
     },
-    closed (data) {
-      console.debug('closed dialog', data)
+    closed (event) {
+      const { success } = event
+      console.debug('closed dialog', event)
+      if (success) {
+        this.loadTable()
+      }
       this.dialogSemantic = false
+    },
+    async loadTable () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
+        this.$store.commit('SET_TABLE', res.data)
+        console.debug('table', this.table)
+      } catch (err) {
+        console.error('Could not load table', err)
+        this.$toast.error('Could not load table')
+      }
+      this.loading = false
     }
   }
 }

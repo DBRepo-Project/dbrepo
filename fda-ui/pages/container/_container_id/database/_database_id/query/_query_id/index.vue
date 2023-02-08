@@ -7,25 +7,24 @@
         </v-btn>
       </v-toolbar-title>
       <v-toolbar-title>
-        <v-skeleton-loader v-if="loadingIdentifier" type="text" class="skeleton-small" />
-        <span v-if="!loadingIdentifier">{{ identifier.title }}</span>
+        <span v-if="query.identifier">{{ query.identifier.title }}</span>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save()">
+        <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="query.is_persisted && !identifier.id && !loadingIdentifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || erroneous || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility && !identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
+        <v-btn v-if="result_visibility && !query.identifier" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
-        <v-btn v-if="result_visibility && identifier.id" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
+        <v-btn v-if="result_visibility && query.identifier" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
-          v-if="identifier.id"
+          v-if="query.identifier"
           color="secondary"
           class="ml-2"
           :loading="metadataLoading"
@@ -39,44 +38,44 @@
         Subset Information
       </v-card-title>
       <v-card-text>
+        <v-alert
+          v-if="!loadingQuery && !query.is_persisted && canWrite"
+          border="left"
+          color="info">
+          Query is not yet saved in the query store, <a @click="save">save</a> it to view it later.
+        </v-alert>
         <v-list dense>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon v-if="database_visibility" :color="database_visibility ? 'success' : 'error'">mdi-database-outline</v-icon>
+              <v-icon v-if="!database">mdi-database-outline</v-icon>
+              <v-icon v-if="database" :color="database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 Database Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
-                <span v-if="!loadingDatabase && database_visibility">Public</span>
-                <span v-if="!loadingDatabase && !database_visibility">Private</span>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database">{{ database.is_public ? 'Public' : 'Private' }}</span>
               </v-list-item-content>
-              <v-list-item-title v-if="database.name" class="mt-2">
+              <v-list-item-title class="mt-2">
                 Database Name
               </v-list-item-title>
-              <v-list-item-content v-if="database.name">
-                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
-                <span v-if="!loadingDatabase">{{ database.name }}</span>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database">{{ database.name }}</span>
               </v-list-item-content>
-              <v-list-item-title v-if="database.publisher" class="mt-2">
-                Database Publisher
-              </v-list-item-title>
-              <v-list-item-content v-if="database.publisher">
-                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-small" />
-                <span v-if="!loadingDatabase">{{ database.publisher }}</span>
-              </v-list-item-content>
-              <v-list-item-title v-if="database.license" class="mt-2">
-                Database License
-              </v-list-item-title>
-              <v-list-item-content v-if="database.license">
-                <v-skeleton-loader v-if="loadingDatabase" type="text" class="skeleton-xsmall" />
-                <a v-if="!loadingDatabase" :href="database.license.uri">{{ database.license.identifier }}</a>
-              </v-list-item-content>
+              <div v-if="database && database.identifier">
+                <v-list-item-title class="mt-2">
+                  Database License
+                </v-list-item-title>
+                <v-list-item-content>
+                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                </v-list-item-content>
+              </div>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="identifier.id">
+          <v-list-item v-if="query && query.identifier">
             <v-list-item-icon>
               <v-icon>mdi-lock-clock</v-icon>
             </v-list-item-icon>
@@ -85,25 +84,25 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <a :href="`${baseUrl}/pid/${identifier.id}`">{{ baseUrl }}/pid/{{ identifier.id }}</a>
+                <a :href="`${baseUrl}/pid/${query.identifier.id}`">{{ baseUrl }}/pid/{{ query.identifier.id }}</a>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
               </v-list-item-title>
               <v-list-item-content>
-                {{ identifier.title }}
+                {{ query.identifier.title }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Description
               </v-list-item-title>
               <v-list-item-content>
-                {{ identifier.description }}
+                {{ query.identifier.description }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Publisher
               </v-list-item-title>
               <v-list-item-content>
-                {{ identifier.publisher }}
+                {{ query.identifier.publisher }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Publication Date
@@ -111,11 +110,11 @@
               <v-list-item-content>
                 {{ publication }}
               </v-list-item-content>
-              <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
+              <v-list-item-title v-if="query.identifier.related.length > 0" class="mt-2">
                 Related Identifiers
               </v-list-item-title>
-              <v-list-item-content v-if="identifier.related.length > 0">
-                <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
+              <v-list-item-content v-if="query.identifier.related.length > 0">
+                <div v-for="(rel, i) in query.identifier.related" :key="`r-${i}`">
                   <span v-if="rel.type === 'DOI'">
                     {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
                     <span v-if="rel.relation">({{ rel.relation }})</span>
@@ -150,15 +149,15 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="!query_statement" type="text, text" />
-                <pre v-if="query_statement">{{ query_statement }}</pre>
+                <v-skeleton-loader v-if="!query" type="text, text" />
+                <pre v-if="query">{{ query.query }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="!query_hash" type="text" class="skeleton-large" />
-                <pre v-if="query_hash">{{ query_hash }}</pre>
+                <v-skeleton-loader v-if="!query" type="text" class="skeleton-large" />
+                <pre v-if="query">sha256:{{ query.query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Creation
@@ -171,42 +170,32 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon v-if="result_visibility_icon" :color="result_visibility_icon ? 'success' : 'error'">{{ result_icon }}</v-icon>
+              <v-icon v-if="!query">mdi-table</v-icon>
+              <v-icon v-if="database && !query.identifier" :color="database.is_public ? 'success' : 'error'">mdi-table</v-icon>
+              <v-icon v-if="query && query.identifier" :color="query.identifier.visibility === 'everyone' ? 'success' : 'error'">mdi-table</v-icon>
             </v-list-item-icon>
-            <v-list-item-content v-if="!erroneous">
+            <v-list-item-content>
               <v-list-item-title>
                 Result Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="metadataLoading" type="text" class="skeleton-xsmall" />
-                <span v-if="!metadataLoading">{{ result_visibility_icon ? 'Public' : 'Private' }}</span>
+                <v-skeleton-loader v-if="!query" type="text" class="skeleton-xsmall" />
+                <span v-if="database && !query.identifier">{{ database.is_public ? 'Public' : 'Private' }}</span>
+                <span v-if="query && query.identifier">{{ query.identifier.visibility === 'everyone' ? 'Public' : 'Private' }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Hash
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="!result_hash" type="text" class="skeleton-large" />
-                <pre v-if="result_hash">{{ result_hash }}</pre>
+                <v-skeleton-loader v-if="!query" type="text" class="skeleton-large" />
+                <pre v-if="query">{{ query.result_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Number
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="result_number === null" type="text" class="skeleton-xsmall" />
-                <span v-if="result_number !== null">{{ result_number }}</span>
-              </v-list-item-content>
-            </v-list-item-content>
-            <v-list-item-content v-if="erroneous">
-              <v-list-item-title>
-                Result Visibility
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-alert
-                  v-if="!error && !loadingQuery && erroneous"
-                  border="left"
-                  color="error">
-                  This query failed to execute and did not produce a subset.
-                </v-alert>
+                <v-skeleton-loader v-if="!query" type="text" class="skeleton-xsmall" />
+                <span v-if="query">{{ query.result_number }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -214,7 +203,6 @@
       </v-card-text>
     </v-card>
     <QueryResults
-      v-if="!erroneous"
       id="query-results"
       ref="queryResults"
       v-model="query.id"
@@ -258,58 +246,14 @@ export default {
         execution: null,
         created: null,
         is_persisted: null,
+        identifier: null,
         creator: {
           username: null,
           firstname: null,
           lastname: null
         }
       },
-      access: {
-        type: null,
-        user: {
-          username: null
-        }
-      },
       loadingSave: false,
-      identifier: {
-        id: null,
-        dbid: null,
-        qid: null,
-        title: null,
-        description: null,
-        publisher: null,
-        visibility: null,
-        query: null,
-        query_normalized: null,
-        query_hash: null,
-        result_number: null,
-        result_hash: null,
-        execution: null,
-        publication_year: null,
-        publication_month: null,
-        publication_day: null,
-        related: [],
-        creator: {
-          username: null,
-          id: null
-        },
-        doi: null,
-        creators: []
-      },
-      database: {
-        id: null,
-        name: null,
-        is_public: null,
-        publisher: null,
-        creator: {
-          username: null,
-          email_verified: false
-        },
-        license: {
-          identifier: null,
-          uri: null
-        }
-      },
       persistQueryExists: false,
       persistQueryDialog: false,
       loadingDatabase: false,
@@ -322,9 +266,6 @@ export default {
     }
   },
   computed: {
-    result_icon () {
-      return this.erroneous && !this.loadingQuery ? 'mdi-flash' : 'mdi-table'
-    },
     baseUrl () {
       return location.protocol + '//' + location.host
     },
@@ -340,8 +281,17 @@ export default {
     token () {
       return this.$store.state.token
     },
+    database () {
+      return this.$store.state.database
+    },
+    access () {
+      return this.$store.state.access
+    },
     user () {
       return this.$store.state.user
+    },
+    title () {
+      return null
     },
     config () {
       if (this.token === null) {
@@ -361,32 +311,17 @@ export default {
         progress: false
       }
     },
-    query_statement () {
-      if (this.identifier.id) {
-        return this.identifier.query
-      }
-      if (this.query.query) {
-        return this.query.query
-      }
-      return null
-    },
     publisher () {
       if (this.database.publisher === null) {
         return 'NA'
       }
       return this.database.publisher
     },
-    database_visibility () {
-      return this.database.is_public !== null ? this.database.is_public : false
-    },
     backTo () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
     },
     result_visibility () {
-      if (this.erroneous) {
-        return false
-      }
-      if (this.database.is_public === null) {
+      if (!this.database || this.database.is_public === null) {
         return false
       }
       if (this.database.is_public) {
@@ -395,10 +330,10 @@ export default {
       if (this.query.creator.username === this.username) {
         return true
       }
-      return this.identifier.visibility === 'everyone'
+      return this.query.identifier.visibility === 'everyone'
     },
     canWrite () {
-      if (!this.access.type) {
+      if (!this.access || !this.access.type) {
         return false
       }
       if (this.access.type === 'write_own' || this.access.type === 'write_all') {
@@ -406,63 +341,21 @@ export default {
       }
       return false
     },
-    result_visibility_icon () {
-      if (this.erroneous) {
-        return false
-      }
-      if (this.database.is_public === null) {
-        return false
-      }
-      if (this.database.is_public) {
-        return true
-      }
-      return this.identifier.visibility === 'everyone'
-    },
     publication () {
-      if (this.identifier.publication_year && !this.identifier.publication_month && !this.identifier.publication_day) {
-        return this.identifier.publication_year
-      } else if (this.identifier.publication_year && this.identifier.publication_month && this.identifier.publication_day) {
-        return formatDateUTC(this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day)
+      if (this.query.identifier.publication_year && !this.query.identifier.publication_month && !this.query.identifier.publication_day) {
+        return this.query.identifier.publication_year
+      } else if (this.query.identifier.publication_year && this.query.identifier.publication_month && this.query.identifier.publication_day) {
+        return formatDateUTC(this.query.identifier.publication_year + '-' + this.query.identifier.publication_month + '-' + this.query.identifier.publication_day)
       } else {
         return null
       }
     },
-    query_hash () {
-      if (this.identifier.query_hash) {
-        return `sha256:${this.identifier.query_hash}`
-      }
-      return `sha256:${this.query.query_hash}`
-    },
-    result_number () {
-      if (this.identifier.result_number) {
-        return this.identifier.result_number
-      }
-      return this.query.result_number
-    },
-    result_hash () {
-      if (this.identifier.result_hash) {
-        return `sha256:${this.identifier.result_hash}`
-      }
-      return `sha256:${this.query.result_hash}`
-    },
     executionUTC () {
-      return this.identifier.id ? formatTimestampUTCLabel(this.identifier.created) : formatTimestampUTCLabel(this.query.created)
-    },
-    erroneous () {
-      if (this.identifier) {
-        return false
-      }
-      return !this.query.result_hash
+      return formatTimestampUTCLabel(this.query.created)
     }
   },
   mounted () {
-    this.loadAccess()
-    this.loadDatabase()
-      .then(() => this.loadMetadata())
-      .then(() => {
-        this.simulateProgress()
-        this.loadQuery()
-      })
+    this.loadQuery()
       .then(() => this.loadResult())
   },
   methods: {
@@ -478,7 +371,7 @@ export default {
       try {
         const config = this.config
         config.headers.Accept = mime
-        const res = await this.$axios.get(`/api/pid/${this.identifier.id}`, config)
+        const res = await this.$axios.get(`/api/pid/${this.query.identifier.id}`, config)
         console.debug('export identifier', res)
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
@@ -497,24 +390,6 @@ export default {
       }
       this.downloadLoading = false
       this.metadataLoading = false
-    },
-    async loadAccess () {
-      if (!this.user) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.silentConfig)
-        this.access = res.data
-        console.debug('access', this.access)
-      } catch (err) {
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
     },
     async downloadData () {
       this.downloadLoading = true
@@ -552,22 +427,6 @@ export default {
       }
       this.loadingQuery = false
     },
-    async loadDatabase () {
-      this.loadingDatabase = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        console.debug('database', res.data)
-        this.database = res.data
-      } catch (err) {
-        const { statusText, status } = err.response
-        if (status !== 401 && status !== 405) {
-          console.error('Failed to load database with status', status, 'and message', statusText)
-          this.$toast.error('Failed to load database: ' + statusText)
-        }
-        this.error = true
-      }
-      this.loadingDatabase = false
-    },
     async save () {
       this.loadingSave = true
       try {
@@ -581,37 +440,13 @@ export default {
       }
       this.loadingSave = false
     },
-    async loadMetadata () {
-      if (!this.query.id) {
-        return
-      }
-      this.loadingIdentifier = true
-      try {
-        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}&qid=${this.$route.params.query_id}`, this.config)
-        if (res.data.length === 1) {
-          this.identifier = res.data[0]
-          console.debug('identifier', res.data[0])
-        } else if (res.data.length > 1) {
-          this.error = true
-          console.error('Could not load identifier, more than one result', res.data)
-          this.$toast.error('Could not load identifier')
-        }
-      } catch (err) {
-        if (err.response.status !== 404) {
-          this.error = true
-          console.error('Could not load identifier', err)
-          this.$toast.error('Could not load identifier')
-        }
-      }
-      this.loadingIdentifier = false
-    },
     openDialog () {
       this.persistQueryDialog = true
     },
     closeDialog (event) {
       this.persistQueryDialog = false
       if (event.action === 'persisted') {
-        this.loadMetadata()
+        this.loadQuery()
       }
     }
   }

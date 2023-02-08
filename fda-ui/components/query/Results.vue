@@ -1,14 +1,11 @@
 <template>
-  <div>
-    <v-progress-linear v-if="loadingData || error" :color="loadingColor" :value="loadProgress" />
-    <v-data-table
-      flat
-      :headers="result.headers"
-      :items="result.rows"
-      :loading="loading"
-      :options.sync="options"
-      :server-items-length="total" />
-  </div>
+  <v-data-table
+    flat
+    :headers="result.headers"
+    :items="result.rows"
+    :loading="loading"
+    :options.sync="options"
+    :server-items-length="total" />
 </template>
 
 <script>
@@ -22,15 +19,12 @@ export default {
   data () {
     return {
       loading: false,
-      loadingData: true,
       resultId: null,
-      loadProgress: 0,
       id: null,
       result: {
         headers: [],
         rows: []
       },
-      error: false,
       options: {
         page: 1,
         itemsPerPage: 10
@@ -54,9 +48,6 @@ export default {
       const page = 0
       const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
       return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
-    },
-    loadingColor () {
-      return this.error ? 'error' : 'primary'
     }
   },
   watch: {
@@ -67,12 +58,9 @@ export default {
       deep: true
     }
   },
-  mounted () {
-    this.simulateProgress()
-  },
   methods: {
     async executeFirstTime (parent, sql) {
-      this.loadingData = true
+      this.loading = true
       try {
         const res = await this.$axios.post(this.executeUrl, { statement: sql }, this.config)
         console.debug('query result', res.data)
@@ -92,7 +80,7 @@ export default {
         }
         this.error = true
       }
-      this.loadingData = false
+      this.loading = false
     },
     buildHeaders (firstLine) {
       return Object.keys(firstLine).map(k => ({
@@ -110,7 +98,7 @@ export default {
       if (id === null) {
         return
       }
-      this.loadingData = true
+      this.loading = true
       try {
         const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
         this.mapResults(res.data)
@@ -119,7 +107,7 @@ export default {
         console.error('failed to execute query', error)
         this.error = true
       }
-      this.loadingData = false
+      this.loading = false
     },
     mapResults (data) {
       if (data.result.length) {
@@ -128,20 +116,6 @@ export default {
       console.debug('query result', data)
       this.result.rows = data.result
       this.total = data.result_number
-    },
-    simulateProgress () {
-      if (this.loadProgress !== 0) {
-        return
-      }
-      const timeout = 30 * 1000 /* ms */
-      const ticks = 100 /* ms */
-      let i = 0
-      setInterval(() => {
-        if (i++ >= timeout && !this.error) {
-          return
-        }
-        this.loadProgress = ((i * 100) / timeout) * 100
-      }, ticks)
     }
   }
 }

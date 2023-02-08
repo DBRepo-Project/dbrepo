@@ -22,12 +22,13 @@
               clearable
               single-line
               hide-details
-              placeholder="Search or provide URI..."
+              placeholder="Search or URI (e.g., https://www.wikidata.org/entity/Q468777)"
               @click:clear="concept = null" />
             <v-btn v-if="!searchConceptContainsUri" icon class="ml-2" type="submit" @click="retrieveConcepts">
               <v-icon>mdi-magnify</v-icon>
             </v-btn>
           </v-toolbar>
+          <div v-if="!validConcept" class="mt-1 error--text">Invalid URI! Valid URI is e.g., https://www.wikidata.org/entity/Q468777</div>
         </v-form>
         <v-list-item-group v-if="concepts.length > 0" v-model="listConcept" @change="selectConcept">
           <v-virtual-scroll
@@ -89,6 +90,7 @@
         <v-btn
           color="primary"
           class="mb-2 mr-2"
+          :disabled="!validConcept || !validUnit"
           :loading="loadingSave"
           @click="save">
           Save
@@ -191,10 +193,7 @@ export default {
   },
   methods: {
     cancel () {
-      this.$emit('close', {
-        success: false,
-        action: 'cancel'
-      })
+      this.$emit('close', { success: false, action: 'cancel' })
     },
     selectUnit (idx) {
       if (idx === null || !this.units[idx]) {
@@ -235,12 +234,11 @@ export default {
       try {
         await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
         if (payload.unit_uri === null) {
-          this.column[mode] = null
+          this.unit = null
         }
         if (payload.concept_uri === null) {
-          this.column[mode] = null
+          this.concept = null
         }
-        console.debug('column', this.column)
       } catch (error) {
         console.error(`Failed to save column ${mode}`, error)
         const { message } = error.response
@@ -287,7 +285,6 @@ export default {
             name: this[mode].name,
             uri: this[mode].uri
           })
-          this.column[mode] = this[mode]
           console.info(`Saved ${mode} with name`, this[mode].name)
           console.debug(`saved ${mode}`, res.data)
         } catch (error) {
@@ -326,15 +323,13 @@ export default {
           concept_uri: this.concept === null ? null : this.concept.uri,
           unit_uri: this.unit === null ? null : this.unit.uri
         }
-        const res = await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
-        this.column.concept = (payload.concept_uri === null ? null : this.concept)
-        this.column.unit = (payload.unit_uri === null ? null : this.unit)
+        await this.$axios.put(`/api/container/${this.database.id}/database/${this.database.id}/table/${this.tableId}/column/${this.column.id}`, payload, this.config)
         this.$emit('close', {
           success: true,
           action: 'assign',
-          data: res.data
+          concept: (payload.concept_uri === null ? null : this.concept),
+          unit: (payload.unit_uri === null ? null : this.unit)
         })
-        console.debug('column', this.column)
       } catch (error) {
         console.error('Failed to update column', error)
         const { message } = error.response
@@ -378,6 +373,5 @@ export default {
   }
 }
 </script>
-
 <style scoped>
 </style>

@@ -139,6 +139,18 @@
               </v-btn>
             </v-col>
           </v-row>
+          <v-row v-if="isDatabase" dense>
+            <v-col>
+              <v-select
+                v-model="identifier.license"
+                return-object
+                :items="licenses"
+                item-text="identifier"
+                label="License *"
+                :rules="[ v => !!v || $t('Required') ]"
+                required />
+            </v-col>
+          </v-row>
           <v-row dense>
             <v-col>
               <v-btn x-small @click="addRelatedIdentifier">
@@ -187,18 +199,20 @@ export default {
       formValid: false,
       loading: false,
       error: false, // XXX: `error` is never changed
+      licenses: [],
       identifier: {
-        cid: null,
-        dbid: null,
-        qid: null,
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
+        qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
         publisher: null,
-        publication_year: null,
-        publication_month: null,
-        publication_day: null,
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
+        license: null,
         visibility: 'everyone',
-        type: null,
+        type: this.type,
         doi: null,
         creators: [],
         related_identifiers: []
@@ -281,12 +295,6 @@ export default {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
-    isEdit () {
-      if (!this.database.identifier) {
-        return false
-      }
-      return this.database.identifier.id !== null
-    },
     isSubset () {
       return this.type === 'subset'
     },
@@ -311,25 +319,7 @@ export default {
     }
   },
   mounted () {
-    if (this.database.identifier) {
-      return
-    }
-    this.identifier = {
-      cid: parseInt(this.$route.params.container_id),
-      dbid: parseInt(this.$route.params.database_id),
-      qid: this.isSubset ? parseInt(this.$route.params.query_id) : null,
-      title: null,
-      description: null,
-      publisher: 'TU Wien',
-      publication_year: formatYearUTC(Date.now()),
-      publication_month: formatMonthUTC(Date.now()),
-      publication_day: formatDayUTC(Date.now()),
-      visibility: 'everyone',
-      type: this.type,
-      doi: null,
-      creators: [],
-      related_identifiers: []
-    }
+    this.loadLicenses()
   },
   methods: {
     cancel () {
@@ -375,21 +365,20 @@ export default {
       this.$emit('close', { action: 'persisted' })
       this.loading = false
     },
-    async loadUser () {
+    async loadLicenses () {
       if (!this.token) {
         return
       }
       this.loading = true
-      let res
       try {
-        res = await this.$axios.put('/api/auth', null, {
-          headers: this.headers
-        })
-        this.user = res.data
-        console.debug('user data', res.data)
-      } catch (err) {
-        this.$toast.error('Failed load user data')
-        console.error('load user data failed', err)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/license`, this.config)
+        this.licenses = res.data
+        console.debug('license', this.licenses)
+      } catch (error) {
+        console.error('Failed load licenses', error)
+        const { data } = error.response
+        const { message } = data
+        this.$toast.error(`Failed load licenses: ${message}`)
       }
       this.loading = false
     },

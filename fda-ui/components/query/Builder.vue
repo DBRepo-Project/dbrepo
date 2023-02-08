@@ -13,6 +13,10 @@
           <v-icon left>mdi-run</v-icon>
           Create
         </v-btn>
+        <v-btn v-if="isExecuted" color="blue-grey white--text" :to="viewLink">
+          <v-icon left>mdi-run</v-icon>
+          View
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-toolbar flat>
@@ -118,15 +122,6 @@
               </v-row>
             </v-tab-item>
           </v-tabs-items>
-        </v-card-text>
-        <v-card-text v-if="isExecuted">
-          <v-row>
-            <v-col>
-              <v-btn color="blue-grey white--text" :to="viewLink">
-                View
-              </v-btn>
-            </v-col>
-          </v-row>
         </v-card-text>
       </v-card>
     </v-form>

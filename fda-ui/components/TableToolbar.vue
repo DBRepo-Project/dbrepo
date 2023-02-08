@@ -159,8 +159,8 @@ export default {
       this.table.columns.forEach((c) => {
         data[c.internal_name] = null
       })
-      this.selection = [data]
       this.editTupleDialog = true
+      this.$emit('modified', { success: true, action: 'add', data })
     },
     pick () {
       if (this.$refs.timeTravel !== undefined) {
@@ -188,26 +188,22 @@ export default {
           })
           console.debug('tuple delete result', res)
         }
-      } catch (err) {
-        console.error('Failed to delete rows', err)
-        this.$toast.error('Failed to delete rows')
-        return
+        this.$toast.success(`Deleted ${this.selection.length} rows(s)`)
+        this.$emit('modified', { success: true, action: 'delete' })
+      } catch (error) {
+        console.error('Failed to delete rows', error)
+        const { data } = error.response
+        const { message } = data
+        this.$toast.error(`Failed to delete rows: ${message}`)
       }
-      this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
-      this.selection = []
-      /* reload */
-      this.$emit('reload', {
-        success: true
-      })
     },
     close (event) {
       console.debug('closed edit/create tuple dialog', event)
       this.editTupleDialog = false
-      this.selection = []
       if (event.success) {
-        this.$emit('reload', {
-          success: true
-        })
+        this.$emit('modified', { success: true, action: 'save' })
+      } else {
+        this.$emit('modified', { success: false, action: 'close' })
       }
     }
   }

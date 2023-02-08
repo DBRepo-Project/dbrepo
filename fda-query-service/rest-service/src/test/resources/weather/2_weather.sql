@@ -18,7 +18,8 @@ CREATE TABLE weather_aus
 
 INSERT INTO weather_location (location, lat, lng)
 VALUES ('Albury', -36.0653583, 146.9112214),
-       ('Sydney', -33.847927, 150.6517942);
+       ('Sydney', -33.847927, 150.6517942),
+       ('Melbourne', null, null);
 
 INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall)
 VALUES (1, '2008-12-01', 'Albury', 13.4, 0.6),

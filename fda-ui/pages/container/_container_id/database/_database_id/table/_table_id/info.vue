@@ -2,104 +2,90 @@
   <div>
     <TableToolbar :selection="selection" />
     <v-card flat tile>
-      <v-list>
-        <v-list-item>
-          <v-list dense>
-            <v-list-item>
+      <v-card-text>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-table</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Table ID
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Table ID
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.id">{{ table.id }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-xsmall" />
-                </v-list-item-content>
+                <span v-if="table && table.id">{{ table.id }}</span>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-xsmall" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+              <v-list-item-title class="mt-2">
+                Table Description
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Table Description
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.description">{{ table.description }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" />
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-                </v-list-item-content>
+                <span v-if="table && table.description">{{ table.description }}</span>
+                <v-skeleton-loader v-if="!table" type="text" />
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+              <v-list-item-title class="mt-2">
+                Table Creator
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Exchange Name (AMQP/MQTT)
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="database && database.exchange_name">{{ database.exchange_name }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-                </v-list-item-content>
+                <span v-if="table && table.creator">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+              <v-list-item-title class="mt-2">
+                Table Creation
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Queue Name (AMQP/MQTT)
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.queue_name">{{ table.queue_name }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-                </v-list-item-content>
+                <span v-if="table && table.created">{{ createdUTC }}</span>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-small" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon>mdi-rabbit</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Protocols
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Routing Key (AMQP/MQTT)
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.routing_key">{{ table.routing_key }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-                </v-list-item-content>
+                AMQP, MQTT
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item v-if="hasReadAccess">
+              <v-list-item-title class="mt-2">
+                Exchange Name
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  AMQP Consumer(s)
-                </v-list-item-title>
-                <v-list-item-content class="amqp-consumer">
-                  <span v-text="`${consumersUp}/${consumersTotal}`" />
-                  <v-badge
-                    class="ml-1"
-                    :color="consumersState.color"
-                    :content="consumersState.text" />
-                </v-list-item-content>
+                <pre v-if="database && database.exchange_name">{{ database.exchange_name }}</pre>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+              <v-list-item-title class="mt-2">
+                Queue Name
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Table Creator
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.creator">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-                </v-list-item-content>
+                <pre v-if="table && table.queue_name">{{ table.queue_name }}</pre>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-            </v-list-item>
-            <v-list-item>
+              <v-list-item-title class="mt-2">
+                Routing Key
+              </v-list-item-title>
               <v-list-item-content>
-                <v-list-item-title>
-                  Table Creation
-                </v-list-item-title>
-                <v-list-item-content>
-                  <span v-if="table && table.created">{{ createdUTC }}</span>
-                  <v-skeleton-loader v-if="!table" type="text" class="skeleton-small" />
-                </v-list-item-content>
+                <pre v-if="table && table.routing_key">{{ table.routing_key }}</pre>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </v-list-item>
-      </v-list>
+              <v-list-item-title v-if="hasReadAccess" class="mt-2">
+                Consumer Count
+              </v-list-item-title>
+              <v-list-item-content v-if="hasReadAccess" class="amqp-consumer">
+                <span v-text="`${consumersUp}/${consumersTotal}`" />
+                <v-badge
+                  class="ml-1"
+                  :color="consumersState.color"
+                  :content="consumersState.text" />
+              </v-list-item-content>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -270,6 +256,9 @@ export default {
 }
 </script>
 <style>
+.v-card__text {
+  font-size: initial;
+}
 .skeleton-large .v-skeleton-loader__text {
   width: 400px;
 }

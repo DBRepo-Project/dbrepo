@@ -1,6 +1,6 @@
 <template>
   <div>
-    <TableToolbar :selection="selection" @reload="loadData" />
+    <TableToolbar :selection="selection" @modified="modified" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
         <strong>Versioning</strong>
@@ -22,7 +22,7 @@
         </v-dialog>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card>
+    <v-card tile>
       <v-progress-linear v-if="loadingData || error" :value="loadProgress" :color="error ? 'error' : 'primary'" />
       <v-data-table
         :headers="headers"
@@ -143,16 +143,6 @@ export default {
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
-    canEdit () {
-      if (this.selection.length !== 1) { return false }
-      return this.edit === true && this.canModify
-    },
-    canAdd () {
-      return !this.canDelete
-    },
-    canDelete () {
-      return this.edit && this.selection.length !== 0 && this.canModify
-    },
     canModify () {
       if (!this.user || !this.access || !this.table || !this.table.creator) {
         return false
@@ -179,6 +169,11 @@ export default {
     },
     options () {
       this.loadData()
+    },
+    table (newTable, oldTable) {
+      if (newTable !== oldTable && oldTable === null) {
+        this.loadProperties()
+      }
     }
   },
   mounted () {
@@ -229,39 +224,11 @@ export default {
       }
       this.pickVersionDialog = false
     },
-    async deleteItems () {
-      if (this.selection.length < 1) {
-        return
-      }
-      try {
-        for (const select of this.selection) {
-          /* remove in container */
-          const constraints = {}
-          this.table.columns
-            .filter(c => c.is_primary_key)
-            .forEach((c) => {
-              constraints[c.internal_name] = select[c.internal_name]
-            })
-          const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-            headers: { Authorization: `Bearer ${this.token}` },
-            data: { keys: constraints }
-          })
-          console.debug('tuple delete result', res)
-        }
-      } catch (error) {
-        console.error('Failed to delete rows', error)
-        const { message } = error.response
-        this.$toast.error('Failed to delete rows: ' + message)
-        return
-      }
-      this.$toast.success('Deleted ' + this.selection.length + ' rows(s)')
-      this.selection = []
-      /* reload */
-      await this.loadData()
-    },
     loadProperties () {
+      if (!this.table || this.headers.length > 0) {
+        return
+      }
       try {
-        console.debug('table', this.table)
         this.headers = [{ value: 'selection', text: '', sortable: false }]
         this.table.columns.map((c) => {
           return {
@@ -279,6 +246,17 @@ export default {
       }
       this.loading = false
     },
+    modified (event) {
+      const { success, action } = event
+      if (action === 'add') {
+        this.selection = [event.data]
+      } else {
+        this.selection = []
+      }
+      if (success) {
+        this.loadData()
+      }
+    },
     async loadData () {
       try {
         this.loadingData = true
@@ -289,7 +267,6 @@ export default {
         }
         const res = await this.$axios.get(url, this.config)
         this.total = parseInt(res.headers['fda-count'])
-        this.rows = res.data.result
         this.rows = res.data.result.map((row) => {
           for (const col in row) {
             const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)

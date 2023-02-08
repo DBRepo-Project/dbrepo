@@ -278,6 +278,80 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals("Michlits", result.get(3).get("lastname"));
     }
 
+    @Test
+    public void execute_withoutNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
+                .build();
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
+        assertEquals(1L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals("Melbourne", result.get(0).get("location"));
+        assertNull(result.get(0).get("lat"));
+        assertNull(result.get(0).get("lng"));
+    }
+
+    @Test
+    public void execute_withoutNullField2_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
+                .build();
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
+        assertEquals(1L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals("Melbourne", result.get(0).get("location"));
+        assertNull(result.get(0).get("lat"));
+        assertNull(result.get(0).get("lng"));
+    }
+
+    @Test
+    public void execute_withNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
+                .build();
+
+        /* mock */
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
+        assertEquals(1L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertNull(result.get(0).get("lat"));
+        assertNull(result.get(0).get("lng"));
+    }
+
     @SneakyThrows
     private static Instant toInstant(String str) {
         final DateTimeFormatter formatter = new DateTimeFormatterBuilder()

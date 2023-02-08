@@ -37,6 +37,14 @@
                 <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
                 <span v-if="database">{{ database.name }}</span>
               </v-list-item-content>
+              <div v-if="database && database.identifier">
+                <v-list-item-title class="mt-2">
+                  Database License
+                </v-list-item-title>
+                <v-list-item-content>
+                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                </v-list-item-content>
+              </div>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -56,10 +64,8 @@
                 View Creator
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-medium" />
-                <span v-if="!loadingView && creator">
-                  {{ creator }}
-                </span>
+                <v-skeleton-loader v-if="!creator" type="text" class="skeleton-medium" />
+                <span v-if="creator">{{ creator }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 View Creation

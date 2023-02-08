@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
-    <v-card v-if="!loading && tables.length === 0" flat>
+    <v-card v-if="!loading && tables && tables.length === 0" flat>
       <v-card-text>
         (no tables)
       </v-card-text>
@@ -97,7 +97,7 @@ export default {
     },
     tables () {
       if (!this.database) {
-        return []
+        return null
       }
       return this.database.tables
     },
