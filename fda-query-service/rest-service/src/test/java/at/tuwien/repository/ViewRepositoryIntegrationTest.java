@@ -10,6 +10,7 @@ import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
@@ -62,10 +63,8 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    @Test
-    public void findAllPublicByDatabaseId_succeeds() {
-
-        /* mock */
+    @BeforeEach
+    public void beforeEach() {
         h2Utils.runScript("schema.sql");
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
@@ -74,6 +73,10 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
         viewRepository.save(VIEW_1);
         viewRepository.save(VIEW_2);
         viewRepository.save(VIEW_3);
+    }
+
+    @Test
+    public void findAllPublicByDatabaseId_succeeds() {
 
         /* test */
         final List<View> response = viewRepository.findAllPublicByDatabaseId(DATABASE_1_ID);
@@ -90,15 +93,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @Test
     public void findAllPublicOrMineByDatabaseId_succeeds() {
-
-        /* mock */
-        userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-        viewRepository.save(VIEW_1);
-        viewRepository.save(VIEW_2);
-        viewRepository.save(VIEW_3);
 
         /* test */
         final List<View> response = viewRepository.findAllPublicOrMineByDatabaseId(DATABASE_1_ID, USER_1_USERNAME);
