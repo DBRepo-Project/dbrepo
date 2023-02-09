@@ -3,9 +3,7 @@
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
-        <v-card-title>
-          Update Tuple
-        </v-card-title>
+        <v-card-title v-text="title" />
         <v-card-text>
           <div v-for="(attr,idx) in columns" :key="idx">
             <v-text-field
@@ -15,6 +13,7 @@
               class="mb-2"
               :hint="hint(attr)"
               persistent-hint
+              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :label="label(attr)"
               type="number" />
@@ -23,6 +22,7 @@
               v-model="tuple[attr.internal_name]"
               :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
               class="mb-2"
+              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :label="label(attr)"
               type="text" />
@@ -31,7 +31,7 @@
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
               hint="e.g. 2022-07-12 18:32:59"
-              :rules="[v => /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(v) || $t('Required format yyyy-MM-dd HH:mm:ss')]"
+              :rules="attr.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')]"
               class="mb-2"
               :required="required(attr)"
               :label="label(attr)"
@@ -63,12 +63,14 @@
               v-if="attr.column_type === 'ENUM'"
               v-model="tuple[attr.internal_name]"
               class="mb-2"
+              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :items="attr.enum_values"
               :label="label(attr)" />
             <v-checkbox
               v-if="attr.column_type === 'boolean'"
               v-model="tuple[attr.internal_name]"
+              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               class="mb-2"
               :label="label(attr)" />
@@ -85,7 +87,7 @@
             v-if="!edit"
             id="addTuple"
             class="mb-2"
-            :disabled="!valid || loading"
+            :disabled="!valid"
             color="primary"
             type="submit"
             @click="addTuple">
@@ -95,7 +97,7 @@
             v-if="edit"
             id="updateTuple"
             class="mb-2"
-            :disabled="!valid || loading"
+            :disabled="!valid"
             color="primary"
             type="submit"
             @click="updateTuple">
@@ -114,7 +116,10 @@ export default {
       type: Object,
       default: null
     },
-    edit: Boolean
+    edit: {
+      type: Boolean,
+      default: false
+    }
   },
   data () {
     return {
@@ -131,6 +136,9 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    title () {
+      return (this.edit ? 'Edit' : 'Add') + ' tuple'
     }
   },
   methods: {
@@ -159,6 +167,9 @@ export default {
     required (attr) {
       return attr.is_null_allowed
     },
+    validateTimestamp (val) {
+      return /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(val)
+    },
     async updateTuple () {
       const constraints = {}
       this.columns
@@ -171,10 +182,10 @@ export default {
         keys: constraints
       }
       try {
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, data, {
+        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, data, {
           headers: { Authorization: `Bearer ${this.token}` }
         })
-        console.info('update result', res.data)
+        console.info('update result')
         this.$toast.success('Successfully updated tuple!')
         this.$emit('close', { success: true })
       } catch (err) {
@@ -198,9 +209,16 @@ export default {
         console.info('add result', res.data)
         this.$toast.success('Successfully added tuple!')
         this.$emit('close', { success: true })
-      } catch (err) {
-        console.error('Failed to add tuple', err)
-        this.$toast.error('Failed to add tuple')
+      } catch (error) {
+        console.error('Failed to add tuple', error)
+        const { message, status } = error.response.data
+        if (status === 423) {
+          console.error('Database failed to accept tuple', message)
+          this.$toast.error(`Database failed to accept tuple: ${message}`)
+        } else {
+          console.error('Failed to add tuple', message)
+          this.$toast.error(`${message}`)
+        }
       }
     }
   }

@@ -22,7 +22,7 @@
               clearable
               single-line
               hide-details
-              placeholder="Search or URI (e.g., https://www.wikidata.org/entity/Q468777)"
+              placeholder="Search or URI (e.g., http://www.wikidata.org/entity/Q468777)"
               @click:clear="concept = null" />
             <v-btn v-if="!searchConceptContainsUri" icon class="ml-2" type="submit" @click="retrieveConcepts">
               <v-icon>mdi-magnify</v-icon>
@@ -57,7 +57,7 @@
               clearable
               single-line
               hide-details
-              placeholder="Search or provide URI..."
+              placeholder="Search or URI (e.g. http://www.ontology-of-units-of-measure.org/resource/om-2/bar)"
               @click:clear="unit = null" />
             <v-btn v-if="!searchUnitContainsUri" icon class="ml-2" type="submit" @click="retrieveUnits">
               <v-icon>mdi-magnify</v-icon>
@@ -174,13 +174,19 @@ export default {
       if (!this.searchUnit) {
         return false
       }
-      return this.searchUnit.startsWith('http')
+      if (this.searchUnit.startsWith('http')) {
+        return /^https?:\/\/www\.ontology-of-units-of-measure.org\/resource\/om-2\/[a-zA-Z0-9-()]+$/.test(this.searchUnit)
+      }
+      return false
     },
     searchConceptContainsUri () {
       if (!this.searchConcept) {
         return false
       }
-      return this.searchConcept.startsWith('http')
+      if (this.searchConcept.startsWith('http')) {
+        return /^https?:\/\/www\.wikidata\.org\/entity\/Q[0-9]+$/.test(this.searchConcept)
+      }
+      return false
     }
   },
   watch: {
@@ -281,12 +287,11 @@ export default {
           continue
         }
         try {
-          const res = await this.$axios.post(`/api/semantics/${mode}`, {
+          await this.$axios.post(`/api/semantics/${mode}`, {
             name: this[mode].name,
             uri: this[mode].uri
           })
-          console.info(`Saved ${mode} with name`, this[mode].name)
-          console.debug(`saved ${mode}`, res.data)
+          await this.update()
         } catch (error) {
           console.error(`Failed to save ${mode}`, error)
           const { status, message } = error.response
@@ -298,7 +303,6 @@ export default {
           }
         }
       }
-      await this.update()
       this.loadingSave = false
     },
     reset () {
@@ -356,15 +360,14 @@ export default {
         console.debug(`${mode}`, this[mode])
       } catch (error) {
         console.error('Failed to load label', error)
-        const { message, status } = error.response
+        const { message, status } = error.response.data
         if (status === 400) {
           console.error(`Failed to retrieve ${mode}, not a valid entity`, error)
-          this.$toast.error(`Failed to retrieve ${mode}, not a valid entity: ` + message)
+          this.$toast.error(message)
         } else {
           console.error(`Failed to retrieve ${mode}`, error)
-          this.$toast.error(`Failed to retrieve ${mode}: ` + message)
+          this.$toast.error(message)
         }
-        this.$toast.error('Failed to load label: ' + message)
       }
     },
     submit () {

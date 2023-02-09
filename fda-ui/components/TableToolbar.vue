@@ -11,13 +11,13 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!loading && canAdd" class="mr-2 mb-1" @click="addTuple">
+        <v-btn v-if="!loading && canAdd && !editTupleDialog" class="mr-2 mb-1" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="!loading && canEdit" color="warning" class="mr-2 mb-1 black--text" @click="editTupleDialog = true">
+        <v-btn v-if="!loading && canEdit && !editTupleDialog" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="!loading && canDelete" color="error" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="!loading && canDelete && !editTupleDialog" color="error" class="mr-2 mb-1" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn v-if="!loading && canRead" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
@@ -72,8 +72,8 @@ export default {
       tab: null,
       loading: false,
       error: false,
-      editTupleDialog: false,
-      edit: false
+      edit: false,
+      editTupleDialog: false
     }
   },
   computed: {
@@ -118,6 +118,9 @@ export default {
       return this.canModify
     },
     canAdd () {
+      if (this.canEdit) {
+        return false
+      }
       return this.canModify
     },
     isOwner () {
@@ -154,13 +157,17 @@ export default {
   },
   methods: {
     addTuple () {
-      this.edit = false
       const data = {}
+      this.edit = false
       this.table.columns.forEach((c) => {
         data[c.internal_name] = null
       })
+      this.selection = [data]
       this.editTupleDialog = true
-      this.$emit('modified', { success: true, action: 'add', data })
+    },
+    editTuple () {
+      this.edit = true
+      this.editTupleDialog = true
     },
     pick () {
       if (this.$refs.timeTravel !== undefined) {
