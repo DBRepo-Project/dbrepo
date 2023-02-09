@@ -1,6 +1,7 @@
 package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
@@ -55,6 +56,9 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewRepository viewRepository;
 
+    @Autowired
+    private H2Utils h2Utils;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
@@ -62,6 +66,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     public void findAllPublicByDatabaseId_succeeds() {
 
         /* mock */
+        h2Utils.runScript("schema.sql");
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);

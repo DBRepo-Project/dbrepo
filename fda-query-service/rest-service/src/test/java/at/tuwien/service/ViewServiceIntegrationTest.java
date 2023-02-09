@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -170,8 +171,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("146.9112214", row0.get("lng"));
         final Map<String, String> row1 = resultSet.get(1);
         assertEquals("Melbourne", row1.get("location"));
-        assertEquals("null", row1.get("lat"));
-        assertEquals("null", row1.get("lng"));
+        assertNull(row1.get("lat"));
+        assertNull(row1.get("lng"));
         final Map<String, String> row2 = resultSet.get(2);
         assertEquals("Sydney", row2.get("location"));
         assertEquals("-33.847927", row2.get("lat"));
