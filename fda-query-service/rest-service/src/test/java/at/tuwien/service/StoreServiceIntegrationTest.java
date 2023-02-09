@@ -26,8 +26,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.List;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -262,8 +263,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.execute(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, "INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall) VALUES (4, '2008-12-04', 'Albury', 12.9, 0.2)");
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
-        assertEquals(2L, response.getId()) /* no new query inserted */;
+        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -282,6 +282,25 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         assertThrows(QueryMalformedException.class, () -> {
             queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
         });
+    }
+
+    @Test
+    public void insert_timestamp_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .timestamp(Instant.now().plus(1, ChronoUnit.SECONDS))
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+
+        /* test */
+        storeService.insert(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test

@@ -49,9 +49,19 @@
           <v-row>
             <v-col>
               <v-switch
-                v-if="isView"
                 v-model="view.is_public"
                 :label="`${view.is_public ? 'Public' : 'Private'} view`" />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text v-if="!isView">
+          <v-row>
+            <v-col cols="6">
+              <v-text-field
+                v-model="timestamp"
+                clearable
+                hint="YYYY-MM-dd HH:mm:ss"
+                label="Timestamp" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -67,17 +77,18 @@
                     item-text="name"
                     :loading="loadingTables"
                     return-object
-                    label="Table"
-                    :rules="[v => !!v || $t('Required')]" />
+                    label="Table *"
+                    :rules="[v => !!v || $t('Required')]"
+                    @change="loadColumns" />
                 </v-col>
                 <v-col cols="6">
                   <v-select
                     v-model="select"
                     item-text="name"
                     :disabled="!table || isExecuted || loadingTables"
-                    :items="columns"
+                    :items="selectItems"
                     :loading="loadingColumns"
-                    label="Columns"
+                    label="Columns *"
                     :rules="[v => !!v || $t('Required')]"
                     return-object
                     multiple
@@ -143,6 +154,7 @@ export default {
     return {
       table: {},
       views: [],
+      timestamp: null,
       foundForbiddenKeywords: [],
       forbiddenKeywords: [
         '\\*',
@@ -292,7 +304,10 @@ export default {
         await this.createView()
         return
       }
-      await this.$refs.queryResults.executeFirstTime(this, this.sql)
+      if (this.timestamp === '') {
+        this.timestamp = null
+      }
+      await this.$refs.queryResults.executeFirstTime(this, this.sql, this.timestamp)
     },
     async createView () {
       this.loadingQuery = true
@@ -305,7 +320,7 @@ export default {
         await this.loadDatabase()
       } catch (err) {
         console.error('Failed to create view', err)
-        this.$toast.error(err.response.index.message)
+        this.$toast.error(err.response.data.message)
       }
       this.loadingQuery = false
       await this.$refs.queryResults.reExecute(this.resultId)

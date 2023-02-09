@@ -5,7 +5,7 @@ before_script:
   - "mvn --version"
   - "python3 --version"
   - "df / -h"
-  - "cat /etc/hosts"
+  - "grep -rnw '@Test' | wc -l"
 
 variables:
   HOSTALIASES: ./hosts
@@ -111,17 +111,16 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
-    - "./.gitlab/jacoco2cobertura.py ./fda-authentication-service/rest-service/target/site/jacoco/jacoco.xml ./fda-authentication-service/rest-service/src/main/java/ ./fda-authentication-service/services/src/main/java/ > ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml"
     - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
       - ./fda-authentication-service/report/target/site/jacoco-aggregate/
+      - ./fda-authentication-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-authentication-service/report/target/site/jacoco-aggregate/cobertura.xml
+      junit: ./fda-authentication-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
-
 test-backend-identifier:
   stage: test-backend
   needs:
@@ -133,9 +132,10 @@ test-backend-identifier:
     when: always
     paths:
       - ./fda-identifier-service/report/target/site/jacoco-aggregate/
+      - ./fda-identifier-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-identifier-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-identifier-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-container:
@@ -149,9 +149,10 @@ test-backend-container:
     when: always
     paths:
       - ./fda-container-service/report/target/site/jacoco-aggregate/
+      - ./fda-container-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-container-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-container-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-database:
@@ -166,9 +167,10 @@ test-backend-database:
     when: always
     paths:
       - ./fda-database-service/report/target/site/jacoco-aggregate/
+      - ./fda-database-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-database-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-database-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-discovery:
@@ -182,9 +184,10 @@ test-backend-discovery:
     when: always
     paths:
       - ./fda-discovery-service/report/target/site/jacoco-aggregate/
+      - ./fda-discovery-service/discovery/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-discovery-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-discovery-service/discovery/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-query:
@@ -198,9 +201,10 @@ test-backend-query:
     when: always
     paths:
       - ./fda-query-service/report/target/site/jacoco-aggregate/
+      - ./fda-query-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-query-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-query-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-table:
@@ -214,9 +218,10 @@ test-backend-table:
     when: always
     paths:
       - ./fda-table-service/report/target/site/jacoco-aggregate/
+      - ./fda-table-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-table-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-table-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-metadata:
@@ -230,9 +235,10 @@ test-backend-metadata:
     when: always
     paths:
       - ./fda-metadata-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-metadata-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-gateway:
@@ -246,9 +252,10 @@ test-backend-gateway:
     when: always
     paths:
       - ./fda-gateway-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/gateway/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./fda-gateway-service/report/target/site/jacoco-aggregate/jacoco.xml
+      junit: ./fda-gateway-service/gateway/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-semantics-service:

@@ -59,10 +59,10 @@ export default {
     }
   },
   methods: {
-    async executeFirstTime (parent, sql) {
+    async executeFirstTime (parent, sql, timestamp) {
       this.loading = true
       try {
-        const res = await this.$axios.post(this.executeUrl, { statement: sql }, this.config)
+        const res = await this.$axios.post(this.executeUrl, { statement: sql, timestamp }, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)

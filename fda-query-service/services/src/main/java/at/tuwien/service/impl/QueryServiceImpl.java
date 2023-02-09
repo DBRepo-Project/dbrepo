@@ -69,10 +69,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size,
-                                  SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
-            ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
+                                  Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
+            TableMalformedException {
         if (statement.getStatement().contains(";")) {
             log.error("Failed to execute query since it contains ';'");
             throw new QueryMalformedException("Failed to execute query since it contains ';'");

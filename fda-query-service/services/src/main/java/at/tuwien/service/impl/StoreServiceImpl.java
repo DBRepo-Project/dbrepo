@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -19,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.sql.*;
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,7 +66,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         } finally {
             dataSource.close();
         }
-
     }
 
     @Override
@@ -127,12 +124,9 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata.getStatement());
-            callableStatement.setString("_username", creator.getUsername());
-            callableStatement.setString("query", metadata.getStatement());
-            callableStatement.registerOutParameter("queryId", Types.BIGINT);
+            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata);
             callableStatement.executeUpdate();
-            final Long queryId = callableStatement.getLong("queryId");
+            final Long queryId = callableStatement.getLong(4);
             callableStatement.close();
             log.debug("inserted query with id {}", queryId);
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
