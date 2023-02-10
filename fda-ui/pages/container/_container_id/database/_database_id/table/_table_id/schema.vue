@@ -18,6 +18,9 @@
       <template v-slot:item.column_type="{ item }">
         {{ columnName(item) }}
       </template>
+      <template v-slot:item.date_format="{ item }">
+        {{ dateFormat(item) }}
+      </template>
       <template v-slot:item.is_primary_key="{ item }">
         <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
       </template>
@@ -88,6 +91,7 @@ export default {
       headers: [
         { value: 'name', text: 'Name' },
         { value: 'column_type', text: 'Type' },
+        { value: 'date_format', text: 'Date Format' },
         { value: 'column_concept', text: 'Concept' },
         { value: 'column_unit', text: 'Unit' },
         { value: 'is_primary_key', text: 'Primary Key' },
@@ -171,6 +175,12 @@ export default {
         return filter[0].text
       }
       return column.column_type
+    },
+    dateFormat (column) {
+      if (column.date_format) {
+        return column.date_format.unix_format
+      }
+      return null
     },
     hasUnit (item) {
       return item.unit !== null

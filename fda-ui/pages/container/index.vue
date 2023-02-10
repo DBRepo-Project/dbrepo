@@ -28,7 +28,7 @@
     <v-card
       v-for="(container, idx) in filter(containers)"
       :key="idx"
-      :to="`/container/${container.id}/database/${container.database.id}`"
+      :to="link(container)"
       :disabled="!container.database"
       flat
       tile>
@@ -253,6 +253,12 @@ export default {
         this.loadContainers()
           .then(() => this.loadDatabases())
       }
+    },
+    link (container) {
+      if (!container.database || !container.database.id) {
+        return null
+      }
+      return `/container/${container.id}/database/${container.database.id}`
     }
   }
 }

@@ -281,7 +281,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
+        log.trace("parsed insert data {}", data);
         /* run query */
         if (data.getData().size() == 0) {
             log.error("Failed to parse data, the provided map {} is empty", data.getData());

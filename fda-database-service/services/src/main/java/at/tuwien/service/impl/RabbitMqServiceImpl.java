@@ -58,7 +58,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
-            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.FANOUT, true);
+            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.DIRECT, true);
             log.info("Declared exchange {}", database.getExchangeName());
         } catch (IOException e) {
             log.error("Failed to declare exchange {}", database.getExchangeName());

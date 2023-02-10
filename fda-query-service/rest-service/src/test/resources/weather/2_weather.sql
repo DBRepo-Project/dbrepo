@@ -16,6 +16,13 @@ CREATE TABLE weather_aus
     FOREIGN KEY (location) REFERENCES weather_location (location)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE sensor
+(
+    `timestamp` TIMESTAMP NOT NULL,
+    PRIMARY KEY (`timestamp`),
+    UNIQUE (`timestamp`)
+) WITH SYSTEM VERSIONING;
+
 INSERT INTO weather_location (location, lat, lng)
 VALUES ('Albury', -36.0653583, 146.9112214),
        ('Melbourne', null, null),

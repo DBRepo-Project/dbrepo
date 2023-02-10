@@ -134,7 +134,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final User owner = userService.findByUsername(principal.getName());
         database.setCreator(owner);
         database.setOwner(owner);
-        database.setExchangeName("dbrepo/" + database.getInternalName());
+        database.setExchangeName("dbrepo." + database.getInternalName());
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
             final Connection connection = dataSource.getConnection();

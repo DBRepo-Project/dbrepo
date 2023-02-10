@@ -954,9 +954,10 @@ public interface QueryMapper {
                     break;
                 }
                 ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
+                break;
             default:
                 log.error("Failed to map column type {} at index {} for value {}", columnType, idx, value);
-                throw new IllegalArgumentException("Failed to map column type");
+                throw new IllegalArgumentException("Failed to map column type " + columnType);
         }
     }
 

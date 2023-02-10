@@ -49,6 +49,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 1</li>
  * <li>Table 2</li>
  * <li>Table 3</li>
+ * <li>Table 7</li>
  * </ul>
  * <p>
  * Database 2
@@ -232,6 +233,22 @@ public abstract class BaseUnitTest {
             .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
 
+    public final static Long IMAGE_DATE_3_ID = 3L;
+    public final static Long IMAGE_DATE_3_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_3_UNIX_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
+    public final static String IMAGE_DATE_3_DATABASE_FORMAT = "%Y-%c-%dT%H:%i:%S.%f";
+    public final static String IMAGE_DATE_3_EXAMPLE = "2022-01-30T13:44:25.499";
+    public final static Boolean IMAGE_DATE_3_HAS_TIME = true;
+
+    public final static ContainerImageDate IMAGE_DATE_3 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_3_ID)
+            .iid(IMAGE_DATE_3_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
+            .example(IMAGE_DATE_3_EXAMPLE)
+            .hasTime(IMAGE_DATE_3_HAS_TIME)
+            .build();
+
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .repository(IMAGE_1_REPOSITORY)
@@ -244,7 +261,7 @@ public abstract class BaseUnitTest {
             .size(IMAGE_1_SIZE)
             .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
-            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2))
+            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
             .build();
 
     public final static Long IMAGE_BROKER_ID = 2L;
@@ -361,6 +378,8 @@ public abstract class BaseUnitTest {
     public final static Instant CONTAINER_4_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=sensor"};
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -371,6 +390,7 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
             .creator(USER_1)
+            .ipAddress(CONTAINER_4_IP)
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
@@ -417,49 +437,49 @@ public abstract class BaseUnitTest {
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo." + CONTAINER_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
-    public final static String DATABASE_2_EXCHANGE = "dbrepo/" + CONTAINER_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo." + CONTAINER_2_INTERNALNAME;
 
     public final static Long DATABASE_3_ID = 3L;
     public final static String DATABASE_3_NAME = "traffic";
     public final static String DATABASE_3_INTERNALNAME = "traffic";
-    public final static String DATABASE_3_EXCHANGE = "dbrepo/" + CONTAINER_3_INTERNALNAME;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo." + CONTAINER_3_INTERNALNAME;
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_1_INTERNALNAME;
-    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME + "/1";
+    public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_2_INTERNALNAME;
-    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME + "/1";
+    public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_2_INTERNALNAME;
+    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
     public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_3_INTERNALNAME;
-    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME + "/1";
+    public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_3_INTERNALNAME;
+    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_4_INTERNALNAME;
-    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME + "/1";
+    public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
+    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
 
     public final static Long TABLE_5_ID = 5L;
@@ -477,6 +497,41 @@ public abstract class BaseUnitTest {
     public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_6_INTERNAL_NAME;
     public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME + "/1";
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
+
+    public final static Long TABLE_7_ID = 7L;
+    public final static String TABLE_7_NAME = "Sensor";
+    public final static String TABLE_7_INTERNAL_NAME = "sensor";
+    public final static String TABLE_7_DESCRIPTION = "Hello sensor";
+    public final static String TABLE_7_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_7_INTERNAL_NAME;
+    public final static String TABLE_7_ROUTING_KEY = TABLE_7_QUEUE_NAME + "/1";
+    public final static Instant TABLE_7_LAST_MODIFIED = Instant.now();
+
+    public final static Table TABLE_7 = Table.builder()
+            .id(TABLE_7_ID)
+            .created(Instant.now())
+            .internalName(TABLE_7_INTERNAL_NAME)
+            .description(TABLE_7_DESCRIPTION)
+            .name(TABLE_7_NAME)
+            .lastModified(TABLE_7_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_7_QUEUE_NAME)
+            .routingKey(TABLE_7_ROUTING_KEY)
+            .columns(List.of(TableColumn.builder()
+                    .id(1L)
+                    .ordinalPosition(0)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name("Timestamp")
+                    .internalName("timestamp")
+                    .columnType(TableColumnType.TIMESTAMP)
+                    .dfid(IMAGE_DATE_3_ID)
+                    .isNullAllowed(false)
+                    .isUnique(true)
+                    .autoGenerated(false)
+                    .isPrimaryKey(true)
+                    .build()))
+            .creator(USER_1)
+            .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
     public final static Integer COLUMN_1_1_ORDINALPOS = 0;

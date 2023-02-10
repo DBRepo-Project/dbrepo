@@ -46,10 +46,10 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
-                Protocols
+                Exchange Type
               </v-list-item-title>
               <v-list-item-content>
-                AMQP, MQTT
+                Direct (AMQP)
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Exchange Name

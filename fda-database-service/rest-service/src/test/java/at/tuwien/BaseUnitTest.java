@@ -493,7 +493,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_1_DESCRIPTION = "Weather somewhere in the world";
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_INTERNALNAME = "weather_at";
-    public final static String DATABASE_1_EXCHANGE = "dbrepo/" + CONTAINER_1_INTERNALNAME + "/" + DATABASE_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo." + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, HOURS);
     public final static Instant DATABASE_1_UPDATED = Instant.now();
 
@@ -541,7 +541,7 @@ public abstract class BaseUnitTest {
     public final static String DATABASE_2_DESCRIPTION = "Weather in Austria";
     public final static Boolean DATABASE_2_PUBLIC = false;
     public final static String DATABASE_2_INTERNALNAME = "weather_de";
-    public final static String DATABASE_2_EXCHANGE = "dbrepo" + CONTAINER_2_INTERNALNAME + "/" + DATABASE_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo." + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant DATABASE_2_UPDATED = Instant.now();
 
@@ -640,8 +640,8 @@ public abstract class BaseUnitTest {
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "NYSE";
     public final static String TABLE_1_INTERNALNAME = "nyse";
-    public final static String TABLE_1_QUEUE_NAME = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID;
-    public final static String TABLE_1_ROUTING_KEY = "dbrepo/" + CONTAINER_1_ID + "/" + DATABASE_1_ID + "/" + TABLE_1_ID + "/1";
+    public final static String TABLE_1_QUEUE_NAME = "dbrepo." + DATABASE_1_INTERNALNAME + "." + TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME;
 
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
