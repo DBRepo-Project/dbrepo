@@ -69,6 +69,8 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        DATABASE_1.setTables(List.of());
+        DATABASE_1.setViews(List.of());
         databaseRepository.save(DATABASE_1);
         viewRepository.save(VIEW_1);
         viewRepository.save(VIEW_2);
