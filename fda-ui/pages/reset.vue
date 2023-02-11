@@ -6,7 +6,7 @@
           Reset Password
         </v-card-title>
         <v-card-text>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="password"
@@ -17,7 +17,7 @@
                 label="Password *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="data.password"

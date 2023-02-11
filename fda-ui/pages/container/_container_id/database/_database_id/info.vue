@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="!loadingCitation && (isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher))" flat tile>
+        <v-card v-if="isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher)" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
@@ -27,13 +27,12 @@
                     Creators
                   </v-list-item-title>
                   <v-list-item-content>
-                    <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
+                    <p v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-2">
                       <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      <span>
-                        {{ person_or_org.firstname }} {{ person_or_org.lastname }} <sup>{{ person_or_org.affiliation_id }}</sup>
-                      </span>
-                    </span>
-                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-1">
+                      <span v-text="`${person_or_org.firstname} ${person_or_org.lastname}`" />
+                      <sup v-text="person_or_org.affiliation" />
+                    </p>
+                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-4">
                       <span>
                         <sup>{{ i+1 }}</sup>
                         {{ affiliation }}
@@ -90,7 +89,6 @@
                     <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
                   <Citation :pid="database.identifier.id" />
-                  <v-skeleton-loader v-if="loadingCitation" type="text" class="skeleton-small" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -116,7 +114,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="!loadingCitation && (hasIdentifier || (isCreator && isResearcher) || isDataSteward)" />
+        <v-divider v-if="hasIdentifier || (isCreator && isResearcher) || isDataSteward" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -236,10 +234,8 @@ export default {
   data () {
     return {
       loading: false,
-      loadingCitation: false,
       loadingDelete: false,
       editDbDialog: false,
-      citation: null,
       metadataLoading: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -374,10 +370,6 @@ export default {
       }
     }
   },
-  mounted () {
-    this.loadingCitation = true
-    this.loadCitation()
-  },
   methods: {
     async closeDialog (event) {
       if (event.action === 'persisted') {
@@ -405,31 +397,6 @@ export default {
         this.error = true
       }
       this.metadataLoading = false
-    },
-    async loadCitation () {
-      if (!this.database || !this.database.identifier) {
-        this.loadingCitation = false
-        return
-      }
-      try {
-        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
-        this.citation = res.data
-        this.citation.affiliations = []
-        this.citation.creators.forEach((personOrOrg) => {
-          const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
-          if (affiliationId === -1) {
-            this.citation.affiliations.push(personOrOrg.affiliation)
-            personOrOrg.affiliation_id = this.citation.affiliations.indexOf(personOrOrg.affiliation) + 1
-          } else {
-            personOrOrg.affiliation_id = affiliationId + 1
-          }
-        })
-        console.debug('citation', this.citation)
-      } catch (err) {
-        console.error('Failed to load citation', err)
-        this.$toast.error('Failed to load citation')
-      }
-      this.loadingCitation = false
     },
     async deleteIdentifier () {
       if (!this.database.identifier.id) {

@@ -2,6 +2,9 @@
 FROM node:14-alpine as build
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apk --no-cache add curl
+RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
+
 ARG TAG=1.2
 
 ENV NODE_ENV=production

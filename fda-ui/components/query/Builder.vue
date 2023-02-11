@@ -54,17 +54,6 @@
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text v-if="!isView">
-          <v-row>
-            <v-col cols="6">
-              <v-text-field
-                v-model="timestamp"
-                clearable
-                hint="YYYY-MM-dd HH:mm:ss"
-                label="Timestamp" />
-            </v-col>
-          </v-row>
-        </v-card-text>
         <v-card-text>
           <v-tabs-items v-model="tabs">
             <v-tab-item>
@@ -78,15 +67,14 @@
                     :loading="loadingTables"
                     return-object
                     label="Table *"
-                    :rules="[v => !!v || $t('Required')]"
-                    @change="loadColumns" />
+                    :rules="[v => !!v || $t('Required')]" />
                 </v-col>
                 <v-col cols="6">
                   <v-select
                     v-model="select"
                     item-text="name"
                     :disabled="!table || isExecuted || loadingTables"
-                    :items="selectItems"
+                    :items="columns"
                     :loading="loadingColumns"
                     label="Columns *"
                     :rules="[v => !!v || $t('Required')]"
@@ -100,6 +88,25 @@
                 v-model="clauses"
                 :disabled="isExecuted"
                 :columns="columnNames" />
+              <v-row v-if="!isView" dense>
+                <v-col>
+                  <v-switch
+                    v-model="executeDifferentTimestamp"
+                    class="ml-3"
+                    color="primary"
+                    :label="`Execute ${executeDifferentTimestamp ? 'on specific timestamp' : 'on latest data'}`" />
+                </v-col>
+              </v-row>
+              <v-row v-if="!isView && executeDifferentTimestamp" dense>
+                <v-col cols="6">
+                  <v-text-field
+                    v-model="timestamp"
+                    clearable
+                    :disabled="!executeDifferentTimestamp"
+                    hint="YYYY-MM-dd HH:mm:ss"
+                    label="Timestamp" />
+                </v-col>
+              </v-row>
               <v-row v-if="query.formatted" id="query-raw">
                 <v-col>
                   <span class="subtitle-1">Generated SQL-Query:</span>
@@ -155,6 +162,7 @@ export default {
       table: {},
       views: [],
       timestamp: null,
+      executeDifferentTimestamp: false,
       foundForbiddenKeywords: [],
       forbiddenKeywords: [
         '\\*',
@@ -272,6 +280,9 @@ export default {
       handler () {
         this.buildQuery()
       }
+    },
+    table () {
+      this.select = []
     }
   },
   mounted () {

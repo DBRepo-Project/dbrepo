@@ -1,6 +1,5 @@
 <template>
   <div v-if="isResearcher">
-    <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
     <v-toolbar flat>
       <v-toolbar-title>
         <span>Create Table</span>

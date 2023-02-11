@@ -11,7 +11,7 @@
             color="info">
             If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.username"
@@ -22,7 +22,7 @@
                 label="Username *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.password"

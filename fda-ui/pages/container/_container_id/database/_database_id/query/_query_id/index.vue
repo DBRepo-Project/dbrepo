@@ -188,7 +188,7 @@
               </v-list-item-title>
               <v-list-item-content>
                 <v-skeleton-loader v-if="!query" type="text" class="skeleton-large" />
-                <pre v-if="query">{{ query.result_hash }}</pre>
+                <pre v-if="query">{{ result_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Result Number
@@ -292,6 +292,12 @@ export default {
     },
     title () {
       return null
+    },
+    result_hash () {
+      if (!this.query.result_hash) {
+        return '(none)'
+      }
+      return this.query.result_hash
     },
     config () {
       if (this.token === null) {

@@ -45,12 +45,12 @@
               <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
             </v-alert>
             <v-row dense>
-              <v-col>
+              <v-col sm="6">
                 <v-select
                   id="visibility"
                   v-model="modifyVisibility.is_public"
                   :items="visibility"
-                  label="Standard"
+                  label="Visibility"
                   name="visibility" />
               </v-col>
             </v-row>
@@ -70,7 +70,7 @@
     <v-dialog
       v-model="editAccessDialog"
       max-width="640">
-      <EditAccess :database="database" :access="access" @close-dialog="closeDialog" />
+      <EditAccess :username="username" @close-dialog="closeDialog" />
     </v-dialog>
   </div>
 </template>
@@ -88,6 +88,7 @@ export default {
     return {
       dialogDelete: false,
       confirm: null,
+      username: null,
       loading: false,
       editAccessDialog: false,
       editVisibilityDialog: false,
@@ -148,6 +149,14 @@ export default {
       return this.database.creator.username === this.user.username
     }
   },
+  watch: {
+    database (val) {
+      if (!val) {
+        return
+      }
+      this.modifyVisibility.is_public = this.database.is_public
+    }
+  },
   mounted () {
     if (!this.database) {
       return
@@ -174,12 +183,27 @@ export default {
       this.loading = false
     },
     giveAccess () {
-      this.access = null
+      this.username = null
       this.editAccessDialog = true
     },
     modifyAccess (item) {
-      this.access = item
+      this.username = item.user.username
       this.editAccessDialog = true
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     }
   }
 }
