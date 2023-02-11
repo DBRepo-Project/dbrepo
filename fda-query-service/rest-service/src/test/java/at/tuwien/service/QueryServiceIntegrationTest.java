@@ -90,6 +90,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         afterEach();
+        /* create network */
+        DockerConfig.createAllNetworks();
         /* metadata database */
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         TABLE_1.setDatabase(DATABASE_1);
