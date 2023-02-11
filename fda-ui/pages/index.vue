@@ -48,7 +48,7 @@
           model for giving users access to databases, improved the query store handling.
         </div>
       </v-card-text>
-      <v-divider class="mx-4"/>
+      <v-divider class="mx-4" />
       <v-card-text>
         <div>Release Notes</div>
         <p class="text-h4 text--primary">

@@ -46,7 +46,7 @@
       v-model="editTupleDialog"
       persistent
       max-width="640">
-      <EditTuple :tuple="selection[0]" :edit="edit" @close="close" />
+      <EditTuple :tuple="tuple" :edit="edit" @close="close" />
     </v-dialog>
   </div>
 </template>
@@ -123,6 +123,9 @@ export default {
       }
       return this.canModify
     },
+    tuple () {
+      return this.edit ? this.selection[0] : {}
+    },
     isOwner () {
       if (!this.user || !this.database || !this.database.creator) {
         return false
@@ -162,7 +165,7 @@ export default {
       this.table.columns.forEach((c) => {
         data[c.internal_name] = null
       })
-      this.selection = [data]
+      this.selection = []
       this.editTupleDialog = true
     },
     editTuple () {

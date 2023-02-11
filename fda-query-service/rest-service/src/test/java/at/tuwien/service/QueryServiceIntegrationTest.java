@@ -1,14 +1,17 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
@@ -25,6 +28,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.math.BigInteger;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -416,6 +420,37 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final List<Map<String, Object>> result = response.getResult();
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
+    }
+
+    @Test
+    public void count_emptySet_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, InterruptedException, QueryNotFoundException,
+            FileStorageException, SQLException {
+        final Query query = Query.builder()
+                .id(QUERY_1_ID)
+                .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
+                .queryHash(QUERY_1_QUERY_HASH)
+                .resultHash(null)
+                .created(QUERY_1_CREATED)
+                .createdBy(USER_1_USERNAME)
+                .isPersisted(true)
+                .build();
+
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, query, USER_1_USERNAME);
+
+        /* test */
+        final ExportResource response = queryService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+        assertNotNull(response.getFilename());
+        assertNotNull(response.getResource());
     }
 
     @SneakyThrows

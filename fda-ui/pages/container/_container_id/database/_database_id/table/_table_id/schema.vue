@@ -89,7 +89,7 @@ export default {
         { text: `${this.$route.params.table_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [
-        { value: 'name', text: 'Name' },
+        { value: 'internal_name', text: 'Column Name' },
         { value: 'column_type', text: 'Type' },
         { value: 'date_format', text: 'Date Format' },
         { value: 'column_concept', text: 'Concept' },

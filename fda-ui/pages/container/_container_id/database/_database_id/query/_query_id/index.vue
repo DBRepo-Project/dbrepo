@@ -17,10 +17,10 @@
         <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility && !query.identifier" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
+        <v-btn v-if="result_visibility && !query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
-        <v-btn v-if="result_visibility && query.identifier" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
+        <v-btn v-if="result_visibility && query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn

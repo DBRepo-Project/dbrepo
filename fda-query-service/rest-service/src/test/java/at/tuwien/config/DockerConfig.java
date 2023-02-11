@@ -90,9 +90,10 @@ public class DockerConfig extends BaseUnitTest {
         final HostConfig hostConfig1;
         final String network = (container.getInternalName().contains("userdb") ? "fda-userdb" : "fda-public");
         if (bind == null) {
-            hostConfig1 = hostConfig.withNetworkMode(network);
+            hostConfig1 = hostConfig.withNetworkMode(network)
+                    .withBinds(Bind.parse("/tmp:/tmp"));
         } else {
-            hostConfig1 = hostConfig.withNetworkMode(network).withBinds(Bind.parse(bind));
+            hostConfig1 = hostConfig.withNetworkMode(network).withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"));
         }
         if (port != null) {
             hostConfig1.withPortBindings(PortBinding.parse(port + ":" + port));

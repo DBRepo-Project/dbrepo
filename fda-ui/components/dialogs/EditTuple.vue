@@ -13,7 +13,7 @@
               class="mb-2"
               :hint="hint(attr)"
               persistent-hint
-              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
+              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :label="label(attr)"
               type="number" />
@@ -22,7 +22,7 @@
               v-model="tuple[attr.internal_name]"
               :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
               class="mb-2"
-              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
+              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :label="label(attr)"
               type="text" />
@@ -31,7 +31,7 @@
               v-model="tuple[attr.internal_name]"
               suffix="UTC"
               hint="e.g. 2022-07-12 18:32:59"
-              :rules="attr.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')]"
+              :rules="(attr.auto_generated) ? [] : (attr.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')])"
               class="mb-2"
               :required="required(attr)"
               :label="label(attr)"
@@ -63,14 +63,14 @@
               v-if="attr.column_type === 'ENUM'"
               v-model="tuple[attr.internal_name]"
               class="mb-2"
-              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
+              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :items="attr.enum_values"
               :label="label(attr)" />
             <v-checkbox
               v-if="attr.column_type === 'boolean'"
               v-model="tuple[attr.internal_name]"
-              :rules="attr.is_null_allowed ? [] : [ v => !!v || $t('Required') ]"
+              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               class="mb-2"
               :label="label(attr)" />

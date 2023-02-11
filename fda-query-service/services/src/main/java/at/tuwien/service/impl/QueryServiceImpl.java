@@ -209,10 +209,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
             final File file = new File("/tmp/" + filename);
             resource = new InputStreamResource(FileUtils.openInputStream(file));
-            FileUtils.forceDelete(file);
-        } catch (IOException | SQLException e) {
-            log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file", e);
+            if (!FileUtils.deleteQuietly(file)) {
+                log.warn("Failed to delete exported file");
+            }
+        } catch (SQLException e) {
+            log.error("Failed to execute query: {}", e.getMessage());
+            throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
+        } catch (IOException e) {
+            log.error("Failed to export query: {}", e.getMessage());
+            throw new FileStorageException("Failed to export query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

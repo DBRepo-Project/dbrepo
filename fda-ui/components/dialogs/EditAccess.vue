@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit" autocomplete="off">
+    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
