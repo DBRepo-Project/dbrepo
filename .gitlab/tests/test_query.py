@@ -183,12 +183,11 @@ def find_table(container_id, database_id, table_id):
 
 
 def fill_table(container_id, database_id, table_id):
-    shutil.copyfile(os.getcwd() + "/tests/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
     response = data.import_csv({
-        "location": "/tmp/ugz_ogd_air_h1_2021.csv",
-        "separator": ",",
+        "location": "/path/to/data.csv",
         "quote": "\"",
-        "skip_lines": 1
+        "null_element": "NA"
+        "separator": ",",
     }, container_id, database_id, table_id)
     print("filled table with id %d" % table_id)
     return response
