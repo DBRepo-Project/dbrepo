@@ -10,33 +10,12 @@ from api_database.api.database_endpoint_api import DatabaseEndpointApi
 
 authentication = AuthenticationEndpointApi()
 user = UserEndpointApi()
+
+
+
+
 container = ContainerEndpointApi()
 database = DatabaseEndpointApi()
-
-token = ""  # keep
-
-
-def create_user(username):
-    response = user.register({
-        "username": username,
-        "password": username,
-        "email": username + "@gmail.com"
-    })
-    print("created user with id %d" % response.id)
-    return response
-
-
-def auth_user(username):
-    response = authentication.authenticate_user1({
-        "username": username,
-        "password": username
-    })
-    print("authenticated user with id %d" % response.id)
-    token = response.token
-    container.api_client.default_headers = {"Authorization": "Bearer " + token}
-    database.api_client.default_headers = {"Authorization": "Bearer " + token}
-    return response
-
 
 def create_container():
     response = container.create1({
@@ -64,6 +43,30 @@ def create_database(container_id, is_public=True):
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
+    return response
+
+token = ""  # keep
+
+
+def create_user(username):
+    response = user.register({
+        "username": username,
+        "password": username,
+        "email": username + "@gmail.com"
+    })
+    print("created user with id %d" % response.id)
+    return response
+
+
+def auth_user(username):
+    response = authentication.authenticate_user1({
+        "username": username,
+        "password": username
+    })
+    print("authenticated user with id %d" % response.id)
+    token = response.token
+    container.api_client.default_headers = {"Authorization": "Bearer " + token}
+    database.api_client.default_headers = {"Authorization": "Bearer " + token}
     return response
 
 
