@@ -25,7 +25,6 @@ import java.io.IOException;
  * ExecuteStatementDto
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2023-02-12T12:27:08.557443+01:00[Europe/Vienna]")
 public class ExecuteStatementDto {
   @SerializedName("statement")
   private String statement = null;
