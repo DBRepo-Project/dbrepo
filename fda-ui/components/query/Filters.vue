@@ -90,8 +90,6 @@
 const { operators, types } = require('@/server-middleware/query/operators')
 
 export default {
-  components: {
-  },
   props: {
     columns: {
       type: Array,

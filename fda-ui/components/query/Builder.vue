@@ -214,7 +214,7 @@ export default {
       return columns || []
     },
     columnNames () {
-      return this.selectItems && this.selectItems.map(s => s.internal_name)
+      return this.columns && this.columns.map(s => s.internal_name)
     },
     tableId () {
       return this.table.id
