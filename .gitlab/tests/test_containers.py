@@ -1,18 +1,7 @@
 #!/bin/env python3
-
-import time
-import uuid
-
-from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
-from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
 from api_database.api.database_endpoint_api import DatabaseEndpointApi
-
-authentication = AuthenticationEndpointApi()
-user = UserEndpointApi()
-
-
-
+import time
 
 container = ContainerEndpointApi()
 database = DatabaseEndpointApi()
@@ -47,6 +36,12 @@ def create_database(container_id, is_public=True):
 
 token = ""  # keep
 
+from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
+from api_authentication.api.user_endpoint_api import UserEndpointApi
+import uuid
+
+authentication = AuthenticationEndpointApi()
+user = UserEndpointApi()
 
 def create_user(username):
     response = user.register({
