@@ -73,7 +73,7 @@ def auth_user(username):
 
 def create_container():
     response = container.create1({
-        "name": "Airquality " + str(uuid.uuid1()),
+        "name": "Pilot Factory Data",
         "repository": "mariadb",
         "tag": "10.5"
     })
@@ -93,7 +93,7 @@ def start_container(container_id):
 
 def create_database(container_id, is_public=True):
     response = database.create({
-        "name": "Airquality " + str(uuid.uuid1()),
+        "name": "Pilot Factory Data",
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
