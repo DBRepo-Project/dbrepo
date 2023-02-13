@@ -25,7 +25,6 @@ stages:
   - test-backend
   - build-docker
   - release
-  - deploy
 
 build-backend-metadata-db:
   stage: build-backend
@@ -337,19 +336,3 @@ release-version:
     - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.2 make release
-
-deploy-dbrepo2:
-  stage: deploy
-  needs:
-    - release-latest
-  only:
-    refs:
-      - dev
-  script:
-    - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
-    - "scp ./.dbrepo2/known_hosts demo@dbrepo2.ec.tuwien.ac.at:/home/demo/.ssh/known_hosts"
-    - "scp ./Makefile demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.dbrepo2.yml"
-    - "scp ./.dbrepo2/deploy demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash deploy'"
