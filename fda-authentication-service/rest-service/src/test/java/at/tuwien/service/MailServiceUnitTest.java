@@ -42,10 +42,8 @@ public class MailServiceUnitTest extends BaseUnitTest {
         final Context context = new Context();
         context.setVariable("username", USER_1_USERNAME);
 
-        /* mock */
-
         /* test */
-        mailService.send(USER_1, "Test", "welcome-mail.txt", context);
+        mailService.send(USER_1, "Test", "mail-welcome.txt", context);
     }
 
     @Test
@@ -59,7 +57,7 @@ public class MailServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(UserEmailFailedException.class, () -> {
-            mailService.send(USER_1, "Test", "welcome-mail.txt", context);
+            mailService.send(USER_1, "Test", "mail-welcome.txt", context);
         });
     }
 

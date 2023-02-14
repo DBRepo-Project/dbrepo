@@ -274,14 +274,9 @@ services:
     restart: always
     container_name: dbrepo-search-service
     hostname: search-service
-    image: elasticsearch:7.13.4
-    command: [ "elasticsearch" ]
+    image: dbrepo/search-service:1.2
     networks:
       core:
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - logger.level=WARN
     depends_on:
       discovery-service:
         condition: service_healthy

@@ -5,6 +5,7 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -28,7 +29,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.time.Instant;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,9 +47,6 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    @Autowired
-    private TableDataEndpoint dataEndpoint;
-
     @MockBean
     private QueryServiceImpl queryService;
 
@@ -57,10 +54,16 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
+    private IndexConfig indexInitializer;
+
+    @MockBean
     private AccessService accessService;
 
     @MockBean
     private TableService tableService;
+
+    @Autowired
+    private TableDataEndpoint dataEndpoint;
 
     @Test
     public void import_publicAnonymous_fails() {

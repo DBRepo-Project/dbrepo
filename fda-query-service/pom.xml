@@ -17,7 +17,7 @@
         also allows for view-only (possibly paginated and versioned) query execution to the raw data and consumes
         messages in the message queue from the Broker Service.
     </description>
-    <url>https://dbrepo.ossdip.at</url>
+    <url>https://dbrepo-docs.ossdip.at</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -236,6 +236,16 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                    <include>**/templates/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>

@@ -8,6 +8,9 @@ if (process.env.SANDBOX) {
   console.info('[FDA] Running in sandbox environment')
 }
 
+const configTitle = process.env.TITLE || 'Database Repository'
+const configIcon = process.env.ICON || '/favicon.ico'
+
 export default {
   target: 'server',
   ssr: false,
@@ -21,15 +24,14 @@ export default {
   },
 
   head: {
-    titleTemplate: '%s - Database Repository (Sandbox)',
-    title: 'FAIR Data Austria',
+    title: configTitle,
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: configIcon }
     ]
   },
 
@@ -78,7 +80,8 @@ export default {
     version: process.env.VERSION || 'latest',
     logo: process.env.LOGO || '/logo.png',
     mailVerify: process.env.MAIL_VERIFY || false,
-    tokenMax: process.env.TOKEN_MAX || 5
+    tokenMax: process.env.TOKEN_MAX || 5,
+    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic'
   },
 
   proxy: {
@@ -90,11 +93,11 @@ export default {
         '^/pid': '/pid'
       }
     },
-    '/search': {
+    '/retrieve': {
       target: process.env.SEARCH || 'http://localhost:9200',
       changeOrigin: true,
       pathRewrite: {
-        '^/search': ''
+        '^/retrieve': ''
       }
     }
   },

@@ -6,54 +6,19 @@
         (no views)
       </v-card-text>
     </v-card>
-    <v-expansion-panels v-if="!loading && views.length > 0" v-model="panel" accordion>
-      <v-expansion-panel v-for="(item,i) in views" :key="i" @click="details(item)">
-        <v-expansion-panel-header>
-          {{ item.name }}
-        </v-expansion-panel-header>
-        <v-expansion-panel-content class="mb-2">
-          <v-row dense>
-            <v-col>
-              <v-list dense>
-                <v-list-item>
-                  <v-list-item-icon>
-                    <v-icon>mdi-text-short</v-icon>
-                  </v-list-item-icon>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      View ID
-                    </v-list-item-title>
-                    <v-list-item-content v-text="viewDetails.id" />
-                    <v-list-item-title class="mt-2">
-                      View Query
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      <pre v-text="viewDetails.query" />
-                    </v-list-item-content>
-                    <v-list-item-title class="mt-2">
-                      View Visibility
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      {{ viewVisibility }}
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col>
-              <v-btn small color="secondary" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${viewDetails.id}`">
-                More
-              </v-btn>
-              <v-btn v-if="isOwner" small color="error" @click="deleteView(viewDetails)">
-                Delete
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-    </v-expansion-panels>
+    <div v-for="(item,i) in views" :key="i">
+      <v-divider v-if="i !== 0" class="mx-4" />
+      <v-list-item-group>
+        <v-list-item two-line :class="clazz(item)" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${item.id}`">
+          <v-list-item-content>
+            <v-list-item-title v-text="item.name" />
+            <v-list-item-subtitle class="mt-2">
+              <pre>{{ item.query }}</pre>
+            </v-list-item-subtitle>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-item-group>
+    </div>
   </div>
 </template>
 
@@ -67,7 +32,6 @@ export default {
       loadingDetails: false,
       error: false,
       panel: null,
-      views: [],
       viewDetails: {
         id: null,
         internal_name: null,
@@ -99,6 +63,12 @@ export default {
     database () {
       return this.$store.state.database
     },
+    views () {
+      if (!this.database) {
+        return []
+      }
+      return this.$store.state.database.views
+    },
     isOwner () {
       if (!this.user) {
         return false
@@ -120,20 +90,8 @@ export default {
     }
   },
   mounted () {
-    this.loadViews()
   },
   methods: {
-    async loadViews () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
-        this.views = res.data
-        console.debug('views', this.views)
-      } catch (err) {
-        console.error('Failed to load views', err)
-      }
-      this.loading = false
-    },
     async details (table) {
       if (table.id === this.viewDetails.id) {
         /* prevent weird glitch of opening and collapsing simultaneously */
@@ -163,13 +121,18 @@ export default {
     async deleteView (view) {
       try {
         const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
-        console.debug('deleted view', res.data)
+        console.debug('deleted view', res.index)
         this.$toast.success(`Successfully deleted view with id ${view.id}`)
-        await this.loadViews()
       } catch (err) {
         this.$toast.error('Failed to delete view')
         console.error('Failed to delete view')
       }
+    },
+    clazz (view) {
+      if (view.is_public === false) {
+        return null
+      }
+      return 'primary--text'
     }
   }
 }

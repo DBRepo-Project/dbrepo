@@ -1,5 +1,7 @@
 package at.tuwien.api.database.query;
 
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -64,6 +66,8 @@ public class QueryBriefDto {
 
     @Schema(example = "query")
     private QueryTypeDto type;
+
+    private IdentifierBriefDto identifier;
 
     @NotNull(message = "created timestamp is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

@@ -27,7 +27,7 @@ public class RabbitMqConsumer implements Consumer {
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
 
-    public RabbitMqConsumer(Long containerId, Long databaseId, Long tableId, ObjectMapper objectMapper, 
+    public RabbitMqConsumer(Long containerId, Long databaseId, Long tableId, ObjectMapper objectMapper,
                             QueryService queryService) {
         this.containerId = containerId;
         this.databaseId = databaseId;
@@ -85,9 +85,8 @@ public class RabbitMqConsumer implements Consumer {
             log.error("Failed to find table with id {}, reason: {}", tableId, e.getMessage());
             throw new IOException("Failed to find table", e);
         } catch (TableMalformedException e) {
-            log.error("Tuple columns do not math table columns with table id {}, reason: {}", tableId,
-                    e.getMessage());
-            throw new IOException("Tuple columns do not math table columns", e);
+            log.error("Tuple columns do not match table columns with table id {}, reason: {}", tableId, e.getMessage());
+            throw new IOException("Tuple columns do not match table columns", e);
         } catch (DatabaseNotFoundException e) {
             log.error("Failed to find database with id {}, reason: {}", databaseId, e.getMessage());
             throw new IOException("Failed to find database", e);

@@ -42,6 +42,12 @@ public class Container {
     })
     private User creator;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "ownedBy", referencedColumnName = "UserID")
+    })
+    private User owner;
+
     @Column(nullable = false)
     private String name;
 

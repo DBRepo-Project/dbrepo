@@ -12,14 +12,14 @@ import java.util.Optional;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.creator.username = :username")
+    @Query("select d from Database d where d.owner.username = :username")
     List<Database> findAllByUsername(@Param("username") String username);
 
     @Query("select d from Database d where d.container.id = :containerId")
     List<Database> findAll(@Param("containerId") Long containerId);
 
     @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and (d.isPublic = " +
-            "true or d.creator.username = " +
+            "true or d.owner.username = " +
             ":username)")
     Optional<Database> findPublicOrMine(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId,
                                         @Param("username") String username);

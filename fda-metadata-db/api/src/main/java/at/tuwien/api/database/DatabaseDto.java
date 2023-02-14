@@ -5,11 +5,14 @@ import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.DateFormat;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -22,6 +25,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "databaseindex", createIndex = false)
 public class DatabaseDto {
 
     @NotNull
@@ -33,7 +37,7 @@ public class DatabaseDto {
 
     @NotBlank
     @JsonProperty("exchange_name")
-    @Schema(example = "dbrepo/4/4")
+    @Schema(example = "dbrepo/air_quality")
     private String exchangeName;
 
     @NotNull
@@ -51,17 +55,24 @@ public class DatabaseDto {
 
     private List<TableBriefDto> tables;
 
+    private List<ViewBriefDto> views;
+
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @org.springframework.data.annotation.Transient
     private ImageDto image;
 
+    @org.springframework.data.annotation.Transient
     private ContainerDto container;
 
     private List<DatabaseAccessDto> accesses;
 
+    private UserBriefDto owner;
+
     @Schema(example = "2020-08-04 11:12:00")
+    @org.springframework.data.annotation.Transient
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 

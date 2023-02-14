@@ -99,6 +99,7 @@ public class ContainerServiceImpl implements ContainerService {
         log.trace("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
         container.setCreator(user);
+        container.setOwner(user);
         /* create the container */
         final CreateContainerResponse response1;
         try {
@@ -215,7 +216,6 @@ public class ContainerServiceImpl implements ContainerService {
     public List<Container> getAll() {
         final List<Container> containers = containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
         log.info("Found {} containers", containers.size());
-        log.trace("found containers {}", containers);
         return containers;
     }
 
@@ -235,7 +235,6 @@ public class ContainerServiceImpl implements ContainerService {
             throw new ContainerAlreadyRunningException("Failed to start container", e);
         }
         log.info("Started container with id {}", containerId);
-        log.trace("started container {}", container);
         return container;
     }
 

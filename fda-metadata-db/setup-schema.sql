@@ -93,9 +93,11 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     ip_address    character varying(255),
     created       timestamp              NOT NULL DEFAULT NOW(),
     created_by    bigint                 NOT NULL,
+    owned_by      bigint                 NOT NULL,
     LAST_MODIFIED timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -152,12 +154,14 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     description    TEXT,
     engine         character varying(20),
     is_public      BOOLEAN                NOT NULL DEFAULT TRUE,
-    created_by     bigint,
+    created_by     bigint                 NOT NULL,
+    owned_by       bigint                 NOT NULL,
     contact_person bigint,
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (contact_person) REFERENCES mdb_users (UserID),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 ) WITH SYSTEM VERSIONING;
@@ -442,14 +446,6 @@ CREATE TABLE IF NOT EXISTS mdb_have_access
     PRIMARY KEY (user_id, database_id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_owns
-(
-    oUserID bigint REFERENCES mdb_users (UserID),
-    oDBID   bigint REFERENCES mdb_databases (ID),
-    created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (oUserID, oDBID)
-) WITH SYSTEM VERSIONING;
-
 CREATE VIEW IF NOT EXISTS mdb_invalid_tokens AS
 (
 SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
@@ -486,15 +482,7 @@ VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
        ('MARIADB_PASSWORD', 'mariadb', 'PASSWORD', 1);
 
 INSERT INTO mdb_images_date (iid, database_format, unix_format, example, has_time)
-VALUES (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
-       (1, '%d.%c.%Y', 'yyyy-MM-dd', '30.01.2022', false),
-       (1, '%d.%c.%y', 'yyyy-MM-dd', '30.01.22', false),
-       (1, '%c/%d/%Y', 'yyyy-MM-dd', '01/30/2022', false),
-       (1, '%c/%d/%y', 'yyyy-MM-dd', '01/30/22', false),
-       (1, '%Y-%c-%dT%H:%i:%S.%f', 'yyyy-MM-dd''T''HH:mm:ss.SSSSSS', '2022-01-30T13:44:25.499', true),
-       (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
-       (1, '%Y-%c-%dT%H:%i:%S', 'yyyy-MM-dd''T''HH:mm:ss', '2022-01-30T13:44:25', true),
-       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
-       (1, '%Y-%c-%d %H:%i', 'yyyy-MM-dd HH:mm', '2022-01-30 13:44', true);
+VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
+       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true);
 
 COMMIT;

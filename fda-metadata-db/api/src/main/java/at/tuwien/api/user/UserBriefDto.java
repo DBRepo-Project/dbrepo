@@ -47,16 +47,19 @@ public class UserBriefDto {
 
     @NotNull
     @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
+    @org.springframework.data.annotation.Transient
     private List<String> roles;
 
     @JsonIgnore
     @JsonProperty("theme_dark")
     @Schema(example = "true")
+    @org.springframework.data.annotation.Transient
     private Boolean themeDark;
 
     @JsonIgnore
     @JsonProperty("email_verified")
     @Schema(example = "true")
+    @org.springframework.data.annotation.Transient
     private Boolean emailVerified;
 
 }

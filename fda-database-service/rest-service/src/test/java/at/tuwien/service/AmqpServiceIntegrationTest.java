@@ -1,17 +1,14 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.DockerConfig;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
-import com.github.dockerjava.api.model.PortBinding;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -25,11 +22,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.List;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -43,7 +37,7 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -63,63 +57,16 @@ public class AmqpServiceIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-
+        DockerConfig.createAllNetworks();
         /* create amqp */
-        final CreateContainerResponse request = dockerClient.createContainerCmd(BROKER_IMAGE + ":" + BROKER_TAG)
-                .withHostConfig(
-                        hostConfig
-                                .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("15672:15672"), PortBinding.parse("5672:5672"))
-                )
-                .withName(BROKER_NAME)
-                .withIpv4Address(BROKER_IP)
-                .withHostName(BROKER_HOSTNAME)
-                .withEnv("RABBITMQ_DEFAULT_USER=fda", "RABBITMQ_DEFAULT_PASS=fda")
-                .exec();
-        dockerClient.startContainerCmd(request.getId())
-                .exec();
-        Thread.sleep(12 * 1000);
+        DockerConfig.createContainer(null, CONTAINER_BROKER, CONTAINER_BROKER_ENV);
+        DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll
     public static void afterAll() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @Test

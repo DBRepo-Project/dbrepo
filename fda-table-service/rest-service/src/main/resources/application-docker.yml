@@ -40,4 +40,7 @@ eureka:
 fda:
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  elastic.endpoint: "${SEARCH_ENDPOINT}"
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: "${ELASTIC_PASSWORD}"

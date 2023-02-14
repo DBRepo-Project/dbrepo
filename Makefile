@@ -56,7 +56,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-identifier tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy tag-metadata
+tag: tag-identifier tag-search tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-metadata
 
 tag-analyse:
 	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -69,9 +69,6 @@ tag-metadata-db:
 
 tag-ui:
 	docker tag fda-ui:latest "dbrepo/ui:${TAG}"
-
-tag-ui-proxy:
-	docker tag fda-ui:latest "dbrepo/ui-proxy:${TAG}"
 
 tag-identifier:
 	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
@@ -103,7 +100,10 @@ tag-units:
 tag-broker:
 	docker tag fda-broker-service:latest "dbrepo/broker-service:${TAG}"
 
-release: build-docker tag release-identifier release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy release-metadata
+tag-search:
+	docker tag fda-search-service:latest "dbrepo/search-service:${TAG}"
+
+release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata
 
 release-analyse:
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -116,9 +116,6 @@ release-metadata-db: build-docker tag-metadata-db
 
 release-ui:
 	docker push "dbrepo/ui:${TAG}"
-
-release-ui-proxy:
-	docker push "dbrepo/ui-proxy:${TAG}"
 
 release-identifier:
 	docker push "dbrepo/identifier-service:${TAG}"
@@ -147,10 +144,13 @@ release-units:
 release-broker:
 	docker push "dbrepo/broker-service:${TAG}"
 
+release-search:
+	docker push "dbrepo/search-service:${TAG}"
+
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-pull: pull-identifier pull-container pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy pull-metadata
+pull: pull-identifier pull-container pull-search pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-metadata
 
 pull-analyse:
 	docker pull "dbrepo/analyse-service:${TAG}"
@@ -163,9 +163,6 @@ pull-metadata-db:
 
 pull-ui:
 	docker pull "dbrepo/ui:${TAG}"
-
-pull-ui-proxy:
-	docker pull "dbrepo/ui-proxy:${TAG}"
 
 pull-identifier:
 	docker pull "dbrepo/identifier-service:${TAG}"
@@ -197,45 +194,48 @@ pull-broker:
 pull-metadata:
 	docker pull "dbrepo/metadata-service:${TAG}"
 
+pull-search:
+	docker pull "dbrepo/search-service:${TAG}"
+
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
-test-authentication-service: build-backend-metadata-db
+test-authentication-service: build-backend-metadata-db build-backend-authentication
 	docker system prune -f --volumes
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-identifier-service: build-backend-metadata-db
+test-identifier-service: build-backend-metadata-db build-backend-identifier
 	docker system prune -f --volumes
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-container-service: build-backend-metadata-db
+test-container-service: build-backend-metadata-db build-backend-container
 	docker system prune -f --volumes
 	docker pull mysql:8.0
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
-test-database-service: build-backend-metadata-db
+test-database-service: build-backend-metadata-db build-backend-database
 	docker system prune -f --volumes
 	docker pull rabbitmq:3-management-alpine
 	docker pull nginx:alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-discovery-service: build-backend-metadata-db
+test-discovery-service: build-backend-metadata-db build-backend-discovery
 	docker system prune -f --volumes
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-gateway-service: build-backend-metadata-db
+test-gateway-service: build-backend-metadata-db build-backend-gateway
 	docker system prune -f --volumes
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-query-service: build-backend-metadata-db
+test-query-service: build-backend-metadata-db build-backend-query
 	docker system prune -f --volumes
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-table-service: build-backend-metadata-db
+test-table-service: build-backend-metadata-db build-backend-table
 	docker system prune -f --volumes
 	mvn -f ./fda-table-service/pom.xml clean test verify
 
-test-metadata-service: build-backend-metadata-db
+test-metadata-service: build-backend-metadata-db build-backend-metadata
 	docker system prune -f --volumes
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
 

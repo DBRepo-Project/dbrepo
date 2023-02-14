@@ -40,17 +40,24 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
+            @Mapping(source = "tdbid", target = "containerId"),
+            @Mapping(source = "tdbid", target = "databaseId"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
+            @Mapping(source = "database.isPublic", target = "isPublic"),
     })
     TableDto tableToTableDto(Table data);
 
     /* keep */
     @Mappings({
             @Mapping(target = "unique", source = "isUnique"),
+            @Mapping(target = "tableId", source = "tid"),
+            @Mapping(target = "containerId", source = "cdbid"),
+            @Mapping(target = "databaseId", source = "cdbid"),
+            @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 

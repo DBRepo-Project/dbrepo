@@ -10,23 +10,23 @@ import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repositories.UserRepository;
+import at.tuwien.service.impl.UserServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @Log4j2
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserServiceUnitTest extends BaseUnitTest {
@@ -37,42 +37,15 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @MockBean
     private AuthenticationConfig authenticationConfig;
 
-    @Autowired
+    @MockBean
     private UserRepository userRepository;
 
     @Autowired
-    private UserService userService;
-
-    @Test
-    public void create_isSuperUser_succeeds() throws UserNameExistsException, RoleNotFoundException,
-            UserEmailExistsException {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .email(USER_1_EMAIL)
-                .build();
-
-        /* mock */
-        when(authenticationConfig.getDefaultRoles())
-                .thenReturn(new RoleType[]{RoleType.ROLE_RESEARCHER});
-        when(authenticationConfig.getSuperUsers())
-                .thenReturn(new String[]{USER_1_USERNAME});
-
-        /* test */
-        final User response = userService.create(request);
-        assertEquals(USER_1_USERNAME, response.getUsername());
-        assertEquals(USER_1_EMAIL, response.getEmail());
-        assertEquals(List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER, RoleType.ROLE_DATA_STEWARD), response.getRoles());
-    }
+    private UserServiceImpl userService;
 
     @Test
     public void create_isNotSuperUser_succeeds() throws UserNameExistsException, RoleNotFoundException,
             UserEmailExistsException {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .email(USER_1_EMAIL)
-                .build();
 
         /* mock */
         when(authenticationConfig.getDefaultRoles())
@@ -81,32 +54,40 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .thenReturn(new String[]{});
 
         /* test */
-        final User response = userService.create(request);
+        final User response = create_generic(false, false);
         assertEquals(USER_1_USERNAME, response.getUsername());
         assertEquals(USER_1_EMAIL, response.getEmail());
         assertEquals(List.of(RoleType.ROLE_RESEARCHER), response.getRoles());
     }
 
     @Test
-    public void create_noRole_succeeds() throws UserNameExistsException, RoleNotFoundException,
-            UserEmailExistsException {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .email(USER_1_EMAIL)
-                .build();
+    public void create_emailExists_fails() {
 
         /* mock */
         when(authenticationConfig.getDefaultRoles())
-                .thenReturn(new RoleType[]{});
+                .thenReturn(new RoleType[]{RoleType.ROLE_RESEARCHER});
         when(authenticationConfig.getSuperUsers())
                 .thenReturn(new String[]{});
 
         /* test */
-        final User response = userService.create(request);
-        assertEquals(USER_1_USERNAME, response.getUsername());
-        assertEquals(USER_1_EMAIL, response.getEmail());
-        assertEquals(List.of(), response.getRoles());
+        assertThrows(UserEmailExistsException.class, () -> {
+            create_generic(false, true);
+        });
+    }
+
+    @Test
+    public void create_usernameExists_fails() {
+
+        /* mock */
+        when(authenticationConfig.getDefaultRoles())
+                .thenReturn(new RoleType[]{RoleType.ROLE_RESEARCHER});
+        when(authenticationConfig.getSuperUsers())
+                .thenReturn(new String[]{});
+
+        /* test */
+        assertThrows(UserNameExistsException.class, () -> {
+            create_generic(true, false);
+        });
     }
 
     @Test
@@ -116,11 +97,8 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .roles(List.of(RoleTypeDto.ROLE_RESEARCHER))
                 .build();
 
-        /* mock */
-        userRepository.save(USER_1);
-
         /* test */
-        final User response = userService.updateRoles(USER_1_ID, request);
+        final User response = updateRoles_generic(USER_1_ID, USER_1, request);
         assertEquals(USER_1_USERNAME, response.getUsername());
         assertEquals(USER_1_EMAIL, response.getEmail());
         assertEquals(List.of(RoleType.ROLE_RESEARCHER), response.getRoles());
@@ -134,12 +112,9 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        userRepository.save(USER_3);
 
         /* test */
-        final User response = userService.updateRoles(USER_3_ID, request);
+        final User response = updateRoles_generic(USER_3_ID, USER_3, request);
         assertEquals(USER_3_USERNAME, response.getUsername());
         assertEquals(USER_3_EMAIL, response.getEmail());
         assertEquals(List.of(RoleType.ROLE_RESEARCHER), response.getRoles());
@@ -158,7 +133,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
         userRepository.save(USER_3);
 
         /* test */
-        final User response = userService.updateRoles(USER_3_ID, request);
+        final User response = updateRoles_generic(USER_3_ID, USER_3, request);
         assertEquals(USER_3_USERNAME, response.getUsername());
         assertEquals(USER_3_EMAIL, response.getEmail());
         assertEquals(List.of(RoleType.ROLE_RESEARCHER, RoleType.ROLE_DEVELOPER), response.getRoles());
@@ -168,9 +143,8 @@ public class UserServiceUnitTest extends BaseUnitTest {
     public void findAll_succeeds() {
 
         /* mock */
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        userRepository.save(USER_3);
+        when(userRepository.findAll())
+                .thenReturn(List.of(USER_1, USER_2, USER_3));
 
         /* test */
         final List<User> response = userService.findAll();
@@ -183,7 +157,8 @@ public class UserServiceUnitTest extends BaseUnitTest {
     public void find_succeeds() throws UserNotFoundException {
 
         /* mock */
-        userRepository.save(USER_1);
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         final User response = userService.find(USER_1_ID);
@@ -194,12 +169,89 @@ public class UserServiceUnitTest extends BaseUnitTest {
     public void find_fails() {
 
         /* mock */
-        userRepository.save(USER_1);
+        when(userRepository.findById(USER_2_ID))
+                .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
             userService.find(USER_2_ID);
         });
+    }
+
+    @Test
+    public void validateOrcid_null_succeeds() {
+
+        /* test */
+        final boolean response = userService.validateOrcid(null);
+        assertTrue(response);
+    }
+
+    @Test
+    public void validateOrcid_short_fails() {
+
+        /* test */
+        final boolean response = userService.validateOrcid("ABC");
+        assertFalse(response);
+    }
+
+    @Test
+    public void validateOrcid_containsX_succeeds() {
+
+        /* test */
+        final boolean response = userService.validateOrcid("0000-0003-4216-302X");
+        assertTrue(response);
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
+    protected User create_generic(boolean usernameExists, boolean emailExists) throws UserNameExistsException,
+            RoleNotFoundException, UserEmailExistsException {
+        final SignupRequestDto request = SignupRequestDto.builder()
+                .username(USER_1_USERNAME)
+                .password(USER_1_PASSWORD)
+                .email(USER_1_EMAIL)
+                .build();
+
+        /* mock */
+        if (usernameExists) {
+            when(userRepository.findByUsername(USER_1_USERNAME))
+                    .thenReturn(Optional.of(USER_1));
+        } else {
+            when(userRepository.findByUsername(USER_1_USERNAME))
+                    .thenReturn(Optional.empty());
+        }
+        if (emailExists) {
+            when(userRepository.findByEmail(USER_1_EMAIL))
+                    .thenReturn(Optional.of(USER_1));
+        } else {
+            when(userRepository.findByEmail(USER_1_EMAIL))
+                    .thenReturn(Optional.empty());
+        }
+        when(userRepository.save(any(User.class)))
+                .thenReturn(USER_1);
+
+        /* test */
+        return userService.create(request);
+    }
+
+    protected User updateRoles_generic(Long userId, User user, UserRolesDto data) throws RoleNotFoundException,
+            UserNotFoundException, RoleUniqueException {
+
+        /* mock */
+        if (user != null) {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.of(user));
+        } else {
+            when(userRepository.findById(userId))
+                    .thenReturn(Optional.empty());
+        }
+        when(userRepository.save(any(User.class)))
+                .thenReturn(user);
+
+        /* test */
+        return userService.updateRoles(userId, data);
     }
 
 }

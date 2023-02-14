@@ -68,6 +68,9 @@ export default {
   watch: {
     style (newVal, _) {
       this.loadCitation(newVal)
+    },
+    pid () {
+      this.loadCitation(this.style)
     }
   },
   mounted () {

@@ -3,7 +3,9 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.EndpointConfig;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.endpoints.PersistenceEndpoint;
@@ -49,6 +51,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IndexInitializer indexInitializer;
 
     @MockBean
     private IdentifierService identifierService;
@@ -193,6 +198,57 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void create_creatorResearcherInvalidSubset_fails() {
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
+                .qid(null)  // <--
+                .cid(IDENTIFIER_1_CONTAINER_ID)
+                .dbid(IDENTIFIER_1_DATABASE_ID)
+                .description(IDENTIFIER_1_DESCRIPTION)
+                .title(IDENTIFIER_1_TITLE)
+                .doi(IDENTIFIER_1_DOI)
+                .visibility(IDENTIFIER_1_VISIBILITY_DTO)
+                .relatedIdentifiers(List.of())
+                .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_1_CREATE_DTO))
+                .publisher(IDENTIFIER_1_PUBLISHER)
+                .type(IdentifierTypeDto.SUBSET)
+                .build();
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, request, null, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
+    public void create_creatorResearcherInvalidDatabase_fails() {
+        final IdentifierCreateDto request = IdentifierCreateDto.builder()
+                .qid(IDENTIFIER_1_QUERY_ID) // <--
+                .cid(IDENTIFIER_1_CONTAINER_ID)
+                .dbid(IDENTIFIER_1_DATABASE_ID)
+                .description(IDENTIFIER_1_DESCRIPTION)
+                .title(IDENTIFIER_1_TITLE)
+                .doi(IDENTIFIER_1_DOI)
+                .visibility(IDENTIFIER_1_VISIBILITY_DTO)
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
+                .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
+                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_2_PUBLISHER)
+                .type(IdentifierTypeDto.DATABASE)
+                .build();
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, request, null, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        });
     }
 
     @Test

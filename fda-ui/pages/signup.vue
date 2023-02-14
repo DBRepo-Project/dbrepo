@@ -12,7 +12,7 @@
             color="info">
             Before you can use the repository, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
           </v-alert>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="createAccount.email"
@@ -25,7 +25,7 @@
                 label="Work E-Mail Address *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="createAccount.username"
@@ -37,7 +37,7 @@
                 label="Username *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="createAccount.password"
@@ -48,7 +48,7 @@
                 label="Password *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="password2"
@@ -59,7 +59,7 @@
                 label="Repeat Password *" />
             </v-col>
           </v-row>
-          <v-row v-if="sandbox">
+          <v-row v-if="sandbox" dense>
             <v-col sm="6">
               <v-checkbox
                 v-model="consent"
@@ -68,7 +68,7 @@
                 label="I understand the warning and do not use production data" />
             </v-col>
           </v-row>
-          <v-row v-if="sandbox">
+          <v-row v-if="sandbox" dense>
             <v-col sm="6">
               <v-checkbox
                 v-model="privacy"

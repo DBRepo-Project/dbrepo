@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -37,6 +39,54 @@ public class MariaDbConfig {
             statement.close();
             log.debug("received queryId={}", queryId);
             return queryId;
+        }
+    }
+
+    public static List<String> getUsernames(String hostname, String database, String username, String password)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        log.trace("connect to database {}", jdbc);
+        final List<String> usernames = new LinkedList<>();
+        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+            final String query = "SELECT User FROM mysql.user;";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet set = statement.executeQuery();
+            statement.close();
+            while (set.next()) {
+                usernames.add(set.getString("User"));
+            }
+            log.debug("received usernames={}", usernames);
+            return usernames;
+        }
+    }
+
+    public static String getPrivileges(String hostname, String database, String user, String username, String password)
+            throws Exception {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        log.trace("connect to database {}", jdbc);
+        final List<String> usernames = new LinkedList<>();
+        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+            final String query = "SHOW GRANTS FOR `" + user + "`;";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet set = statement.executeQuery();
+            statement.close();
+            if (set.next()) {
+                return set.getString(1);
+            }
+        }
+        throw new Exception("Failed to get privileges");
+    }
+
+    public static void mockQuery(String hostname, String query, String username, String password)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname;
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+            final PreparedStatement statement = connection.prepareStatement(query);
+            statement.executeUpdate();
+            statement.close();
         }
     }
 

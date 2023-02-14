@@ -4,7 +4,7 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="!loadingCitation && (isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher))" flat tile>
+        <v-card v-if="isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher)" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
@@ -27,13 +27,12 @@
                     Creators
                   </v-list-item-title>
                   <v-list-item-content>
-                    <span v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-1">
+                    <p v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-2">
                       <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      <span>
-                        {{ person_or_org.firstname }} {{ person_or_org.lastname }} <sup>{{ person_or_org.affiliation_id }}</sup>
-                      </span>
-                    </span>
-                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-1">
+                      <span v-text="`${person_or_org.firstname} ${person_or_org.lastname}`" />
+                      <sup v-text="person_or_org.affiliation" />
+                    </p>
+                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-4">
                       <span>
                         <sup>{{ i+1 }}</sup>
                         {{ affiliation }}
@@ -90,7 +89,6 @@
                     <span v-if="!identifier.license">(none)</span>
                   </v-list-item-content>
                   <Citation :pid="database.identifier.id" />
-                  <v-skeleton-loader v-if="loadingCitation" type="text" class="skeleton-small" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -104,8 +102,9 @@
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
+              <!--                v-if="isDataSteward && hasIdentifier"-->
               <v-btn
-                v-if="isDataSteward && hasIdentifier"
+                v-if="false"
                 small
                 :loading="loadingDelete"
                 color="error"
@@ -115,7 +114,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="!loadingCitation && (hasIdentifier || (isCreator && isResearcher) || isDataSteward)" />
+        <v-divider v-if="hasIdentifier || (isCreator && isResearcher) || isDataSteward" />
         <v-card flat tile>
           <v-card-title>Container</v-card-title>
           <v-card-text>
@@ -235,17 +234,8 @@ export default {
   data () {
     return {
       loading: false,
-      loadingCitation: false,
       loadingDelete: false,
       editDbDialog: false,
-      identifier: {
-        id: null,
-        license: {
-          identifier: null,
-          uri: null
-        },
-        creators: []
-      },
       metadataLoading: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -268,19 +258,25 @@ export default {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.identifier.description
+      return this.database.identifier.description
     },
     publisher () {
       if (!this.hasIdentifier) {
         return ''
       }
-      return this.identifier.publisher
+      return this.database.identifier.publisher
     },
     token () {
       return this.$store.state.token
     },
     user () {
       return this.$store.state.user
+    },
+    identifier () {
+      if (this.database) {
+        return this.$store.state.database.identifier
+      }
+      return null
     },
     access () {
       return this.$store.state.access
@@ -305,7 +301,7 @@ export default {
       return isDataSteward(this.user)
     },
     pid () {
-      return `${this.baseUrl}/pid/${this.identifier.id}`
+      return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -320,7 +316,7 @@ export default {
       return this.database.creator.username === this.user.username
     },
     language () {
-      return this.identifier.language
+      return this.database.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -338,12 +334,12 @@ export default {
       return formatUser(this.database.contact)
     },
     publication () {
-      if (this.identifier.publication_year === null) {
+      if (this.database.identifier.publication_year === null) {
         return null
-      } else if (this.identifier.publication_month !== null && this.identifier.publication_day !== null) {
-        return this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day
+      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
+        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
       } else {
-        return this.identifier.publication_year
+        return this.database.identifier.publication_year
       }
     },
     creator () {
@@ -353,10 +349,10 @@ export default {
       return this.database.creator.email_verified
     },
     hasIdentifier () {
-      if (this.identifier === null) {
-        return false
+      if ('identifier' in this.database && this.database.identifier) {
+        return 'id' in this.database.identifier
       }
-      return this.identifier.id !== null
+      return false
     },
     accessDescription () {
       if (!this.access) {
@@ -374,15 +370,10 @@ export default {
       }
     }
   },
-  mounted () {
-    this.loadingCitation = true
-    this.loadIdentifier()
-  },
   methods: {
-    closeDialog (event) {
+    async closeDialog (event) {
       if (event.action === 'persisted') {
-        this.loadDatabase()
-          .then(() => this.loadIdentifier())
+        await this.loadDatabase()
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
@@ -407,32 +398,6 @@ export default {
       }
       this.metadataLoading = false
     },
-    async loadIdentifier () {
-      if (!this.database || !this.database.identifier) {
-        this.loadingCitation = false
-        return
-      }
-      try {
-        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
-        this.identifier = res.data
-        this.database.identifier = res.data
-        this.identifier.affiliations = []
-        this.identifier.creators.forEach((personOrOrg) => {
-          const affiliationId = this.identifier.affiliations.indexOf(personOrOrg.affiliation)
-          if (affiliationId === -1) {
-            this.identifier.affiliations.push(personOrOrg.affiliation)
-            personOrOrg.affiliation_id = this.identifier.affiliations.indexOf(personOrOrg.affiliation) + 1
-          } else {
-            personOrOrg.affiliation_id = affiliationId + 1
-          }
-        })
-        console.debug('identifier', this.identifier)
-      } catch (err) {
-        console.error('Failed to load identifier', err)
-        this.$toast.error('Failed to load identifier')
-      }
-      this.loadingCitation = false
-    },
     async deleteIdentifier () {
       if (!this.database.identifier.id) {
         return
@@ -442,24 +407,42 @@ export default {
         await this.$axios.delete(`/api/identifier/${this.database.identifier.id}`, this.config)
         console.info('Deleted identifier with id ', this.database.identifier.id)
         this.$toast.success('Successfully deleted identifier with id ' + this.database.identifier.id)
-        this.identifier = {
-          id: null,
-          license: {
-            identifier: null,
-            uri: null
-          }
-        }
+        await this.loadDatabase()
       } catch (error) {
         const { message } = error.response
         console.error('Failed to delete identifier', error)
         this.$toast.error('Failed to delete identifier: ' + message)
       }
       this.loadingDelete = false
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
+      } catch (err) {
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
+      }
+      this.loading = false
     }
   }
 }
 </script>
 <style>
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 .skeleton-small .v-skeleton-loader__text {
   width: 100px;
 }

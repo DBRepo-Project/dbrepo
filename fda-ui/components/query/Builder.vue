@@ -13,6 +13,10 @@
           <v-icon left>mdi-run</v-icon>
           Create
         </v-btn>
+        <v-btn v-if="isExecuted" color="blue-grey white--text" :to="viewLink">
+          <v-icon left>mdi-run</v-icon>
+          View
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-toolbar flat>
@@ -45,7 +49,6 @@
           <v-row>
             <v-col>
               <v-switch
-                v-if="isView"
                 v-model="view.is_public"
                 :label="`${view.is_public ? 'Public' : 'Private'} view`" />
             </v-col>
@@ -63,18 +66,17 @@
                     item-text="name"
                     :loading="loadingTables"
                     return-object
-                    label="Table"
-                    :rules="[v => !!v || $t('Required')]"
-                    @change="loadColumns" />
+                    label="Table *"
+                    :rules="[v => !!v || $t('Required')]" />
                 </v-col>
                 <v-col cols="6">
                   <v-select
                     v-model="select"
                     item-text="name"
                     :disabled="!table || isExecuted || loadingTables"
-                    :items="selectItems"
+                    :items="columns"
                     :loading="loadingColumns"
-                    label="Columns"
+                    label="Columns *"
                     :rules="[v => !!v || $t('Required')]"
                     return-object
                     multiple
@@ -86,6 +88,25 @@
                 v-model="clauses"
                 :disabled="isExecuted"
                 :columns="columnNames" />
+              <v-row v-if="!isView" dense>
+                <v-col>
+                  <v-switch
+                    v-model="executeDifferentTimestamp"
+                    class="ml-3"
+                    color="primary"
+                    :label="`Execute ${executeDifferentTimestamp ? 'on specific timestamp' : 'on latest data'}`" />
+                </v-col>
+              </v-row>
+              <v-row v-if="!isView && executeDifferentTimestamp" dense>
+                <v-col cols="6">
+                  <v-text-field
+                    v-model="timestamp"
+                    clearable
+                    :disabled="!executeDifferentTimestamp"
+                    hint="YYYY-MM-dd HH:mm:ss"
+                    label="Timestamp" />
+                </v-col>
+              </v-row>
               <v-row v-if="query.formatted" id="query-raw">
                 <v-col>
                   <span class="subtitle-1">Generated SQL-Query:</span>
@@ -120,15 +141,6 @@
             </v-tab-item>
           </v-tabs-items>
         </v-card-text>
-        <v-card-text v-if="isExecuted">
-          <v-row>
-            <v-col>
-              <v-btn color="blue-grey white--text" :to="viewLink">
-                View
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
       </v-card>
     </v-form>
     <QueryResults ref="queryResults" :result-id="resultId" :type="mode" />
@@ -148,8 +160,9 @@ export default {
   data () {
     return {
       table: {},
-      tables: [],
       views: [],
+      timestamp: null,
+      executeDifferentTimestamp: false,
       foundForbiddenKeywords: [],
       forbiddenKeywords: [
         '\\*',
@@ -201,10 +214,25 @@ export default {
       return columns || []
     },
     columnNames () {
-      return this.selectItems && this.selectItems.map(s => s.internal_name)
+      return this.columns && this.columns.map(s => s.internal_name)
     },
     tableId () {
       return this.table.id
+    },
+    columns () {
+      if (!this.table) {
+        return []
+      }
+      return this.table.columns
+    },
+    tables () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.tables
+    },
+    database () {
+      return this.$store.state.database
     },
     viewLink () {
       return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
@@ -252,46 +280,21 @@ export default {
       handler () {
         this.buildQuery()
       }
+    },
+    table () {
+      this.select = []
     }
   },
   mounted () {
-    this.loadTables()
-      .then(() => this.selectTable())
-      .then(() => this.loadColumns())
-    this.loadViews()
+    this.selectTable()
   },
   methods: {
-    async loadTables () {
-      try {
-        this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, this.config)
-        this.tables = res.data
-        console.debug('tables', this.tables)
-      } catch (err) {
-        this.$toast.error('Could not list table')
-      }
-      this.loadingTables = false
-    },
     validViewName (name) {
       if (!name) {
         return false
       }
       const names = this.views.map(v => v.name)
       return names.includes(name.toLowerCase())
-    },
-    async loadViews () {
-      if (this.mode !== 'view') {
-        return
-      }
-      try {
-        this.loadingTables = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.config)
-        this.views = res.data
-        console.debug('views', this.views)
-      } catch (err) {
-        this.$toast.error('Could not list views')
-      }
-      this.loadingTables = false
     },
     selectTable () {
       if (this.$route.query.tid === undefined) {
@@ -312,7 +315,10 @@ export default {
         await this.createView()
         return
       }
-      await this.$refs.queryResults.executeFirstTime(this, this.sql)
+      if (this.timestamp === '') {
+        this.timestamp = null
+      }
+      await this.$refs.queryResults.executeFirstTime(this, this.sql, this.timestamp)
     },
     async createView () {
       this.loadingQuery = true
@@ -322,6 +328,7 @@ export default {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
         this.resultId = res.data.id
         console.debug('view', res.data)
+        await this.loadDatabase()
       } catch (err) {
         console.error('Failed to create view', err)
         this.$toast.error(err.response.data.message)
@@ -341,7 +348,7 @@ export default {
       }
       try {
         this.loadingQuery = true
-        const res = await this.$axios.post(url, data)
+        const res = await this.$axios.post(url, data, { progress: false })
         if (res && !res.error) {
           this.query = res.data
         }
@@ -350,19 +357,20 @@ export default {
       }
       this.loadingQuery = false
     },
-    async loadColumns () {
-      if (!this.tableId) {
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
         return
       }
       try {
-        this.loadingColumns = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.tableId}`, this.config)
-        this.tableDetails = res.data
-        this.buildQuery()
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
       } catch (err) {
-        this.$toast.error('Could not get table details')
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
       }
-      this.loadingColumns = false
+      this.loading = false
     }
   }
 }

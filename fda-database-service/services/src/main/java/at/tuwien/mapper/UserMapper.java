@@ -1,6 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.user.GrantedAuthorityDto;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import org.mapstruct.Mapper;
@@ -13,6 +14,8 @@ public interface UserMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserMapper.class);
 
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
+
+    UserBriefDto userDtoToUserBriefDto(UserDto data);
 
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());

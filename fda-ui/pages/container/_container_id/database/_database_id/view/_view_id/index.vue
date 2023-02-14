@@ -2,13 +2,12 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
       <v-toolbar-title>
-        <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-        <span v-if="!loadingView">{{ view.name }}</span>
+        <span v-if="cachedView.name">{{ cachedView.name }}</span>
       </v-toolbar-title>
     </v-toolbar>
     <v-card flat tile>
@@ -19,24 +18,33 @@
         <v-list dense>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="view.database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
+              <v-icon v-if="!database">mdi-database-outline</v-icon>
+              <v-icon v-if="database" :color="database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 Database Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-                <span v-if="!loadingView && view.database.is_public">Public</span>
-                <span v-if="!loadingView && !view.database.is_public">Private</span>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-xsmall" />
+                <span v-if="database && database.is_public">Public</span>
+                <span v-if="database && !database.is_public">Private</span>
               </v-list-item-content>
-              <v-list-item-title v-if="view.database.name" class="mt-2">
+              <v-list-item-title class="mt-2">
                 Database Name
               </v-list-item-title>
-              <v-list-item-content v-if="view.database.name">
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-                <span v-if="!loadingView">{{ view.database.name }}</span>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database">{{ database.name }}</span>
               </v-list-item-content>
+              <div v-if="database && database.identifier">
+                <v-list-item-title class="mt-2">
+                  Database License
+                </v-list-item-title>
+                <v-list-item-content>
+                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                </v-list-item-content>
+              </div>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
@@ -48,40 +56,38 @@
                 Query Statement
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-large" />
-                <pre v-if="!loadingView">{{ view.query }}</pre>
+                <v-skeleton-loader v-if="!cachedView.query" type="text" />
+                <v-skeleton-loader v-if="!cachedView.query" type="text" class="skeleton-large" />
+                <pre v-if="cachedView.query">{{ cachedView.query }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 View Creator
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-                <span v-if="!loadingView">
-                  {{ creator }} <sup>
-                    <v-icon v-if="view.creator.email_verified" small color="primary">mdi-check-decagram</v-icon>
-                  </sup>
-                </span>
+                <v-skeleton-loader v-if="!creator" type="text" class="skeleton-medium" />
+                <span v-if="creator">{{ creator }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 View Creation
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-small" />
-                <span v-if="!loadingView">{{ executionUTC }}</span>
+                <v-skeleton-loader v-if="!cachedView.created" type="text" class="skeleton-medium" />
+                <span v-if="cachedView.created">{{ formatUTC(cachedView.created) }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
           <v-list-item>
             <v-list-item-icon>
-              <v-icon :color="view.is_public ? 'success' : 'error'">mdi-view-carousel-outline</v-icon>
+              <v-icon v-if="cachedView.is_public === null">mdi-view-carousel-outline</v-icon>
+              <v-icon v-if="cachedView.is_public !== null" :color="cachedView.is_public ? 'success' : 'error'">mdi-view-carousel-outline</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 View Visibility
               </v-list-item-title>
               <v-list-item-content>
-                <v-skeleton-loader v-if="loadingView" type="text" class="skeleton-xsmall" />
-                <span v-if="!loadingView">{{ view.is_public ? 'Public' : 'Private' }}</span>
+                <v-skeleton-loader v-if="cachedView.is_public === null" type="text" class="skeleton-xsmall" />
+                <span v-if="cachedView.is_public !== null">{{ cachedView.is_public ? 'Public' : 'Private' }}</span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -91,14 +97,13 @@
     <QueryResults
       id="query-results"
       ref="queryResults"
-      v-model="view.id"
       type="view"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   data () {
@@ -106,27 +111,13 @@ export default {
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, activeClass: '' },
-        { text: 'View', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, activeClass: '' },
-        { text: `${this.$route.params.query_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, activeClass: '' }
+        { text: 'Views', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, activeClass: '' },
+        { text: `${this.$route.params.view_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, activeClass: '' }
       ],
       view: {
-        id: parseInt(this.$route.params.view_id),
-        query: null,
-        query_hash: null,
-        is_public: null,
-        name: null,
-        created: null,
-        database: {
-          is_public: null,
-          name: null
-        },
-        creator: {
-          username: null,
-          firstname: null,
-          lastname: null
-        }
+        id: null /* only loaded if user has access to view */
       },
-      loadingView: false,
+      loadingView: true,
       error: false
     }
   },
@@ -146,28 +137,38 @@ export default {
     user () {
       return this.$store.state.user
     },
-    is_owner () {
-      return this.token && this.view.creator.username === this.user.username
+    database () {
+      return this.$store.state.database
     },
-    view_visibility () {
-      return this.view.is_public
+    views () {
+      if (!this.database) {
+        return []
+      }
+      return this.$store.state.database.views
+    },
+    cachedView () {
+      if (!this.database) {
+        return {
+          id: null,
+          name: null,
+          query: null,
+          created: null,
+          is_public: null
+        }
+      }
+      const filter = this.views.filter(v => v.id === Number(this.$route.params.view_id))
+      return filter.length === 1 ? filter[0] : null
     },
     creator () {
-      if (this.view.creator.username === null) {
+      if (!this.view) {
         return null
       }
-      if (this.view.creator.firstname === null || this.view.creator.lastname === null) {
-        return this.view.creator.username
-      }
-      return this.view.creator.firstname + ' ' + this.view.creator.lastname
-    },
-    executionUTC () {
-      return formatTimestampUTCLabel(this.view.created)
+      return formatUser(this.view.creator)
     }
   },
   mounted () {
     this.loadView()
-      .then(() => this.loadResult())
+    this.loadResult(this.$route.params.view_id)
   },
   methods: {
     async loadView () {
@@ -185,8 +186,14 @@ export default {
       }
       this.loadingView = false
     },
-    loadResult () {
-      this.$refs.queryResults.reExecute(this.view.id)
+    loadResult (viewId) {
+      if (!viewId) {
+        return
+      }
+      this.$refs.queryResults.reExecute(viewId)
+    },
+    formatUTC (timestamp) {
+      return formatTimestampUTCLabel(timestamp)
     }
   }
 }

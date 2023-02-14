@@ -1,10 +1,7 @@
 package at.tuwien.service;
 
-import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.ExportResource;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
@@ -24,18 +21,17 @@ public interface IdentifierService {
      * @param databaseId Optional. The database id.
      * @return List of identifiers
      */
-    List<Identifier> findAll(Long databaseId, Long queryId);
+    List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException;
 
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @param queryId     The query id.
+     * @param databaseId The database id.
+     * @param queryId    The query id.
      * @return The identifier, if found.
      * @throws IdentifierNotFoundException No identifier with the query id was found.
      */
-    Identifier find(Long containerId, Long databaseId, Long queryId) throws IdentifierNotFoundException;
+    Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException;
 
     /**
      * Finds all identifiers

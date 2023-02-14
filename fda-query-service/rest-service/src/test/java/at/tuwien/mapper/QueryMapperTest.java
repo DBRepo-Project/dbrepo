@@ -1,47 +1,23 @@
 package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.ImageNotSupportedException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.jpa.TableRepository;
-import at.tuwien.service.QueryService;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.io.File;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.doReturn;
 
@@ -55,6 +31,9 @@ public class QueryMapperTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private IndexConfig indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

@@ -3,10 +3,12 @@ package at.tuwien.api.database.table.columns;
 import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,7 +19,17 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "columnindex", createIndex = false)
 public class ColumnDto {
+
+    @JsonIgnore
+    private Long containerId;
+
+    @JsonIgnore
+    private Long databaseId;
+
+    @JsonIgnore
+    private Long tableId;
 
     @NotNull
     private Long id;
@@ -52,6 +64,11 @@ public class ColumnDto {
     private ConceptDto concept;
 
     private UnitDto unit;
+
+    @NotNull
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
 
     @NotNull
     @Schema(example = "true")

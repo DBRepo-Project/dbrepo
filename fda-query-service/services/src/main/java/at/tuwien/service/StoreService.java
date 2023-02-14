@@ -50,10 +50,8 @@ public interface StoreService {
      *
      * @param containerId The container id.
      * @param databaseId  The database id.
-     * @param result      The query.
      * @param metadata    The statement.
      * @param principal   The user principal.
-     * @param execution   The execution time.
      * @return The stored query on success
      * @throws QueryStoreException         The query store raised some error
      * @throws DatabaseNotFoundException   The database id was not found in the metadata database
@@ -63,8 +61,7 @@ public interface StoreService {
      * @throws DatabaseConnectionException The database connection to the remote container failed.
      * @throws TableMalformedException     The table is malformed and the tuple could not be inserted.
      */
-    Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                 Principal principal, Instant execution) throws QueryStoreException,
+    Query insert(Long containerId, Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException,
             DatabaseConnectionException, TableMalformedException;
 

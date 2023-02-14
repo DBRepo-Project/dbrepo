@@ -25,7 +25,6 @@ stages:
   - test-backend
   - build-docker
   - release
-  - deploy
 
 build-backend-metadata-db:
   stage: build-backend
@@ -111,13 +110,32 @@ test-backend-authentication:
     - build-backend-authentication
   script:
     - "make test-authentication-service"
-
+    - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-authentication-service/report/target/site/jacoco-aggregate/
+      - ./fda-authentication-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-authentication-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 test-backend-identifier:
   stage: test-backend
   needs:
     - build-backend-authentication
   script:
     - "make test-identifier-service"
+    - "cat ./fda-identifier-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-identifier-service/report/target/site/jacoco-aggregate/
+      - ./fda-identifier-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-identifier-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-container:
   stage: test-backend
@@ -125,6 +143,16 @@ test-backend-container:
     - build-backend-container
   script:
     - "make test-container-service"
+    - "cat ./fda-container-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-container-service/report/target/site/jacoco-aggregate/
+      - ./fda-container-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-container-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-database:
   stage: test-backend
@@ -133,6 +161,16 @@ test-backend-database:
   script:
     - "docker pull elasticsearch:7.13.4"
     - "make test-database-service"
+    - "cat ./fda-database-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-database-service/report/target/site/jacoco-aggregate/
+      - ./fda-database-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-database-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-discovery:
   stage: test-backend
@@ -140,6 +178,16 @@ test-backend-discovery:
     - build-backend-discovery
   script:
     - "make test-discovery-service"
+    - "cat ./fda-discovery-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-discovery-service/report/target/site/jacoco-aggregate/
+      - ./fda-discovery-service/discovery/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-discovery-service/discovery/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-query:
   stage: test-backend
@@ -147,6 +195,16 @@ test-backend-query:
     - build-backend-query
   script:
     - "make test-query-service"
+    - "cat ./fda-query-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-query-service/report/target/site/jacoco-aggregate/
+      - ./fda-query-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-query-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-table:
   stage: test-backend
@@ -154,6 +212,16 @@ test-backend-table:
     - build-backend-table
   script:
     - "make test-table-service"
+    - "cat ./fda-table-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-table-service/report/target/site/jacoco-aggregate/
+      - ./fda-table-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-table-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-metadata:
   stage: test-backend
@@ -161,6 +229,16 @@ test-backend-metadata:
     - build-backend-metadata
   script:
     - "make test-metadata-service"
+    - "cat ./fda-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-metadata-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-backend-gateway:
   stage: test-backend
@@ -168,6 +246,16 @@ test-backend-gateway:
     - build-backend-gateway
   script:
     - "make test-gateway-service"
+    - "cat ./fda-gateway-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-gateway-service/report/target/site/jacoco-aggregate/
+      - ./fda-metadata-service/gateway/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./fda-gateway-service/gateway/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-semantics-service:
   stage: test-backend
@@ -175,6 +263,15 @@ test-semantics-service:
     - build-semantics-service
   script:
     - "make test-semantics-service"
+    - "cat ./fda-semantics-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-semantics-service/report.xml
+    expire_in: 1 days
+    reports:
+      junit: ./fda-semantics-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-analyse-service:
   stage: test-backend
@@ -182,6 +279,15 @@ test-analyse-service:
     - build-analyse-service
   script:
     - "make test-analyse-service"
+    - "cat ./fda-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-analyse-service/report.xml
+    expire_in: 1 days
+    reports:
+      junit: ./fda-analyse-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 build-docker:
   stage: build-docker
@@ -230,19 +336,3 @@ release-version:
     - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
     - TAG=1.2 make release
-
-deploy-dbrepo2:
-  stage: deploy
-  needs:
-    - release-latest
-  only:
-    refs:
-      - dev
-  script:
-    - "cat ./.dbrepo2/known_hosts > ~/.ssh/known_hosts"
-    - "scp ./.dbrepo2/known_hosts demo@dbrepo2.ec.tuwien.ac.at:/home/demo/.ssh/known_hosts"
-    - "scp ./Makefile demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./docker-compose.dbrepo2.yml demo@dbrepo2.ec.tuwien.ac.at:/home/demo/docker-compose.dbrepo2.yml"
-    - "scp ./.dbrepo2/deploy demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "scp ./.dbrepo2/teardown demo@dbrepo2.ec.tuwien.ac.at:/home/demo"
-    - "ssh demo@dbrepo2.ec.tuwien.ac.at '/bin/bash deploy'"

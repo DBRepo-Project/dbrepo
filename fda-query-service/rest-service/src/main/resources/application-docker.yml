@@ -42,3 +42,7 @@ fda:
   ready.path: /ready
   consumers: 2
   unsupported: "${NOT_SUPPORTED_KEYWORDS}"
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: "${ELASTIC_PASSWORD}"

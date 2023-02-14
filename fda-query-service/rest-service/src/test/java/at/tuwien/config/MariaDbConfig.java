@@ -19,8 +19,8 @@ public class MariaDbConfig {
         log.trace("connect to database {}", jdbc);
         final Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb");
         final Statement statement = connection.createStatement();
-        statement.execute("INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number) VALUES ('" +
-                username + "', '" + query.getQuery() + "', '" + query.getQuery() + "', true, '" + query.getQueryHash() + "', '" + query.getResultHash() + "', " + query.getResultNumber() + ")");
+        statement.execute("INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number) " +
+                "VALUES ('" + username + "', '" + query.getQuery() + "', '" + query.getQuery() + "', true, '" + query.getQueryHash() + "', '" + query.getResultHash() + "', " + query.getResultNumber() + ")");
         connection.close();
     }
 
@@ -41,5 +41,15 @@ public class MariaDbConfig {
             }
         }
         return rows;
+    }
+
+    public static void execute(String hostname, String database, String query)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb")) {
+            final Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        }
     }
 }

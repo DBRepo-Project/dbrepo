@@ -2,12 +2,12 @@ package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -20,41 +20,54 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Document(indexName = "tableindex", createIndex = false)
 public class TableDto {
+
+    @JsonIgnore
+    private Long containerId;
+
+    @JsonIgnore
+    private Long databaseId;
 
     @NotNull
     private Long id;
 
-    @NotBlank
+    @NotBlank(message = "name is required")
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank
+    @NotBlank(message = "internalName is required")
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
-    @NotNull
+    @NotNull(message = "creator is required")
     private UserBriefDto creator;
 
-    @NotBlank
+    @NotBlank(message = "queueName is required")
     @JsonProperty("queue_name")
-    @Schema(example = "dbrepo/4/4/2")
+    @Schema(example = "dbrepo/air_quality/air_quality")
     private String queueName;
 
-    @NotBlank
+    @NotBlank(message = "routingKey is required")
     @JsonProperty("routing_key")
-    @Schema(example = "dbrepo/4/4/2/1")
+    @Schema(example = "dbrepo/air_quality/air_quality/1")
     private String routingKey;
 
-    @NotBlank
+    @NotBlank(message = "description is required")
     @Schema(example = "Air Quality in Austria")
     private String description;
+
+    @NotNull(message = "isPublic is required")
+    @JsonProperty("is_public")
+    @Schema(example = "true")
+    private Boolean isPublic;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
-    @NotNull
+    @NotNull(message = "columns are required")
+    @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 
 }

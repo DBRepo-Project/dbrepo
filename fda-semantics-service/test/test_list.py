@@ -54,19 +54,24 @@ class ListUnitTest(unittest.TestCase):
         response = list.get_unit_uri("minute (hour angle)")
         self.assertEqual(exp, response)
 
-    def test_get_concept_uri_hasSpaces_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q998319"}
+    def test_get_concept_label_succeeds(self):
+        exp = {"label": "entity"}
 
         # test
-        response = list.get_concept_uri("flight recorder")
+        response = list.get_concept_label("Q35120")
         self.assertEqual(exp, response)
 
-    def test_get_concept_uri_succeeds(self):
-        exp = {"uri": "http://www.wikidata.org/entity/Q235783"}
+    def test_get_unit_label_succeeds(self):
+        exp = {"label": "minute (hour angle)"}
 
         # test
-        response = list.get_concept_uri("flashlight")
+        response = list.get_unit_label("http://www.ontology-of-units-of-measure.org/resource/om-2/minute-HourAngle")
         self.assertEqual(exp, response)
+
+    def test_get_unit_label_not_found_fails(self):
+        # test
+        response = list.get_unit_label("http://www.ontology-of-units-of-measure.org/resource/om-2/minute-HourAngles")
+        self.assertEqual(None, response)
 
 
 if __name__ == '__main__':

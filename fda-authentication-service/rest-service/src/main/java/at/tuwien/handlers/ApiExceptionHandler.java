@@ -5,7 +5,6 @@ import at.tuwien.exception.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,6 +32,17 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .message(e.getLocalizedMessage())
                 .code("error.auth.malformed")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.auth.notallowed")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

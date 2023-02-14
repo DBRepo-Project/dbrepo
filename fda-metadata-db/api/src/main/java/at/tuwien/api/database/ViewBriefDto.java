@@ -1,6 +1,8 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -28,6 +30,7 @@ public class ViewBriefDto {
     private String name;
 
     @NotBlank
+    @JsonProperty("internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
@@ -48,9 +51,11 @@ public class ViewBriefDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
-    @NotNull
-    @JsonProperty("created_by")
+    @JsonIgnore
     private Long createdBy;
+
+    @NotNull
+    private UserDto creator;
 
     @JsonProperty("last_modified")
     @Schema(example = "2020-08-04 11:12:00")

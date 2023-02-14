@@ -5,6 +5,7 @@ import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.jpa.DatabaseRepository;
@@ -57,7 +58,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
-            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.FANOUT, true);
+            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.DIRECT, true);
             log.info("Declared exchange {}", database.getExchangeName());
         } catch (IOException e) {
             log.error("Failed to declare exchange {}", database.getExchangeName());
@@ -66,7 +67,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException {
+    public void updatePermissions(Principal principal) throws BrokerVirtualHostGrantException {
         final List<Database> databases = databaseRepository.findAllByUsername(principal.getName());
         final GrantVirtualHostPermissionsDto permissions = amqpMapper.databasesToGrantVirtualHostPermissionsDto(databases);
         log.trace("mapped permissions {}", permissions);

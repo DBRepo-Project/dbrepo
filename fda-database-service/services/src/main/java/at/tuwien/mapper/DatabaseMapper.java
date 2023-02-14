@@ -28,7 +28,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
@@ -205,8 +205,22 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `mariadb`@`%`;");
+    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection, User user)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.trace("statement={}", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawFlushPrivileges(Connection connection) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("FLUSH PRIVILEGES;");
         log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());
@@ -242,7 +256,7 @@ public interface DatabaseMapper {
                 .huserid(user.getId())
                 .type(AccessType.WRITE_ALL)
                 .build();
-        log.debug("give default creator access to database with id {} to user with username {}", database.getId(), user.getUsername());
+        log.debug("give default owner access to database with id {} to user with username {}", database.getId(), user.getUsername());
         return access;
     }
 

@@ -1,16 +1,23 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
+import at.tuwien.entities.identifier.Creator;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.IdentifierRequestException;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
@@ -19,6 +26,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -33,8 +42,10 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,6 +59,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
+    private IndexInitializer indexInitializer;
+
+    @MockBean
     private IdentifierRepository identifierRepository;
 
     @MockBean
@@ -59,6 +73,18 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private PersistenceEndpoint persistenceEndpoint;
 
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        objectMapper.registerModule(new Jdk8Module());
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return objectMapper;
+    }
+
     @Test
     public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
@@ -66,12 +92,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of());
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_4_ID))
+                .thenReturn(Optional.of(IDENTIFIER_4));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -98,7 +123,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -121,11 +145,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
         assertEquals(compare.getPublisher(), body.getPublisher());
         assertEquals(compare.getCreators().size(), body.getCreators().size());
-        assertEquals(compare.getCreators().get(0).getId(), body.getCreators().get(0).getId());
-        assertEquals(compare.getCreators().get(0).getFirstname(), body.getCreators().get(0).getFirstname());
-        assertEquals(compare.getCreators().get(0).getLastname(), body.getCreators().get(0).getLastname());
-        assertEquals(compare.getCreators().get(0).getAffiliation(), body.getCreators().get(0).getAffiliation());
-        assertEquals(compare.getCreators().get(0).getOrcid(), body.getCreators().get(0).getOrcid());
+        final CreatorDto creator1 = body.getCreators().get(0);
+        assertEquals(compare.getCreators().get(0).getFirstname(), creator1.getFirstname());
+        assertEquals(compare.getCreators().get(0).getLastname(), creator1.getLastname());
+        assertEquals(compare.getCreators().get(0).getAffiliation(), creator1.getAffiliation());
+        assertEquals(compare.getCreators().get(0).getOrcid(), creator1.getOrcid());
     }
 
     @Test
@@ -157,8 +181,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata0.xml")));
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of());
-        IDENTIFIER_1.setCreated(IDENTIFIER_1_CREATED);
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -178,8 +200,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata1.xml")));
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
-        IDENTIFIER_1.setCreated(IDENTIFIER_1_CREATED);
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -200,7 +220,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -220,12 +239,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of());
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_4_ID))
+                .thenReturn(Optional.of(IDENTIFIER_4));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -240,7 +258,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -260,12 +277,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1, CREATOR_2));
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_2_ID))
+                .thenReturn(Optional.of(IDENTIFIER_2));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -280,12 +296,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1, CREATOR_2, CREATOR_3));
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_3_ID))
+                .thenReturn(Optional.of(IDENTIFIER_3));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_3_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -300,12 +315,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of());
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_4_ID))
+                .thenReturn(Optional.of(IDENTIFIER_4));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -320,7 +334,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -340,12 +353,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1, CREATOR_2));
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_2_ID))
+                .thenReturn(Optional.of(IDENTIFIER_2));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -360,12 +372,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of());
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_4_ID))
+                .thenReturn(Optional.of(IDENTIFIER_4));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -380,7 +391,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1));
         when(identifierRepository.findById(IDENTIFIER_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
@@ -400,12 +410,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        IDENTIFIER_1.setCreators(List.of(CREATOR_1, CREATOR_2));
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.findById(IDENTIFIER_2_ID))
+                .thenReturn(Optional.of(IDENTIFIER_2));
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);

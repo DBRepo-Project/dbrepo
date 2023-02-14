@@ -11,7 +11,7 @@
             color="info">
             If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
           </v-alert>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.username"
@@ -22,7 +22,7 @@
                 label="Username *" />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row dense>
             <v-col sm="6">
               <v-text-field
                 v-model="loginAccount.password"
@@ -125,7 +125,7 @@ export default {
         const res = await this.$axios.put('/api/auth', {}, this.config)
         this.$store.commit('SET_USER', res.data)
         this.$vuetify.theme.dark = res.data.theme_dark
-        await this.$router.push(this.$route.query.redirect ? this.$route.query.redirect : '/container')
+        await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
         const { message } = error.response
         console.error('Failed to load user information', error)

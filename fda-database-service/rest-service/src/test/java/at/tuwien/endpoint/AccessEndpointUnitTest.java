@@ -5,7 +5,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.entities.database.Database;
@@ -39,7 +39,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private Channel channel;
@@ -100,6 +100,21 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_OWNER_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void create_noAccessGiveAccess_fails() {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.empty());
+
+        /* test */
+        assertThrows(UserNotFoundException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
@@ -205,6 +220,8 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_readOwnerUserNotFound_fails() {
 
         /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.empty());
 

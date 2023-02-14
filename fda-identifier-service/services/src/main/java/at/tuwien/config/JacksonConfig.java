@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.Date;
 import java.util.TimeZone;
@@ -17,6 +18,7 @@ import java.util.TimeZone;
 public class JacksonConfig {
 
     @Bean
+    @Primary
     public ObjectMapper objectMapper() throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.findAndRegisterModules();

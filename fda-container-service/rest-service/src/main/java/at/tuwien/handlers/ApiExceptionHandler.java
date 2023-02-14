@@ -36,6 +36,61 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.container.notallowed")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ImageInvalidException.class)
+    public ResponseEntity<ApiErrorDto> handle(ImageInvalidException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.image.invalid")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ContainerAlreadyRemovedException.class)
+    public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyRemovedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.container.alreadyremoved")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ContainerAlreadyRunningException.class)
+    public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyRunningException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.container.alreadyrunning")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ContainerAlreadyStoppedException.class)
+    public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyStoppedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.container.alreadystopped")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ContainerNotRunningException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerNotRunningException e, WebRequest request) {

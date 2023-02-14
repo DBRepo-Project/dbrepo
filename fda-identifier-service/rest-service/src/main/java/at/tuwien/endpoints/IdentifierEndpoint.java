@@ -48,11 +48,19 @@ public class IdentifierEndpoint extends AbstractEndpoint {
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
-                                                    @RequestParam(required = false) Long qid) {
-        log.debug("endpoint find identifiers, dbid={}, qid={}", dbid, qid);
+                                                    @RequestParam(required = false) Long qid,
+                                                    @RequestParam(required = false) IdentifierTypeDto type)
+            throws IdentifierNotFoundException {
+        log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
         final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
+                .filter(i -> {
+                    if (type != null) {
+                        return i.getType().equals(type);
+                    }
+                    return true;
+                })
                 .collect(Collectors.toList());
         log.info("Find identifiers resulted in {} identifiers", identifiers.size());
         log.trace("endpoint find identifiers, list={}", dto);

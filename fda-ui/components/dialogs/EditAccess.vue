@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit" autocomplete="off">
+    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
@@ -21,7 +21,7 @@
             <v-col>
               <v-autocomplete
                 v-model="modify.username"
-                :items="users"
+                :items="eligableUsers"
                 :loading="loadingUsers"
                 :rules="[v => !!v || $t('Required')]"
                 required
@@ -39,7 +39,7 @@
             <v-col>
               <v-select
                 v-model="modify.type"
-                :items="types"
+                :items="accessTypes"
                 :rules="[v => !!v || $t('Required')]"
                 required
                 label="Access type" />
@@ -72,16 +72,10 @@
 <script>
 export default {
   props: {
-    database: {
-      type: Object,
+    username: {
+      type: String,
       default () {
-        return {}
-      }
-    },
-    access: {
-      type: Object,
-      default () {
-        return {}
+        return null
       }
     }
   },
@@ -119,8 +113,21 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
+    database () {
+      return this.$store.state.database
+    },
     title () {
-      return (!this.isModification ? 'Give' : 'Modify') + ' database access' + (!this.isModification ? '' : ` of ${this.access.user.username}`)
+      return (!this.isModification ? 'Give' : 'Modify') + ' database access' + (!this.isModification ? '' : ` of ${this.username}`)
+    },
+    accessTypes () {
+      if (!this.isModification) {
+        /* give access cannot revoke access */
+        return this.types.filter(t => t.value !== 'revoke')
+      }
+      return this.types
+    },
+    eligableUsers () {
+      return this.users.filter(u => !this.database.accesses.map(a => a.user.id).includes(u.id))
     },
     buttonColor () {
       if (this.modify.type && this.modify.type === 'revoke') {
@@ -129,10 +136,7 @@ export default {
       return 'warning'
     },
     isModification () {
-      if (this.access == null) {
-        return false
-      }
-      return this.access.user !== null
+      return this.username !== null
     },
     explanation () {
       switch (this.modify.type) {
@@ -151,23 +155,16 @@ export default {
     }
   },
   watch: {
-    access (newVal, oldVal) {
-      if (newVal == null) {
+    username (val) {
+      if (!val || this.users.length === 0) {
         this.modify.username = null
-        this.modify.type = null
-      } else {
-        this.modify.username = newVal.user.username
-        this.modify.type = newVal.type
       }
+      this.selectUser()
     }
   },
   mounted () {
     this.loadUsers()
-    if (this.access === null) {
-      return
-    }
-    this.modify.username = this.access.user.username
-    this.modify.type = this.access.type
+      .then(() => this.selectUser())
   },
   methods: {
     submit () {
@@ -188,12 +185,11 @@ export default {
       }
     },
     async revokeAccess () {
-      const username = this.modify.username
       this.loading = true
       try {
-        const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, this.config)
+        const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.username}`, this.config)
         console.debug('revoke access', res.data)
-        this.$toast.success(`Successfully revoked access of ${username}`)
+        this.$toast.success(`Successfully revoked access of ${this.username}`)
         this.$emit('close-dialog', { success: true })
       } catch (err) {
         console.log('revoke access', err)
@@ -202,10 +198,9 @@ export default {
       this.loading = false
     },
     async modifyAccess () {
-      const username = this.modify.username
       this.loading = true
       try {
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${username}`, {
+        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.username}`, {
           type: this.modify.type
         }, this.config)
         console.debug('give access', res.data)
@@ -246,11 +241,18 @@ export default {
         const res = await this.$axios.get('/api/user', this.config)
         this.users = res.data.filter(u => u.username !== this.database.creator.username)
         console.debug('users', this.users)
-      } catch (err) {
-        console.log('users', err)
-        this.$toast.error('Failed to load users')
+      } catch (error) {
+        console.error('Failed to load users', error)
+        const { message } = error.response.data
+        this.$toast.error(`Failed to load users: ${message}`)
       }
       this.loadingUsers = false
+    },
+    selectUser () {
+      const optional = this.users.filter(u => u.username === this.username)
+      if (optional.length > 0) {
+        this.modify.username = optional[0]
+      }
     }
   }
 }

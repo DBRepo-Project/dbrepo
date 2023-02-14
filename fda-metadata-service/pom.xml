@@ -14,6 +14,20 @@
     <name>fda-metadata-service</name>
     <description>Demo project for Spring Boot</description>
 
+    <url>https://dbrepo-docs.ossdip.at</url>
+    <developers>
+        <developer>
+            <name>Martin Weise</name>
+            <email>martin.weise@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Moritz Staudinger</name>
+            <email>moritz.staudinger@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+    </developers>
+
     <packaging>pom</packaging>
     <modules>
         <module>rest-service</module>
@@ -163,6 +177,30 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.7.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.0.0</version>
+<!--                <configuration>-->
+<!--                    <outputDirectory>docs</outputDirectory>-->
+<!--                </configuration>-->
+            </plugin>
+            <plugin>
+                <groupId>com.soebes.maven.plugins</groupId>
+                <artifactId>doxygen-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <haveDot>false</haveDot>
+                    <quiet>false</quiet>
+                    <projectName>This is a Test Project (basicReportTest)</projectName>
+                    <outputDirectory>docs</outputDirectory>
+                </configuration>
             </plugin>
         </plugins>
     </build>

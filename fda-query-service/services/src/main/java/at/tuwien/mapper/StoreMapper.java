@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
@@ -20,15 +21,21 @@ public interface StoreMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S[SS]")
             .withZone(ZoneId.of("UTC"));
 
-    default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, String query)
+    default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, ExecuteStatementDto data)
             throws QueryStoreException {
-        final String statement = "{call _store_query(?, ?, ?)}";
+        final String statement = "{call _store_query(?, ?, ?, ?)}";
         log.trace("statement={}", statement);
+        final Instant timestamp = data.getTimestamp() == null ? Instant.now() : data.getTimestamp();
         try {
             final CallableStatement ps = connection.prepareCall(statement);
             ps.setString(1, user.getUsername());
-            ps.setString(2, query);
-            ps.registerOutParameter(3, Types.BIGINT);
+            log.trace("param 1={}", user.getUsername());
+            ps.setString(2, data.getStatement());
+            log.trace("param 2={}", data.getStatement());
+            ps.setTimestamp(3, Timestamp.from(timestamp));
+            log.trace("param 3={}", Timestamp.from(timestamp));
+            ps.registerOutParameter(4, Types.BIGINT);
+            log.trace("out param 4={}", Types.BIGINT);
             return ps;
         } catch (SQLException e) {
             log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -41,6 +48,7 @@ public interface StoreMapper {
         if (persisted != null) {
             statement += " WHERE `is_persisted` = ?";
         }
+        statement += " ORDER BY `created` DESC";
         try {
             log.trace("mapped select all query '{}' to prepared statement", statement);
             final PreparedStatement preparedStatement = connection.prepareStatement(statement);
@@ -59,10 +67,11 @@ public interface StoreMapper {
         try {
             log.trace("mapped select one query '{}' to prepared statement", statement);
             final PreparedStatement pstmt = connection.prepareStatement(statement);
+            log.trace("queryId={}", queryId);
             pstmt.setLong(1, queryId);
             return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {},   reason: {}", statement, e.getMessage());
             throw new QueryStoreException("Failed to prepare statement", e);
         }
     }

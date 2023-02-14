@@ -1,7 +1,13 @@
 <template>
   <v-app>
     <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
-      <v-list-item>
+      <div>
+        <v-img
+          contain
+          class="logo"
+          :src="logo" />
+      </div>
+      <v-list-item class="mt-2">
         <v-list-item-content>
           <v-list-item-subtitle>
             {{ version }}
@@ -33,68 +39,74 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
-      <div>
-        <v-img
-          contain
-          class="logo"
-          :src="logo" />
-      </div>
     </v-navigation-drawer>
-    <v-app-bar fixed app>
-      <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
-      <v-spacer />
-      <v-btn
-        v-if="!token"
-        class="mr-2"
-        color="secondary"
-        @click="login">
-        <v-icon left>mdi-login</v-icon> Login
-      </v-btn>
-      <v-btn
-        v-if="!token"
-        class="mr-2"
-        color="primary"
-        to="/signup">
-        <v-icon left>mdi-account-plus</v-icon> Signup
-      </v-btn>
-      <v-btn v-if="user" to="/user" plain>
-        {{ user.username }} <sup v-if="isDeveloper">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon
-                color="primary"
-                small
-                v-bind="attrs"
-                v-on="on">mdi-check-decagram</v-icon>
-            </template>
-            <span>Developer</span>
-          </v-tooltip>
-        </sup>
-      </v-btn>
-      <v-menu v-if="user" bottom offset-y left>
-        <template v-slot:activator="{ on, attrs }">
-          <v-btn
-            icon
-            v-bind="attrs"
-            v-on="on">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item
-            v-for="locale in availableLocales"
-            :key="locale.code"
-            :to="switchLocalePath(locale.code)">
-            <v-list-item-title>{{ locale.name }}</v-list-item-title>
-          </v-list-item>
-          <v-list-item
-            v-if="token"
-            @click="logout">
-            Logout
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-app-bar>
+    <v-form ref="form" @submit.prevent="submit">
+      <v-app-bar fixed app>
+        <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
+        <v-text-field
+          v-model="search"
+          solo
+          flat
+          single-line
+          hide-details
+          placeholder="Search ..." />
+        <v-btn icon class="ml-2" type="submit" @click="retrieve">
+          <v-icon>mdi-magnify</v-icon>
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          v-if="!token"
+          class="mr-2"
+          color="secondary"
+          @click="login">
+          <v-icon left>mdi-login</v-icon> Login
+        </v-btn>
+        <v-btn
+          v-if="!token"
+          class="mr-2"
+          color="primary"
+          to="/signup">
+          <v-icon left>mdi-account-plus</v-icon> Signup
+        </v-btn>
+        <v-btn v-if="user" to="/user" plain>
+          {{ user.username }} <sup v-if="isDeveloper">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon
+                  color="primary"
+                  small
+                  v-bind="attrs"
+                  v-on="on">mdi-check-decagram</v-icon>
+              </template>
+              <span>Developer</span>
+            </v-tooltip>
+          </sup>
+        </v-btn>
+        <v-menu v-if="user" bottom offset-y left>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-for="locale in availableLocales"
+              :key="locale.code"
+              :to="switchLocalePath(locale.code)">
+              <v-list-item-title>{{ locale.name }}</v-list-item-title>
+            </v-list-item>
+            <v-list-item
+              v-if="token"
+              @click="logout">
+              Logout
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-app-bar>
+    </v-form>
     <v-main>
       <v-container>
         <nuxt />
@@ -131,7 +143,8 @@ export default {
       databases: [],
       loadingUser: true,
       loadingSearch: false,
-      loadingDatabases: false
+      loadingDatabases: false,
+      search: null
     }
   },
   computed: {
@@ -147,6 +160,9 @@ export default {
     },
     container () {
       return this.$store.state.container
+    },
+    table () {
+      return this.$store.state.table
     },
     database () {
       return this.$store.state.database
@@ -196,75 +212,35 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    '$route.params.table_id': {
+      handler (id, oldId) {
+        if (id !== oldId) {
+          this.loadTable()
+        }
+      },
+      deep: true,
+      immediate: true
     }
   },
   mounted () {
     this.loadUser()
     this.setTheme()
     this.loadDatabase()
+      .then(() => this.loadIdentifier())
+    this.loadTable()
     this.loadAccess()
+    if (this.$route.query && this.$route.query.q) {
+      this.search = this.$route.query.q
+    }
   },
   methods: {
-    icon (record) {
-      if (!record || !record._source) {
-        return null
-      }
-      switch (record._index) {
-        case 'databaseindex':
-          return 'mdi-database'
-        case 'tableindex':
-          return 'mdi-table'
-        case 'columnindex':
-          return 'mdi-view-column-outline'
-        default:
-          return 'mdi-lock-clock'
-      }
-    },
-    title (record) {
-      if (!record || !record._source) {
-        return null
-      }
-      const { item } = record._source
-      return item.name
-    },
-    subtitle (record) {
-      if (!record || !record._source) {
-        return null
-      }
-      const { item } = record._source
-      switch (record._index) {
-        case 'databaseindex':
-          return item.description
-        case 'tableindex':
-          return item.description
-        case 'columnindex':
-          return item.columnType
-        default:
-          return item.description
-      }
-    },
-    link (record) {
-      if (!record || !record._source) {
-        return null
-      }
-      const { item } = record._source
-      switch (record._index) {
-        case 'databaseindex':
-          return `/container/${item.id}/database/${item.id}`
-        case 'tableindex':
-          return `/container/${item.tdbid}/database/${item.tdbid}/table/${item.id}`
-        case 'columnindex':
-          return `/container/${item.cdbid}/database/${item.cdbid}/table/${item.tid}`
-        default:
-          return `/pid/${item.id}`
-      }
+    submit () {
+      this.$refs.form.validate()
     },
     login () {
       const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
-    },
-    navigate (item) {
-      this.$router.push(this.link(item))
     },
     logout () {
       this.$store.commit('SET_TOKEN', null)
@@ -272,23 +248,6 @@ export default {
       this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
-    },
-    async searchIndizes () {
-      this.loadingSearch = true
-      try {
-        const res = await this.$axios.get('/search/databaseindex,tableindex,columnindex/_search?q=*&terminate_after=50')
-        const { hits } = res.data
-        console.info('search results', hits.total.value)
-        console.debug('search results', hits.hits)
-        if (!hits || !hits.hits) {
-          this.searchResults = []
-        } else {
-          this.searchResults = hits.hits
-        }
-      } catch (err) {
-        console.error('Failed to load search results', err)
-      }
-      this.loadingSearch = false
     },
     async loadUser () {
       if (!this.token) {
@@ -330,6 +289,21 @@ export default {
       }
       this.loading = false
     },
+    async loadTable () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
+        this.$store.commit('SET_TABLE', res.data)
+        console.debug('table', this.table)
+      } catch (err) {
+        console.error('Could not load table', err)
+        this.$toast.error('Could not load table')
+      }
+      this.loading = false
+    },
     async loadAccess () {
       if (!this.$route.params.container_id || !this.$route.params.database_id) {
         return
@@ -352,9 +326,27 @@ export default {
       }
       this.loading = false
     },
+    async loadIdentifier () {
+      if ('identifier' in this.database) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
+        const db = this.database
+        db.identifier = res.data
+        this.$store.commit('SET_DATABASE', db)
+      } catch (err) {
+        console.error('Failed to load identifier', err)
+        this.$toast.error('Failed to load identifier')
+      }
+      this.loading = false
+    },
+    retrieve () {
+      this.$router.push({ path: '/search', query: { q: this.search } })
+    },
     setTheme () {
       if (!this.user || !this.user.theme_dark) {
-        this.$vuetify.theme.dark = false
         return
       }
       this.$vuetify.theme.dark = this.user.theme_dark

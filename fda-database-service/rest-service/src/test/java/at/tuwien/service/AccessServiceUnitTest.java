@@ -1,10 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.api.database.AccessTypeDto;
+import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -26,7 +29,6 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class AccessServiceUnitTest extends BaseUnitTest {
 
@@ -34,37 +36,22 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;
 
     @MockBean
+    private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    @MockBean
     private DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
-    private DatabaseRepository databaseRepository;
-
-    @Autowired
     private AccessService accessService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @BeforeEach
-    public void beforeEach() {
-        /* metadata database */
-        imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-    }
 
     @Test
     public void list_succeeds() throws AccessDeniedException {
@@ -112,6 +99,24 @@ public class AccessServiceUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+        });
+    }
+
+    @Test
+    public void update_isOwner_fails() {
+        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
+                .type(AccessTypeDto.READ)
+                .build();
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME, request);
         });
     }
 

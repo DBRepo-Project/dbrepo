@@ -5,7 +5,7 @@ import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -50,6 +50,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
+    private IndexConfig indexInitializer;
+
+    @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
     @MockBean
@@ -80,6 +83,26 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, null, USER_2_PRINCIPAL, DATABASE_1, null);
+        });
+    }
+
+    @Test
+    public void execute_emptyStatement_fails() {
+        final String statement = null;
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
+        });
+    }
+
+    @Test
+    public void execute_blankStatement_fails() {
+        final String statement = "";
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            generic_execute(CONTAINER_1_ID, DATABASE_1_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1, DATABASE_1_READ_ACCESS);
         });
     }
 

@@ -15,14 +15,14 @@
             <v-col>
               <v-text-field
                 id="title"
-                v-model="database.identifier.title"
+                v-model="identifier.title"
                 name="title"
                 :label="`${prefix} title *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
               <v-textarea
                 id="description"
-                v-model="database.identifier.description"
+                v-model="identifier.description"
                 name="description"
                 rows="2"
                 :label="`${prefix} description *`" />
@@ -32,7 +32,7 @@
             <v-col>
               <v-text-field
                 id="publisher"
-                v-model="database.identifier.publisher"
+                v-model="identifier.publisher"
                 name="publisher"
                 :label="`${prefix} publisher *`"
                 :rules="[v => !!v || $t('Required')]"
@@ -43,42 +43,28 @@
             <v-col cols="2">
               <v-text-field
                 id="publication-day"
-                v-model.number="database.identifier.publication_day"
+                v-model.number="identifier.publication_day"
                 type="number"
                 label="Publication day" />
             </v-col>
             <v-col cols="2">
               <v-text-field
                 id="publication-month"
-                v-model.number="database.identifier.publication_month"
+                v-model.number="identifier.publication_month"
                 type="number"
                 label="Publication month" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 id="publication-year"
-                v-model.number="database.identifier.publication_year"
+                v-model.number="identifier.publication_year"
                 type="number"
                 label="Publication year *"
                 :rules="[v => !!v || $t('Required')]"
                 required />
             </v-col>
           </v-row>
-          <v-row>
-            <v-col>
-              <v-select
-                id="visibility"
-                v-model="database.identifier.visibility"
-                :items="visibility"
-                item-value="value"
-                :disabled="database.is_public"
-                item-text="name"
-                :label="`${prefix} visibility *`"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
-          <v-row v-for="(creator,i) in database.identifier.creators" :key="`c-${i}`" dense>
+          <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
                 v-model="creator.firstname"
@@ -122,7 +108,7 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row v-for="(related,i) in database.identifier.related_identifiers" :key="`r-${i}`" dense>
+          <v-row v-for="(related,i) in identifier.related_identifiers" :key="`r-${i}`" dense>
             <v-col cols="4">
               <v-text-field
                 v-model="related.value"
@@ -151,6 +137,18 @@
               <v-btn color="error" icon x-small @click="deleteRelatedIdentifier(i)">
                 <v-icon>mdi-delete</v-icon>
               </v-btn>
+            </v-col>
+          </v-row>
+          <v-row v-if="isDatabase" dense>
+            <v-col>
+              <v-select
+                v-model="identifier.license"
+                return-object
+                :items="licenses"
+                item-text="identifier"
+                label="License *"
+                :rules="[ v => !!v || $t('Required') ]"
+                required />
             </v-col>
           </v-row>
           <v-row dense>
@@ -201,14 +199,24 @@ export default {
       formValid: false,
       loading: false,
       error: false, // XXX: `error` is never changed
-      visibility: [{
-        name: 'Public',
-        value: 'everyone'
+      licenses: [],
+      identifier: {
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
+        qid: parseInt(this.$route.params.query_id),
+        title: null,
+        description: null,
+        publisher: null,
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
+        license: null,
+        visibility: 'everyone',
+        type: this.type,
+        doi: null,
+        creators: [],
+        related_identifiers: []
       },
-      {
-        name: 'Only me',
-        value: 'self'
-      }],
       relatedTypes: [
         { value: 'DOI' },
         { value: 'URL' },
@@ -287,12 +295,6 @@ export default {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
-    isEdit () {
-      if (!this.database.identifier) {
-        return false
-      }
-      return this.database.identifier.id !== null
-    },
     isSubset () {
       return this.type === 'subset'
     },
@@ -317,25 +319,7 @@ export default {
     }
   },
   mounted () {
-    if (this.database.identifier) {
-      return
-    }
-    this.database.identifier = {
-      cid: parseInt(this.$route.params.container_id),
-      dbid: parseInt(this.$route.params.database_id),
-      qid: this.isSubset ? parseInt(this.$route.params.query_id) : null,
-      title: null,
-      description: null,
-      publisher: 'TU Wien',
-      publication_year: formatYearUTC(Date.now()),
-      publication_month: formatMonthUTC(Date.now()),
-      publication_day: formatDayUTC(Date.now()),
-      visibility: 'everyone',
-      type: this.type,
-      doi: null,
-      creators: [],
-      related_identifiers: []
-    }
+    this.loadLicenses()
   },
   methods: {
     cancel () {
@@ -367,8 +351,9 @@ export default {
       this.loading = true
       let res
       try {
-        res = await this.$axios.post('/api/identifier', this.database.identifier, this.config)
+        res = await this.$axios.post('/api/identifier', this.identifier, this.config)
         console.debug('persist', res.data)
+        await this.loadDatabase()
       } catch (err) {
         this.error = true
         this.loading = false
@@ -380,21 +365,35 @@ export default {
       this.$emit('close', { action: 'persisted' })
       this.loading = false
     },
-    async loadUser () {
+    async loadLicenses () {
       if (!this.token) {
         return
       }
       this.loading = true
-      let res
       try {
-        res = await this.$axios.put('/api/auth', null, {
-          headers: this.headers
-        })
-        this.user = res.data
-        console.debug('user data', res.data)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/license`, this.config)
+        this.licenses = res.data
+        console.debug('license', this.licenses)
+      } catch (error) {
+        console.error('Failed load licenses', error)
+        const { data } = error.response
+        const { message } = data
+        this.$toast.error(`Failed load licenses: ${message}`)
+      }
+      this.loading = false
+    },
+    async loadDatabase () {
+      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+        return
+      }
+      try {
+        this.loading = true
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        this.$store.commit('SET_DATABASE', res.data)
+        console.debug('database', this.database)
       } catch (err) {
-        this.$toast.error('Failed load user data')
-        console.error('load user data failed', err)
+        console.error('Could not load database', err)
+        this.$toast.error('Could not load database')
       }
       this.loading = false
     }

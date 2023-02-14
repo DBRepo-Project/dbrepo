@@ -1,213 +1,27 @@
 <template>
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
-    <v-card v-if="!loading && tables.length === 0" flat>
+    <v-card v-if="!loading && tables && tables.length === 0" flat>
       <v-card-text>
         (no tables)
       </v-card-text>
     </v-card>
-    <v-expansion-panels v-if="!loading && tables.length > 0" v-model="panel" accordion flat>
-      <v-expansion-panel v-for="(item,i) in tables" :key="i" @click="details(item)">
-        <v-expansion-panel-header>
-          <span>{{ item.name }}</span>
-        </v-expansion-panel-header>
-        <v-expansion-panel-content class="mb-2">
-          <v-row v-if="loadingDetails" dense>
-            <v-progress-linear color="primary" indeterminate />
-          </v-row>
-          <v-row v-if="!loadingDetails" dense>
-            <v-col>
-              <v-list dense>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Table ID
-                    </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.id " />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Table Description
-                    </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.description" />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Exchange Name (AMQP/MQTT)
-                    </v-list-item-title>
-                    <v-list-item-content v-text="database.exchange_name" />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="tableDetails.queue_name">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Queue Name (AMQP/MQTT)
-                    </v-list-item-title>
-                    <v-list-item-content v-text="tableDetails.queue_name" />
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="tableDetails.routing_key">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Routing Key (AMQP/MQTT)
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      <span v-text="tableDetails.routing_key" />
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="hasReadAccess">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      AMQP Consumer(s)
-                    </v-list-item-title>
-                    <v-list-item-content class="amqp-consumer">
-                      <span v-if="justCreated">Creating consumers ...</span>
-                      <span v-if="!justCreated" v-text="`${consumersUp}/${consumersTotal}`" />
-                      <v-badge
-                        v-if="!justCreated"
-                        class="ml-1"
-                        :color="consumersState.color"
-                        :content="consumersState.text" />
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Table Creator
-                    </v-list-item-title>
-                    <v-list-item-content>
-                      {{ formatCreator(item.creator) }}
-                      <span v-if="is_owner(item)" style="flex:none;">&nbsp;(you)</span>
-                    </v-list-item-content>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="createdUTC">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Table Creation
-                    </v-list-item-title>
-                    <v-list-item-content v-text="createdUTC" />
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
-          <v-row v-if="hasReadAccess" dense>
-            <v-col>
-              <v-btn small color="secondary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
-                View Data
-              </v-btn>
-              <v-btn v-if="canModify" small color="secondary" class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${item.id}`">
-                Create Subset
-              </v-btn>
-              <v-btn v-if="canModify" small class="ml-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}/import`">
-                Import csv
-              </v-btn>
-            </v-col>
-            <v-col v-if="false" class="align-right">
-              <v-btn outlined color="error" @click="showDeleteTableDialog(item.id)">
-                Delete
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row v-if="hasReadAccess && tableDetails.columns">
-            <v-data-table
-              class="full-width"
-              disable-sort
-              :loading="loadingDetails"
-              hide-default-footer
-              :items-per-page="-1"
-              :headers="headers"
-              :items="tableDetails.columns">
-              <template v-slot:item.is_null_allowed="{ item }">
-                <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
-              </template>
-              <template v-slot:item.unique="{ item }">
-                <span v-if="item.unique">●</span> {{ item.unique }}
-              </template>
-              <template v-slot:item.column_type="{ item }">
-                {{ columnName(item) }}
-              </template>
-              <template v-slot:item.is_primary_key="{ item }">
-                <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
-              </template>
-              <template v-slot:item.auto_generated="{ item }">
-                <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
-              </template>
-              <template v-slot:item.column_concept="{ item }">
-                <v-btn v-if="canModify && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
-                <v-btn
-                  v-if="canModify && hasConcept(item)"
-                  :title="item.concept.uri"
-                  color="secondary"
-                  small
-                  @click="pick(item, 'concept')">
-                  {{ item.concept.name }}
-                </v-btn>
-                <a v-if="!canModify && hasConcept(item)" :href="item.concept.uri" target="_blank">
-                  {{ item.concept.name }}
-                </a>
-              </template>
-              <template v-slot:item.column_unit="{ item }">
-                <v-btn v-if="canModify && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
-                <v-btn
-                  v-if="canModify && hasUnit(item)"
-                  :title="item.unit.uri"
-                  color="secondary"
-                  small
-                  @click="pick(item, 'unit')">
-                  {{ item.unit.name }}
-                </v-btn>
-                <a v-if="!canModify && hasUnit(item)" :href="item.unit.uri" target="_blank">
-                  {{ item.unit.name }}
-                </a>
-              </template>
-            </v-data-table>
-          </v-row>
-        </v-expansion-panel-content>
-      </v-expansion-panel>
-    </v-expansion-panels>
-    <v-dialog
-      v-model="dialogSemantic"
-      persistent
-      max-width="600px">
-      <DialogsSemantics
-        :column="column"
-        :mode="mode"
-        :table-id="tableDetails.id"
-        :database="database"
-        @close="closed" />
-    </v-dialog>
-    <v-dialog v-model="dialogDelete" max-width="640">
-      <v-card>
-        <v-card-title class="headline">
-          Delete
-        </v-card-title>
-        <v-card-text class="pb-1">
-          Are you sure you want to drop this table?
-        </v-card-text>
-        <v-card-actions class="pl-4 pb-4 pr-4">
-          <v-btn @click="dialogDelete = false">
-            Cancel
-          </v-btn>
-          <v-spacer />
-          <v-btn color="error" @click="deleteTable()">
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <div v-for="(item,i) in tables" :key="i">
+      <v-divider v-if="i !== 0" class="mx-4" />
+      <v-list-item-group>
+        <v-list-item two-line :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+          <v-list-item-content>
+            <v-list-item-title v-text="item.name" />
+            <v-list-item-subtitle class="mt-2" v-text="item.description" />
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-item-group>
+    </div>
   </div>
 </template>
 
 <script>
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   data () {
@@ -283,7 +97,7 @@ export default {
     },
     tables () {
       if (!this.database) {
-        return []
+        return null
       }
       return this.database.tables
     },
@@ -292,9 +106,6 @@ export default {
         headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
         progress: false
       }
-    },
-    justCreated () {
-      return new Date().getTime() - new Date(this.tableDetails.created).getTime() <= 60000
     },
     createdUTC () {
       if (this.tableDetails.created === undefined || this.tableDetails.created === null) {
@@ -326,21 +137,6 @@ export default {
       }
       return false
     },
-    consumersState () {
-      if (this.consumersTotal === 0) {
-        return { color: 'error', text: 'down' }
-      }
-      if (this.consumersTotal - this.consumersUp > 0) {
-        return { color: 'warning', text: 'up' }
-      }
-      return { color: 'success', text: 'up' }
-    },
-    consumersTotal () {
-      return this.consumers.length
-    },
-    consumersUp () {
-      return this.consumers.filter(c => c.active).length
-    },
     canModify () {
       if (!this.token || !this.user.username) {
         /* not yet loaded */
@@ -350,13 +146,9 @@ export default {
     }
   },
   mounted () {
-    this.$root.$on('table-create', this.refresh)
     this.pollConsumerStatus()
   },
   methods: {
-    formatCreator (creator) {
-      return formatUser(creator)
-    },
     pick (item, mode) {
       this.column = item
       this.mode = mode
@@ -405,6 +197,9 @@ export default {
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
+    },
+    created (created) {
+      return formatTimestampUTCLabel(created)
     },
     async deleteTable () {
       try {

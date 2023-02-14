@@ -1,13 +1,12 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableEndpoint;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.repository.elastic.TableColumnidxRepository;
-import at.tuwien.repository.elastic.TableidxRepository;
+import at.tuwien.repository.elastic.TableColumnIdxRepository;
+import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.service.DatabaseService;
 import com.rabbitmq.client.Channel;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -21,7 +20,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.ws.rs.NotAllowedException;
 import java.security.Principal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -46,19 +44,19 @@ public class TableEndpointUnitTest extends BaseUnitTest {
      * ElasticSearch not required in this test
      */
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     /**
      * ElasticSearch not required in this test
      */
     @MockBean
-    private TableidxRepository tableidxRepository;
+    private TableIdxRepository tableidxRepository;
 
     /**
      * ElasticSearch not required in this test
      */
     @MockBean
-    private TableColumnidxRepository tableColumnidxRepository;
+    private TableColumnIdxRepository tableColumnidxRepository;
 
     @MockBean
     private DatabaseService databaseService;

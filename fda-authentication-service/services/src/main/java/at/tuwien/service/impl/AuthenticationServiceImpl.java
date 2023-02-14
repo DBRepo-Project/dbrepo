@@ -7,6 +7,7 @@ import at.tuwien.auth.JwtUtils;
 import at.tuwien.config.MailConfig;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.TokenNotFoundException;
 import at.tuwien.exception.TokenRevokedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
@@ -15,6 +16,7 @@ import at.tuwien.mapper.UserMapper;
 import at.tuwien.repositories.TokenRepository;
 import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.UserService;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -83,6 +85,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return;
         }
         final Token token = optional.get();
+        if (token.getExpires().isBefore(Instant.now())) {
+            log.error("Failed to verify token because it is expired");
+            throw new TokenExpiredException("Failed to verify token");
+        }
         token.setLastUsed(Instant.now());
         tokenRepository.save(token);
         log.info("Updated token usage of token with hash {}", hash);

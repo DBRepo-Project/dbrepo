@@ -1,0 +1,29 @@
+summary: Retrieve label from URI
+description: This is a simple API for retrieving label from units
+consumes:
+  - application/json
+produces:
+  - application/json
+requestBody:
+  content:
+    application/json:
+      schema:
+        required:
+          - uri
+          - name
+        type: object
+        properties:
+          uri:
+            type: string
+            example: http://www.ontology-of-units-of-measure.org/resource/om-2/second-Time
+responses:
+  200:
+    description: OK
+  400:
+    description: Invalid URI
+  404:
+    description: Unit not found
+  500:
+    description: Server error
+tags:
+  - units-endpoint

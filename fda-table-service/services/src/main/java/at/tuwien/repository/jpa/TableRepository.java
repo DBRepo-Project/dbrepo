@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface TableRepository extends JpaRepository<Table, Long> {
 
-    List<Table> findByDatabase(Database database);
+    List<Table> findByDatabaseOrderByCreatedDesc(Database database);
 
     Optional<Table> findByDatabaseAndInternalName(Database database, String internalName);
 

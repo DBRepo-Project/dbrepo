@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -19,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.sql.*;
-import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,7 +66,6 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         } finally {
             dataSource.close();
         }
-
     }
 
     @Override
@@ -104,8 +101,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional(readOnly = true)
-    public Query insert(Long containerId, Long databaseId, QueryResultDto result, ExecuteStatementDto metadata,
-                        Principal principal, Instant execution)
+    public Query insert(Long containerId, Long databaseId, ExecuteStatementDto metadata, Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
         /* find */
@@ -114,7 +110,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.debug("insert into database id {}, metadata {}", databaseId, metadata);
+        log.trace("insert into database id {}, metadata {}", databaseId, metadata);
         /* user */
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         final User creator;
@@ -128,22 +124,19 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 database.getContainer(), database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata.getStatement());
-            callableStatement.setString("_username", creator.getUsername());
-            callableStatement.setString("query", metadata.getStatement());
-            callableStatement.registerOutParameter("queryId", Types.BIGINT);
+            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata);
             callableStatement.executeUpdate();
-            final Long queryId = callableStatement.getLong("queryId");
+            final Long queryId = callableStatement.getLong(4);
             callableStatement.close();
+            log.debug("inserted query with id {}", queryId);
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
-                log.error("Failed to retrieve first row");
-                throw new QueryStoreException("Failed to retrieve first row");
+                log.error("Failed to retrieve query with id {}", queryId);
+                throw new QueryStoreException("Failed to retrieve query with id " + queryId);
             }
             final Query query = storeMapper.resultSetToQuery(resultSet);
-            log.info("Added/found query with id {} into the query store of database with id {}", queryId, databaseId);
-            log.debug("inserted query {} into the query store of database {}", query, database);
+            log.info("Found query with id {} into the query store of database with id {}", queryId, databaseId);
             return query;
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
@@ -175,8 +168,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement1.executeQuery();
             if (!resultSet.next()) {
-                log.error("Failed to retrieve first row");
-                throw new QueryStoreException("Failed to retrieve first row");
+                log.error("Failed to retrieve first row for query with id {}", queryId);
+                throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId);
             }
             out = storeMapper.resultSetToQuery(resultSet);
         } catch (SQLException e) {

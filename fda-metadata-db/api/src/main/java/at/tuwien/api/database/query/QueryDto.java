@@ -1,5 +1,6 @@
 package at.tuwien.api.database.query;
 
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,18 +56,20 @@ public class QueryDto {
     @Schema(example = "query")
     private QueryTypeDto type;
 
+    private IdentifierDto identifier;
+
     @NotBlank(message = "query hash is required")
     @JsonProperty("query_hash")
-    @Parameter(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
+    @Schema(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String queryHash;
 
     @NotNull
     @JsonProperty("is_persisted")
-    @Parameter(example = "true")
+    @Schema(example = "true")
     private Boolean isPersisted;
 
     @JsonProperty("result_hash")
-    @Parameter(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
+    @Schema(example = "17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76")
     private String resultHash;
 
     @JsonProperty("result_number")

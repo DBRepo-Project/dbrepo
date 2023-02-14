@@ -1,6 +1,11 @@
+## Cache
 __pycache__
+.pytest_cache/
 
+# OS
 .DS_Store
+
+# Environment
 .env
 .flaskenv
 *.pyc
@@ -9,13 +14,21 @@ env/
 venv/
 .venv/
 env*
+
+# Test
+report.xml
+coverage.html
+coverage.txt
+
+# Build
 dist/
 build/
 *.egg
 *.egg-info/
 .tox/
+
+# IDE
 .cache/
-.pytest_cache/
 .idea/
 docs/_build/
 .vscode

@@ -38,6 +38,7 @@ public class AmqpConfig {
         factory.setAutomaticRecoveryEnabled(true);
         factory.setTopologyRecoveryEnabled(true);
         factory.setNetworkRecoveryInterval(10000) /* attempt recovery every 10 seconds */;
+        log.debug("broker service host={}, username={}, password=(hidden)", ampqHost, amqpUsername);
         return factory;
     }
 

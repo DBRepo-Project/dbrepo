@@ -5,7 +5,6 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
@@ -70,11 +69,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size,
-                                  SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, QueryStoreException, ContainerNotFoundException,
-            ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException {
-        final Query query = storeService.insert(containerId, databaseId, null, statement, principal, Instant.now());
+                                  Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
+            ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
+            TableMalformedException {
+        if (statement.getStatement().contains(";")) {
+            log.error("Failed to execute query since it contains ';'");
+            throw new QueryMalformedException("Failed to execute query since it contains ';'");
+        }
+        final Query query = storeService.insert(containerId, databaseId, statement, principal);
         return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
@@ -206,10 +209,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
             final File file = new File("/tmp/" + filename);
             resource = new InputStreamResource(FileUtils.openInputStream(file));
-            FileUtils.forceDelete(file);
-        } catch (IOException | SQLException e) {
-            log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file", e);
+            if (!FileUtils.deleteQuietly(file)) {
+                log.warn("Failed to delete exported file");
+            }
+        } catch (SQLException e) {
+            log.error("Failed to execute query: {}", e.getMessage());
+            throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
+        } catch (IOException e) {
+            log.error("Failed to export query: {}", e.getMessage());
+            throw new FileStorageException("Failed to export query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -278,7 +286,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        log.trace("parsed insert data {} into container {} database {} table {}", data, containerId, databaseId, tableId);
+        log.trace("parsed insert data {}", data);
         /* run query */
         if (data.getData().size() == 0) {
             log.error("Failed to parse data, the provided map {} is empty", data.getData());
@@ -298,8 +306,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to parse number: {}", e.getMessage());
             throw new TableMalformedException("Failed to parse number", e);
         } catch (Exception e) {
-            log.error("Failed for unknown reason: {}", e.getMessage());
-            throw new TableMalformedException("Failed for unknown reason", e);
+            log.error("Database failed to accept tuple: {}", e.getMessage());
+            log.throwing(e);
+            throw new TableMalformedException("Database failed to accept tuple " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -347,11 +356,19 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
         try {
             final Connection connection = dataSource.getConnection();
+            queryMapper.dropTemporaryTableSQL(connection, table)
+                    .executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to drop temporary table: {}", e.getMessage());
+            log.trace("failed to drop temporary table {}", table);
+            throw new TableMalformedException("Failed to drop temporary table", e);
+        }
+        try {
+            final Connection connection = dataSource.getConnection();
             queryMapper.generateTemporaryTableSQL(connection, table)
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create temporary table: {}", e.getMessage());
-            log.debug("failed to create temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to create temporary table", e);
         }
@@ -368,15 +385,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.trace("failed to insert temporary table {}", table);
             dataSource.close();
             throw new TableMalformedException("Failed to insert temporary table", e);
-        }
-        try {
-            final Connection connection = dataSource.getConnection();
-            queryMapper.dropTemporaryTableSQL(connection, table)
-                    .executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to drop temporary table: {}", e.getMessage());
-            log.trace("failed to drop temporary table {}", table);
-            throw new TableMalformedException("Failed to drop temporary table", e);
         } finally {
             dataSource.close();
         }

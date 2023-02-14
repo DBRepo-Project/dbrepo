@@ -59,20 +59,28 @@ export default {
     }
   },
   methods: {
-    async executeFirstTime (parent, sql) {
+    async executeFirstTime (parent, sql, timestamp) {
       this.loading = true
       try {
-        const res = await this.$axios.post(this.executeUrl, { statement: sql }, this.config)
+        const res = await this.$axios.post(this.executeUrl, { statement: sql, timestamp }, this.config)
         console.debug('query result', res.data)
         this.$toast.success('Successfully executed query')
         this.mapResults(res.data)
-        this.loading = false
-        // parent.resultId = res.data.id
-      } catch (err) {
-        console.error('Failed to execute query', err.response.data)
-        this.$toast.error(err.response.data.message)
-        this.loading = false
+        parent.resultId = res.data.id
+      } catch (error) {
+        console.error('Failed to execute query', error)
+        const { status, data } = error.response
+        const { message, code } = data
+        if (status === 504) {
+          console.error('Failed to execute query: container not online', code)
+          this.$toast.error('Failed to execute query: container not online')
+        } else {
+          console.error('Failed to execute query', code)
+          this.$toast.error('Failed to execute query: ' + message)
+        }
+        this.error = true
       }
+      this.loading = false
     },
     buildHeaders (firstLine) {
       return Object.keys(firstLine).map(k => ({
@@ -95,12 +103,11 @@ export default {
         const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
         this.mapResults(res.data)
         this.id = id
-        this.loading = false
-      } catch (err) {
-        console.error('failed to execute query', err)
-        this.$toast.error('Failed to execute query: ' + err.response.data.message)
-        this.loading = false
+      } catch (error) {
+        console.error('failed to execute query', error)
+        this.error = true
       }
+      this.loading = false
     },
     mapResults (data) {
       if (data.result.length) {
@@ -108,7 +115,7 @@ export default {
       }
       console.debug('query result', data)
       this.result.rows = data.result
-      this.total = data.resultNumber
+      this.total = data.result_number
     }
   }
 }

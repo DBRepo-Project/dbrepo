@@ -21,10 +21,12 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
-              <v-text-field
+              <v-textarea
                 v-model="tableCreate.description"
                 :rules="[v => notEmpty(v) || $t('Required')]"
                 autocomplete="off"
+                rows="3"
+                name="description"
                 label="Description *" />
             </v-col>
           </v-row>

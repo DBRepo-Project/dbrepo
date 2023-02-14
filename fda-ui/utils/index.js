@@ -50,7 +50,10 @@ function isDataSteward (user) {
 }
 
 function formatUser (user) {
-  if (user.firstname === undefined || user.lastname === undefined) {
+  if (!user) {
+    return null
+  }
+  if (!('firstname' in user) || !('lastname' in user)) {
     return user.username
   }
   if (user.firstname === null || user.lastname === null) {
@@ -123,12 +126,19 @@ function formatCreators (container) {
   }
   let str = ''
   for (let i = 0; i < creators.length; i++) {
+    /* separator */
     if (i > 0 && creators.length === 2) {
       str += ' & '
     } else if (i > 0 && creators.length !== 2) {
       str += ', '
     }
-    str += creators[i].name
+    /* name */
+    if (creators[i].firstname) {
+      str += (creators[i].firstname.toUpperCase().substring(0, 1) + '., ')
+    }
+    if (creators[i].lastname) {
+      str += creators[i].lastname
+    }
   }
   return str
 }

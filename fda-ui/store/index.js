@@ -22,10 +22,6 @@ export const mutations = {
   SET_ACCESS (state, access) {
     state.access = access
   },
-  /**
-   Workaround. Helps to go 'back' from table data view and
-   have the accordion open on the same table
-   */
   SET_TABLE (state, table) {
     state.table = table
   }

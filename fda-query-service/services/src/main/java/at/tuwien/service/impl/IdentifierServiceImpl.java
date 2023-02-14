@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -25,9 +26,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (optional.isEmpty()) {
-            log.error("Failed to find identifier for database id {} query id {}", databaseId, queryId);
             throw new IdentifierNotFoundException("Failed to find identifier");
         }
         return optional.get();
+    }
+
+    @Override
+    public List<Identifier> findAll() {
+        return identifierRepository.findAll();
     }
 }

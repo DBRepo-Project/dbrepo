@@ -18,6 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,6 +75,7 @@ public class AuthenticationEndpoint {
 
     @PostMapping("/renew")
     @Timed(value = "auth.renew", description = "Time needed to renew an authentication token")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Renew authentication token", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
         log.debug("endpoint renew authentication token, principal={}", principal);

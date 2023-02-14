@@ -53,7 +53,6 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     public DatabaseAccess find(Long databaseId, String username) throws AccessDeniedException {
         final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
         if (optional.isEmpty()) {
-            log.error("Failed to retrieve access with database id {} and username {}", databaseId, username);
             throw new AccessDeniedException("Failed to retrieve access");
         }
         return optional.get();
@@ -68,7 +67,9 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(accessDto.getUsername());
-        if (database.getCreator().getUsername().equals(user.getUsername())) {
+        log.trace("access be given to user with username {}", user.getUsername());
+        log.trace("database owner has username {}", database.getOwner().getUsername());
+        if (database.getOwner().getUsername().equals(user.getUsername())) {
             log.error("Failed to give access to user with username {}, is already database owner", user.getUsername());
             throw new NotAllowedException("Failed give access");
         }
@@ -92,10 +93,9 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             dataSource.close();
         }
         /* update access */
-        final DatabaseAccess access = databaseMapper.databaseGiveAccessDtoToDatabaseAccess(database, user, accessDto);
-        final DatabaseAccess entity = databaseAccessRepository.save(access);
-        log.info("Gave access to database with id {} for user with username {}", databaseId, user.getId());
-        log.trace("gave access {} to database for user {}", entity, user);
+        final DatabaseAccess entity = databaseMapper.databaseGiveAccessDtoToDatabaseAccess(database, user, accessDto);
+        databaseAccessRepository.save(entity);
+        log.info("Gave access to database with id {} for user with username {}", databaseId, user.getUsername());
     }
 
     @Override
@@ -107,7 +107,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(username);
-        if (database.getCreator().getUsername().equals(username)) {
+        if (database.getOwner().getUsername().equals(username)) {
             log.error("Failed to modify access of user with username {}, because it is the owner", username);
             throw new NotAllowedException("Failed modify access");
         }
@@ -129,7 +129,6 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final DatabaseAccess access = databaseMapper.databaseModifyAccessDtoToDatabaseAccess(database, user, accessDto);
         final DatabaseAccess entity = databaseAccessRepository.save(access);
         log.info("Modified access to database with id {} for user with username {}", databaseId, username);
-        log.trace("modified access {} to database for user {}", entity, user);
     }
 
     @Override
@@ -141,7 +140,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(username);
-        if (database.getCreator().getUsername().equals(username)) {
+        if (database.getOwner().getUsername().equals(username)) {
             log.error("Failed to revoke access of user with username {}, because it is the owner", username);
             throw new NotAllowedException("Failed revoke access");
         }

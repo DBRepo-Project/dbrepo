@@ -1,6 +1,7 @@
 import os
-from flask import Flask, request, jsonify
 import logging
+import re
+from flask import Flask, request, jsonify
 from logging.config import dictConfig
 import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
@@ -10,7 +11,7 @@ from list import List
 from validate import validator
 from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_units
-from onto_feat import search_ontologies, list_ontologies, get_ontology
+from onto_feat import list_ontologies, get_ontology
 from prometheus_flask_exporter import PrometheusMetrics
 
 dictConfig({
@@ -136,6 +137,53 @@ def validate(concept):
         return str(res), 200
     except Exception as e:
         logging.error(e)
+        res = {'success': False, 'message': str(e), 'status': 500}
+        return jsonify(res), 500
+
+
+@app.route('/api/semantics/concept', methods=['PUT'], endpoint='concepts_label')
+@swag_from('us-yml/put_concept.yml')
+def get_concept_label():
+    input_json = request.get_json()
+    logging.debug('endpoint get label for concept, body=%s', input_json)
+    try:
+        uri = input_json['uri']
+        m = re.search('https?://www.wikidata.org/entity/(Q[0-9]+)', uri)
+        if not m:
+            logging.error('Failed to get concept label: %s is not a wikidata uri', uri)
+            res = {'success': False, 'message': 'Failed to get concept label: is not a wikidata uri', 'status': 400}
+            return jsonify(res), 400
+        entity = m.group(1)
+        res = list.get_concept_label(entity)
+        logging.info('suggest concept label result: %s', res)
+        return jsonify(res), 200
+    except Exception as e:
+        logging.error('Failed to suggest concept: %s', e)
+        res = {'success': False, 'message': str(e), 'status': 500}
+        return jsonify(res), 500
+
+
+@app.route('/api/semantics/unit', methods=['PUT'], endpoint='units_label')
+@swag_from('us-yml/put_units.yml')
+def get_concept_label():
+    input_json = request.get_json()
+    logging.debug('endpoint get label for unit, body=%s', input_json)
+    try:
+        uri = input_json['uri']
+        m = re.search('https?://www.ontology-of-units-of-measure.org/resource/om-2/([a-zA-Z0-9-]+)', uri)
+        if not m:
+            logging.error('Failed to get unit label: %s is not a wikidata uri', uri)
+            res = {'success': False, 'message': 'Failed to get unit label: is not an om2 uri', 'status': 400}
+            return jsonify(res), 400
+        res = list.get_unit_label(uri)
+        if res is None:
+            logging.error('Unit label not found')
+            res = {'success': False, 'message': 'Unit label not found', 'status': 404}
+            return jsonify(res), 404
+        logging.info('suggest unit label result: %s', res)
+        return jsonify(res), 200
+    except Exception as e:
+        logging.error('Failed to suggest unit: %s', e)
         res = {'success': False, 'message': str(e), 'status': 500}
         return jsonify(res), 500
 

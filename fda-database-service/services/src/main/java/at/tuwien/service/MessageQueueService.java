@@ -26,7 +26,7 @@ public interface MessageQueueService {
      * @param principal Te user.
      * @throws BrokerVirtualHostCreationException Could not update the permissions.
      */
-    void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException;
+    void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException, BrokerVirtualHostGrantException;
 
     /**
      * Deletes an exchange for a database.

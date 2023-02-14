@@ -1,5 +1,6 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class ImageEnvItemDto {
     private String key;
 
     @NotBlank
+    @JsonIgnore
     @ToString.Exclude
     @Schema(example = "mariadb")
     private String value;
