@@ -73,7 +73,7 @@ def auth_user(username):
 
 def create_container():
     response = container.create1({
-        "name": "Airquality " + str(uuid.uuid1()),
+        "name": "Pilot Factory Data",
         "repository": "mariadb",
         "tag": "10.5"
     })
@@ -93,7 +93,7 @@ def start_container(container_id):
 
 def create_database(container_id, is_public=True):
     response = database.create({
-        "name": "Airquality " + str(uuid.uuid1()),
+        "name": "Pilot Factory Data",
         "is_public": is_public
     }, container_id)
     print("created database with id %d" % response.id)
@@ -183,12 +183,11 @@ def find_table(container_id, database_id, table_id):
 
 
 def fill_table(container_id, database_id, table_id):
-    shutil.copyfile(os.getcwd() + "/tests/resources/ugz_ogd_air_h1_2021.csv", "/tmp/ugz_ogd_air_h1_2021.csv")
     response = data.import_csv({
-        "location": "/tmp/ugz_ogd_air_h1_2021.csv",
-        "separator": ",",
+        "location": "/path/to/data.csv",
         "quote": "\"",
-        "skip_lines": 1
+        "null_element": "NA"
+        "separator": ",",
     }, container_id, database_id, table_id)
     print("filled table with id %d" % table_id)
     return response

@@ -1,20 +1,47 @@
 #!/bin/env python3
-
-import time
-import uuid
-
-from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
-from api_authentication.api.user_endpoint_api import UserEndpointApi
 from api_container.api.container_endpoint_api import ContainerEndpointApi
 from api_database.api.database_endpoint_api import DatabaseEndpointApi
+import time
 
-authentication = AuthenticationEndpointApi()
-user = UserEndpointApi()
 container = ContainerEndpointApi()
 database = DatabaseEndpointApi()
 
+def create_container():
+    response = container.create1({
+        "name": "Pilot Factory Data",
+        "repository": "mariadb",
+        "tag": "10.5"
+    })
+    print("created container with id %d" % response.id)
+    return response
+
+
+def start_container(container_id):
+    response = container.modify({
+        "action": "start"
+    }, container_id)
+    print("... starting")
+    time.sleep(5)
+    print("started container with id %d" % response.id)
+    return response
+
+
+def create_database(container_id, is_public=True):
+    response = database.create({
+        "name": "Pilot Factory Data",
+        "is_public": is_public
+    }, container_id)
+    print("created database with id %d" % response.id)
+    return response
+
 token = ""  # keep
 
+from api_authentication.api.authentication_endpoint_api import AuthenticationEndpointApi
+from api_authentication.api.user_endpoint_api import UserEndpointApi
+import uuid
+
+authentication = AuthenticationEndpointApi()
+user = UserEndpointApi()
 
 def create_user(username):
     response = user.register({
@@ -35,35 +62,6 @@ def auth_user(username):
     token = response.token
     container.api_client.default_headers = {"Authorization": "Bearer " + token}
     database.api_client.default_headers = {"Authorization": "Bearer " + token}
-    return response
-
-
-def create_container():
-    response = container.create1({
-        "name": "Airquality " + str(uuid.uuid1()),
-        "repository": "mariadb",
-        "tag": "10.5"
-    })
-    print("created container with id %d" % response.id)
-    return response
-
-
-def start_container(container_id):
-    response = container.modify({
-        "action": "start"
-    }, container_id)
-    print("... starting")
-    time.sleep(5)
-    print("started container with id %d" % response.id)
-    return response
-
-
-def create_database(container_id, is_public=True):
-    response = database.create({
-        "name": "Airquality " + str(uuid.uuid1()),
-        "is_public": is_public
-    }, container_id)
-    print("created database with id %d" % response.id)
     return response
 
 
