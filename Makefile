@@ -56,7 +56,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-identifier tag-search tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-ui-proxy tag-metadata
+tag: tag-identifier tag-search tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-metadata
 
 tag-analyse:
 	docker tag fda-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -69,9 +69,6 @@ tag-metadata-db:
 
 tag-ui:
 	docker tag fda-ui:latest "dbrepo/ui:${TAG}"
-
-tag-ui-proxy:
-	docker tag fda-ui:latest "dbrepo/ui-proxy:${TAG}"
 
 tag-identifier:
 	docker tag fda-identifier-service:latest "dbrepo/identifier-service:${TAG}"
@@ -106,7 +103,7 @@ tag-broker:
 tag-search:
 	docker tag fda-search-service:latest "dbrepo/search-service:${TAG}"
 
-release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-ui-proxy release-metadata
+release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata
 
 release-analyse:
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -119,9 +116,6 @@ release-metadata-db: build-docker tag-metadata-db
 
 release-ui:
 	docker push "dbrepo/ui:${TAG}"
-
-release-ui-proxy:
-	docker push "dbrepo/ui-proxy:${TAG}"
 
 release-identifier:
 	docker push "dbrepo/identifier-service:${TAG}"
@@ -156,7 +150,7 @@ release-search:
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-pull: pull-identifier pull-container pull-search pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-ui-proxy pull-metadata
+pull: pull-identifier pull-container pull-search pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-metadata
 
 pull-analyse:
 	docker pull "dbrepo/analyse-service:${TAG}"
@@ -169,9 +163,6 @@ pull-metadata-db:
 
 pull-ui:
 	docker pull "dbrepo/ui:${TAG}"
-
-pull-ui-proxy:
-	docker pull "dbrepo/ui-proxy:${TAG}"
 
 pull-identifier:
 	docker pull "dbrepo/identifier-service:${TAG}"
