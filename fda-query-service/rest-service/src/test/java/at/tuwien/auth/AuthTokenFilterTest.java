@@ -5,6 +5,7 @@ import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.gateway.AuthenticationServiceGateway;
+import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.UserRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -44,6 +45,9 @@ public class AuthTokenFilterTest extends BaseUnitTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private RabbitMqListenerImpl rabbitMqListener;
 
     @MockBean
     private AuthenticationServiceGateway authenticationServiceGateway;
