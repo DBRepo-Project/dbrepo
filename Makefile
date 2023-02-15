@@ -4,9 +4,6 @@ TAG ?= latest
 
 all:
 
-clean:
-	bash ./.dbrepo2/clean.sh
-
 build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-analyse-service
 
 build-backend-metadata-db:
@@ -245,10 +242,10 @@ test-semantics-service: build-semantics-service
 test-analyse-service: build-analyse-service
 	bash ./fda-analyse-service/test.sh
 
-coverage-frontend: clean build-frontend
+coverage-frontend: build-frontend
 	yarn --cwd ./fda-ui run coverage || true
 
-test-frontend: clean build-frontend
+test-frontend: build-frontend
 	yarn --cwd ./fda-ui install
 	docker compose up -d
 	yarn --cwd ./fda-ui run test:e2e

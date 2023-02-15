@@ -6,7 +6,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="isResearcher" color="primary" @click.stop="createDbDialog = true">
+        <v-btn v-if="isResearcher" color="primary" name="create-database" @click.stop="createDbDialog = true">
           <v-icon left>mdi-plus</v-icon> Database
         </v-btn>
       </v-toolbar-title>

@@ -23,6 +23,7 @@ stages:
   - build-backend
   - build-frontend
   - test-backend
+  - test-frontend
   - build-docker
   - release
 
@@ -120,6 +121,7 @@ test-backend-authentication:
     reports:
       junit: ./fda-authentication-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+
 test-backend-identifier:
   stage: test-backend
   needs:
@@ -279,6 +281,22 @@ test-analyse-service:
     - build-analyse-service
   script:
     - "make test-analyse-service"
+    - "cat ./fda-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./fda-analyse-service/report.xml
+    expire_in: 1 days
+    reports:
+      junit: ./fda-analyse-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-ui:
+  stage: test-frontend
+  needs:
+    - build-frontend
+  script:
+    - "make test-frontend"
     - "cat ./fda-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

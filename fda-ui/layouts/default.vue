@@ -50,7 +50,7 @@
           single-line
           hide-details
           placeholder="Search ..." />
-        <v-btn icon class="ml-2" type="submit" @click="retrieve">
+        <v-btn icon class="ml-2" type="submit" name="search-submit" @click="retrieve">
           <v-icon>mdi-magnify</v-icon>
         </v-btn>
         <v-spacer />
