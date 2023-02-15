@@ -19,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -41,6 +42,9 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Autowired
     private ImageRepository imageRepository;

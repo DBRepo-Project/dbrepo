@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.*;
@@ -56,6 +57,9 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ViewRepository viewRepository;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Autowired
     private ViewIdxRepository viewIdxRepository;

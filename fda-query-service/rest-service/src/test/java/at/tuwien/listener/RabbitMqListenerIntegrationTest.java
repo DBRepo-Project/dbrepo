@@ -61,9 +61,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     private RabbitMqListenerImpl rabbitMqListener;
 
     @Autowired
-    private TableColumnRepository tableColumnRepository;
-
-    @Autowired
     private H2Utils h2Utils;
 
     @Autowired

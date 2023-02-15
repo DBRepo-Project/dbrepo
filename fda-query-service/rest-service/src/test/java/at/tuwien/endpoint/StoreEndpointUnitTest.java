@@ -29,6 +29,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 import java.util.List;
@@ -53,6 +54,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Autowired
     private StoreEndpoint storeEndpoint;

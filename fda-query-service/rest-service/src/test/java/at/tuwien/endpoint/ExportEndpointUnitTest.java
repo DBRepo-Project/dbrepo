@@ -24,6 +24,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +52,9 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @MockBean
     private QueryService queryService;

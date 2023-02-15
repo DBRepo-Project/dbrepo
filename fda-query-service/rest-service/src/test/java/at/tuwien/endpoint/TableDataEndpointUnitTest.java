@@ -26,6 +26,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -46,6 +47,9 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @MockBean
     private QueryServiceImpl queryService;

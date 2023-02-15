@@ -26,6 +26,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.List;
@@ -52,6 +53,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @MockBean
     private TableRepository tableRepository;
