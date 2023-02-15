@@ -251,7 +251,7 @@ coverage-frontend: clean build-frontend
 test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
 	docker compose up -d
-	yarn --cwd ./fda-ui run test
+	yarn --cwd ./fda-ui run test:e2e
 
 test-clients:
 	bash ./.gitlab/test.sh
