@@ -2,6 +2,7 @@ package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -68,6 +69,9 @@ public class Table {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
+
+    @Embedded
+    private Constraints constraints;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

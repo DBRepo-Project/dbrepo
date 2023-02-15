@@ -76,18 +76,18 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Boolean isPrimaryKey = false;
 
+    @Column
+    private Integer indexLength;
+
     @Column(name = "datatype", nullable = false)
     @Enumerated(EnumType.STRING)
     private TableColumnType columnType;
 
+    @Column
+    private Integer length;
+
     @Column(nullable = false)
     private Boolean isNullAllowed = true;
-
-    @Column(nullable = false)
-    private Boolean isUnique;
-
-    @Column
-    private String checkExpression;
 
     @ElementCollection
     @CollectionTable(name = "mdb_columns_enums", joinColumns = {
@@ -99,12 +99,6 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column(nullable = false)
     private Integer ordinalPosition;
-
-    @Column
-    private String foreignKey;
-
-    @Column(name = "reference_table")
-    private String references;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

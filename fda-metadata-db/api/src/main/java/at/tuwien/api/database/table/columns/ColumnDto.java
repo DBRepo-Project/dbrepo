@@ -57,10 +57,16 @@ public class ColumnDto {
     @Schema(example = "true")
     private Boolean isPrimaryKey;
 
+    @JsonProperty("index_length")
+    private Integer indexLength;
+
     @NotNull
     @JsonProperty("column_type")
     @Schema(example = "string")
     private ColumnTypeDto columnType;
+
+    @Schema(example = "255")
+    private Integer length;
 
     private ConceptDto concept;
 
@@ -72,22 +78,9 @@ public class ColumnDto {
     private Boolean isPublic;
 
     @NotNull
-    @Schema(example = "true")
-    private Boolean unique;
-
-    @NotNull
     @JsonProperty("is_null_allowed")
     @Schema(example = "false")
     private Boolean isNullAllowed;
-
-    @JsonProperty("check_expression")
-    private String checkExpression;
-
-    @JsonProperty("foreign_key")
-    private String foreignKey;
-
-    @Parameter(description = "foreign key reference, only considered when foreignKey != null")
-    private String references;
 
     @JsonProperty("enum_values")
     @Parameter(description = "enum values, only considered when type = ENUM")

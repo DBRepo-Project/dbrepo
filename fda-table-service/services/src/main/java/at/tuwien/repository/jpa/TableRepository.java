@@ -15,6 +15,8 @@ public interface TableRepository extends JpaRepository<Table, Long> {
 
     Optional<Table> findByDatabaseAndInternalName(Database database, String internalName);
 
+    Optional<Table> findByTdbidAndInternalName(Long tdbid, String internalName);
+
     Optional<Table> findByDatabaseAndId(Database database, Long tableId);
 
     Optional<Table> findByInternalName(String internalName);

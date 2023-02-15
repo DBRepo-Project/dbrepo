@@ -1,6 +1,7 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -27,4 +28,5 @@ public class TableCreateDto {
     @NotNull
     private List<ColumnCreateDto> columns;
 
+    private ConstraintsCreateDto constraints;
 }

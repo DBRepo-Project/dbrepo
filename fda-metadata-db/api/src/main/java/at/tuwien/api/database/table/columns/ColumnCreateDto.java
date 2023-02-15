@@ -26,9 +26,15 @@ public class ColumnCreateDto {
     @Schema(example = "false")
     private Boolean primaryKey;
 
+    @JsonProperty("index_length")
+    private Integer indexLength = null;
+
     @NotNull
     @Schema(example = "string")
     private ColumnTypeDto type;
+
+    @Schema(example = "255")
+    private Integer length = null;
 
     @NotNull
     @JsonProperty("null_allowed")
@@ -37,20 +43,6 @@ public class ColumnCreateDto {
 
     @Schema(description = "date format id")
     private Long dfid;
-
-    @NotNull
-    @Schema(example = "false")
-    private Boolean unique;
-
-    @JsonProperty("check_expression")
-    @Schema(description = "check constraint", example = "id > 0")
-    private String checkExpression;
-
-    @JsonProperty("foreign_key")
-    private String foreignKey = null;
-
-    @Schema(description = "foreign key reference, only considered when foreignKey != null")
-    private String references = null;
 
     @JsonProperty("enum_values")
     @Schema(description = "enum values, only considered when type = ENUM")

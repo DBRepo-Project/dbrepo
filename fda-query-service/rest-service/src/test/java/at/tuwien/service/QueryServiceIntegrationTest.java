@@ -269,6 +269,98 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void insert_withConstraints_succeeds() throws UserNotFoundException, TableNotFoundException,
+            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("date", "2008-12-04",
+                        "location", "Melbourne",
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void insert_violatingForeignKey_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("date", "2008-12-04",
+                        "location", "Mexico City", // not in referenced table
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void insert_violatingUnique_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("date", "2008-12-03", // entry with date already exists
+                        "location", "Melbourne",
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void insert_violatingCheck_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("date", "2008-12-04",
+                        "location", "Melbourne",
+                        "mintemp", -1, // mintemp is smaller than 0, which is not allowed
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
             ContainerNotFoundException, QueryMalformedException, UserNotFoundException, InterruptedException {
