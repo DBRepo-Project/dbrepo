@@ -5,6 +5,14 @@ const { pageMacro, before, after } = require('./_utils')
 test.before(before)
 test.after(after)
 
+test('databases_seeDatabases_succeeeds', pageMacro, async (t, page) => {
+  await page.go('/container')
+
+  // find 'Database Repository' anywhere on the page:
+  const success = await page.waitForSelector('main >> header >> text=Databases')
+  t.true(!!success, 'Failed to find \'Databases\' in page')
+})
+
 test('create database and see the tabs', pageMacro, async (t, page) => {
   const database = 'Test Database ' + Math.random().toString(36).substring(7)
   const description = 'Test Description'
