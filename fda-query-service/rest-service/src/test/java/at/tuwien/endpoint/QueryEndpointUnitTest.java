@@ -28,9 +28,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +41,6 @@ import static org.mockito.Mockito.when;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-norabbit.properties")
 public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
@@ -57,9 +54,6 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @MockBean
     private DatabaseAccessRepository databaseAccessRepository;

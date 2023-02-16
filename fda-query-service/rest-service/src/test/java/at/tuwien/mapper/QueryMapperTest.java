@@ -14,9 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 
@@ -26,7 +24,6 @@ import static org.mockito.Mockito.doReturn;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-norabbit.properties")
 public class QueryMapperTest extends BaseUnitTest {
 
     @MockBean
@@ -40,9 +37,6 @@ public class QueryMapperTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @Autowired
     private QueryMapper queryMapper;

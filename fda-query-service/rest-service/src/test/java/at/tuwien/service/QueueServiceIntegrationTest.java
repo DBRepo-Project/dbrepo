@@ -8,7 +8,6 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,10 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,10 +36,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @Log4j2
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-norabbit.properties")
 public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
@@ -57,12 +51,6 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
-
-    @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @MockBean
     private RabbitMqConsumer rabbitMqConsumer;

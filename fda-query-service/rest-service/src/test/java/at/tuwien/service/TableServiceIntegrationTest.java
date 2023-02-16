@@ -25,9 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.List;
@@ -41,7 +39,6 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-norabbit.properties")
 public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
@@ -55,9 +52,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @MockBean
     private TableRepository tableRepository;

@@ -24,9 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -47,7 +45,6 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@TestPropertySource(locations = "classpath:application-norabbit.properties")
 public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
@@ -61,9 +58,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
-    private RestTemplate restTemplate;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -85,12 +79,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException {
+    public static void beforeAll() {
         afterAll();
         /* create network */
         DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
-        DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll
