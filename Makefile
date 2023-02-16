@@ -247,6 +247,7 @@ coverage-frontend: build-frontend
 
 test-frontend: build-frontend
 	yarn --cwd ./fda-ui install
+	cp .env.unix.example .env
 	docker compose up -d
 	yarn --cwd ./fda-ui run test:e2e
 
