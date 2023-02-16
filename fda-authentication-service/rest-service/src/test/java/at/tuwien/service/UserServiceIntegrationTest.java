@@ -67,26 +67,26 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() {
         afterAll();
-        /* create networks */
         DockerConfig.createAllNetworks();
     }
 
     @AfterAll
     public static void afterAll() {
-        /* remove networks */
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
     }
 
     @BeforeEach
     public void beforeEach() {
+        afterAll();
+        DockerConfig.createAllNetworks();
+        /* metadata database */
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
     }
 
     @AfterEach
     public void afterEach() {
-        /* stop containers and remove them */
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
     }
