@@ -10,6 +10,8 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
@@ -56,8 +58,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexInitializer;
 
+    /* keep */
     @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
+    private MessageQueueListener messageQueueListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private DatabaseRepository databaseRepository;

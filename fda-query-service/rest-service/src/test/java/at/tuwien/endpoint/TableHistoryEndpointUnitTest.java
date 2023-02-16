@@ -9,6 +9,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.DatabaseService;
@@ -48,8 +50,13 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
+    private MessageQueueListener messageQueueListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private QueryService queryService;
