@@ -227,8 +227,10 @@ export default {
     this.loadUser()
     this.setTheme()
     this.loadDatabase()
-      .then(() => this.loadIdentifier())
-    this.loadTable()
+      .then(() => {
+        this.loadIdentifier()
+        this.loadTable()
+      })
     this.loadAccess()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
@@ -298,9 +300,17 @@ export default {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.$store.commit('SET_TABLE', res.data)
         console.debug('table', this.table)
-      } catch (err) {
-        console.error('Could not load table', err)
-        this.$toast.error('Could not load table')
+      } catch (error) {
+        const { status, data } = error.response
+        if (status === 405) {
+          const table = this.database.tables.filter(t => t.id === Number(this.$route.params.table_id))[0]
+          console.debug('====>', table, this.$route.params.table_id)
+          this.$store.commit('SET_TABLE', table)
+        } else {
+          const { message } = data
+          console.error('Failed to load table', error)
+          this.$toast.error(`Failed to load table: ${message}`)
+        }
       }
       this.loading = false
     },

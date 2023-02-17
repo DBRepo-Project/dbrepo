@@ -46,6 +46,12 @@ export default {
       }
       return this.$route.query.q
     },
+    type () {
+      if (!this.$route.query || !this.$route.query.t) {
+        return null
+      }
+      return this.$route.query.t
+    },
     header () {
       if (this.results.length !== 1) {
         return `${this.results.length} results`
@@ -64,7 +70,14 @@ export default {
   watch: {
     '$route.query.q': {
       handler (query) {
-        this.retrieve(query)
+        this.retrieve()
+      },
+      deep: true,
+      immediate: true
+    },
+    '$route.query.t': {
+      handler (type) {
+        this.retrieve()
       },
       deep: true,
       immediate: true
@@ -76,13 +89,13 @@ export default {
     }
   },
   methods: {
-    async retrieve (v) {
+    async retrieve () {
       if (this.loading) {
         return
       }
       this.loading = true
       try {
-        const res = await this.$axios.get(`/retrieve/databaseindex,tableindex,columnindex,identifierindex,viewindex/_search?q=${v}*&terminate_after=50`, this.elasticConfig)
+        const res = await this.$axios.get(`/retrieve/_all/_search?q=${this.query}*&terminate_after=50`, this.elasticConfig)
         console.info('search results', res.data.hits.total.value)
         console.debug('search results for', this.$route.query.q, 'are', res.data.hits.hits)
         this.results = res.data.hits.hits.map(h => h._source)

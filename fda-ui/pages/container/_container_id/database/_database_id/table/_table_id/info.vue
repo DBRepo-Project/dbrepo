@@ -31,16 +31,18 @@
                 <span v-if="table && table.creator">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
                 <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-title v-if="table && table.created" class="mt-2">
                 Table Creation
               </v-list-item-title>
-              <v-list-item-content>
-                <span v-if="table && table.created">{{ createdUTC }}</span>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-small" />
+              <v-list-item-content v-if="table && table.created">
+                <span>{{ createdUTC }}</span>
+              </v-list-item-content>
+              <v-list-item-content v-if="!table">
+                <v-skeleton-loader type="text" class="skeleton-medium" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item>
+          <v-list-item v-if="canModify">
             <v-list-item-icon>
               <v-icon>mdi-rabbit</v-icon>
             </v-list-item-icon>
@@ -58,29 +60,35 @@
                 <pre v-if="database && database.exchange_name">{{ database.exchange_name }}</pre>
                 <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-title v-if="table && table.queue_name" class="mt-2">
                 Queue Name
               </v-list-item-title>
-              <v-list-item-content>
-                <pre v-if="table && table.queue_name">{{ table.queue_name }}</pre>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
+              <v-list-item-content v-if="table && table.queue_name">
+                <pre>{{ table.queue_name }}</pre>
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-content v-if="!table">
+                <v-skeleton-loader type="text" class="skeleton-medium" />
+              </v-list-item-content>
+              <v-list-item-title v-if="table && table.routing_key" class="mt-2">
                 Routing Key
               </v-list-item-title>
-              <v-list-item-content>
-                <pre v-if="table && table.routing_key">{{ table.routing_key }}</pre>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
+              <v-list-item-content v-if="table && table.routing_key">
+                <pre>{{ table.routing_key }}</pre>
               </v-list-item-content>
-              <v-list-item-title v-if="hasReadAccess" class="mt-2">
+              <v-list-item-content v-if="!table">
+                <v-skeleton-loader type="text" class="skeleton-medium" />
+              </v-list-item-content>
+              <v-list-item-title v-if="canRead" class="mt-2">
                 Consumer Count
               </v-list-item-title>
-              <v-list-item-content v-if="hasReadAccess" class="amqp-consumer">
-                <span v-text="`${consumersUp}/${consumersTotal}`" />
+              <v-list-item-content v-if="canRead" class="amqp-consumer">
+                <span v-if="attemptedLoadingConsumers" v-text="`${consumersUp}/${consumersTotal}`" />
                 <v-badge
+                  v-if="attemptedLoadingConsumers"
                   class="ml-1"
                   :color="consumersState.color"
                   :content="consumersState.text" />
+                <v-skeleton-loader v-else type="text" class="skeleton-xsmall" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -101,6 +109,7 @@ export default {
   data () {
     return {
       loadingConsumers: false,
+      attemptedLoadingConsumers: false,
       selection: [],
       consumers: [],
       items: [
@@ -137,29 +146,11 @@ export default {
     table () {
       return this.$store.state.table
     },
-    hasReadAccess () {
-      if (!this.database) {
+    canRead () {
+      if (!this.user || !this.access) {
         return false
       }
-      if (this.database.is_public) {
-        /* database is public */
-        return true
-      }
-      if (!this.user) {
-        return false
-      }
-      if (this.database.creator.username === this.user.username) {
-        /* user is creator of database */
-        return true
-      }
-      if (!this.access) {
-        return false
-      }
-      if (this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all') {
-        /* user has some level of access */
-        return true
-      }
-      return false
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     createdUTC () {
       if (this.table.created === undefined || this.table.created === null) {
@@ -192,7 +183,7 @@ export default {
       return this.consumers.filter(c => c.active).length
     },
     canModify () {
-      if (!this.token || !this.user.username) {
+      if (!this.token || !this.user.username || !this.table || !('creator' in this.table) || !this.table.creator || !('username' in this.table.creator) || !this.table.creator.username) {
         /* not yet loaded */
         return false
       }
@@ -223,9 +214,11 @@ export default {
       }
     }
   },
-  mounted () {
-    this.pollConsumerStatus(true)
-    setInterval(() => this.pollConsumerStatus(false), 5 * 1000)
+  watch: {
+    table (val) {
+      this.pollConsumerStatus(true)
+      setInterval(() => this.pollConsumerStatus(false), 5 * 1000)
+    }
   },
   methods: {
     formatCreator (creator) {
@@ -247,10 +240,13 @@ export default {
         const consumers = res.data.filter(c => c.queue.name === this.table.queue_name)
         console.debug('filtered', consumers)
         this.consumers = consumers
-      } catch (err) {
-        console.error('Could not find consumers', err)
+      } catch (error) {
+        const { message } = error.response.data
+        console.error('Failed to find consumers', error)
+        this.$toast.error(`Failed to find consumers: ${message}`)
       }
       this.loadingConsumers = false
+      this.attemptedLoadingConsumers = true
     }
   }
 }

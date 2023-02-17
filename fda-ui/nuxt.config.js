@@ -103,7 +103,7 @@ export default {
   },
 
   serverMiddleware: [
-    { path: '/server-middleware', handler: path.resolve(__dirname, 'server-middleware/file.js') }
+    { path: '/server-middleware', handler: path.resolve(__dirname, 'server-middleware/index.js') }
   ],
 
   vuetify: {

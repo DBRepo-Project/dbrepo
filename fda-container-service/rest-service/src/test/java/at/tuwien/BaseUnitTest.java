@@ -12,6 +12,7 @@ import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -284,29 +285,35 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
-    public final static String CONTAINER_1_NAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-fda-userdb-u01";
-    public final static String CONTAINER_1_DATABASE = "univie";
     public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static String CONTAINER_1_NAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant CONTAINER_1_UPDATED = Instant.now();
+    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=mariadb",
+            "MARIADB_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
+            .hash(CONTAINER_1_HASH)
             .internalName(CONTAINER_1_INTERNALNAME)
+            .created(CONTAINER_1_CREATED)
+            .lastModified(CONTAINER_1_UPDATED)
+            .ipAddress(CONTAINER_1_IP)
             .imageId(IMAGE_1_ID)
             .image(IMAGE_1)
-            .hash(CONTAINER_1_HASH)
-            .ipAddress(CONTAINER_1_IP)
-            .created(CONTAINER_1_CREATED)
             .creator(USER_1)
+            .owner(USER_1)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static String CONTAINER_2_HASH = "deadbeef";
     public final static String CONTAINER_2_NAME = "fda-userdb-u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-fda-userdb-u02";
-    public final static String CONTAINER_2_DATABASE = "univie";
     public final static String CONTAINER_2_IP = "172.28.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
 

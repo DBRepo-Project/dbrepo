@@ -70,13 +70,6 @@ function formatUser (user) {
   return name
 }
 
-function padLeft (str, padString, length) {
-  while (str.length < length) {
-    str = padString + str
-  }
-  return str
-}
-
 function formatDateUTC (str) {
   if (str === null) {
     return null
@@ -170,7 +163,6 @@ module.exports = {
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  padLeft,
   formatCreators,
   isDeveloper,
   isResearcher,
