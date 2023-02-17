@@ -101,6 +101,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         /* metadata db */
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        DATABASE_1.setTables(List.of());
         databaseRepository.save(DATABASE_1);
     }
 

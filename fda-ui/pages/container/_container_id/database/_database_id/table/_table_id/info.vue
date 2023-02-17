@@ -241,7 +241,7 @@ export default {
         console.debug('filtered', consumers)
         this.consumers = consumers
       } catch (error) {
-        const { message } = error.response.data
+        const { message } = error
         console.error('Failed to find consumers', error)
         this.$toast.error(`Failed to find consumers: ${message}`)
       }
