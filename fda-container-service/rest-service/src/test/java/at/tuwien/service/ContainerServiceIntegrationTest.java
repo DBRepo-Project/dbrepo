@@ -5,7 +5,6 @@ import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;

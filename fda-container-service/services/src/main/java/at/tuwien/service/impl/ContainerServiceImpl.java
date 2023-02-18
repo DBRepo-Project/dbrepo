@@ -77,10 +77,11 @@ public class ContainerServiceImpl implements ContainerService {
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
+        log.trace("container internal name: {}", container.getInternalName());
         /* check duplicate */
         final Optional<Container> optional = containerRepository.findByInternalName(container.getInternalName());
         if (optional.isPresent()) {
-            log.error("Failed to create container with internal name {}", container.getInternalName());
+            log.error("Failed to create container with internal name {}, it already exists", container.getInternalName());
             throw new ContainerAlreadyExistsException("Container name already exists");
         }
         /* create the volume */
