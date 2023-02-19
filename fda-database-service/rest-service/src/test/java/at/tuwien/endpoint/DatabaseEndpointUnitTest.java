@@ -143,48 +143,66 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     public void list_anonymousPublic_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
     }
 
     @Test
     @WithAnonymousUser
     public void list_anonymous2Public_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
     }
 
     @Test
     public void list_anonymousPrivate_succeeds() {
 
+        /* pre-condition */
+        assertFalse(DATABASE_1_PUBLIC);
+
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_2), null);
+        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
     }
 
     @Test
     @WithAnonymousUser
     public void list_anonymous2Private_succeeds() {
 
+        /* pre-condition */
+        assertFalse(DATABASE_1_PUBLIC);
+
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_2), null);
+        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void list_researcherPublic_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void list_researcherPublicWithIdentifiers_succeeds() {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -193,12 +211,15 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void list_researcherPrivate_succeeds() {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -212,17 +233,23 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void list_researcherPublicForeignContainer_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_1), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void list_researcherPrivateForeignContainer_succeeds() {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -236,17 +263,23 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void list_developerPublic_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_1), USER_2_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void list_developerPrivate_succeeds() {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -260,6 +293,24 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void list_developerPublicForeignContainer_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
+    public void list_developerPrivateForeignContainer_succeeds() {
+
+        /* pre-condition */
+        assertFalse(DATABASE_1_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
                 .thenReturn(Optional.of(USER_2));
@@ -269,56 +320,56 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developerPrivateForeignContainer_succeeds() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_2), USER_2_PRINCIPAL);
-    }
-
-    @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void list_dataStewardPublic_succeeds() {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_1), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void list_dataStewardPrivate_succeeds() {
 
+        /* pre-condition */
+        assertFalse(DATABASE_1_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_2), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_3_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void list_dataStewardPublicForeignContainer_succeeds() {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_1), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void list_dataStewardPrivateForeignContainer_succeeds() {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -497,14 +548,20 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void findById_researcherPublic_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void findById_researcherPublicForeignDatabase_succeeds() throws AccessDeniedException,
             DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
         findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
@@ -513,6 +570,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void findById_researcherPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* test */
         findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
@@ -523,6 +583,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void findById_researcherPrivateForeignDatabase_succeeds() throws AccessDeniedException,
             DatabaseNotFoundException {
 
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
+
         /* test */
         findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
     }
@@ -532,6 +595,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void findById_developerPublicForeignDatabase_succeeds() throws AccessDeniedException,
             DatabaseNotFoundException {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* test */
         findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL);
     }
@@ -540,6 +606,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void findById_developerPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
+
         /* test */
         findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
     }
@@ -547,6 +616,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void findById_dataStewardPublic_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
         findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_3_PRINCIPAL);
@@ -557,14 +629,20 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void findById_dataStewardPublicForeignDatabase_succeeds() throws AccessDeniedException,
             DatabaseNotFoundException {
 
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_3_PRINCIPAL);
+        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_3_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void findById_dataStewardPrivateForeignDatabase_succeeds() throws AccessDeniedException,
             DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertFalse(DATABASE_2_PUBLIC);
 
         /* test */
         findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_3_PRINCIPAL);

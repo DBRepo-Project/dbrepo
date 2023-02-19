@@ -52,7 +52,7 @@ public class RabbitMqConfig {
             }
         }
         for (Map.Entry<String, Integer> consumer : consumers.entrySet()) {
-            log.debug("queue {} has {} consumers", consumer.getKey(), consumer.getValue());
+            log.trace("queue {} has {} consumers", consumer.getKey(), consumer.getValue());
         }
         return response.getBody();
     }

@@ -65,7 +65,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
                 .map(databaseMapper::databaseToDatabaseBriefDto)
-                .filter(d -> principal == null ? d.getIsPublic() : true)
                 .collect(Collectors.toList());
         log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);

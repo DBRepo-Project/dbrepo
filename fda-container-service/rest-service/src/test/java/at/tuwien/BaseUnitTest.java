@@ -286,8 +286,8 @@ public abstract class BaseUnitTest {
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static String CONTAINER_1_NAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_NAME = "u01";
+    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
@@ -312,8 +312,8 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-fda-userdb-u02";
+    public final static String CONTAINER_2_NAME = "u02";
+    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.28.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
 
@@ -331,8 +331,8 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_3_ID = 3L;
     public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-fda-userdb-u03";
+    public final static String CONTAINER_3_NAME = "u03";
+    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_DATABASE = "u03";
     public final static String CONTAINER_3_IP = "173.38.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);

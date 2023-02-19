@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -77,7 +78,6 @@ public class ContainerServiceImpl implements ContainerService {
         container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
-        log.trace("container internal name: {}", container.getInternalName());
         /* check duplicate */
         final Optional<Container> optional = containerRepository.findByInternalName(container.getInternalName());
         if (optional.isPresent()) {
