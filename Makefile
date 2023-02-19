@@ -197,8 +197,8 @@ pull-search:
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
 test-authentication-service: build-metadata-db build-authentication-service
-	docker system prune -f --volumes
 	docker pull rabbitmq:3-management-alpine
+	docker system prune -f --volumes
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
 test-identifier-service: build-metadata-db build-identifier-service
@@ -207,13 +207,11 @@ test-identifier-service: build-metadata-db build-identifier-service
 
 test-container-service: build-metadata-db build-container-service
 	docker system prune -f --volumes
-	docker pull mysql:8.0
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
 test-database-service: build-metadata-db build-database-service
 	docker system prune -f --volumes
 	docker pull rabbitmq:3-management-alpine
-	docker pull nginx:alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
 test-discovery-service: build-metadata-db build-discovery-service

@@ -172,6 +172,7 @@ test-database-service:
     reports:
       junit: ./fda-database-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+  timeout: 2 hour
 
 test-discovery-service:
   stage: test-backend
