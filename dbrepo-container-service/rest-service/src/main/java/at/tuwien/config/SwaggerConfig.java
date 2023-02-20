@@ -7,11 +7,14 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
+
 
 @Configuration
 public class SwaggerConfig {
@@ -23,11 +26,11 @@ public class SwaggerConfig {
     public OpenAPI springShopOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Database Repository Database Service API")
+                        .title("Database Repository Container Service API")
                         .contact(new Contact()
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
-                        .description("Service that manages the databases")
+                        .description("Service that manages the containers")
                         .version(version)
                         .license(new License()
                                 .name("Apache 2.0")
@@ -46,7 +49,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("database-service")
+                .group("container-service")
                 .pathsToMatch("/api/**")
                 .build();
     }
