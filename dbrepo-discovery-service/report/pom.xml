@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.tuwien</groupId>
-        <artifactId>fda-discovery-service</artifactId>
-        <version>1.1.0-alpha</version>
+        <artifactId>dbrepo-discovery-service</artifactId>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>report</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-discovery-service-report</name>
+    <version>1.2.0</version>
+    <name>dbrepo-discovery-service-report</name>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>

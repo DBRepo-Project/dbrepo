@@ -8,9 +8,9 @@
         <version>2.3.4.RELEASE</version>
     </parent>
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-gateway-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-gateway-service</name>
+    <artifactId>dbrepo-gateway-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-gateway-service</name>
     <description>Demo project for Spring Boot</description>
 
     <packaging>pom</packaging>
@@ -111,7 +111,7 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>**/GatewayServiceApplication.class</exclude>
+                        <exclude>**/DbrepoGatewayServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
