@@ -172,11 +172,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
     @ExceptionHandler(ImageNotSupportedException.class)
     public ResponseEntity<ApiErrorDto> handle(ImageNotSupportedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_ACCEPTABLE)
+                .status(HttpStatus.NOT_IMPLEMENTED)
                 .message(e.getLocalizedMessage())
                 .code("error.database.imagenotsupported")
                 .build();

@@ -2,6 +2,7 @@ package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import io.swagger.v3.oas.annotations.Hidden;
 import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     @ExceptionHandler(AmqpException.class)
     public ResponseEntity<ApiErrorDto> handle(AmqpException e, WebRequest request) {
@@ -26,6 +28,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(ColumnParseException.class)
     public ResponseEntity<ApiErrorDto> handle(ColumnParseException e, WebRequest request) {
@@ -37,6 +40,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ContainerNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerNotFoundException e, WebRequest request) {
@@ -48,17 +52,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @Hidden
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(DatabaseConnectionException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseConnectionException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .message(e.getLocalizedMessage())
                 .code("error.query.databaseconnection")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(DatabaseNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
@@ -70,17 +76,31 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Hidden
+    @ResponseStatus(HttpStatus.GONE)
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ApiErrorDto> handle(FileStorageException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.GONE)
                 .message(e.getLocalizedMessage())
                 .code("error.query.filestore")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HeaderInvalidException.class)
+    public ResponseEntity<ApiErrorDto> handle(HeaderInvalidException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.query.exportheader")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(IdentifierNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
@@ -92,17 +112,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
     @ExceptionHandler(ImageNotSupportedException.class)
     public ResponseEntity<ApiErrorDto> handle(ImageNotSupportedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.NOT_IMPLEMENTED)
                 .message(e.getLocalizedMessage())
                 .code("error.query.imagenotsupported")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(NotAllowedException.class)
     public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
@@ -114,6 +136,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(PaginationException.class)
     public ResponseEntity<ApiErrorDto> handle(PaginationException e, WebRequest request) {
@@ -125,6 +148,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(QueryAlreadyPersistedException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryAlreadyPersistedException e, WebRequest request) {
@@ -136,6 +160,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(QueryMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryMalformedException e, WebRequest request) {
@@ -147,6 +172,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(QueryNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryNotFoundException e, WebRequest request) {
@@ -158,6 +184,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
     @ExceptionHandler(QueryStoreException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryStoreException e, WebRequest request) {
@@ -169,6 +196,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(SortException.class)
     public ResponseEntity<ApiErrorDto> handle(SortException e, WebRequest request) {
@@ -180,6 +208,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.LOCKED)
     @ExceptionHandler(TableMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
@@ -191,6 +220,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(TableNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e, WebRequest request) {
@@ -202,6 +232,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(TupleDeleteException.class)
     public ResponseEntity<ApiErrorDto> handle(TupleDeleteException e, WebRequest request) {
@@ -213,6 +244,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {
@@ -224,6 +256,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.LOCKED)
     @ExceptionHandler(ViewMalformedException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewMalformedException e, WebRequest request) {
@@ -235,6 +268,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ViewNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ViewNotFoundException e, WebRequest request) {
