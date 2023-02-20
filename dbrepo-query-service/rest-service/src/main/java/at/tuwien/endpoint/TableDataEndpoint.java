@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ImportDto;
-import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;

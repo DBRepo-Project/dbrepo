@@ -560,8 +560,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                String username, DatabaseAccess access, Principal principal, Instant timestamp,
                                Long page, Long size, SortType sortDirection, String sortColumn)
             throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException,
-            TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+            TableNotFoundException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, QueryStoreException, SortException {
 
         /* mock */
         when(databaseService.find(containerId, databaseId))
@@ -574,7 +574,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
+        final ResponseEntity<QueryResultDto> response = dataEndpoint.data(containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());

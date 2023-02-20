@@ -1,21 +1,17 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.container.*;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.endpoints.ImageEndpoint;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
-import at.tuwien.service.impl.ContainerServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +27,6 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.ws.rs.NotAllowedException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -236,7 +231,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findById_anonymous_succeeds() throws ImageNotFoundException {
 
         /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, null);
+        findById_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -248,7 +243,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageEndpoint.findById(CONTAINER_1_ID, null);
+            imageEndpoint.findById(CONTAINER_1_ID);
         });
     }
 
@@ -261,7 +256,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_1_PRINCIPAL);
+        findById_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -273,7 +268,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
+        findById_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -285,7 +280,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_3_PRINCIPAL);
+        findById_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -489,14 +484,14 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void findById_generic(Long imageId, ContainerImage image, Principal principal) throws ImageNotFoundException {
+    public void findById_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
         when(imageRepository.findById(imageId))
                 .thenReturn(Optional.of(image));
 
         /* test */
-        final ResponseEntity<ImageDto> response = imageEndpoint.findById(imageId, principal);
+        final ResponseEntity<ImageDto> response = imageEndpoint.findById(imageId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }

@@ -31,7 +31,7 @@ networks:
 
 services:
 
-  metadata-db:
+  dbrepo-metadata-db:
     restart: on-failure
     container_name: dbrepo-metadata-db
     hostname: metadata-db
@@ -48,7 +48,7 @@ services:
     logging:
       driver: json-file
 
-  discovery-service:
+  dbrepo-discovery-service:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
@@ -60,7 +60,7 @@ services:
     logging:
       driver: json-file
 
-  gateway-service:
+  dbrepo-gateway-service:
     restart: on-failure
     container_name: dbrepo-gateway-service
     hostname: gateway-service
@@ -72,16 +72,16 @@ services:
     env_file:
       - .env
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
     logging:
       driver: json-file
 
-  database-service:
+  dbrepo-database-service:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service:latest
+    image: dbrepo/database-service:1.2
     networks:
       userdb:
       core:
@@ -90,16 +90,16 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      container-service:
+      dbrepo-container-service:
         condition: service_healthy
-      broker-service:
+      dbrepo-broker-service:
         condition: service_started
-      authentication-service:
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
 
-  container-service:
+  dbrepo-container-service:
     restart: on-failure
     container_name: dbrepo-container-service
     hostname: container-service
@@ -111,12 +111,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      authentication-service:
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
 
-  authentication-service:
+  dbrepo-authentication-service:
     restart: on-failure
     container_name: dbrepo-authentication-service
     hostname: authentication-service
@@ -126,16 +126,16 @@ services:
     env_file:
       - .env
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
-      broker-service:
+      dbrepo-broker-service:
         condition: service_started
-      metadata-db:
+      dbrepo-metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
 
-  query-service:
+  dbrepo-query-service:
     restart: on-failure
     container_name: dbrepo-query-service
     hostname: query-service
@@ -148,14 +148,14 @@ services:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
-      table-service:
+      dbrepo-table-service:
         condition: service_healthy
-      authentication-service:
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
 
-  table-service:
+  dbrepo-table-service:
     restart: on-failure
     container_name: dbrepo-table-service
     hostname: table-service
@@ -169,16 +169,16 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
-      authentication-service:
+      dbrepo-authentication-service:
         condition: service_healthy
-      search-service:
+      dbrepo-search-service:
         condition: service_started
-      broker-service:
+      dbrepo-broker-service:
         condition: service_started
     logging:
       driver: json-file
 
-  identifier-service:
+  dbrepo-identifier-service:
     restart: on-failure
     container_name: dbrepo-identifier-service
     hostname: identifier-service
@@ -188,16 +188,16 @@ services:
     env_file:
       - .env
     depends_on:
-      query-service:
+      dbrepo-query-service:
         condition: service_healthy
-      authentication-service:
+      dbrepo-authentication-service:
         condition: service_healthy
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     logging:
       driver: json-file
 
-  metadata-service:
+  dbrepo-metadata-service:
     restart: on-failure
     container_name: dbrepo-metadata-service
     hostname: metadata-service
@@ -207,12 +207,12 @@ services:
     env_file:
       - .env
     depends_on:
-      metadata-db:
+      dbrepo-metadata-db:
         condition: service_started
     logging:
       driver: json-file
 
-  analyse-service:
+  dbrepo-analyse-service:
     restart: on-failure
     container_name: dbrepo-analyse-service
     hostname: analyse-service
@@ -226,12 +226,12 @@ services:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
     logging:
       driver: json-file
 
-  semantics-service:
+  dbrepo-semantics-service:
     restart: on-failure
     container_name: dbrepo-semantics-service
     hostname: semantics-service
@@ -244,14 +244,14 @@ services:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
-      metadata-db:
+      dbrepo-metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
 
-  broker-service:
+  dbrepo-broker-service:
     restart: on-failure
     container_name: dbrepo-broker-service
     hostname: broker-service
@@ -264,14 +264,14 @@ services:
     env_file:
       - .env
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
     volumes:
       - broker-service-data:/var/lib/rabbitmq/
     logging:
       driver: json-file
 
-  search-service:
+  dbrepo-search-service:
     restart: always
     container_name: dbrepo-search-service
     hostname: search-service
@@ -279,8 +279,10 @@ services:
     networks:
       core:
     depends_on:
-      discovery-service:
+      dbrepo-discovery-service:
         condition: service_healthy
+    ports:
+      - 9200:9200
     env_file:
       - .env
     volumes:
@@ -288,7 +290,7 @@ services:
     logging:
       driver: json-file
 
-  ui:
+  dbrepo-ui:
     restart: on-failure
     container_name: dbrepo-ui
     hostname: ui
@@ -301,9 +303,9 @@ services:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
-      identifier-service:
+      dbrepo-identifier-service:
         condition: service_healthy
-      database-service:
+      dbrepo-database-service:
         condition: service_healthy
     logging:
       driver: json-file

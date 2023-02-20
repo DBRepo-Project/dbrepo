@@ -1,4 +1,4 @@
 #!/bin/bash
-python3 -m venv ./fda-analyse-service/venv
-source ./fda-analyse-service/venv/bin/activate
-pip install -r ./fda-analyse-service/requirements.txt
+python3 -m venv ./dbrepo-analyse-service/venv
+source ./dbrepo-analyse-service/venv/bin/activate
+pip install -r ./dbrepo-analyse-service/requirements.txt
