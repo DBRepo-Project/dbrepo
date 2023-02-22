@@ -233,7 +233,7 @@ public class TimeSecretEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         final ResponseEntity<?> response = timeSecretEndpoint.resend(data, principal);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 

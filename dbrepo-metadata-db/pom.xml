@@ -20,6 +20,7 @@
         <module>entities</module>
         <module>querystore</module>
         <module>oai</module>
+        <module>test</module>
     </modules>
 
     <properties>
@@ -97,6 +98,23 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-javadoc</artifactId>
             <version>1.6.6</version>
+        </dependency>
+        <!-- Docker -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>${docker.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-transport-httpclient5</artifactId>
+            <version>${docker.version}</version>
         </dependency>
     </dependencies>
 

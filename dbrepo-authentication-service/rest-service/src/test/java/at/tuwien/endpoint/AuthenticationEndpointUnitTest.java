@@ -378,7 +378,7 @@ public class AuthenticationEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         final ResponseEntity<JwtResponseDto> response = authenticationEndpoint.authenticateUser(data);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         final JwtResponseDto body = response.getBody();
         assertNotNull(body);
         assertEquals(user.getId(), body.getId());
