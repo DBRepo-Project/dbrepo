@@ -79,10 +79,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws InterruptedException {
         afterAll();
         /* create network */
         DockerConfig.createAllNetworks();
+        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
+        DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll

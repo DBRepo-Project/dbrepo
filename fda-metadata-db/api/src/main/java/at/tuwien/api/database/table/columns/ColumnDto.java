@@ -44,6 +44,7 @@ public class ColumnDto {
     private String internalName;
 
     @JsonProperty("date_format")
+    @org.springframework.data.annotation.Transient
     private ImageDateDto dateFormat;
 
     @NotNull

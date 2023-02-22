@@ -38,6 +38,7 @@ public class ImageDto {
     private String driverClass;
 
     @JsonProperty("date_formats")
+    @org.springframework.data.annotation.Transient
     private List<ImageDateDto> dateFormats;
 
     @NotBlank
