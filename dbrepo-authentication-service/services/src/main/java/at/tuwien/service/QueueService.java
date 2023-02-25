@@ -15,9 +15,11 @@ public interface QueueService {
     UserDetailsDto findUser(String username) throws BrokerUserCreationException;
 
     /**
-     * Creates a user at the Broker Service
+     * Creates a user with given username at the Broker Service.
      *
-     * @param data The user data@throws BrokerUserCreationException The broker did not create the user.
+     * @param username The username.
+     * @param data     The user data
+     * @throws BrokerUserCreationException The broker did not create the user.
      */
     void createUser(String username, SignupRequestDto data) throws BrokerUserCreationException;
 

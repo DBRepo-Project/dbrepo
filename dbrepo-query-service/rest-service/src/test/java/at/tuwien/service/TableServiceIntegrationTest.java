@@ -71,7 +71,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private H2Utils h2Utils;
 
-    final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {

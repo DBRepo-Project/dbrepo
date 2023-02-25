@@ -62,7 +62,7 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
     @Autowired
     private H2Utils h2Utils;
 
-    private final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {

@@ -7,28 +7,28 @@ import at.tuwien.exception.SecretInvalidException;
 public interface TimeSecretService {
 
     /**
-     * Find token by random string.
+     * Find time secret by its string.
      *
-     * @param token The random string.
-     * @return The token.
-     * @throws SecretInvalidException The token was not found or has expired.
+     * @param string The string.
+     * @return The time secret.
+     * @throws SecretInvalidException The time secret was not found or has expired.
      */
-    TimeSecret find(String token) throws SecretInvalidException;
+    TimeSecret find(String string) throws SecretInvalidException;
 
     /**
-     * Create a token with random string.
+     * Create a time secret verification with random string.
      *
      * @param user The user.
-     * @return The token.
+     * @return The time secret.
      */
     TimeSecret create(User user);
 
     /**
-     * Invalidate a token for a given user.
+     * Invalidate a time secret for a given user.
      *
-     * @param token The token.
+     * @param string The string.
      * @return The user, if successful.
-     * @throws SecretInvalidException THe token was not found or has expired.
+     * @throws SecretInvalidException The time secret was not found or has expired.
      */
-    User invalidate(String token) throws SecretInvalidException;
+    User invalidate(String string) throws SecretInvalidException;
 }

@@ -71,7 +71,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private MessageQueueService messageQueueService;
 
-    private final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {

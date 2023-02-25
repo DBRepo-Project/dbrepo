@@ -6,12 +6,11 @@ import at.tuwien.exception.DatabaseNotFoundException;
 public interface DatabaseService {
 
     /**
-     * Finds a database by given id in the remote database service.
+     * Finds a database by given id in the metadata database.
      *
-     * @param containerId The container id.
-     * @param databaseId  The database id.
-     * @return The database.
-     * @throws DatabaseNotFoundException The database was not found.
+     * @param databaseId The database id.
+     * @return The database, if successful.
+     * @throws DatabaseNotFoundException The database with this id was not found in the metadata database.
      */
-    Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException;
+    Database find(Long databaseId) throws DatabaseNotFoundException;
 }

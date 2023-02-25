@@ -2,13 +2,10 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.JwtResponseDto;
 import at.tuwien.api.auth.LoginRequestDto;
-import at.tuwien.api.user.UserModifyPasswordDto;
 import at.tuwien.auth.JwtUtils;
 import at.tuwien.config.MailConfig;
 import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.TokenNotFoundException;
-import at.tuwien.exception.TokenRevokedException;
 import at.tuwien.exception.UserEmailNotVerifiedException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.AuthenticationMapper;
@@ -92,24 +89,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         token.setLastUsed(Instant.now());
         tokenRepository.save(token);
         log.info("Updated token usage of token with hash {}", hash);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public JwtResponseDto authenticate(UserModifyPasswordDto data) throws UserEmailNotVerifiedException,
-            UserNotFoundException {
-        final User user = userService.findByUsername(data.getUsername());
-        if (mailConfig.getMailVerify() && !user.getEmailVerified()) {
-            log.error("E-Mail not verified for username {}", data.getUsername());
-            throw new UserEmailNotVerifiedException("E-Mail not verified");
-        }
-        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(data.getUsername(),
-                data.getPassword());
-        final Authentication authentication = authenticationManager.authenticate(token);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        final JwtResponseDto response = userMapper.principalToJwtResponseDto(authentication.getPrincipal());
-        response.setToken(jwtUtils.generateJwtToken(data.getUsername()));
-        return response;
     }
 
     @Override

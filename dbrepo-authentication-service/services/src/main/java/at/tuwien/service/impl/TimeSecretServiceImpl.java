@@ -31,11 +31,11 @@ public class TimeSecretServiceImpl implements TimeSecretService {
 
     @Override
     @Transactional(readOnly = true)
-    public TimeSecret find(String token) throws SecretInvalidException {
+    public TimeSecret find(String string) throws SecretInvalidException {
         /* check */
-        final Optional<TimeSecret> entity = timeSecretRepository.findByToken(token);
+        final Optional<TimeSecret> entity = timeSecretRepository.findByToken(string);
         if (entity.isEmpty()) {
-            log.error("Failed to find token: {}", token);
+            log.error("Failed to find token: {}", string);
             throw new SecretInvalidException("Failed to find token");
         }
         return entity.get();
@@ -60,9 +60,9 @@ public class TimeSecretServiceImpl implements TimeSecretService {
 
     @Override
     @Transactional
-    public User invalidate(String token) throws SecretInvalidException {
+    public User invalidate(String string) throws SecretInvalidException {
         /* check */
-        final TimeSecret timeSecret = find(token);
+        final TimeSecret timeSecret = find(string);
         /* verify */
         final User user = timeSecret.getUser();
         user.setEmailVerified(true);

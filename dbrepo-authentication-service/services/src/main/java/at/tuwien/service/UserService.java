@@ -70,7 +70,8 @@ public interface UserService {
      * @param id   The id.
      * @param data The updated information.
      * @return The updated user.
-     * @throws UserNotFoundException The user was not found.
+     * @throws UserNotFoundException   The user was not found.
+     * @throws OrcidMalformedException The ORCID is malformed or the checksum does not match.
      */
     User update(Long id, UserUpdateDto data) throws UserNotFoundException, OrcidMalformedException;
 
@@ -82,6 +83,7 @@ public interface UserService {
      * @return The updated user.
      * @throws UserNotFoundException The user was not found.
      * @throws RoleNotFoundException Some updated roles were not found.
+     * @throws RoleUniqueException   Attempted to assign the same role at least twice, must be unique.
      */
     User updateRoles(Long id, UserRolesDto data)
             throws UserNotFoundException, RoleNotFoundException, RoleUniqueException;
@@ -101,7 +103,8 @@ public interface UserService {
      * @param id   The id.
      * @param data The updated roles.
      * @return The updated user.
-     * @throws UserNotFoundException The user was not found.
+     * @throws UserNotFoundException       The user was not found.
+     * @throws BrokerUserCreationException The user password could not be updated.
      */
     User updatePassword(Long id, UserPasswordDto data) throws UserNotFoundException, BrokerUserCreationException;
 

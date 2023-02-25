@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
-    List<Identifier> findByContainerId(Long containerId);
+    List<Identifier> findByDatabaseId(Long containerId);
 
-    Optional<Identifier> findByContainerIdAndDatabaseIdAndType(Long containerId, Long databaseId, IdentifierType type);
+    Optional<Identifier> findByDatabaseIdAndType(Long databaseId, IdentifierType type);
 
 }

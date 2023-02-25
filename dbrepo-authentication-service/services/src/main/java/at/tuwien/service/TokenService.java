@@ -65,6 +65,7 @@ public interface TokenService {
      * Checks if the developer token has not been marked as deleted
      *
      * @param jwt The token
+     * @throws ServletException The jwt token is marked as invalid.
      */
     void check(String jwt) throws ServletException;
 }
