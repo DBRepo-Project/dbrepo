@@ -12,7 +12,10 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -923,6 +926,12 @@ public abstract class BaseTest {
     public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
 
+    public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_3_NAME)
+            .description(TABLE_3_DESCRIPTION)
+            .columns(List.of())
+            .build();
+
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
@@ -1121,6 +1130,8 @@ public abstract class BaseTest {
     public final static String COLUMN_4_2_FOREIGN_KEY = null;
     public final static String COLUMN_4_2_CHECK = null;
     public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
+    public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.STRING;
+    public final static String[] COLUMN_4_2_ENUM_VALUES_ARRAY = null;
 
     public final static Long COLUMN_4_3_ID = 11L;
     public final static Integer COLUMN_4_3_ORDINALPOS = 2;
@@ -2587,6 +2598,40 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(TABLE_4_COLUMNS)
             .creator(USER_1)
+            .build();
+
+    public final static List<ColumnCreateDto> TABLE_4_COLUMNS_INVALID_CREATE = List.of(ColumnCreateDto.builder()
+            .name(COLUMN_4_2_NAME)
+            .type(COLUMN_4_2_TYPE_DTO)
+            .dfid(COLUMN_4_2_DATE_FORMAT)
+            .nullAllowed(COLUMN_4_2_NULL)
+            .unique(COLUMN_4_2_UNIQUE)
+            .primaryKey(COLUMN_4_2_PRIMARY)
+            .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
+            .foreignKey("somecolumn")
+            .references("sometable")
+            .build());
+
+    public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE = List.of(ColumnCreateDto.builder()
+            .name(COLUMN_4_2_NAME)
+            .type(COLUMN_4_2_TYPE_DTO)
+            .dfid(COLUMN_4_2_DATE_FORMAT)
+            .nullAllowed(COLUMN_4_2_NULL)
+            .unique(COLUMN_4_2_UNIQUE)
+            .primaryKey(COLUMN_4_2_PRIMARY)
+            .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
+            .build());
+
+    public final static TableCreateDto TABLE_4_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_4_NAME)
+            .description(TABLE_4_DESCRIPTION)
+            .columns(TABLE_4_COLUMNS_CREATE)
+            .build();
+
+    public final static TableCreateDto TABLE_4_INVALID_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_4_NAME)
+            .description(TABLE_4_DESCRIPTION)
+            .columns(TABLE_4_COLUMNS_INVALID_CREATE)
             .build();
 
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
