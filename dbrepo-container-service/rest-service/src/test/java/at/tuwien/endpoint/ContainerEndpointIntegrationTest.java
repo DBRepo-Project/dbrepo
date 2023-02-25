@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.*;
-import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.entities.container.Container;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class ContainerEndpointUnitTest extends BaseUnitTest {
+public class ContainerEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
@@ -46,9 +45,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
 
     @Autowired
     private ContainerEndpoint containerEndpoint;
-
-    @Autowired
-    private DockerUtil dockerUtil;
 
     @Test
     public void findById_anonymous_succeeds() throws DockerClientException, ContainerNotFoundException,
@@ -522,7 +518,8 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     }
 
     public void modify_generic(ContainerActionTypeDto data, Long containerId, Container container, Principal principal)
-            throws ContainerAlreadyRunningException, ContainerNotFoundException, ContainerAlreadyStoppedException, UserNotFoundException, NotAllowedException {
+            throws ContainerAlreadyRunningException, ContainerNotFoundException, ContainerAlreadyStoppedException,
+            UserNotFoundException, NotAllowedException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(data)
                 .build();

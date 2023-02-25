@@ -189,7 +189,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
-        when(identifierRepository.findByContainerId(CONTAINER_1_ID))
+        when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
@@ -640,7 +640,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(container));
         when(databaseRepository.findAll(containerId))
                 .thenReturn(databases);
-        when(identifierRepository.findByContainerId(containerId))
+        when(identifierRepository.findByDatabaseId(containerId))
                 .thenReturn(List.of());
 
         /* test */

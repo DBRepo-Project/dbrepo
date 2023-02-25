@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.amqp.RabbitMqConsumer;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.AmqpConfig;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
@@ -13,6 +12,7 @@ import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
+import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -71,13 +71,13 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private MessageQueueService messageQueueService;
 
-    private final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
         DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         DockerConfig.createContainer(null, CONTAINER_BROKER, CONTAINER_BROKER_ENV);
         DockerConfig.startContainer(CONTAINER_BROKER);

@@ -286,7 +286,7 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         try { // TODO improve this by proper mapping
-            final Identifier identifier = identifierService.find(containerId, databaseId, IdentifierType.DATABASE);
+            final Identifier identifier = identifierService.find(databaseId, IdentifierType.DATABASE);
             dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
         } catch (IdentifierNotFoundException e) {
             // ignore

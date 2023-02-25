@@ -182,7 +182,7 @@ public class ContainerEndpoint {
         log.debug("endpoint modify container, containerId={}, changeDto={}, principal={}", containerId, changeDto, principal);
         final User user = userService.findByUsername(principal.getName());
         final Container container = containerService.find(containerId);
-        if (!(container.getCreator().getId().equals(user.getId()) || user.getRoles().stream().anyMatch(r -> r.name().equals("ROLE_DEVELOPER")))) {
+        if (!container.getOwner().getId().equals(user.getId()) && user.getRoles().stream().noneMatch(r -> r.name().equals("ROLE_DEVELOPER"))) {
             log.error("Failed to modify container because it is not owned '{}' by the current user {} or is not developer", container.getCreator().getUsername(), user.getUsername());
             throw new NotAllowedException("Failed to modify container because it is not owned by the current user or is not developer");
         }

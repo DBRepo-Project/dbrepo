@@ -100,7 +100,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_succeeds() throws ImageNotFoundException, DockerClientException {
+    public void update_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
@@ -119,7 +119,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_port_succeeds() throws ImageNotFoundException, DockerClientException {
+    public void update_port_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(9999)
@@ -155,7 +155,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws ImageNotFoundException, PersistenceException {
+    public void delete_succeeds() throws ImageNotFoundException {
 
         /* mock */
         doNothing()

@@ -141,6 +141,7 @@ public abstract class BaseTest {
             .titlesAfter(USER_1_TITLES_AFTER)
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
+            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
             .roles(List.of("ROLE_RESEARCHER"))
             .build();
 
@@ -214,6 +215,7 @@ public abstract class BaseTest {
             .orcid(USER_2_ORCID)
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
+            .authorities(List.of(AUTHORITY_DEVELOPER_DTO))
             .roles(List.of("ROLE_DEVELOPER"))
             .build();
 
@@ -241,9 +243,15 @@ public abstract class BaseTest {
 
     public final static Long USER_3_ID = 3L;
     public final static String USER_3_USERNAME = "system";
+    public final static String USER_3_FIRSTNAME = "System";
+    public final static String USER_3_LASTNAME = "System";
+    public final static String USER_3_AFFILIATION = "TU Wien";
+    public final static String USER_3_ORCID = null;
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static Boolean USER_3_VERIFIED = true;
+    public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.now().minus(1, HOURS);
 
     public final static User USER_3 = User.builder()
@@ -257,6 +265,21 @@ public abstract class BaseTest {
             .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_3_CREATED)
             .lastModified(USER_3_CREATED)
+            .build();
+
+    public final static UserDto USER_3_DTO = UserDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .password(USER_3_PASSWORD)
+            .firstname(USER_3_FIRSTNAME)
+            .lastname(USER_3_LASTNAME)
+            .affiliation(USER_3_AFFILIATION)
+            .orcid(USER_3_ORCID)
+            .emailVerified(USER_3_VERIFIED)
+            .themeDark(USER_3_THEME_DARK)
+            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
+            .roles(List.of("ROLE_RESEARCHER"))
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
@@ -276,20 +299,39 @@ public abstract class BaseTest {
 
     public final static Long USER_4_ID = 4L;
     public final static String USER_4_USERNAME = "junit4";
+    public final static String USER_4_FIRSTNAME = "JUnit";
+    public final static String USER_4_LASTNAME = "4";
+    public final static String USER_4_AFFILIATION = "TU Wien";
+    public final static String USER_4_ORCID = null;
     public final static String USER_4_PASSWORD = "junit4";
     public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE847AABCF49680A157D85D44A117E9";
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
-    public final static Boolean USER_4_THEME = false;
+    public final static Boolean USER_4_THEME_DARK = false;
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .emailVerified(USER_4_VERIFIED)
-            .themeDark(USER_4_THEME)
+            .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDto USER_4_DTO = UserDto.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .password(USER_4_PASSWORD)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .affiliation(USER_4_AFFILIATION)
+            .orcid(USER_4_ORCID)
+            .emailVerified(USER_4_VERIFIED)
+            .themeDark(USER_4_THEME_DARK)
+            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
+            .roles(List.of("ROLE_RESEARCHER"))
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
@@ -578,9 +620,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .hash(CONTAINER_1_HASH)
-            .ipAddress(CONTAINER_1_IP)
             .created(CONTAINER_1_CREATED)
+            .ipAddress(CONTAINER_1_IP)
             .creator(USER_1)
+            .owner(USER_1)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -602,9 +645,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .hash(CONTAINER_2_HASH)
-            .ipAddress(CONTAINER_2_IP)
             .created(CONTAINER_2_CREATED)
-            .creator(USER_1)
+            .ipAddress(CONTAINER_2_IP)
+            .creator(USER_2)
+            .owner(USER_2)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -627,7 +671,9 @@ public abstract class BaseTest {
             .image(CONTAINER_3_IMAGE)
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
-            .creator(USER_1)
+            .ipAddress(CONTAINER_3_IP)
+            .creator(USER_3)
+            .owner(USER_3)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
@@ -650,8 +696,9 @@ public abstract class BaseTest {
             .image(CONTAINER_4_IMAGE)
             .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
-            .creator(USER_1)
             .ipAddress(CONTAINER_4_IP)
+            .creator(USER_4)
+            .owner(USER_4)
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
@@ -682,7 +729,6 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
-
     public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m",
             "logger.level=WARN"};
 

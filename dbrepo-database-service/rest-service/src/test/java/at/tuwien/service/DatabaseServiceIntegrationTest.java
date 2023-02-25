@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.config.*;
+import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
@@ -12,6 +12,7 @@ import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.rabbitmq.client.Channel;
+import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
@@ -26,7 +27,6 @@ import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -258,9 +258,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_user_create(String username, String password) throws InterruptedException, SQLException {
 
         /* mock */
+        DockerConfig.createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3);
         containerRepository.save(CONTAINER_3);
-        createContainer(BIND, CONTAINER_3, CONTAINER_3_ENV);
-        startContainer(CONTAINER_3);
 
         /* test */
         final Long queryId = MariaDbConfig.mockUserQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,

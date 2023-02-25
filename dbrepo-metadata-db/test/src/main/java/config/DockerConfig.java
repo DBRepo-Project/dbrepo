@@ -1,7 +1,7 @@
-package at.tuwien.config;
+package config;
 
-import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.container.Container;
+import at.tuwien.test.BaseTest;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 @Log4j2
-public class DockerConfig extends BaseUnitTest {
+public class DockerConfig extends BaseTest {
 
     private final static DockerClientConfig dockerClientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder()
             .withDockerHost("unix:///var/run/docker.sock")
@@ -77,6 +77,18 @@ public class DockerConfig extends BaseUnitTest {
                     state, i);
             throw new RuntimeException("Failed to start container");
         }
+    }
+
+    public static void stopContainer(Container container) {
+        final InspectContainerResponse inspect = dockerClient.inspectContainerCmd(container.getHash())
+                .exec();
+        log.trace("container {} state {}", container.getHash(), inspect.getState().getStatus());
+        if (Objects.equals(inspect.getState().getStatus(), "exited")) {
+            return;
+        }
+        log.info("container {} needs to be stopped", container.getInternalName());
+        dockerClient.stopContainerCmd(container.getHash())
+                .exec();
     }
 
     public static void createContainer(String bind, Container container, String... environment) {

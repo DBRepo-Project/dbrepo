@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
@@ -13,6 +12,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
+import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
@@ -66,25 +66,10 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private StoreService storeService;
 
-    final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @Autowired
     private QueryService queryService;
-
-    final static Database DATABASE_1 = Database.builder() /* overlaps the DATABASE_1 without tables set */
-            .id(DATABASE_1_ID)
-            .created(Instant.now().minus(1, HOURS))
-            .lastModified(Instant.now())
-            .isPublic(true)
-            .name(DATABASE_1_NAME)
-            .container(CONTAINER_1)
-            .internalName(DATABASE_1_INTERNALNAME)
-            .exchangeName(DATABASE_1_EXCHANGE)
-            .creator(USER_1)
-            .owner(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
-            .views(List.of())
-            .build();
 
     @BeforeAll
     public static void beforeAll() {
@@ -93,10 +78,10 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException, SQLException {
+    public void beforeEach() throws InterruptedException {
         afterEach();
         DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         /* metadata database */
         TABLE_1.setDatabase(DATABASE_1);

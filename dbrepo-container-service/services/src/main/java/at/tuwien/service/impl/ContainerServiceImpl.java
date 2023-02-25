@@ -121,7 +121,6 @@ public class ContainerServiceImpl implements ContainerService {
         container.setHash(response1.getId());
         container = containerRepository.save(container);
         log.info("Created container {}", container.getId());
-        log.trace("created container {}", container);
         return container;
     }
 
@@ -130,14 +129,23 @@ public class ContainerServiceImpl implements ContainerService {
     public Container stop(Long containerId) throws ContainerNotFoundException,
             ContainerAlreadyStoppedException {
         final Container container = find(containerId);
+        final InspectContainerResponse response;
         try {
+            response = dockerClient.inspectContainerCmd(container.getHash())
+                    .withSize(true)
+                    .exec();
+            if (response.getState() == null || response.getState().getRunning() == null) {
+                log.warn("Failed to determine container state");
+            } else if (!response.getState().getRunning()) {
+                throw new NotModifiedException("Already stopped");
+            }
             dockerClient.stopContainerCmd(container.getHash()).exec();
         } catch (NotFoundException e) {
             log.error("Failed to stop container: {}", e.getMessage());
-            throw new ContainerNotFoundException("Failed to stop container", e);
+            throw new ContainerNotFoundException("Failed to stop container: " + e.getMessage(), e);
         } catch (NotModifiedException e) {
             log.warn("Failed to stop container: {}", e.getMessage());
-            throw new ContainerAlreadyStoppedException("Failed to stop container", e);
+            throw new ContainerAlreadyStoppedException("Failed to stop container: " + e.getMessage(), e);
         }
         log.info("Stopped container with id {}", containerId);
         return container;
@@ -177,8 +185,8 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container inspect(Long id)
-            throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException {
+    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException,
+            ContainerNotRunningException {
         final Container container = find(id);
         final InspectContainerResponse response;
         try {
@@ -224,15 +232,24 @@ public class ContainerServiceImpl implements ContainerService {
     public Container start(Long containerId) throws ContainerNotFoundException,
             ContainerAlreadyRunningException {
         final Container container = find(containerId);
+        final InspectContainerResponse response;
         try {
+            response = dockerClient.inspectContainerCmd(container.getHash())
+                    .withSize(true)
+                    .exec();
+            if (response.getState() == null || response.getState().getRunning() == null) {
+                log.warn("Failed to determine container state");
+            } else if (response.getState().getRunning()) {
+                throw new NotModifiedException("Already started");
+            }
             dockerClient.startContainerCmd(container.getHash())
                     .exec();
         } catch (NotFoundException e) {
             log.error("Failed to start container, not found: {}", e.getMessage());
-            throw new ContainerNotFoundException("Failed to start container", e);
+            throw new ContainerNotFoundException("Failed to start container: " + e.getMessage(), e);
         } catch (NotModifiedException e) {
             log.warn("Failed to start container, already running: {}", e.getMessage());
-            throw new ContainerAlreadyRunningException("Failed to start container", e);
+            throw new ContainerAlreadyRunningException("Failed to start container: " + e.getMessage(), e);
         }
         log.info("Started container with id {}", containerId);
         return container;

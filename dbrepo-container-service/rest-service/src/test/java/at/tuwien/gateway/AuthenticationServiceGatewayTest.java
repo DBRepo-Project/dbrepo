@@ -47,6 +47,9 @@ public class AuthenticationServiceGatewayTest extends BaseUnitTest {
         final ResponseEntity<UserDto> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(USER_1_DTO);
 
+        /* pre-condition */
+        assertEquals(1, USER_1_DTO.getAuthorities().size());
+
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(UserDto.class)))
                 .thenReturn(mock);

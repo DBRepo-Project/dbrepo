@@ -5,7 +5,6 @@ import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class ImageEndpointUnitTest extends BaseUnitTest {
+public class ImageEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
@@ -50,9 +49,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Autowired
     private ImageEndpoint imageEndpoint;
-
-    @Autowired
-    private DockerUtil dockerUtil;
 
     @Test
     public void findAll_anonymous_succeeds() {
