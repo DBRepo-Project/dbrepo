@@ -5,6 +5,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
@@ -86,7 +87,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
-        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.getType());
+        assertEquals(AccessType.READ, response.getType());
     }
 
     @Test

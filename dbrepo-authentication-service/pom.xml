@@ -9,9 +9,9 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-authentication-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-authentication-service</name>
+    <artifactId>dbrepo-authentication-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-authentication-service</name>
     <description>Demo project for Spring Boot</description>
 
     <packaging>pom</packaging>
@@ -75,13 +75,13 @@
         <!-- Entity and API -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-db-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -111,6 +111,12 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-db-test</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!-- DataSource -->
         <dependency>

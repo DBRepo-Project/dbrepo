@@ -76,7 +76,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 .exec();
         /* create container */
         final PortBinding binding = PortBinding.parse("15672:15672");
-        final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_BROKER_IMAGE + ":" + IMAGE_BROKER_TAG)
+        final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_BROKER_REPOSITORY + ":" + IMAGE_BROKER_TAG)
                 .withHostConfig(hostConfig.withNetworkMode("fda-public").withPortBindings(binding))
                 .withName(CONTAINER_BROKER_NAME)
                 .withIpv4Address(CONTAINER_BROKER_IP)

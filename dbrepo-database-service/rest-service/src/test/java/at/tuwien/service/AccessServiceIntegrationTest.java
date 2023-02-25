@@ -111,7 +111,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
 
         /* test */
-        create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+        create_generic(AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+            create_generic(AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
         });
     }
 
@@ -145,7 +145,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_1_USERNAME, USER_1_ID);
+            create_generic(AccessTypeDto.READ, AccessType.READ, USER_1_USERNAME, USER_1_ID);
         });
     }
 
@@ -163,7 +163,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
 
         /* test */
-        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
 
         /* test */
-        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_2_WRITE_OWN_ACCESS_TYPE_DTO, DATABASE_2_WRITE_OWN_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.WRITE_OWN, AccessType.WRITE_OWN, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1);
 
         /* test */
-        update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_3_WRITE_ALL_ACCESS_TYPE_DTO, DATABASE_3_WRITE_ALL_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+        update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.WRITE_ALL, AccessType.WRITE_ALL, USER_2_USERNAME, USER_2_ID);
     }
 
     @Test
@@ -210,7 +210,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            update_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, "l33tsp34k", null);
+            update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ, "l33tsp34k", null);
         });
     }
 
@@ -228,7 +228,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            update_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_1_READ_ACCESS_TYPE_DTO, DATABASE_1_READ_ACCESS_TYPE, USER_2_USERNAME, USER_2_ID);
+            update_generic(CONTAINER_2_ID, DATABASE_2_ID, AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
         });
     }
 

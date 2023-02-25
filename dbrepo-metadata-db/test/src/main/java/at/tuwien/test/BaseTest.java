@@ -1,28 +1,33 @@
 package at.tuwien.test;
 
+import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.container.image.ImageEnvItemDto;
+import at.tuwien.api.container.image.ImageEnvItemTypeDto;
+import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.identifier.*;
-import at.tuwien.api.user.GrantedAuthorityDto;
-import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.*;
 import at.tuwien.entities.container.image.ContainerImageDate;
-import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.RoleType;
+import at.tuwien.entities.user.TimeSecret;
+import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
@@ -74,12 +79,28 @@ public abstract class BaseTest {
             .authority("ROLE_DATA_STEWARD")
             .build();
 
+    public final static UserThemeSetDto USER_THEME_DARK_DTO = UserThemeSetDto.builder()
+            .themeDark(true)
+            .build();
+
+    public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
+            .themeDark(false)
+            .build();
+
     public final static Long USER_1_ID = 1L;
-    public final static String USER_1_USERNAME = "junit";
-    public final static String USER_1_PASSWORD = "junit";
+    public final static String USER_1_EMAIL = "john.doe@example.com";
+    public final static String USER_1_USERNAME = "jdoe";
+    public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static String USER_1_EMAIL = "junit@example.com";
-    public final static Boolean USER_1_EMAIL_VERIFIED = true;
+    public final static String USER_1_FIRSTNAME = "John";
+    public final static String USER_1_LASTNAME = "Doe";
+    public final static String USER_1_AFFILIATION = "TU Graz";
+    public final static String USER_1_ORCID = "000000034216302X";
+    public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
+    public final static String USER_1_TITLES_BEFORE = "Dr.";
+    public final static String USER_1_TITLES_AFTER = "MSc BSc";
+    public final static Boolean USER_1_VERIFIED = false;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static Instant USER_1_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
@@ -89,22 +110,35 @@ public abstract class BaseTest {
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
-            .emailVerified(true)
-            .themeDark(false)
-            .password(USER_1_PASSWORD)
+            .password(USER_1_PASSWORD_ENCODED)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .titlesBefore(USER_1_TITLES_BEFORE)
+            .titlesAfter(USER_1_TITLES_AFTER)
+            .emailVerified(USER_1_VERIFIED)
+            .themeDark(USER_1_THEME_DARK)
             .created(USER_1_CREATED)
-            .lastModified(USER_1_CREATED)
+            .roles(List.of(RoleType.ROLE_RESEARCHER))
+            .lastModified(USER_1_LAST_MODIFIED)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
-            .emailVerified(true)
-            .themeDark(false)
-            .password(USER_1_PASSWORD)
+            .password(USER_1_PASSWORD_ENCODED)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .titlesBefore(USER_1_TITLES_BEFORE)
+            .titlesAfter(USER_1_TITLES_AFTER)
+            .emailVerified(USER_1_VERIFIED)
+            .themeDark(USER_1_THEME_DARK)
+            .roles(List.of("ROLE_RESEARCHER"))
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -117,46 +151,86 @@ public abstract class BaseTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
+    public final static SignupRequestDto USER_1_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .email(USER_1_EMAIL)
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{})
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_1_USERNAME)
+            .tags(new String[]{"administrator"})
+            .build();
+
     public final static Long USER_2_ID = 2L;
-    public final static String USER_2_USERNAME = "junit2";
-    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_EMAIL = "jane.doe@example.com";
+    public final static String USER_2_USERNAME = "jdoe2";
+    public final static String USER_2_FIRSTNAME = "Jane";
+    public final static String USER_2_LASTNAME = "Doe";
+    public final static String USER_2_AFFILIATION = "TU Wien";
+    public final static String USER_2_ORCID = "0000000292726225";
+    public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
+    public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static String USER_2_EMAIL = "junit2@example.com";
-    public final static Boolean USER_2_EMAIL_VERIFIED = true;
+    public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
-    public final static Instant USER_2_LAST_MODIFIED = USER_2_CREATED;
+    public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
 
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
-            .emailVerified(true)
-            .themeDark(false)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .affiliation(USER_2_AFFILIATION)
+            .orcid(USER_2_ORCID)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
-            .lastModified(USER_2_CREATED)
+            .roles(List.of(RoleType.ROLE_DEVELOPER))
+            .lastModified(USER_2_LAST_MODIFIED)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .password(USER_2_PASSWORD)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .affiliation(USER_2_AFFILIATION)
+            .orcid(USER_2_ORCID)
+            .emailVerified(USER_2_VERIFIED)
+            .themeDark(USER_2_THEME_DARK)
+            .roles(List.of("ROLE_DEVELOPER"))
+            .build();
+
+    public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
+            .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
             .email(USER_2_EMAIL)
-            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
-            .roles(List.of("ROLE_RESEARCHER"))
-            .emailVerified(USER_2_EMAIL_VERIFIED)
-            .themeDark(USER_2_THEME_DARK)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
+            .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DEVELOPER")))
+            .build();
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_2_USERNAME)
+            .tags(new String[]{})
             .build();
 
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
@@ -191,6 +265,123 @@ public abstract class BaseTest {
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
+
+    public final static at.tuwien.api.amqp.UserDetailsDto USER_3_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
+            .name(USER_3_USERNAME)
+            .tags(new String[]{})
+            .build();
+
+    public final static Long USER_4_ID = 4L;
+    public final static String USER_4_USERNAME = "junit4";
+    public final static String USER_4_PASSWORD = "junit4";
+    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE847AABCF49680A157D85D44A117E9";
+    public final static String USER_4_EMAIL = "junit4@ossdip.at";
+    public final static Boolean USER_4_VERIFIED = true;
+    public final static Boolean USER_4_THEME = false;
+
+    public final static User USER_4 = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .emailVerified(USER_4_VERIFIED)
+            .themeDark(USER_4_THEME)
+            .password(USER_4_PASSWORD)
+            .databasePassword(USER_4_DATABASE_PASSWORD)
+            .build();
+
+    public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .password(USER_4_PASSWORD)
+            .authorities(List.of(new SimpleGrantedAuthority("ROLE_RESEARCHER")))
+            .build();
+
+    public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
+            USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
+
+    public final static Long TIME_SECRET_1_ID = 1L;
+    public final static Boolean TIME_SECRET_1_PROCESSED = false;
+    public final static String TIME_SECRET_1_TOKEN = "mysecrettokenrandomlygenerated";
+    public final static Instant TIME_SECRET_1_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
+    public final static TimeSecret TIME_SECRET_1 = TimeSecret.builder()
+            .id(TIME_SECRET_1_ID)
+            .uid(USER_1_ID)
+            .user(USER_1)
+            .token(TIME_SECRET_1_TOKEN)
+            .processed(TIME_SECRET_1_PROCESSED)
+            .validTo(TIME_SECRET_1_VALID_TO)
+            .build();
+
+    public final static Long TIME_SECRET_2_ID = 2L;
+    public final static Boolean TIME_SECRET_2_PROCESSED = true;
+    public final static String TIME_SECRET_2_TOKEN = "blahblahblah";
+    public final static Instant TIME_SECRET_2_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
+    public final static TimeSecret TIME_SECRET_2 = TimeSecret.builder()
+            .id(TIME_SECRET_2_ID)
+            .uid(USER_2_ID)
+            .user(USER_2)
+            .token(TIME_SECRET_2_TOKEN)
+            .processed(TIME_SECRET_2_PROCESSED)
+            .validTo(TIME_SECRET_2_VALID_TO)
+            .build();
+
+    public final static Long TIME_SECRET_3_ID = 3L;
+    public final static Boolean TIME_SECRET_3_PROCESSED = false;
+    public final static String TIME_SECRET_3_TOKEN = "blahblahblah";
+    public final static Instant TIME_SECRET_3_VALID_TO = Instant.now()
+            .plus(1, ChronoUnit.DAYS);
+
+    public final static Long TOKEN_1_ID = 1L;
+    public final static String TOKEN_1_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_1_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
+    public final static String TOKEN_1_AUTHORIZATION = "Bearer " + TOKEN_1_TOKEN;
+    public final static Instant TOKEN_1_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_1 = Token.builder()
+            .id(TOKEN_1_ID)
+            .token(TOKEN_1_TOKEN)
+            .tokenHash(TOKEN_1_TOKEN_HASH)
+            .creator(USER_1_ID)
+            .expires(TOKEN_1_EXPIRES)
+            .build();
+
+    public final static Long TOKEN_2_ID = 2L;
+    public final static String TOKEN_2_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_2_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
+    public final static String TOKEN_2_AUTHORIZATION = "Bearer " + TOKEN_2_TOKEN;
+    public final static Instant TOKEN_2_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_2 = Token.builder()
+            .id(TOKEN_2_ID)
+            .token(TOKEN_2_TOKEN)
+            .tokenHash(TOKEN_2_TOKEN_HASH)
+            .creator(USER_2_ID)
+            .expires(TOKEN_2_EXPIRES)
+            .build();
+
+    public final static Token TOKEN_2_EXPIRED = Token.builder()
+            .id(TOKEN_2_ID)
+            .token(TOKEN_2_TOKEN)
+            .expires(Instant.now().minus(100000000, MILLIS))
+            .build();
+
+    public final static Long TOKEN_3_ID = 3L;
+    public final static String TOKEN_3_TOKEN = "Ul0ioy8oUl0ioy8o";
+    public final static String TOKEN_3_TOKEN_HASH = "131290c0f8bbb4ab9348c3d95ae3b595b625bd130f2ee6a48803a4120ce9c147";
+    public final static String TOKEN_3_AUTHORIZATION = "Bearer " + TOKEN_3_TOKEN;
+    public final static Instant TOKEN_3_EXPIRES = Instant.now().plus(100000000, ChronoUnit.MILLIS);
+
+    public final static Token TOKEN_3 = Token.builder()
+            .id(TOKEN_3_ID)
+            .token(TOKEN_3_TOKEN)
+            .tokenHash(TOKEN_3_TOKEN_HASH)
+            .creator(USER_3_ID)
+            .expires(TOKEN_3_EXPIRES)
+            .build();
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";
@@ -227,6 +418,19 @@ public abstract class BaseTest {
                     .key("MARIADB_PASSWORD")
                     .value("mariadb")
                     .type(ContainerImageEnvironmentItemType.PASSWORD)
+                    .build());
+
+    public final static List<ImageEnvItemDto> IMAGE_1_ENV_DTO = List.of(ImageEnvItemDto.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_USER")
+                    .value("mariadb")
+                    .type(ImageEnvItemTypeDto.USERNAME)
+                    .build(),
+            ImageEnvItemDto.builder()
+                    .iid(IMAGE_1_ID)
+                    .key("MARIADB_PASSWORD")
+                    .value("mariadb")
+                    .type(ImageEnvItemTypeDto.PASSWORD)
                     .build());
 
     public final static Long IMAGE_DATE_1_ID = 1L;
@@ -292,6 +496,30 @@ public abstract class BaseTest {
             .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
             .build();
 
+    public final static Long IMAGE_2_ID = 2L;
+    public final static String IMAGE_2_REPOSITORY = "mysql";
+    public final static String IMAGE_2_TAG = "8.0";
+    public final static String IMAGE_2_HASH = "83b40f2726e5";
+    public final static Integer IMAGE_2_PORT = 3306;
+    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
+    public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
+    public final static String IMAGE_2_JDBC = "mysql";
+    public final static Long IMAGE_2_SIZE = 12000L;
+    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
+
+    public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
+                    .iid(IMAGE_2_ID)
+                    .key("MYSQL_USER")
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.USERNAME)
+                    .build(),
+            ImageEnvItemDto.builder()
+                    .iid(IMAGE_2_ID)
+                    .key("MYSQL_PASSWORD")
+                    .value("mysql")
+                    .type(ImageEnvItemTypeDto.PASSWORD)
+                    .build());
+
     public final static Long IMAGE_BROKER_ID = 2L;
     public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
     public final static String IMAGE_BROKER_TAG = "3-management-alpine";
@@ -335,10 +563,10 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "172.28.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=weather"};
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -359,10 +587,10 @@ public abstract class BaseTest {
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.28.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
-    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=zoo"};
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
+            "MARIADB_DATABASE=zoo"};
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -385,6 +613,8 @@ public abstract class BaseTest {
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
+    public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -450,6 +680,9 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
 
+    public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m",
+            "logger.level=WARN"};
+
     public final static Container CONTAINER_ELASTIC = Container.builder()
             .id(CONTAINER_ELASTIC_ID)
             .name(CONTAINER_ELASTIC_NAME)
@@ -465,20 +698,206 @@ public abstract class BaseTest {
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_INTERNALNAME = "weather";
+    public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_EXCHANGE = "dbrepo." + CONTAINER_1_INTERNALNAME;
-    public final static Instant DATABASE_1_CREATED = Instant.now().minus(2, SECONDS);
+    public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, SECONDS);
+
+    public final static Database DATABASE_1 = Database.builder()
+            .id(DATABASE_1_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .container(CONTAINER_1)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .creator(USER_1)
+            .owner(USER_1)
+            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
+            .views(List.of())
+            .build();
+
+    public final static DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
+            .id(DATABASE_1_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
+            .views(List.of())
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_1_NAME)
+            .isPublic(DATABASE_1_PUBLIC)
+            .build();
 
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
+    public final static Boolean DATABASE_2_PUBLIC = false;
     public final static String DATABASE_2_EXCHANGE = "dbrepo." + CONTAINER_2_INTERNALNAME;
+    public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, SECONDS);
+
+    public final static Database DATABASE_2 = Database.builder()
+            .id(DATABASE_2_ID)
+            .created(DATABASE_1_CREATED)
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .container(CONTAINER_2)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .exchangeName(DATABASE_2_EXCHANGE)
+            .creator(USER_2)
+            .owner(USER_2)
+            .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
+            .views(List.of()) /* VIEW_4 */
+            .build();
+
+    public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
+            .id(DATABASE_2_ID)
+            .created(DATABASE_2_CREATED)
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .exchangeName(DATABASE_2_EXCHANGE)
+            .tables(List.of()) /* TABLE_2, TABLE_2, TABLE_3 */
+            .views(List.of())
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
+            .build();
 
     public final static Long DATABASE_3_ID = 3L;
     public final static String DATABASE_3_NAME = "traffic";
     public final static String DATABASE_3_INTERNALNAME = "traffic";
+    public final static Boolean DATABASE_3_PUBLIC = true;
     public final static String DATABASE_3_EXCHANGE = "dbrepo." + CONTAINER_3_INTERNALNAME;
+    public final static Instant DATABASE_3_CREATED = Instant.now().minus(3, SECONDS);
+
+    public final static Database DATABASE_3 = Database.builder()
+            .id(DATABASE_3_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .container(CONTAINER_3)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .exchangeName(DATABASE_3_EXCHANGE)
+            .creator(USER_3)
+            .owner(USER_3)
+            .tables(List.of())
+            .views(List.of())
+            .build();
+
+    public final static DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()
+            .id(DATABASE_3_ID)
+            .created(DATABASE_3_CREATED)
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .exchangeName(DATABASE_3_EXCHANGE)
+            .tables(List.of()) /* TABLE_3, TABLE_3, TABLE_3 */
+            .views(List.of())
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_OWNER_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .build();
 
     public final static Long DATABASE_4_ID = 4L;
+    public final static String DATABASE_4_NAME = "Weather AT";
+    public final static Boolean DATABASE_4_PUBLIC = false;
+    public final static String DATABASE_4_INTERNALNAME = "weather_at";
+    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
+    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
+    public final static Instant DATABASE_4_UPDATED = Instant.now();
+
+    public final static Database DATABASE_4 = Database.builder()
+            .id(DATABASE_4_ID)
+            .created(Instant.now().minus(4, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_4_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .container(CONTAINER_4)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .exchangeName(DATABASE_4_EXCHANGE)
+            .creator(USER_4)
+            .owner(USER_4)
+            .tables(List.of())
+            .views(List.of())
+            .build();
 
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
@@ -1091,19 +1510,19 @@ public abstract class BaseTest {
             .isPersisted(QUERY_2_PERSISTED)
             .build();
 
-        public final static QueryDto QUERY_2_DTO = QueryDto.builder()
-                .id(QUERY_2_ID)
-                .cid(QUERY_2_CONTAINER_ID)
-                .dbid(QUERY_2_DATABASE_ID)
-                .query(QUERY_2_STATEMENT)
-                .queryNormalized(QUERY_2_STATEMENT)
-                .resultNumber(QUERY_2_RESULT_NUMBER)
-                .resultHash(QUERY_2_RESULT_HASH)
-                .lastModified(QUERY_2_LAST_MODIFIED)
-                .created(QUERY_2_CREATED)
-                .queryHash(QUERY_2_QUERY_HASH)
-                .execution(QUERY_2_EXECUTION)
-                .build();
+    public final static QueryDto QUERY_2_DTO = QueryDto.builder()
+            .id(QUERY_2_ID)
+            .cid(QUERY_2_CONTAINER_ID)
+            .dbid(QUERY_2_DATABASE_ID)
+            .query(QUERY_2_STATEMENT)
+            .queryNormalized(QUERY_2_STATEMENT)
+            .resultNumber(QUERY_2_RESULT_NUMBER)
+            .resultHash(QUERY_2_RESULT_HASH)
+            .lastModified(QUERY_2_LAST_MODIFIED)
+            .created(QUERY_2_CREATED)
+            .queryHash(QUERY_2_QUERY_HASH)
+            .execution(QUERY_2_EXECUTION)
+            .build();
 
     public final static Long QUERY_3_ID = 3L;
 
@@ -2416,51 +2835,6 @@ public abstract class BaseTest {
             .query(VIEW_4_QUERY)
             .build();
 
-    public final static Database DATABASE_1 = Database.builder()
-            .id(DATABASE_1_ID)
-            .created(Instant.now().minus(1, HOURS))
-            .lastModified(Instant.now())
-            .isPublic(true)
-            .name(DATABASE_1_NAME)
-            .container(CONTAINER_1)
-            .internalName(DATABASE_1_INTERNALNAME)
-            .exchangeName(DATABASE_1_EXCHANGE)
-            .creator(USER_1)
-            .owner(USER_1)
-            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
-            .views(List.of())
-            .build();
-
-    public final static Database DATABASE_2 = Database.builder()
-            .id(DATABASE_2_ID)
-            .created(Instant.now().minus(1, HOURS))
-            .lastModified(Instant.now())
-            .isPublic(false)
-            .name(DATABASE_2_NAME)
-            .container(CONTAINER_2)
-            .internalName(DATABASE_2_INTERNALNAME)
-            .exchangeName(DATABASE_2_EXCHANGE)
-            .creator(USER_2)
-            .owner(USER_2)
-            .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
-            .views(List.of()) /* VIEW_4 */
-            .build();
-
-    public final static Database DATABASE_3 = Database.builder()
-            .id(DATABASE_3_ID)
-            .created(Instant.now().minus(1, HOURS))
-            .lastModified(Instant.now())
-            .isPublic(false)
-            .name(DATABASE_3_NAME)
-            .container(CONTAINER_3)
-            .internalName(DATABASE_3_INTERNALNAME)
-            .exchangeName(DATABASE_3_EXCHANGE)
-            .creator(USER_3)
-            .owner(USER_3)
-            .tables(List.of())
-            .views(List.of())
-            .build();
-
     public final static Long QUERY_1_RESULT_ID = 1L;
     public final static Long QUERY_1_RESULT_NUMBER = 2L;
     public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(
@@ -2480,78 +2854,6 @@ public abstract class BaseTest {
             .result(QUERY_1_RESULT_RESULT)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_OWNER_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_1_ID)
-            .huserid(USER_1_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_1_READ_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.READ)
-            .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_OWN)
-            .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_1_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_2_OWNER_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_2_ID)
-            .huserid(USER_1_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_2_READ_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.READ)
-            .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_OWN)
-            .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_3_OWNER_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_3_ID)
-            .huserid(USER_3_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_3_READ_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.READ)
-            .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_OWN)
-            .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_ALL)
-            .hdbid(DATABASE_3_ID)
-            .huserid(USER_1_ID)
-            .build();
-
     public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
             .data(new HashMap<>() {{
                 put("id", 1);
@@ -2560,6 +2862,19 @@ public abstract class BaseTest {
                 put("mintemp", -2.3);
                 put("rainfall", 34.3);
             }})
+            .build();
+
+    public final static String LICENSE_1_IDENTIFIER = "MIT";
+    public final static String LICENSE_1_URI = "https://opensource.org/licenses/MIT";
+
+    public final static License LICENSE_1 = License.builder()
+            .identifier(LICENSE_1_IDENTIFIER)
+            .uri(LICENSE_1_URI)
+            .build();
+
+    public final static LicenseDto LICENSE_1_DTO = LicenseDto.builder()
+            .identifier(LICENSE_1_IDENTIFIER)
+            .uri(LICENSE_1_URI)
             .build();
 
     public final static Long CREATOR_1_ID = 1L;
@@ -3068,6 +3383,28 @@ public abstract class BaseTest {
             .type(IDENTIFIER_4_TYPE)
             .creator(USER_3)
             .creators(List.of())
+            .build();
+
+    public final static String VIRTUAL_HOST_NAME = "fda";
+    public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";
+    public final static String VIRTUAL_HOST_TAGS = "";
+
+    public final static CreateVirtualHostDto VIRTUAL_HOST_CREATE_DTO = CreateVirtualHostDto.builder()
+            .name(VIRTUAL_HOST_NAME)
+            .description(VIRTUAL_HOST_DESCRIPTION)
+            .tags(VIRTUAL_HOST_TAGS)
+            .build();
+
+    public final static ExchangeUpdatePermissionsDto VIRTUAL_HOST_EXCHANGE_UPDATE_DTO = ExchangeUpdatePermissionsDto.builder()
+            .exchange(DATABASE_1_EXCHANGE)
+            .read(".*")
+            .write(".*")
+            .build();
+
+    public final static GrantVirtualHostPermissionsDto VIRTUAL_HOST_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
+            .read(".*")
+            .write(".*")
+            .configure(".*")
             .build();
 
 }

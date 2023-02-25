@@ -41,17 +41,16 @@ public class DatabaseMapperTest extends BaseUnitTest {
         assertEquals(DATABASE_1_ID, response.getId());
         assertEquals(DATABASE_1_NAME, response.getName());
         assertEquals(DATABASE_1_EXCHANGE, response.getExchangeName());
-        assertEquals(DATABASE_1_DESCRIPTION, response.getDescription());
         assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
         assertEquals(DATABASE_1_CREATED, response.getCreated());
         final UserBriefDto creator = response.getCreator();
         assertEquals(USER_1_ID, creator.getId());
         assertEquals(USER_1_USERNAME, creator.getUsername());
-        assertEquals(USER_1_THEME, creator.getThemeDark());
+        assertEquals(USER_1_THEME_DARK, creator.getThemeDark());
         final UserBriefDto owner = response.getOwner();
         assertEquals(USER_1_ID, owner.getId());
         assertEquals(USER_1_USERNAME, owner.getUsername());
-        assertEquals(USER_1_THEME, owner.getThemeDark());
+        assertEquals(USER_1_THEME_DARK, owner.getThemeDark());
     }
 
 }

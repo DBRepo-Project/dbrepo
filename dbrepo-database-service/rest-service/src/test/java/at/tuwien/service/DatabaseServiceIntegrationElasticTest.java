@@ -10,6 +10,7 @@ import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -93,8 +94,8 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
     public void create_elasticSearch_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_SEARCH, CONTAINER_SEARCH_ENV);
-        DockerConfig.startContainer(CONTAINER_SEARCH);
+        DockerConfig.createContainer(null, CONTAINER_ELASTIC, CONTAINER_ELASTIC_ENV);
+        DockerConfig.startContainer(CONTAINER_ELASTIC);
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
