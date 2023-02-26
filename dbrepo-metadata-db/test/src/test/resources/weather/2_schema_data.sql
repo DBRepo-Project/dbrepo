@@ -16,11 +16,45 @@ CREATE TABLE weather_aus
     FOREIGN KEY (location) REFERENCES weather_location (location)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE sensor
+(
+    `timestamp` TIMESTAMP NOT NULL PRIMARY KEY,
+    `value`     DECIMAL
+) WITH SYSTEM VERSIONING;
+
 INSERT INTO weather_location (location, lat, lng)
 VALUES ('Albury', -36.0653583, 146.9112214),
-       ('Sydney', -33.847927, 150.6517942);
+       ('Sydney', -33.847927, 150.6517942),
+       ('Vienna', null, null);
 
 INSERT INTO weather_aus (id, `date`, location, mintemp, rainfall)
 VALUES (1, '2008-12-01', 'Albury', 13.4, 0.6),
        (2, '2008-12-02', 'Albury', 7.4, 0),
        (3, '2008-12-03', 'Albury', 12.9, 0);
+
+INSERT INTO sensor (`timestamp`, value)
+VALUES ('2022-12-24 17:00:00', 10.0),
+       ('2022-12-24 18:00:00', 10.2),
+       ('2022-12-24 19:00:00', null),
+       ('2022-12-24 20:00:00', 10.3),
+       ('2022-12-24 21:00:00', 10.0),
+       ('2022-12-24 22:00:00', null);
+
+########################################################################################################################
+## TEST CASE PRE-REQUISITE                                                                                            ##
+########################################################################################################################
+
+CREATE VIEW mock_view AS
+(
+SELECT `location`, `lat`, `lng`
+FROM `weather_location`
+WHERE `location` = 'Albury');
+
+CREATE VIEW `hs_weather_aus` AS
+SELECT *
+FROM (SELECT `id`, ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total
+      FROM `weather_aus` FOR SYSTEM_TIME ALL
+      GROUP BY inserted_at, deleted_at
+      ORDER BY deleted_at DESC
+      LIMIT 50) AS v
+ORDER BY v.inserted_at, v.deleted_at ASC;

@@ -171,6 +171,7 @@ test-backend-database:
     reports:
       junit: ./dbrepo-database-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+  timeout: 2 hour
 
 test-backend-discovery:
   stage: test-backend
@@ -205,6 +206,7 @@ test-backend-query:
     reports:
       junit: ./dbrepo-query-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
+  timeout: 2 hour
 
 test-backend-table:
   stage: test-backend

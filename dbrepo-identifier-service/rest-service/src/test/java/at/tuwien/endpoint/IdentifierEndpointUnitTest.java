@@ -400,23 +400,23 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     protected void generic_update() throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
 
         /* mock */
-        when(identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO))
-                .thenReturn(IDENTIFIER_1);
-        when(identifierRepository.save(IDENTIFIER_1))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO))
+                .thenReturn(IDENTIFIER_3);
+        when(identifierRepository.save(IDENTIFIER_3))
+                .thenReturn(IDENTIFIER_3);
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
-        assertEquals(IDENTIFIER_1_ID, body.getId());
-        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, body.getDescription());
-        assertEquals(IDENTIFIER_1_QUERY, body.getQuery());
-        assertEquals(IDENTIFIER_1_QUERY_HASH, body.getQueryHash());
-        assertEquals(IDENTIFIER_1_RESULT_NUMBER, body.getResultNumber());
-        assertEquals(IDENTIFIER_1_RESULT_HASH, body.getResultHash());
+        assertEquals(IDENTIFIER_3_ID, body.getId());
+        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
+        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
+        assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
+        assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
+        assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());
+        assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
     }
 
     protected void generic_delete() throws IdentifierNotFoundException {

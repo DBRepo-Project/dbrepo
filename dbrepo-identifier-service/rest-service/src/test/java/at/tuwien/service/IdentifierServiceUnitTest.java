@@ -218,13 +218,15 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
+        when(databaseService.find(DATABASE_3_ID))
+                .thenReturn(DATABASE_3);
+        when(identifierRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_3);
 
 
         /* test */
         assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_TRUSTED_REQUEST, principal, bearer);
+            identifierService.create(IDENTIFIER_3_DTO_TRUSTED_REQUEST, principal, bearer);
         });
     }
 
@@ -235,13 +237,15 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
+        when(databaseService.find(DATABASE_3_ID))
+                .thenReturn(DATABASE_3);
+        when(identifierRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_3);
 
 
         /* test */
         assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_SELF_REQUEST, principal, bearer);
+            identifierService.create(IDENTIFIER_3_DTO_SELF_REQUEST, principal, bearer);
         });
     }
 
