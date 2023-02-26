@@ -148,13 +148,6 @@ public interface DatabaseMapper {
                 .build();
     }
 
-    default DatabaseGiveAccessDto databaseDefaultCreatorAccess(String username) {
-        return DatabaseGiveAccessDto.builder()
-                .username(username)
-                .type(AccessTypeDto.WRITE_ALL)
-                .build();
-    }
-
     default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, User user) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
                 .append(user.getUsername())
@@ -190,13 +183,27 @@ public interface DatabaseMapper {
                 break;
             case WRITE_ALL:
             case WRITE_OWN: // todo restrict the access right
-                statement.append("CREATE, CREATE VIEW, SELECT, INSERT, UPDATE, DELETE");
+                statement.append("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
                 break;
         }
         statement.append(" ON *.* TO `")
                 .append(data.getUsername())
                 .append("`@`%`;");
         log.debug("raw grant {} privileges statement [{}]", data.getType(), statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement rawGrantUserProcedure(Connection connection, User user)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `store_query` TO `")
+                .append(user.getUsername())
+                .append("`@`%`;");
+        log.debug("raw grant execute user procedure privileges statement [{}]", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {

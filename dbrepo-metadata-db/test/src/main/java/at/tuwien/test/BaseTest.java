@@ -56,6 +56,9 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 2</li>
  * <li>Table 3</li>
  * <li>Table 7</li>
+ * <li>Query 1</li>
+ * <li>Query 2</li>
+ * <li>Query 3</li>
  * </ul>
  * <p>
  * Database 2
@@ -64,6 +67,12 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 5</li>
  * <li>Table 6</li>
  * <li>View 4</li>
+ * </ul>
+ * <p>
+ * Database 3
+ * <ul>
+ * <li>Table 8</li>
+ * <li>Query 4</li>
  * </ul>
  */
 public abstract class BaseTest {
@@ -95,7 +104,7 @@ public abstract class BaseTest {
     public final static String USER_1_USERNAME = "junit1";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
-    public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
@@ -167,7 +176,7 @@ public abstract class BaseTest {
 
     public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_1_USERNAME)
-            .tags(new String[]{"administrator" })
+            .tags(new String[]{"administrator"})
             .build();
 
     public final static Long USER_2_ID = 2L;
@@ -179,7 +188,7 @@ public abstract class BaseTest {
     public final static String USER_2_ORCID = "0000000292726225";
     public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
-    public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528) /* 2023-02-26 08:18:48 (UTC) */;
@@ -247,7 +256,7 @@ public abstract class BaseTest {
     public final static String USER_3_ORCID = null;
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
-    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559) /* 2023-02-26 08:19:19 (UTC) */;
@@ -302,7 +311,7 @@ public abstract class BaseTest {
     public final static String USER_4_AFFILIATION = "TU Wien";
     public final static String USER_4_ORCID = null;
     public final static String USER_4_PASSWORD = "junit4";
-    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE847AABCF49680A157D85D44A117E9";
+    public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_THEME_DARK = false;
@@ -592,7 +601,7 @@ public abstract class BaseTest {
     public final static Long IMAGE_ELASTIC_ID = 3L;
     public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
     public final static String IMAGE_ELASTIC_TAG = "7.13.4";
-    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN" };
+    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN"};
     public final static String IMAGE_ELASTIC_CMD = "elasticsearch";
 
     public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
@@ -610,8 +619,7 @@ public abstract class BaseTest {
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629) /* 2023-02-26 08:20:29 (UTC) */;
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=weather" };
+    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -635,8 +643,7 @@ public abstract class BaseTest {
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=zoo" };
+    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=zoo"};
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -660,8 +667,7 @@ public abstract class BaseTest {
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672) /* 2023-02-26 08:21:12 (UTC) */;
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
-            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather" };
+    public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=musicology"};
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -685,8 +691,7 @@ public abstract class BaseTest {
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688) /* 2023-02-26 08:21:28 (UTC) */;
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=sensor" };
+    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=sensor"};
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -730,7 +735,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
     public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m",
-            "logger.level=WARN" };
+            "logger.level=WARN"};
 
     public final static Container CONTAINER_ELASTIC = Container.builder()
             .id(CONTAINER_ELASTIC_ID)
@@ -875,8 +880,8 @@ public abstract class BaseTest {
             .build();
 
     public final static Long DATABASE_3_ID = 3L;
-    public final static String DATABASE_3_NAME = "traffic";
-    public final static String DATABASE_3_INTERNALNAME = "traffic";
+    public final static String DATABASE_3_NAME = "Musicology";
+    public final static String DATABASE_3_INTERNALNAME = "musicology";
     public final static Boolean DATABASE_3_PUBLIC = true;
     public final static String DATABASE_3_EXCHANGE = "dbrepo." + CONTAINER_3_INTERNALNAME;
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
@@ -895,7 +900,7 @@ public abstract class BaseTest {
             .lastModified(DATABASE_3_LAST_MODIFIED)
             .creator(USER_3)
             .owner(USER_3)
-            .tables(List.of())
+            .tables(List.of()) /* TABLE_8 */
             .views(List.of())
             .build();
 
@@ -932,6 +937,11 @@ public abstract class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_3_NAME)
+            .isPublic(DATABASE_3_PUBLIC)
             .build();
 
     public final static Long DATABASE_4_ID = 4L;
@@ -1034,7 +1044,6 @@ public abstract class BaseTest {
             .internalName(TABLE_7_INTERNAL_NAME)
             .description(TABLE_7_DESCRIPTION)
             .name(TABLE_7_NAME)
-            .lastModified(TABLE_7_LAST_MODIFIED)
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
@@ -1053,6 +1062,59 @@ public abstract class BaseTest {
                     .isPrimaryKey(true)
                     .build()))
             .creator(USER_1)
+            .created(TABLE_7_CREATED)
+            .lastModified(TABLE_7_LAST_MODIFIED)
+            .build();
+
+    public final static Long TABLE_8_ID = 8L;
+    public final static String TABLE_8_NAME = "mfcc";
+    public final static String TABLE_8_INTERNAL_NAME = "mfcc";
+    public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
+    public final static String TABLE_8_QUEUE_NAME = DATABASE_3_EXCHANGE + "." + TABLE_8_INTERNAL_NAME;
+    public final static String TABLE_8_ROUTING_KEY = TABLE_8_QUEUE_NAME;
+    public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
+    public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
+
+    public final static Table TABLE_8 = Table.builder()
+            .id(TABLE_8_ID)
+            .created(Instant.now())
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .description(TABLE_8_DESCRIPTION)
+            .name(TABLE_8_NAME)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_8_QUEUE_NAME)
+            .routingKey(TABLE_8_ROUTING_KEY)
+            .columns(List.of(TableColumn.builder()
+                            .id(1L)
+                            .ordinalPosition(0)
+                            .cdbid(DATABASE_3_ID)
+                            .tid(TABLE_8_ID)
+                            .name("ID")
+                            .internalName("id")
+                            .columnType(TableColumnType.NUMBER)
+                            .dfid(null)
+                            .isNullAllowed(false)
+                            .isUnique(true)
+                            .autoGenerated(true)
+                            .isPrimaryKey(true)
+                            .build(),
+                    TableColumn.builder()
+                            .id(2L)
+                            .ordinalPosition(1)
+                            .cdbid(DATABASE_3_ID)
+                            .tid(TABLE_8_ID)
+                            .name("Value")
+                            .internalName("value")
+                            .columnType(TableColumnType.DECIMAL)
+                            .dfid(null)
+                            .isNullAllowed(false)
+                            .isUnique(false)
+                            .autoGenerated(false)
+                            .isPrimaryKey(false)
+                            .build()))
+            .creator(USER_1)
+            .created(TABLE_8_CREATED)
+            .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
@@ -1600,6 +1662,112 @@ public abstract class BaseTest {
             .build();
 
     public final static Long QUERY_3_ID = 3L;
+    public final static String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
+    public final static String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
+    public final static Long QUERY_3_CONTAINER_ID = CONTAINER_3_ID;
+    public final static Long QUERY_3_DATABASE_ID = DATABASE_3_ID;
+    public final static String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
+    public final static Instant QUERY_3_CREATED = Instant.now().minus(3, MINUTES);
+    public final static Instant QUERY_3_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_3_LAST_MODIFIED = Instant.ofEpochSecond(1541588353);
+    public final static Long QUERY_3_RESULT_NUMBER = 2L;
+    public final static Boolean QUERY_3_PERSISTED = true;
+
+    public final static Query QUERY_3 = Query.builder()
+            .id(QUERY_3_ID)
+            .query(QUERY_3_STATEMENT)
+            .queryHash(QUERY_3_QUERY_HASH)
+            .resultHash(QUERY_3_RESULT_HASH)
+            .created(QUERY_3_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_3_PERSISTED)
+            .build();
+
+    public final static QueryDto QUERY_3_DTO = QueryDto.builder()
+            .id(QUERY_3_ID)
+            .cid(QUERY_3_CONTAINER_ID)
+            .dbid(QUERY_3_DATABASE_ID)
+            .query(QUERY_3_STATEMENT)
+            .queryNormalized(QUERY_3_STATEMENT)
+            .resultNumber(QUERY_3_RESULT_NUMBER)
+            .resultHash(QUERY_3_RESULT_HASH)
+            .lastModified(QUERY_3_LAST_MODIFIED)
+            .created(QUERY_3_CREATED)
+            .queryHash(QUERY_3_QUERY_HASH)
+            .execution(QUERY_3_EXECUTION)
+            .build();
+
+    public final static Long QUERY_4_ID = 4L;
+    public final static String QUERY_4_STATEMENT = "SELECT `id`, `value` FROM `mfcc`";
+    public final static String QUERY_4_QUERY_HASH = "df7da3801dfb5c191ff6711d79ce6455f3c09ec8323ce1ff7208ab85387263f5";
+    public final static Long QUERY_4_CONTAINER_ID = CONTAINER_3_ID;
+    public final static Long QUERY_4_DATABASE_ID = DATABASE_3_ID;
+    public final static String QUERY_4_RESULT_HASH = "ff4f7cbe1b96d496957f6e49e55b8b1b577fa4d405d4795af99594cfd40cb80d";
+    public final static Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
+    public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454);
+    public final static Long QUERY_4_RESULT_NUMBER = 6L;
+    public final static Boolean QUERY_4_PERSISTED = true;
+
+    public final static Query QUERY_4 = Query.builder()
+            .id(QUERY_4_ID)
+            .query(QUERY_4_STATEMENT)
+            .queryHash(QUERY_4_QUERY_HASH)
+            .resultHash(QUERY_4_RESULT_HASH)
+            .created(QUERY_4_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_4_PERSISTED)
+            .build();
+
+    public final static QueryDto QUERY_4_DTO = QueryDto.builder()
+            .id(QUERY_4_ID)
+            .cid(QUERY_4_CONTAINER_ID)
+            .dbid(QUERY_4_DATABASE_ID)
+            .query(QUERY_4_STATEMENT)
+            .queryNormalized(QUERY_4_STATEMENT)
+            .resultNumber(QUERY_4_RESULT_NUMBER)
+            .resultHash(QUERY_4_RESULT_HASH)
+            .lastModified(QUERY_4_LAST_MODIFIED)
+            .created(QUERY_4_CREATED)
+            .queryHash(QUERY_4_QUERY_HASH)
+            .execution(QUERY_4_EXECUTION)
+            .build();
+
+    public final static Long QUERY_5_ID = 5L;
+    public final static String QUERY_5_STATEMENT = "SELECT `id`, `value` FROM `mfcc` WHERE `value` > 0";
+    public final static String QUERY_5_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
+    public final static Long QUERY_5_CONTAINER_ID = CONTAINER_3_ID;
+    public final static Long QUERY_5_DATABASE_ID = DATABASE_3_ID;
+    public final static String QUERY_5_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
+    public final static Instant QUERY_5_CREATED = Instant.now().minus(5, MINUTES);
+    public final static Instant QUERY_5_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_5_LAST_MODIFIED = Instant.ofEpochSecond(1551588555);
+    public final static Long QUERY_5_RESULT_NUMBER = 6L;
+    public final static Boolean QUERY_5_PERSISTED = true;
+
+    public final static Query QUERY_5 = Query.builder()
+            .id(QUERY_5_ID)
+            .query(QUERY_5_STATEMENT)
+            .queryHash(QUERY_5_QUERY_HASH)
+            .resultHash(QUERY_5_RESULT_HASH)
+            .created(QUERY_5_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_5_PERSISTED)
+            .build();
+
+    public final static QueryDto QUERY_5_DTO = QueryDto.builder()
+            .id(QUERY_5_ID)
+            .cid(QUERY_5_CONTAINER_ID)
+            .dbid(QUERY_5_DATABASE_ID)
+            .query(QUERY_5_STATEMENT)
+            .queryNormalized(QUERY_5_STATEMENT)
+            .resultNumber(QUERY_5_RESULT_NUMBER)
+            .resultHash(QUERY_5_RESULT_HASH)
+            .lastModified(QUERY_5_LAST_MODIFIED)
+            .created(QUERY_5_CREATED)
+            .queryHash(QUERY_5_QUERY_HASH)
+            .execution(QUERY_5_EXECUTION)
+            .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
@@ -3431,11 +3599,11 @@ public abstract class BaseTest {
     public final static Integer IDENTIFIER_3_PUBLICATION_DAY = 14;
     public final static Integer IDENTIFIER_3_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_3_PUBLICATION_YEAR = 2022;
-    public final static String IDENTIFIER_3_QUERY_HASH = "abc";
-    public final static String IDENTIFIER_3_RESULT_HASH = "def";
-    public final static String IDENTIFIER_3_QUERY = "SELECT `id` FROM `foobar`";
-    public final static String IDENTIFIER_3_NORMALIZED = "SELECT `id` FROM `foobar`";
-    public final static Long IDENTIFIER_3_RESULT_NUMBER = 2L;
+    public final static String IDENTIFIER_3_QUERY_HASH = QUERY_3_QUERY_HASH;
+    public final static String IDENTIFIER_3_RESULT_HASH = QUERY_3_RESULT_HASH;
+    public final static String IDENTIFIER_3_QUERY = QUERY_3_STATEMENT;
+    public final static String IDENTIFIER_3_NORMALIZED = QUERY_3_STATEMENT;
+    public final static Long IDENTIFIER_3_RESULT_NUMBER = QUERY_3_RESULT_NUMBER;
     public final static String IDENTIFIER_3_PUBLISHER = "Norwegian Government";
     public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.SUBSET;

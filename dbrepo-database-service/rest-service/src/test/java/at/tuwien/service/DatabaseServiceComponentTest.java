@@ -5,6 +5,7 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
+public class DatabaseServiceComponentTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
@@ -64,7 +65,7 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
     @Autowired
     private H2Utils h2Utils;
 
-    private final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_MUSICOLOGY = new File("../../dbrepo-metadata-db/test/src/test/resources/musicology").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {
@@ -98,13 +99,14 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(null, CONTAINER_ELASTIC, CONTAINER_ELASTIC_ENV);
         DockerConfig.startContainer(CONTAINER_ELASTIC);
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3);
+        MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_1_DTO);
+                .thenReturn(DATABASE_3_DTO);
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_CREATE, DATABASE_1);
+        generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);
     }
 
     /* ################################################################################################### */
