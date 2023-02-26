@@ -346,7 +346,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             IdentifierRequestException, NotAllowedException {
 
         /* mock */
-        when(databaseRepository.findByContainerAndDatabaseId(containerId, databaseId))
+        when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
         if (user == null) {
             when(userRepository.findByUsername(username))

@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;

@@ -33,6 +33,7 @@ public class FileUtilTest extends BaseUnitTest {
 
     @Test
     @Disabled
+    @Deprecated
     public void loadResource_succeeds() throws IOException {
 
         /* test */

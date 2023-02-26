@@ -92,7 +92,7 @@ public abstract class BaseTest {
 
     public final static Long USER_1_ID = 1L;
     public final static String USER_1_EMAIL = "john.doe@example.com";
-    public final static String USER_1_USERNAME = "jdoe";
+    public final static String USER_1_USERNAME = "junit1";
     public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -105,8 +105,7 @@ public abstract class BaseTest {
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
     public final static Boolean USER_1_THEME_DARK = false;
-    public final static Instant USER_1_CREATED = Instant.now()
-            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
 
     public final static User USER_1 = User.builder()
@@ -168,12 +167,12 @@ public abstract class BaseTest {
 
     public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_1_USERNAME)
-            .tags(new String[]{"administrator"})
+            .tags(new String[]{"administrator" })
             .build();
 
     public final static Long USER_2_ID = 2L;
     public final static String USER_2_EMAIL = "jane.doe@example.com";
-    public final static String USER_2_USERNAME = "jdoe2";
+    public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
@@ -183,8 +182,7 @@ public abstract class BaseTest {
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_THEME_DARK = false;
-    public final static Instant USER_2_CREATED = Instant.now()
-            .minus(1, ChronoUnit.DAYS);
+    public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
 
     public final static User USER_2 = User.builder()
@@ -242,7 +240,7 @@ public abstract class BaseTest {
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
     public final static Long USER_3_ID = 3L;
-    public final static String USER_3_USERNAME = "system";
+    public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
     public final static String USER_3_AFFILIATION = "TU Wien";
@@ -252,7 +250,7 @@ public abstract class BaseTest {
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
     public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_THEME_DARK = false;
-    public final static Instant USER_3_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559) /* 2023-02-26 08:19:19 (UTC) */;
 
     public final static User USER_3 = User.builder()
             .id(USER_3_ID)
@@ -308,6 +306,7 @@ public abstract class BaseTest {
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_THEME_DARK = false;
+    public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
@@ -317,6 +316,7 @@ public abstract class BaseTest {
             .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
+            .created(USER_4_CREATED)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
@@ -592,7 +592,7 @@ public abstract class BaseTest {
     public final static Long IMAGE_ELASTIC_ID = 3L;
     public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
     public final static String IMAGE_ELASTIC_TAG = "7.13.4";
-    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN"};
+    public final static String[] IMAGE_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m", "logger.level=WARN" };
     public final static String IMAGE_ELASTIC_CMD = "elasticsearch";
 
     public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
@@ -607,11 +607,11 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629) /* 2023-02-26 08:20:29 (UTC) */;
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=weather"};
+            "MARIADB_DATABASE=weather" };
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -632,11 +632,11 @@ public abstract class BaseTest {
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=zoo"};
+            "MARIADB_DATABASE=zoo" };
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -657,11 +657,11 @@ public abstract class BaseTest {
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672) /* 2023-02-26 08:21:12 (UTC) */;
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_USER=junit",
-            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather"};
+            "MARIADB_PASSWORD=junit", "MARIADB_DATABASE=weather" };
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -682,11 +682,11 @@ public abstract class BaseTest {
     public final static String CONTAINER_4_NAME = "u04";
     public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
     public final static String CONTAINER_4_IP = "172.28.0.8";
-    public final static Instant CONTAINER_4_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688) /* 2023-02-26 08:21:28 (UTC) */;
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
-            "MARIADB_DATABASE=sensor"};
+            "MARIADB_DATABASE=sensor" };
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -706,7 +706,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
     public final static String CONTAINER_BROKER_IP = "172.29.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
-    public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_BROKER_CREATED = Instant.ofEpochSecond(1677399705) /* 2023-02-26 08:21:45 (UTC) */;
     public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
     public final static String[] CONTAINER_BROKER_ENV = new String[]{};
@@ -728,9 +728,9 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "dbrepo-search-mock-service";
     public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
-    public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
+    public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
     public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms512m -Xmx512m",
-            "logger.level=WARN"};
+            "logger.level=WARN" };
 
     public final static Container CONTAINER_ELASTIC = Container.builder()
             .id(CONTAINER_ELASTIC_ID)
@@ -749,7 +749,8 @@ public abstract class BaseTest {
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static Boolean DATABASE_1_PUBLIC = false;
     public final static String DATABASE_1_EXCHANGE = "dbrepo." + CONTAINER_1_INTERNALNAME;
-    public final static Instant DATABASE_1_CREATED = Instant.now().minus(1, SECONDS);
+    public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
+    public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
 
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
@@ -760,6 +761,8 @@ public abstract class BaseTest {
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
+            .created(DATABASE_1_CREATED)
+            .lastModified(DATABASE_1_LAST_MODIFIED)
             .creator(USER_1)
             .owner(USER_1)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
@@ -811,7 +814,8 @@ public abstract class BaseTest {
     public final static String DATABASE_2_INTERNALNAME = "zoo";
     public final static Boolean DATABASE_2_PUBLIC = false;
     public final static String DATABASE_2_EXCHANGE = "dbrepo." + CONTAINER_2_INTERNALNAME;
-    public final static Instant DATABASE_2_CREATED = Instant.now().minus(2, SECONDS);
+    public final static Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
+    public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
 
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
@@ -822,6 +826,8 @@ public abstract class BaseTest {
             .container(CONTAINER_2)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
+            .created(DATABASE_2_CREATED)
+            .lastModified(DATABASE_2_LAST_MODIFIED)
             .creator(USER_2)
             .owner(USER_2)
             .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
@@ -873,7 +879,8 @@ public abstract class BaseTest {
     public final static String DATABASE_3_INTERNALNAME = "traffic";
     public final static Boolean DATABASE_3_PUBLIC = true;
     public final static String DATABASE_3_EXCHANGE = "dbrepo." + CONTAINER_3_INTERNALNAME;
-    public final static Instant DATABASE_3_CREATED = Instant.now().minus(3, SECONDS);
+    public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
+    public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
 
     public final static Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
@@ -884,6 +891,8 @@ public abstract class BaseTest {
             .container(CONTAINER_3)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
+            .created(DATABASE_3_CREATED)
+            .lastModified(DATABASE_3_LAST_MODIFIED)
             .creator(USER_3)
             .owner(USER_3)
             .tables(List.of())
@@ -930,8 +939,8 @@ public abstract class BaseTest {
     public final static Boolean DATABASE_4_PUBLIC = false;
     public final static String DATABASE_4_INTERNALNAME = "weather_at";
     public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
-    public final static Instant DATABASE_4_CREATED = Instant.now().minus(2, HOURS);
-    public final static Instant DATABASE_4_UPDATED = Instant.now();
+    public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
+    public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
 
     public final static Database DATABASE_4 = Database.builder()
             .id(DATABASE_4_ID)
@@ -942,6 +951,8 @@ public abstract class BaseTest {
             .container(CONTAINER_4)
             .internalName(DATABASE_4_INTERNALNAME)
             .exchangeName(DATABASE_4_EXCHANGE)
+            .created(DATABASE_4_CREATED)
+            .lastModified(DATABASE_4_LAST_MODIFIED)
             .creator(USER_4)
             .owner(USER_4)
             .tables(List.of())
@@ -954,7 +965,8 @@ public abstract class BaseTest {
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
     public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME;
-    public final static Instant TABLE_1_LAST_MODIFIED = Instant.now();
+    public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
+    public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
 
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
@@ -962,7 +974,8 @@ public abstract class BaseTest {
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_2_INTERNALNAME;
     public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME;
-    public final static Instant TABLE_2_LAST_MODIFIED = Instant.now();
+    public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
+    public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
 
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
@@ -970,7 +983,8 @@ public abstract class BaseTest {
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_3_INTERNALNAME;
     public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME;
-    public final static Instant TABLE_3_LAST_MODIFIED = Instant.now();
+    public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
+    public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
 
     public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_3_NAME)
@@ -984,31 +998,35 @@ public abstract class BaseTest {
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
     public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME;
-    public final static Instant TABLE_4_LAST_MODIFIED = Instant.now();
+    public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
+    public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
 
     public final static Long TABLE_5_ID = 5L;
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_5_INTERNALNAME;
-    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME + "/1";
-    public final static Instant TABLE_5_LAST_MODIFIED = Instant.now();
+    public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_5_INTERNALNAME;
+    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME;
+    public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
+    public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
 
     public final static Long TABLE_6_ID = 6L;
     public final static String TABLE_6_NAME = "likes";
     public final static String TABLE_6_INTERNAL_NAME = "likes";
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
-    public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "/" + TABLE_6_INTERNAL_NAME;
-    public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME + "/1";
-    public final static Instant TABLE_6_LAST_MODIFIED = Instant.now();
+    public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNAL_NAME;
+    public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME;
+    public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
+    public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
 
     public final static Long TABLE_7_ID = 7L;
     public final static String TABLE_7_NAME = "Sensor";
     public final static String TABLE_7_INTERNAL_NAME = "sensor";
     public final static String TABLE_7_DESCRIPTION = "Hello sensor";
-    public final static String TABLE_7_QUEUE_NAME = DATABASE_1_EXCHANGE + "/" + TABLE_7_INTERNAL_NAME;
-    public final static String TABLE_7_ROUTING_KEY = TABLE_7_QUEUE_NAME + "/1";
-    public final static Instant TABLE_7_LAST_MODIFIED = Instant.now();
+    public final static String TABLE_7_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_7_INTERNAL_NAME;
+    public final static String TABLE_7_ROUTING_KEY = TABLE_7_QUEUE_NAME;
+    public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
+    public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
 
     public final static Table TABLE_7 = Table.builder()
             .id(TABLE_7_ID)
@@ -1672,6 +1690,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(TABLE_1_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_1_CREATED)
+            .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
     public final static Table TABLE_1_NOCOLS = Table.builder()
@@ -1686,6 +1706,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(List.of())
             .creator(USER_1)
+            .created(TABLE_1_CREATED)
+            .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
@@ -1746,6 +1768,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_2_CREATED)
+            .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
 
     public final static Table TABLE_2_NOCOLS = Table.builder()
@@ -1760,6 +1784,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of())
             .creator(USER_1)
+            .created(TABLE_2_CREATED)
+            .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
@@ -2300,6 +2326,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(TABLE_3_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_3_CREATED)
+            .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
 
     public final static Table TABLE_3_NOCOLS = Table.builder()
@@ -2314,6 +2342,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of())
             .creator(USER_1)
+            .created(TABLE_3_CREATED)
+            .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
 
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
@@ -2644,6 +2674,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(TABLE_4_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_4_CREATED)
+            .lastModified(TABLE_4_LAST_MODIFIED)
             .build();
 
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_INVALID_CREATE = List.of(ColumnCreateDto.builder()
@@ -2738,6 +2770,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_5_ROUTING_KEY)
             .columns(TABLE_5_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_5_CREATED)
+            .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
 
     public final static Long COLUMN_6_1_ID = 26L;
@@ -2811,6 +2845,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_6_ROUTING_KEY)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
+            .created(TABLE_6_CREATED)
+            .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
 
     public final static Long VIEW_1_ID = 1L;

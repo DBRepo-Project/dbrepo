@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
@@ -58,7 +59,19 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.createAllNetworks();
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(ContainerImage.builder()
+                .id(IMAGE_1_ID)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .hash(IMAGE_1_HASH)
+                .compiled(IMAGE_1_BUILT)
+                .dialect(IMAGE_1_DIALECT)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .driverClass(IMAGE_1_DRIVER)
+                .size(IMAGE_1_SIZE)
+                .environment(IMAGE_1_ENV)
+                .defaultPort(IMAGE_1_PORT)
+                .build()) /* keep */;
     }
 
     @AfterEach

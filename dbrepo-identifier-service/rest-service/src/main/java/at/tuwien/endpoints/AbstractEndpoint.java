@@ -30,7 +30,7 @@ public abstract class AbstractEndpoint {
                 containerId, databaseId, permissionCode, principal);
         final Database database;
         try {
-            database = databaseService.find(containerId, databaseId);
+            database = databaseService.find(databaseId);
         } catch (DatabaseNotFoundException e) {
             log.error("Failed to find database with container id {} and database id {}", containerId, databaseId);
             return false;

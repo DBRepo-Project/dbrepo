@@ -9,6 +9,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
+import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.*;

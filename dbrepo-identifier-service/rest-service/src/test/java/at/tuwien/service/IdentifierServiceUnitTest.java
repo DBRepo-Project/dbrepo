@@ -195,7 +195,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
                 .thenReturn(ResponseEntity.ok(QUERY_1_DTO));
@@ -218,7 +218,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
 
 
@@ -235,7 +235,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
 
 
@@ -252,7 +252,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_2_ID, DATABASE_2_ID))
+        when(databaseService.find(DATABASE_2_ID))
                 .thenReturn(DATABASE_2);
         when(identifierRepository.existsByDatabaseIdAndQueryIdAndType(DATABASE_2_ID, QUERY_2_ID, IdentifierType.SUBSET))
                 .thenReturn(true);
@@ -271,7 +271,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(identifierRepository.existsByDatabaseIdAndType(DATABASE_1_ID, IdentifierType.DATABASE))
                 .thenReturn(true);

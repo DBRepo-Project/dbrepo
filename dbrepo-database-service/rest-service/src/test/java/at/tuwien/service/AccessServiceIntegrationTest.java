@@ -64,7 +64,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private H2Utils h2Utils;
 
-    private final static String BIND = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {
@@ -79,7 +79,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException {
+    public void beforeEach() {
         afterEach();
         DockerConfig.createAllNetworks();
         /* metadata database */
@@ -103,7 +103,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -118,7 +118,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void create_multiple_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -136,7 +136,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void create_owner_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
@@ -154,7 +154,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -171,7 +171,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -187,7 +187,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -202,7 +202,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_userNotFound_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
@@ -218,7 +218,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_databaseNotFound_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_2, CONTAINER_2_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -237,7 +237,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
@@ -252,7 +252,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void delete_isOwner_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
@@ -268,7 +268,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void delete_notExists_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);

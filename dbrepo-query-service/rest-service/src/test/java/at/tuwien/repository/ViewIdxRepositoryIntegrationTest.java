@@ -11,6 +11,7 @@ import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.ViewService;
 import com.rabbitmq.client.Channel;
+import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
@@ -25,7 +26,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
-import java.util.*;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

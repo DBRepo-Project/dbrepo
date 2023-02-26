@@ -1,6 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.config.IndexConfig;
@@ -51,6 +52,20 @@ public class DatabaseMapperTest extends BaseUnitTest {
         assertEquals(USER_1_ID, owner.getId());
         assertEquals(USER_1_USERNAME, owner.getUsername());
         assertEquals(USER_1_THEME_DARK, owner.getThemeDark());
+    }
+
+    @Test
+    public void databaseToDatabaseBriefDto_succeeds() {
+
+        /* test */
+        final DatabaseBriefDto response = databaseMapper.databaseToDatabaseBriefDto(DATABASE_1);
+        assertEquals(DATABASE_1_ID, response.getId());
+        assertEquals(DATABASE_1_NAME, response.getName());
+        assertEquals(DATABASE_1_CREATED, response.getCreated());
+        final UserBriefDto creator = response.getCreator();
+        assertEquals(USER_1_ID, creator.getId());
+        assertEquals(USER_1_USERNAME, creator.getUsername());
+        assertEquals(USER_1_THEME_DARK, creator.getThemeDark());
     }
 
 }
