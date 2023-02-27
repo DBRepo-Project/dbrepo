@@ -10,12 +10,6 @@
 
 <script>
 export default {
-  props: {
-    type: {
-      type: String,
-      default: () => 'query' /* query or view */
-    }
-  },
   data () {
     return {
       loading: false,
@@ -92,7 +86,7 @@ export default {
     reExecuteUrl (resultId) {
       const page = this.options.page - 1
       const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.type === 'view' ? '/view' : '/query') + `/${resultId}/data?${urlParams}`
+      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${resultId}/data?${urlParams}`
     },
     async reExecute (id) {
       if (id === null) {

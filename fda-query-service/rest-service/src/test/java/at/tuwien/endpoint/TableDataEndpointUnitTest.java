@@ -294,6 +294,47 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                 page, size, sortDirection, sortColumn);
     }
 
+    public static Stream<Arguments> getCount_succeeds_parameters() {
+        return Stream.of(
+                Arguments.arguments("public anonymous", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                        TABLE_1, null, null, null, null),
+                Arguments.arguments("public read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
+                        USER_2_USERNAME,
+                        DATABASE_1_READ_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("public write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                        TABLE_1, USER_2_USERNAME,
+                        DATABASE_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("public write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                        TABLE_1, USER_2_USERNAME,
+                        DATABASE_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("public owner", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
+                        USER_1_USERNAME,
+                        DATABASE_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
+                Arguments.arguments("private read", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
+                        USER_2_USERNAME,
+                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("private write-own", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
+                        TABLE_1, USER_2_USERNAME,
+                        DATABASE_2_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("private write-all", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
+                        TABLE_1, USER_2_USERNAME,
+                        DATABASE_2_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("private owner", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
+                        USER_1_USERNAME,
+                        DATABASE_2_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("getAll_succeeds_parameters")
+    public void getCount_succeeds(String test, Long containerId, Long databaseId, Long tableId, Database database,
+                                Table table, String username, DatabaseAccess access, Principal principal,
+                                Instant timestamp) throws UserNotFoundException, TableNotFoundException, QueryStoreException, SortException, TableMalformedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
+
+        /* test */
+        generic_getCount(containerId, databaseId, tableId, database, table, username, access, principal, timestamp);
+    }
+
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
@@ -346,6 +387,23 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
         assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
         assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+    }
+
+    public void generic_getCount(Long containerId, Long databaseId, Long tableId, Database database, Table table,
+                               String username, DatabaseAccess access, Principal principal, Instant timestamp) throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+
+        /* mock */
+        when(databaseService.find(containerId, databaseId)).thenReturn(database);
+        when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
+        when(accessService.find(databaseId, username)).thenReturn(access);
+        when(queryService.count(containerId, databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
+
+        /* test */
+        final ResponseEntity<Long> response = dataEndpoint.getCount(containerId, databaseId, tableId,
+                principal, timestamp);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody());
     }
 
 }

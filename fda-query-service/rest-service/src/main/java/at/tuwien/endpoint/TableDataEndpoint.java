@@ -158,16 +158,41 @@ public class TableDataEndpoint extends AbstractEndpoint {
         }
         validateDataParams(page, size, sortDirection, sortColumn);
         /* find */
-        final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
-        log.debug("find table data has produced {} tuples", count);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("FDA-COUNT", count.toString());
+        // TODO: Remove these comments
+        //final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
+        //log.debug("find table data has produced {} tuples", count);
+        //final HttpHeaders headers = new HttpHeaders();
+        //headers.set("FDA-COUNT", count.toString());
         final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
-                .headers(headers)
+        //        .headers(headers)
                 .body(response);
     }
 
+    @GetMapping("/count")
+    @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
+    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Long> getCount(@NotNull @PathVariable("id") Long containerId,
+                                                 @NotNull @PathVariable("databaseId") Long databaseId,
+                                                 @NotNull @PathVariable("tableId") Long tableId,
+                                                 @NotNull Principal principal,
+                                                 @RequestParam(required = false) Instant timestamp)
+            throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
+            ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
+            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+        log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}",
+                containerId, databaseId, tableId, principal, timestamp);
+        /* check */
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
+            log.error("Missing data view permission");
+            throw new NotAllowedException("Missing data view permission");
+        }
+        /* find */
+        final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
+        log.debug("table data count is {} tuples", count);
+        return ResponseEntity.ok()
+                .body(count);
+    }
 
 }
