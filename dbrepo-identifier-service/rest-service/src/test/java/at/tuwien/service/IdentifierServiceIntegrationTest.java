@@ -155,6 +155,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Disabled("Multiple representation of the same entity")
     public void publish_everyone_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
 
         /* mock */

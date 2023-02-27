@@ -33,7 +33,7 @@ public class RabbitMqConfig {
 
     public List<ConsumerDto> findAllConsumers() throws IOException {
         log.trace("gateway broker find all consumers");
-        final URI findUri = URI.create("http://broker-service:15672/api/consumers/%2F");
+        final URI findUri = URI.create("http://dbrepo-broker-service:15672/api/consumers/%2F");
         final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
                 new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
                 });

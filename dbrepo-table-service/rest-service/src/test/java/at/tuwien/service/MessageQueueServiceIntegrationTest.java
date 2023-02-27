@@ -56,7 +56,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public static void beforeAll() throws InterruptedException {
         afterAll();
         DockerConfig.createAllNetworks();
-        /* create amqp */
+        /* create container */
         DockerConfig.createContainer(null, CONTAINER_BROKER, CONTAINER_BROKER_ENV);
         DockerConfig.startContainer(CONTAINER_BROKER);
     }
@@ -65,12 +65,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public static void afterAll() {
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_1);
     }
 
     @Test

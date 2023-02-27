@@ -38,33 +38,18 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class TableServiceIntegrationTest extends BaseUnitTest {
 
-    /**
-     * RabbitMQ not required in this test
-     */
     @MockBean
     private ReadyConfig readyConfig;
 
-    /**
-     * RabbitMQ not required in this test
-     */
     @MockBean
     private Channel channel;
 
-    /**
-     * ElasticSearch not required in this test
-     */
     @MockBean
     private IndexConfig indexInitializer;
 
-    /**
-     * ElasticSearch not required in this test
-     */
     @MockBean
     private TableIdxRepository tableidxRepository;
 
-    /**
-     * ElasticSearch not required in this test
-     */
     @MockBean
     private TableColumnIdxRepository tableColumnidxRepository;
 
