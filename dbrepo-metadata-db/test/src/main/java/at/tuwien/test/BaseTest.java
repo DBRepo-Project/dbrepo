@@ -1863,6 +1863,7 @@ public abstract class BaseTest {
 
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
+            .database(DATABASE_1)
             .created(Instant.now())
             .internalName(TABLE_1_INTERNALNAME)
             .description(TABLE_1_DESCRIPTION)
@@ -1941,6 +1942,7 @@ public abstract class BaseTest {
 
     public final static Table TABLE_2 = Table.builder()
             .id(TABLE_2_ID)
+            .database(DATABASE_1)
             .created(Instant.now())
             .internalName(TABLE_2_INTERNALNAME)
             .description(TABLE_2_DESCRIPTION)
@@ -2499,6 +2501,7 @@ public abstract class BaseTest {
 
     public final static Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
+            .database(DATABASE_1)
             .created(Instant.now())
             .internalName(TABLE_3_INTERNALNAME)
             .description(TABLE_3_DESCRIPTION)
