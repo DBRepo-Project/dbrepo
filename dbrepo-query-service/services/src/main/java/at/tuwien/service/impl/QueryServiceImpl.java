@@ -301,14 +301,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse date", e);
+            throw new TableMalformedException("Failed to parse date: " + e.getMessage(), e);
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse number", e);
+            throw new TableMalformedException("Failed to parse number: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Database failed to accept tuple: {}", e.getMessage());
-            log.throwing(e);
-            throw new TableMalformedException("Database failed to accept tuple " + e.getMessage(), e);
+            throw new TableMalformedException("Database failed to accept tuple: " + e.getMessage() + " (does it contain all column names?)", e);
         } finally {
             dataSource.close();
         }

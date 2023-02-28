@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class TableServiceIntegrationTest extends BaseUnitTest {
+public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
@@ -71,9 +71,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws InterruptedException {
         afterAll();
         DockerConfig.createAllNetworks();
+        /* user container */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
     }
 
     @AfterAll
@@ -83,20 +86,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        afterEach();
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        h2Utils.runScript("schema.sql");
+    public void beforeEach() {
         /* metadata db */
+        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-    }
-
-    @AfterEach
-    public void afterEach() {
-        DockerConfig.removeAllContainers();
     }
 
     @Test

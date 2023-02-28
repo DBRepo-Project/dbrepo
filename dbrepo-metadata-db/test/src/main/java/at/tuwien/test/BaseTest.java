@@ -354,6 +354,30 @@ public abstract class BaseTest {
     public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
 
+    public final static Long USER_5_ID = 5L;
+    public final static String USER_5_USERNAME = "system";
+    public final static String USER_5_FIRSTNAME = "System";
+    public final static String USER_5_LASTNAME = "System";
+    public final static String USER_5_AFFILIATION = "TU Wien";
+    public final static String USER_5_ORCID = null;
+    public final static String USER_5_PASSWORD = "junit5";
+    public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_5_EMAIL = "system@ossdip.at";
+    public final static Boolean USER_5_VERIFIED = true;
+    public final static Boolean USER_5_THEME_DARK = false;
+    public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
+
+    public final static User USER_5 = User.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .email(USER_5_EMAIL)
+            .emailVerified(USER_5_VERIFIED)
+            .themeDark(USER_5_THEME_DARK)
+            .password(USER_5_PASSWORD)
+            .databasePassword(USER_5_DATABASE_PASSWORD)
+            .created(USER_5_CREATED)
+            .build();
+
     public final static Long TIME_SECRET_1_ID = 1L;
     public final static Boolean TIME_SECRET_1_PROCESSED = false;
     public final static String TIME_SECRET_1_TOKEN = "mysecrettokenrandomlygenerated";

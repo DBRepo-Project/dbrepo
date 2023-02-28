@@ -255,8 +255,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("timestamp", "2023-02-10 12:15:20.613405"))
-                .build();
+                .data(new HashMap<>() {{
+                    put("timestamp", "2023-02-10 12:15:20.613405");
+                    put("value", null);
+                }}).build();
 
         /* mock */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
@@ -368,7 +370,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        assertEquals("Melbourne", result.get(0).get("location"));
+        assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
     }
@@ -395,7 +397,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        assertEquals("Melbourne", result.get(0).get("location"));
+        assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
     }
@@ -419,7 +421,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
-            assertEquals(1L, response.getResultNumber());
+        assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
         assertNull(result.get(0).get("lat"));
