@@ -18,7 +18,6 @@ import at.tuwien.service.TableService;
 import at.tuwien.service.impl.QueryServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -377,7 +376,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         when(databaseService.find(containerId, databaseId)).thenReturn(database);
         when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
-        when(queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal)).thenReturn(QUERY_1_RESULT_DTO);
+        when(queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal)).thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(containerId, databaseId, tableId,
@@ -396,7 +395,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         when(databaseService.find(containerId, databaseId)).thenReturn(database);
         when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
-        when(queryService.count(containerId, databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
+        when(queryService.tableCount(containerId, databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
 
         /* test */
         final ResponseEntity<Long> response = dataEndpoint.getCount(containerId, databaseId, tableId,

@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -163,7 +162,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
         //log.debug("find table data has produced {} tuples", count);
         //final HttpHeaders headers = new HttpHeaders();
         //headers.set("FDA-COUNT", count.toString());
-        final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal);
+        final QueryResultDto response = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
         //        .headers(headers)
@@ -189,7 +188,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing data view permission");
         }
         /* find */
-        final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
+        final Long count = queryService.tableCount(containerId, databaseId, tableId, timestamp, principal);
         log.debug("table data count is {} tuples", count);
         return ResponseEntity.ok()
                 .body(count);

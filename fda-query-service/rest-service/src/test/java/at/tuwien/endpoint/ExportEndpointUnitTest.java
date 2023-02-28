@@ -240,7 +240,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         }
         when(tableRepository.find(containerId, databaseId, tableId))
                 .thenReturn(Optional.of(TABLE_1));
-        when(queryService.findAll(containerId, databaseId, tableId, timestamp, principal))
+        when(queryService.tableFindAll(containerId, databaseId, tableId, timestamp, principal))
                 .thenReturn(resource);
 
         /* test */

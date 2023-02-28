@@ -314,7 +314,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
@@ -325,7 +325,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicAnonymous2_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
@@ -336,7 +336,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicRead_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
@@ -347,7 +347,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
@@ -358,7 +358,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
@@ -369,7 +369,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
@@ -380,7 +380,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateResearcher_succeeds() throws UserNotFoundException, QueryStoreException,
             NotAllowedException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
             ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
-            PaginationException, ViewNotFoundException {
+            PaginationException, ViewNotFoundException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_4_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, null);
@@ -563,7 +563,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, null, null, null);
@@ -573,7 +573,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateRead_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_READ_ACCESS);
@@ -583,7 +583,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
@@ -593,7 +593,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
@@ -603,7 +603,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void data_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException {
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
         data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
@@ -735,7 +735,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
                                 Principal principal, DatabaseAccess access) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, ViewNotFoundException, DatabaseConnectionException,
             QueryMalformedException, QueryStoreException, TableMalformedException, ColumnParseException,
-            ImageNotSupportedException, ContainerNotFoundException, PaginationException {
+            ImageNotSupportedException, ContainerNotFoundException, PaginationException, ViewMalformedException {
         final ExecuteStatementDto statement = ExecuteStatementDto.builder()
                 .statement(VIEW_1_QUERY)
                 .build();
@@ -756,7 +756,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         }
         when(viewService.findById(databaseId, viewId, principal))
                 .thenReturn(VIEW_1);
-        when(queryService.execute(containerId, databaseId, statement, principal, page, size, null, null))
+        when(queryService.viewFindAll(containerId, databaseId, VIEW_1, page, size, principal))
                 .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
