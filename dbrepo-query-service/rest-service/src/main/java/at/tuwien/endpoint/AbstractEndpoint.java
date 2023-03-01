@@ -141,7 +141,7 @@ public abstract class AbstractEndpoint {
         log.debug("forbidden keywords: {}", words);
         throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
     }
-
+    
     protected Boolean hasTablePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
                                          Principal principal) throws NotAllowedException {
         log.trace("validate queue permission, containerId={}, databaseId={}, tableId={}, permissionCode={}, principal={}",
@@ -226,12 +226,6 @@ public abstract class AbstractEndpoint {
         }
         if (principal == null) {
             log.error("Failed to grant permission {} because principal is null", permissionCode);
-            return false;
-        }
-        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
-        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
-            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
-                    permissionCode);
             return false;
         }
         /* modification operations are limited to the creator */

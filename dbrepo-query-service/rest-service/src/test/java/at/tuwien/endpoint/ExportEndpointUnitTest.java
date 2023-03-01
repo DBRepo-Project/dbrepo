@@ -74,78 +74,128 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, null, null, null, "text/csv");
     }
 
     @Test
-    public void export_publicRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicResearcherRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_READ_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicResearcherWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_WRITE_OWN_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicResearcherWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_WRITE_ALL_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicDeveloperRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_WRITE_ALL_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_3_DEVELOPER_READ_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicDeveloperWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_3_DEVELOPER_WRITE_OWN_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_publicDeveloperWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_publicDataStewardRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_3_DATA_STEWARD_READ_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_publicDataStewardWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_3_DATA_STEWARD_WRITE_OWN_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_publicDataStewardWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
+            UserNotFoundException, IOException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_publicResearcherReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_READ_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_publicResearcherReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_READ_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_publicReadWithTimestampInFutureInvalidHeader_fails() {
+    public void export_publicResearcherReadWithTimestampInFutureInvalidHeader_fails() {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
         assertThrows(HeaderInvalidException.class, () -> {
-            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_READ_ACCESS, "text/xml");
+            export_generic(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_3_RESEARCHER_READ_ACCESS, "text/xml");
         });
     }
 
@@ -158,70 +208,126 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null, null, null, "text/csv");
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, null, null, null, "text/csv");
         });
     }
 
     @Test
-    public void export_privateRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateResearcherRead_succeeds() throws UserNotFoundException, TableMalformedException,
+            NotAllowedException, IOException, FileStorageException, PaginationException, TableNotFoundException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, HeaderInvalidException {
+
+        /* test */
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_privateResearcherWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_privateWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateResearcherWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_WRITE_OWN_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_privateWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateDeveloperRead_succeeds() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_DEVELOPER_READ_ACCESS, "text/csv");
+        });
+    }
+
+    @Test
+    public void export_privateDeveloperWriteOwn_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS, "text/csv");
+        });
+    }
+
+    @Test
+    public void export_privateDeveloperWriteAll_succeeds() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, "text/csv");
+        });
+    }
+
+    @Test
+    public void export_privateDataStewardRead_succeeds() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_READ_ACCESS, "text/csv");
+        });
+    }
+
+    @Test
+    public void export_privateDataStewardWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_WRITE_ALL_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_privateOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateDataStewardWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_WRITE_ALL_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_privateReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateResearcherReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS, "text/csv");
     }
 
     @Test
-    public void export_privateReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    public void export_privateResearcherReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException, HeaderInvalidException {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_READ_ACCESS, "text/csv");
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS, "text/csv");
+    }
+
+    @Test
+    public void export_privateResearcherReadWithTimestampInFutureInvalidHeader_fails() {
+        final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
+
+        /* test */
+        assertThrows(HeaderInvalidException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, timestamp, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS, "text/xml");
+        });
     }
 
     /* ################################################################################################### */
@@ -235,7 +341,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             PaginationException, ContainerNotFoundException, NotAllowedException, HeaderInvalidException {
         final ExportResource resource = ExportResource.builder()
                 .filename("location.csv")
-                .resource(new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/weather/location.csv"))))
+                .resource(new InputStreamResource(FileUtils.openInputStream(new File("../../dbrepo-metadata-db/test/src/test/resources/weather/location.csv"))))
                 .build();
 
         /* mock */

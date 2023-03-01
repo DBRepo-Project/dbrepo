@@ -111,9 +111,8 @@ public class ExportEndpoint extends AbstractEndpoint {
                     .headers(headers)
                     .body(resource.getResource());
         }
-        log.error("Failed to export, non-csv exports are not supported");
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .build();
+        log.error("Failed to export: only application/json is supported");
+        throw new HeaderInvalidException("Failed to export: only application/json is supported");
     }
 
 

@@ -91,6 +91,9 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
         h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        TABLE_1.setColumns(List.of());
+        TABLE_2.setColumns(List.of());
+        TABLE_3.setColumns(List.of());
         databaseRepository.save(DATABASE_1);
     }
 
