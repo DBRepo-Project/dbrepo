@@ -267,8 +267,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_5_USERNAME))
+                .thenReturn(Optional.of(USER_5));
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 

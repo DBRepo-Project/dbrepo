@@ -101,6 +101,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         TABLE_1.setDatabase(DATABASE_1);
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setDatabase(DATABASE_1);
         TABLE_3.setDatabase(DATABASE_1);
         TABLE_7.setDatabase(DATABASE_1);

@@ -104,7 +104,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_USERNAME,
                 DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
     }
-    
+
     @Test
     public void import_publicDeveloperRead_fails() {
 
@@ -126,13 +126,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void import_publicDeveloperWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+    public void import_publicDeveloperWriteAll_fails() {
 
         /* test */
-        generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_2_USERNAME,
-                DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_2_USERNAME,
+                    DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL);
+        });
     }
 
     @Test
@@ -156,13 +156,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void import_publicDataStewardWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+    public void import_publicDataStewardWriteAll_succeeds() {
 
         /* test */
-        generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_3_USERNAME,
-                DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_3_USERNAME,
+                    DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL);
+        });
     }
 
     @Test
@@ -196,9 +196,9 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_publicResearcher_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+    public void insert_publicResearcher_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
         generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME,
@@ -226,13 +226,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_publicDeveloper_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+    public void insert_publicDeveloper_WriteAll_fails() {
 
         /* test */
-        generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_2_USERNAME,
-                DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_2_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_2_USERNAME,
+                    DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_2_PRINCIPAL);
+        });
     }
 
     @Test
@@ -256,13 +256,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_publicDataSteward_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+    public void insert_publicDataSteward_WriteAll_fails() {
 
         /* test */
-        generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_3_USERNAME,
-                DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_3_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_3_USERNAME,
+                    DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_3_PRINCIPAL);
+        });
     }
 
     @Test
@@ -450,12 +450,22 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void import_privateResearcherWriteOwn_fails() {
+    public void import_privateResearcherWriteOwn_succeeds() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_USERNAME,
                     DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void import_privateResearcherWriteOwnForeign_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_4_USERNAME,
+                    DATABASE_2_RESEARCHER2_WRITE_OWN_ACCESS, USER_4_PRINCIPAL);
         });
     }
 
@@ -490,13 +500,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void import_privateDeveloperWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+    public void import_privateDeveloperWriteAll_fails() {
 
         /* test */
-        generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME,
-                DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME,
+                    DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL);
+        });
     }
 
     @Test
@@ -520,13 +530,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void import_privateDataStewardWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            NotAllowedException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+    public void import_privateDataStewardWriteAll_fails() {
 
         /* test */
-        generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME,
-                DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME,
+                    DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL);
+        });
     }
 
     @Test
@@ -590,13 +600,13 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_privateDeveloper_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+    public void insert_privateDeveloper_WriteAll_fails() {
 
         /* test */
-        generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
-                DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, TABLE_4_CSV_DTO, USER_2_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
+                    DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, TABLE_4_CSV_DTO, USER_2_PRINCIPAL);
+        });
     }
 
     @Test
@@ -620,23 +630,23 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_privateDataSteward_WriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException {
+    public void insert_privateDataSteward_WriteAll_fails() {
 
         /* test */
-        generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
-                DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, TABLE_4_CSV_DTO, USER_3_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
+                    DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, TABLE_4_CSV_DTO, USER_3_PRINCIPAL);
+        });
     }
 
     @Test
-    public void getAll_privateAnonymous_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateAnonymous_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
-                null, null, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
+                    null, null, null, null, null, null, null);
+        });
     }
 
     @Test
@@ -670,63 +680,63 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void getAll_privateDeveloperRead_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDeveloperRead_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
-                DATABASE_2_DEVELOPER_READ_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
+                    DATABASE_2_DEVELOPER_READ_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
-    public void getAll_privateDeveloperWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDeveloperWriteOwn_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
-                DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
+                    DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
-    public void getAll_privateDeveloperWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDeveloperWriteAll_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
-                DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_2_USERNAME,
+                    DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
-    public void getAll_privateDataStewardRead_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDataStewardRead_succeeds() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
-                DATABASE_2_DATA_STEWARD_READ_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
+                    DATABASE_2_DATA_STEWARD_READ_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
-    public void getAll_privateDataStewardWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDataStewardWriteOwn_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
-                DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
+                    DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
-    public void getAll_privateDataStewardWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+    public void getAll_privateDataStewardWriteAll_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
-                DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, USER_3_USERNAME,
+                    DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        });
     }
 
     @Test
@@ -735,7 +745,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final Long size = 1L;
 
         /* test */
-        assertThrows(PaginationException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
                     null, null, null, page, size, null, null);
         });
@@ -747,7 +757,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final Long size = null;
 
         /* test */
-        assertThrows(PaginationException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
                     null, null, null, page, size, null, null);
         });
@@ -759,7 +769,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final Long size = 1L;
 
         /* test */
-        assertThrows(PaginationException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
                     null, null, null, page, size, null, null);
         });
@@ -771,7 +781,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final Long size = 0L;
 
         /* test */
-        assertThrows(PaginationException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
                     null, null, null, page, size, null, null);
         });
@@ -783,7 +793,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final Long size = -1L;
 
         /* test */
-        assertThrows(PaginationException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_getAll(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, TABLE_4, null,
                     null, null, null, page, size, null, null);
         });

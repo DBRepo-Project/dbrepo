@@ -53,7 +53,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     public DatabaseAccess find(Long databaseId, String username) throws AccessDeniedException {
         final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
         if (optional.isEmpty()) {
-            throw new AccessDeniedException("Failed to retrieve access");
+            throw new AccessDeniedException("Failed to retrieve access to database with id " + databaseId + " for user with username '" + username + "'");
         }
         return optional.get();
     }

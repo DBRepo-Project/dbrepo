@@ -58,7 +58,7 @@ public abstract class AbstractEndpoint {
             return true;
         }
         /* modification operations are limited to the owner */
-        if (database.getOwner().getUsername().equals(principal.getName())) {
+        if (List.of("GIVE_ACCESS", "VISIBILITY_DATABASE").contains(permissionCode) && database.getOwner().getUsername().equals(principal.getName())) {
             log.trace("grant permission {} because user {} is owner {}", permissionCode, principal.getName(),
                     database.getOwner().getUsername());
             return true;

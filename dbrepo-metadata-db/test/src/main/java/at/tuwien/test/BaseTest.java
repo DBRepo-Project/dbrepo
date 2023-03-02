@@ -67,6 +67,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 5</li>
  * <li>Table 6</li>
  * <li>Query 2</li>
+ * <li>Query 6</li>
  * <li>View 4</li>
  * </ul>
  * <p>
@@ -75,6 +76,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 8</li>
  * <li>Query 3</li>
  * <li>Query 4</li>
+ * <li>Query 5</li>
  * <li>View 5</li>
  * </ul>
  */
@@ -100,6 +102,14 @@ public abstract class BaseTest {
 
     public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
             .themeDark(false)
+            .build();
+
+    public final static String USER_BROKER_USERNAME = "guest";
+    public final static String USER_BROKER_PASSWORD = "guest";
+
+    public final static User USER_BROKER = User.builder()
+            .username(USER_BROKER_USERNAME)
+            .password(USER_BROKER_PASSWORD)
             .build();
 
     public final static Long USER_1_ID = 1L;
@@ -954,6 +964,12 @@ public abstract class BaseTest {
             .huserid(USER_1_ID)
             .build();
 
+    public final static DatabaseAccess DATABASE_2_RESEARCHER2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_2_ID)
+            .huserid(USER_2_ID)
+            .build();
+
     public final static DatabaseAccess DATABASE_2_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
@@ -988,6 +1004,11 @@ public abstract class BaseTest {
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
+            .name(DATABASE_2_NAME)
+            .isPublic(DATABASE_2_PUBLIC)
             .build();
 
     public final static Long DATABASE_3_ID = 3L;
@@ -1804,7 +1825,7 @@ public abstract class BaseTest {
     public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
     public final static Instant QUERY_2_LAST_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Long QUERY_2_RESULT_NUMBER = 5L;
-    public final static Boolean QUERY_2_PERSISTED = true;
+    public final static Boolean QUERY_2_PERSISTED = false;
 
     public final static Query QUERY_2 = Query.builder()
             .id(QUERY_2_ID)
@@ -1833,8 +1854,8 @@ public abstract class BaseTest {
     public final static Long QUERY_3_ID = 3L;
     public final static String QUERY_3_STATEMENT = "SELECT `location`, `mintemp` FROM `weather_aus` WHERE `mintemp` > 10";
     public final static String QUERY_3_QUERY_HASH = "a3d3dd94ebc7653bb5a3b55dd8ed5e91d3d13c335c6855a1eb4eb7ca14c36ced";
-    public final static Long QUERY_3_CONTAINER_ID = CONTAINER_3_ID;
-    public final static Long QUERY_3_DATABASE_ID = DATABASE_3_ID;
+    public final static Long QUERY_3_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long QUERY_3_DATABASE_ID = DATABASE_2_ID;
     public final static String QUERY_3_RESULT_HASH = "ff3f7cbe1b96d396957f6e39e55b8b1b577fa3d305d4795af99594cfd30cb80d";
     public final static Instant QUERY_3_CREATED = Instant.now().minus(3, MINUTES);
     public final static Instant QUERY_3_EXECUTION = Instant.now().minus(1, MINUTES);
@@ -1875,7 +1896,7 @@ public abstract class BaseTest {
     public final static Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
     public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
     public final static Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454);
-    public final static Boolean QUERY_4_PERSISTED = true;
+    public final static Boolean QUERY_4_PERSISTED = false;
 
     public final static Query QUERY_4 = Query.builder()
             .id(QUERY_4_ID)
@@ -1885,6 +1906,7 @@ public abstract class BaseTest {
             .created(QUERY_4_CREATED)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_4_PERSISTED)
+            .createdBy(USER_1_USERNAME)
             .build();
 
     public final static Long QUERY_4_RESULT_NUMBER = 6L;
@@ -1964,6 +1986,42 @@ public abstract class BaseTest {
             .created(QUERY_5_CREATED)
             .queryHash(QUERY_5_QUERY_HASH)
             .execution(QUERY_5_EXECUTION)
+            .build();
+
+    public final static Long QUERY_6_ID = 6L;
+    public final static String QUERY_6_STATEMENT = "SELECT `location` FROM `weather_aus` WHERE `id` = 1";
+    public final static String QUERY_6_QUERY_HASH = "6d6dc48b12cdfd959d39a62887334a6bbd529b93eed4f211f3f671bd9e7d6225";
+    public final static Long QUERY_6_CONTAINER_ID = CONTAINER_2_ID;
+    public final static Long QUERY_6_DATABASE_ID = DATABASE_2_ID;
+    public final static String QUERY_6_RESULT_HASH = "ff5f7cbe1b96d596957f6e59e55b8b1b577fa5d505d5795af99595cfd50cb80d";
+    public final static Instant QUERY_6_CREATED = Instant.now().minus(5, MINUTES);
+    public final static Instant QUERY_6_EXECUTION = Instant.now().minus(1, MINUTES);
+    public final static Instant QUERY_6_LAST_MODIFIED = Instant.ofEpochSecond(1551588555);
+    public final static Long QUERY_6_RESULT_NUMBER = 1L;
+    public final static Boolean QUERY_6_PERSISTED = true;
+
+    public final static Query QUERY_6 = Query.builder()
+            .id(QUERY_6_ID)
+            .query(QUERY_6_STATEMENT)
+            .queryHash(QUERY_6_QUERY_HASH)
+            .resultHash(QUERY_6_RESULT_HASH)
+            .created(QUERY_6_CREATED)
+            .createdBy(USER_1_USERNAME)
+            .isPersisted(QUERY_6_PERSISTED)
+            .build();
+
+    public final static QueryDto QUERY_6_DTO = QueryDto.builder()
+            .id(QUERY_6_ID)
+            .cid(QUERY_6_CONTAINER_ID)
+            .dbid(QUERY_6_DATABASE_ID)
+            .query(QUERY_6_STATEMENT)
+            .queryNormalized(QUERY_6_STATEMENT)
+            .resultNumber(QUERY_6_RESULT_NUMBER)
+            .resultHash(QUERY_6_RESULT_HASH)
+            .lastModified(QUERY_6_LAST_MODIFIED)
+            .created(QUERY_6_CREATED)
+            .queryHash(QUERY_6_QUERY_HASH)
+            .execution(QUERY_6_EXECUTION)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
@@ -3527,8 +3585,8 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
     public final static String IDENTIFIER_2_TITLE = "Australian weather data";
     public final static String IDENTIFIER_2_DOI = "10.1000/183";
-    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
-    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
+    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);

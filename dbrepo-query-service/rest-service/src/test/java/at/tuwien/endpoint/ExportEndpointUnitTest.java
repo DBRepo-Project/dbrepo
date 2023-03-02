@@ -279,23 +279,21 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void export_privateDataStewardWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException, HeaderInvalidException {
+    public void export_privateDataStewardWriteOwn_fails() {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS, "text/csv");
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS, "text/csv");
+        });
     }
 
     @Test
-    public void export_privateDataStewardWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException, HeaderInvalidException {
+    public void export_privateDataStewardWriteAll_fails() {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, "text/csv");
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_4_ID, DATABASE_2, null, USER_3_PRINCIPAL, USER_3_USERNAME, DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS, "text/csv");
+        });
     }
 
     @Test

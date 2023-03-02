@@ -679,7 +679,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .when(messageQueueService)
                 .updatePermissions(principal);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
-                .thenReturn(DATABASE_1_WRITE_ALL_ACCESS);
+                .thenReturn(DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
 
         /* test */
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(containerId, data, principal);

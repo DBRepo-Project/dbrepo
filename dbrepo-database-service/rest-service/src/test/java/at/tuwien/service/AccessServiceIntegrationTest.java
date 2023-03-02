@@ -124,28 +124,11 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_RESEARCHER_READ_ACCESS);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             create_generic(AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
-        });
-    }
-
-    @Test
-    public void create_owner_fails() throws InterruptedException {
-
-        /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-        databaseAccessRepository.save(DATABASE_1_OWNER_ACCESS);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(AccessTypeDto.READ, AccessType.READ, USER_1_USERNAME, USER_1_ID);
         });
     }
 
@@ -160,7 +143,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        databaseAccessRepository.save(DATABASE_1_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_RESEARCHER_READ_ACCESS);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);

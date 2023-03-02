@@ -178,24 +178,24 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
     /* ## PRIVATE DATABASES                                                                             ## */
     /* ################################################################################################### */
-    
+
     @Test
-    public void data_privateAnonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateAnonymous_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, null, null, null);
+        });
     }
 
     @Test
     @WithAnonymousUser
-    public void data_privateAnonymous2_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateAnonymous2_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, null, null, null);
+        });
     }
 
     @Test
@@ -230,62 +230,62 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void data_privateDeveloperRead_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDeveloperRead_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_READ_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_READ_ACCESS);
+        });
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void data_privateDeveloperWriteOwn_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDeveloperWriteOwn_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS);
+        });
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void data_privateDeveloperWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDeveloperWriteAll_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS);
+        });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_privateDataStewardRead_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDataStewardRead_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_READ_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_READ_ACCESS);
+        });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_privateDataStewardWriteOwn_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDataStewardWriteOwn_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS);
+        });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_privateDataStewardWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+    public void data_privateDataStewardWriteAll_fails() {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS);
+        });
     }
 
     /* ################################################################################################### */

@@ -120,7 +120,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void insert_succeeds() throws IOException, AmqpException {
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
-                .userId(USER_1_USERNAME)
+                .userId(USER_BROKER_USERNAME)
                 .build();
         final TableCsvDto payload = TableCsvDto.builder()
                 .data(new HashMap<>() {{

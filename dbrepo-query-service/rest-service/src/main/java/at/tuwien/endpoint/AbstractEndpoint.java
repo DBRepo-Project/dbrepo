@@ -70,25 +70,18 @@ public abstract class AbstractEndpoint {
             return false;
         }
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
-        /* modification operations are limited to the creator */
-        if (database.getOwner().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because user {} is owner {}", permissionCode, principal.getName(),
-                    database.getOwner().getUsername());
-            return true;
-        }
         /* check view access */
         if (List.of("QUERY_EXECUTE").contains(permissionCode)) {
             log.debug("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
-        /* write permission */
+        /* has role researcher */
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
                     permissionCode);
             return false;
         }
-        log.error("Failed to grant permission {} because database is not owned by the current user", permissionCode);
         return false;
     }
 
@@ -141,7 +134,7 @@ public abstract class AbstractEndpoint {
         log.debug("forbidden keywords: {}", words);
         throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
     }
-    
+
     protected Boolean hasTablePermission(Long containerId, Long databaseId, Long tableId, String permissionCode,
                                          Principal principal) throws NotAllowedException {
         log.trace("validate queue permission, containerId={}, databaseId={}, tableId={}, permissionCode={}, principal={}",
@@ -172,12 +165,6 @@ public abstract class AbstractEndpoint {
             log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
-        /* modification operations for creators are trivial */
-        if (table.getCreator().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because user {} is table creator {}", permissionCode, principal.getName(),
-                    table.getCreator().getUsername());
-            return true;
-        }
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
             log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
@@ -190,9 +177,15 @@ public abstract class AbstractEndpoint {
             log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
-        if (List.of("DATA_INSERT", "DATA_UPDATE", "DATA_DELETE", "QUERY_PERSIST").contains(permissionCode) && (access.getType().equals(AccessType.WRITE_ALL))) {
+        if (List.of("DATA_INSERT", "DATA_UPDATE", "DATA_DELETE").contains(permissionCode) && access.getType().equals(AccessType.WRITE_ALL)) {
             /* write own is already effective with creator check above */
             log.debug("grant permission {} because user {} is has table write permission {}", permissionCode, principal.getName(),
+                    access.getType());
+            return true;
+        }
+        if (List.of("QUERY_PERSIST").contains(permissionCode) && access != null) {
+            /* write own is already effective with creator check above */
+            log.debug("grant permission {} because user {} is has database read/write permission {}", permissionCode, principal.getName(),
                     access.getType());
             return true;
         }
@@ -228,17 +221,18 @@ public abstract class AbstractEndpoint {
             log.error("Failed to grant permission {} because principal is null", permissionCode);
             return false;
         }
-        /* modification operations are limited to the creator */
-        if (database.getCreator().getUsername().equals(principal.getName())) {
-            log.debug("grant permission {} because database is private and creator is the current user",
-                    permissionCode);
-            return true;
-        }
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         /* check view access */
         if (List.of("DATA_VIEW", "DATA_HISTORY", "QUERY_VIEW_ALL", "QUERY_RE_EXECUTE", "QUERY_VIEW", "FIND_VIEW", "QUERY_EXPORT").contains(permissionCode)) {
             log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
+        }
+        /* has role researcher */
+        final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {
+            log.error("Failed to grant permission {} because current user misses authority 'ROLE_RESEARCHER'",
+                    permissionCode);
+            return false;
         }
         if (access.getType().equals(AccessType.WRITE_ALL)) {
             log.trace("grant permission {} because user has access {}", permissionCode, access.getType());
