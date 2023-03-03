@@ -12,7 +12,7 @@ import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;

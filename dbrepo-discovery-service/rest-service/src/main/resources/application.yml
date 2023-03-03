@@ -1,22 +1,11 @@
+app.version: '@project.version@'
 spring:
   main.banner-mode: off
-  datasource:
-    url: jdbc:mariadb://metadata-db:3306/fda
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: "${METADATA_USERNAME}"
-    password: "${METADATA_PASSWORD}"
-  jpa:
-    show-sql: false
-    database-platform: org.hibernate.dialect.MariaDBDialect
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
   application:
     name: discovery-service
+  cloud:
+    loadbalancer.ribbon.enabled: false
+  autoconfigure.exclude: org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration,org.springframework.boot.autoconfigure.data.web.SpringDataWebAutoConfiguration
 management.endpoints.web.exposure.include: health,info,prometheus
 server.port: 9090
 logging:

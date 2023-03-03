@@ -67,8 +67,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(accessDto.getUsername());
-        log.trace("access be given to user with username {}", user.getUsername());
-        log.trace("database owner has username {}", database.getOwner().getUsername());
+        log.trace("give access to user with username {}", user.getUsername());
         if (database.getOwner().getUsername().equals(user.getUsername())) {
             log.error("Failed to give access to user with username {}, is already database owner", user.getUsername());
             throw new NotAllowedException("Failed give access");

@@ -192,7 +192,7 @@ services:
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-search-service:
-        condition: service_started
+        condition: service_healthy
       dbrepo-broker-service:
         condition: service_started
     logging:

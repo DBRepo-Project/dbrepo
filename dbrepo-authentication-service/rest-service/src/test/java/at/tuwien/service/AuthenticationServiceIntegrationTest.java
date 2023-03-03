@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.user.User;
 import at.tuwien.repositories.TimeSecretRepository;
 import at.tuwien.repositories.UserRepository;
 import lombok.extern.log4j.Log4j2;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;

@@ -13,7 +13,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;

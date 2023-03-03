@@ -7,3 +7,5 @@ ENV logger.level=WARN
 ENV bootstrap.memory_lock=true
 ENV xpack.security.enabled=true
 ENV ELASTIC_PASSWORD=elastic
+
+HEALTHCHECK --interval=5s --timeout=3s CMD curl -u "elastic:${ELASTIC_PASSWORD}" -f -X GET "localhost:9200/_cluster/health?wait_for_status=green&timeout=1s" || exit 1

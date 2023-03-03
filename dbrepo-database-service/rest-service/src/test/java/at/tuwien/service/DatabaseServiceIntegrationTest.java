@@ -12,7 +12,7 @@ import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;

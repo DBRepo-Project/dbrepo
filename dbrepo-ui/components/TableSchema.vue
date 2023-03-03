@@ -153,7 +153,6 @@ export default {
   },
   mounted () {
     this.loadContainer()
-      .then(() => this.loadImage())
   },
   methods: {
     needsShift (column) {
@@ -163,24 +162,13 @@ export default {
       return this.columns.filter(c => c.type === 'date' || c.type === 'timestamp').length > 0
     },
     async loadContainer () {
-      const getUrl = `/api/container/${this.$route.params.container_id}`
       try {
         this.loading = true
-        const res = await this.$axios.get(getUrl)
+        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}`)
         this.container = res.data
         console.debug('retrieve container', this.container)
-      } catch (err) {
-        this.error = true
-        console.error('retrieve image date formats failed', err)
-      }
-      this.loading = false
-    },
-    async loadImage () {
-      const getUrl = `/api/image/${this.container.image.id}`
-      try {
-        this.loading = true
-        const res = await this.$axios.get(getUrl)
-        this.dateFormats = res.data.date_formats
+        const res2 = await this.$axios.get(`/api/image/${this.container.image.id}`)
+        this.dateFormats = res2.data.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
       } catch (err) {
         this.error = true

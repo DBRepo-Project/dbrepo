@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
@@ -12,7 +13,6 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -124,7 +124,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        databaseAccessRepository.save(DATABASE_1_RESEARCHER_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -143,7 +143,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        databaseAccessRepository.save(DATABASE_1_RESEARCHER_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);

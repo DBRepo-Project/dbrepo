@@ -10,7 +10,7 @@ import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;

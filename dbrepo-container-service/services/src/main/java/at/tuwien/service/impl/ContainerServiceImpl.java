@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.user.User;

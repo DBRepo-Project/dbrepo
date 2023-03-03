@@ -9,7 +9,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.*;
@@ -107,6 +107,10 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     @Test
     public void updateConsumers_succeeds() throws AmqpException, IOException, InterruptedException {
 
+        /* pre-condition */
+        assertEquals(0, rabbitMqConfig.findAllConsumers().size());
+        assertEquals(2, amqpConfig.getAmqpConsumers());
+
         /* mock */
         channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.FANOUT);
         channel.queueDeclare(TABLE_1_QUEUE_NAME, true, false, false, null);
@@ -117,10 +121,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
         channel.queueBind(TABLE_3_QUEUE_NAME, DATABASE_1_EXCHANGE, TABLE_3_ROUTING_KEY);
         when(brokerServiceGateway.findAllConsumers())
                 .thenReturn(List.of());
-
-        /* pre-condition */
-        assertEquals(0, rabbitMqConfig.findAllConsumers().size());
-        assertEquals(2, amqpConfig.getAmqpConsumers());
 
         /* test */
         rabbitMqListener.updateConsumers();

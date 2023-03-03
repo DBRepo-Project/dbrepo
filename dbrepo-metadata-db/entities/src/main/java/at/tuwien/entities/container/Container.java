@@ -3,6 +3,7 @@ package at.tuwien.entities.container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
+import com.github.dockerjava.api.model.HealthCheck;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -74,6 +75,8 @@ public class Container {
 
     @Column
     private String ipAddress;
+
+    private transient HealthCheck healthCheck;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)

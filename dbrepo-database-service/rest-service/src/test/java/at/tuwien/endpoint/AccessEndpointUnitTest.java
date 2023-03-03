@@ -17,6 +17,7 @@ import at.tuwien.mapper.AccessMapper;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @Disabled("Requires integration")
     public void create_privateResearcherNoAccessOwner_succeeds() throws UserNotFoundException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 

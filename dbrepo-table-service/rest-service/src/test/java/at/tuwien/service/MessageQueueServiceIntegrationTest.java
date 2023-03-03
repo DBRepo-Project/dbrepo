@@ -9,7 +9,7 @@ import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.utils.AmqpUtils;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

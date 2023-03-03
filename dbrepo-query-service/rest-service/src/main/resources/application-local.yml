@@ -43,6 +43,6 @@ fda:
   consumers: 2
   unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
   elastic:
-    endpoint: search-service:9200
+    endpoint: localhost:9200
     username: elastic
     password: elastic

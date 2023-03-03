@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -9,7 +10,6 @@ import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
-import config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;

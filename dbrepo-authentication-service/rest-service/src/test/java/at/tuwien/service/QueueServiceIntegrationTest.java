@@ -8,7 +8,7 @@ import at.tuwien.dto.AmqpUserBriefDto;
 import at.tuwien.exception.*;
 import at.tuwien.repositories.ImageRepository;
 import at.tuwien.repositories.UserRepository;
-import config.DockerConfig;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
