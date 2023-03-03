@@ -4,6 +4,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.test.BaseTest;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.*;
@@ -49,7 +50,7 @@ public class DockerConfig extends BaseTest {
         int i = 0;
         final int max = 10;
         String state;
-        final boolean hasHealthCheck = container.getHealthCheck() != null;
+        final boolean hasHealthCheck = getHealthCheck(container.getId()) != null;
         do {
             final InspectContainerResponse response = dockerClient.inspectContainerCmd(container.getHash())
                     .exec();
@@ -114,13 +115,16 @@ public class DockerConfig extends BaseTest {
                 .withName(container.getInternalName())
                 .withIpv4Address(container.getIpAddress())
                 .withHostName(container.getInternalName())
-                .withEnv(environment);
-        if (container.getHealthCheck() != null) {
-            System.out.println("==========> healthcheck is present");
-            System.out.println("==========> " + container.getHealthCheck());
-            cmd.withHealthcheck(container.getHealthCheck());
+                .withEnv(environment)
+                .withHealthcheck(getHealthCheck(container.getId()));
+        final CreateContainerResponse response;
+        if (container.getInternalName().contains("search")) {
+            response = cmd.withPortBindings(PortBinding.parse("9200:9200"))
+                    .exec();
+        } else {
+            response = cmd.exec();
         }
-        container.setHash(cmd.exec().getId());
+        container.setHash(response.getId());
     }
 
     public static void removeAllContainers() {
@@ -176,6 +180,32 @@ public class DockerConfig extends BaseTest {
                                 .withSubnet("172.29.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
+    }
+
+    private static HealthCheck getHealthCheck(Long containerId) {
+        if (containerId == null) {
+            log.trace("container does not have a healthcheck config");
+            return null;
+        }
+        switch (Integer.parseInt("" + containerId)) {
+            case 1:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_1_HEALTHCHECK;
+            case 2:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_2_HEALTHCHECK;
+            case 3:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_3_HEALTHCHECK;
+            case 4:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_4_HEALTHCHECK;
+            case 5:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_BROKER_HEALTHCHECK;
+        }
+        log.trace("container with id {} does not have a healthcheck config", containerId);
+        return null;
     }
 
 

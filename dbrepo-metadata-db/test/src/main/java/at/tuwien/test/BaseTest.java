@@ -692,7 +692,6 @@ public abstract class BaseTest {
             .ipAddress(CONTAINER_1_IP)
             .creator(USER_1)
             .owner(USER_1)
-            .healthCheck(CONTAINER_1_HEALTHCHECK)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -717,7 +716,6 @@ public abstract class BaseTest {
             .ipAddress(CONTAINER_2_IP)
             .creator(USER_2)
             .owner(USER_2)
-            .healthCheck(CONTAINER_2_HEALTHCHECK)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -742,7 +740,6 @@ public abstract class BaseTest {
             .ipAddress(CONTAINER_3_IP)
             .creator(USER_3)
             .owner(USER_3)
-            .healthCheck(CONTAINER_3_HEALTHCHECK)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
@@ -767,7 +764,6 @@ public abstract class BaseTest {
             .ipAddress(CONTAINER_4_IP)
             .creator(USER_4)
             .owner(USER_4)
-            .healthCheck(CONTAINER_4_HEALTHCHECK)
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
@@ -790,7 +786,6 @@ public abstract class BaseTest {
             .hash(CONTAINER_BROKER_HASH)
             .created(CONTAINER_BROKER_CREATED)
             .creator(USER_1)
-            .healthCheck(CONTAINER_BROKER_HEALTHCHECK)
             .build();
 
     public final static Long CONTAINER_ELASTIC_ID = 6L;

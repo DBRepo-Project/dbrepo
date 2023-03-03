@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.config.DockerProperties;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.user.User;
@@ -39,7 +40,7 @@ public class ContainerServiceImpl implements ContainerService {
     private final ImageMapper imageMapper;
     private final UserService userService;
     private final DockerClient dockerClient;
-    private final DockerConfig dockerConfig;
+    private final DockerProperties dockerConfig;
     private final ContainerMapper containerMapper;
     private final ImageRepository imageRepository;
     private final ContainerRepository containerRepository;
@@ -47,7 +48,7 @@ public class ContainerServiceImpl implements ContainerService {
     @Autowired
     public ContainerServiceImpl(DockerClient dockerClient, ContainerRepository containerRepository,
                                 ImageRepository imageRepository, HostConfig hostConfig, ContainerMapper containerMapper,
-                                ImageMapper imageMapper, UserService userService, DockerConfig dockerConfig) {
+                                ImageMapper imageMapper, UserService userService, DockerProperties dockerConfig) {
         this.hostConfig = hostConfig;
         this.dockerClient = dockerClient;
         this.imageRepository = imageRepository;

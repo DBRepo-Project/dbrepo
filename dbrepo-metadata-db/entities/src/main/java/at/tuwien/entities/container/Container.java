@@ -76,8 +76,6 @@ public class Container {
     @Column
     private String ipAddress;
 
-    private transient HealthCheck healthCheck;
-
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private Instant created;
