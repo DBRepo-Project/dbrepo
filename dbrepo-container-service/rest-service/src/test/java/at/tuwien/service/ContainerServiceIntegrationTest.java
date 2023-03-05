@@ -50,12 +50,14 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() {
         afterAll();
+        /* create networks */
         DockerConfig.createAllNetworks();
     }
 
     @BeforeEach
     public void beforeEach() {
         afterEach();
+        /* create networks */
         DockerConfig.createAllNetworks();
         /* mock data */
         userRepository.save(USER_1);

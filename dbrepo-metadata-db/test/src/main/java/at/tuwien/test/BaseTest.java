@@ -675,7 +675,7 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static String CONTAINER_1_IP = "172.30.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629) /* 2023-02-26 08:20:29 (UTC) */;
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -699,7 +699,7 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -723,7 +723,7 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672) /* 2023-02-26 08:21:12 (UTC) */;
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -747,7 +747,7 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
     public final static String CONTAINER_4_NAME = "u04";
     public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
-    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static String CONTAINER_4_IP = "172.30.0.8";
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688) /* 2023-02-26 08:21:28 (UTC) */;
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -769,7 +769,7 @@ public abstract class BaseTest {
     public final static Long CONTAINER_BROKER_ID = 5L;
     public final static String CONTAINER_BROKER_NAME = "dbrepo-broker-service";
     public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_IP = "172.31.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
     public final static Instant CONTAINER_BROKER_CREATED = Instant.ofEpochSecond(1677399705) /* 2023-02-26 08:21:45 (UTC) */;
     public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
@@ -791,7 +791,7 @@ public abstract class BaseTest {
     public final static Long CONTAINER_ELASTIC_ID = 6L;
     public final static String CONTAINER_ELASTIC_NAME = "dbrepo-search-service";
     public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "dbrepo-search-service";
-    public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
+    public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
     public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms2g -Xmx2g",

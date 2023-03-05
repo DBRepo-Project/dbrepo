@@ -170,14 +170,14 @@ public class DockerConfig extends BaseTest {
                 .withName("fda-userdb")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
+                                .withSubnet("172.30.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
         dockerClient.createNetworkCmd()
                 .withName("fda-public")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
+                                .withSubnet("172.31.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
     }

@@ -53,6 +53,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
         afterAll();
         /* create networks */
         DockerConfig.createAllNetworks();
+        /* create broker service */
         DockerConfig.createContainer(null, CONTAINER_BROKER, CONTAINER_BROKER_ENV);
         DockerConfig.startContainer(CONTAINER_BROKER);
     }
