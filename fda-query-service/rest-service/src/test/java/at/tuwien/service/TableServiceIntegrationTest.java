@@ -8,6 +8,8 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
@@ -50,8 +52,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
+    private MessageQueueListener messageQueueListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private TableRepository tableRepository;
@@ -94,6 +101,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         /* metadata db */
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        DATABASE_1.setTables(List.of());
         databaseRepository.save(DATABASE_1);
     }
 

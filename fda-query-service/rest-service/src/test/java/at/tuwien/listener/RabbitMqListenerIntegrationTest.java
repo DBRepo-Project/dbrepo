@@ -22,6 +22,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -118,13 +119,15 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* pre-condition */
-        assertEquals(0, rabbitMqConfig.findAllConsumers().size());
         assertEquals(2, amqpConfig.getAmqpConsumers());
 
         /* test */
         rabbitMqListener.updateConsumers();
         Thread.sleep(10 * 1000);
-        final List<ConsumerDto> response = rabbitMqConfig.findAllConsumers();
+        final List<ConsumerDto> response = rabbitMqConfig.findAllConsumers()
+                .stream()
+                .filter(c -> List.of(TABLE_1_QUEUE_NAME, TABLE_2_QUEUE_NAME, TABLE_3_QUEUE_NAME).contains(c.getQueue().getName()))
+                .collect(Collectors.toList());
         assertEquals(6, response.size());
         assertEquals(2, (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_1_QUEUE_NAME)).count());
         assertEquals(2, (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_2_QUEUE_NAME)).count());

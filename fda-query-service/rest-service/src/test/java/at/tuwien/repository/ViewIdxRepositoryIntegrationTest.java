@@ -7,6 +7,8 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
@@ -45,8 +47,13 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
+    private MessageQueueListener messageQueueListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private UserRepository userRepository;

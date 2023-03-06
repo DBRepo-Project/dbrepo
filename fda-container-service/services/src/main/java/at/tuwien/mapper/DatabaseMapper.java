@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.entities.database.Database;
 import org.mapstruct.Mapper;
@@ -13,5 +14,11 @@ public interface DatabaseMapper {
             @Mapping(target = "container", ignore = true)
     })
     DatabaseDto databaseToDatabaseDto(Database data);
+
+    /* keep */
+    @Mappings({
+            @Mapping(target = "container", ignore = true)
+    })
+    DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 
 }

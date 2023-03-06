@@ -102,7 +102,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             columns = parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
-            throw new ColumnParseException(e.getMessage(), e);
+            throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
         final QueryResultDto dto;
         try {
@@ -113,7 +113,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
-            throw new TableMalformedException("Failed to execute and map time-versioned query", e);
+            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -143,10 +143,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             result = queryMapper.queryTableToQueryResultDto(resultSet, table);
         } catch (DateTimeException e) {
             log.error("Failed to parse date from the one stored in the metadata database: {}", e.getMessage());
-            throw new TableMalformedException("Could not parse date from format", e);
+            throw new TableMalformedException("Could not parse date from format: " + e.getMessage(), e);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object", e);
+            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -178,7 +178,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             FileUtils.forceDelete(file);
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file", e);
+            throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -246,7 +246,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to count raw tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count raw tuples", e);
+            throw new TableMalformedException("Failed to count raw tuples: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -271,7 +271,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to update tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to update tuples", e);
+            throw new TableMalformedException("Failed to update tuples: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -288,10 +288,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         log.trace("parsed insert data {}", data);
         /* run query */
-        if (data.getData().size() == 0) {
-            log.error("Failed to parse data, the provided map {} is empty", data.getData());
-            throw new TableMalformedException("Failed to parse data");
-        }
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
                 database.getContainer(), database, root);
         /* prepare the statement */
@@ -301,14 +297,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse date", e);
+            throw new TableMalformedException("Failed to parse date: " + e.getMessage(), e);
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse number", e);
+            throw new TableMalformedException("Failed to parse number: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Database failed to accept tuple: {}", e.getMessage());
             log.throwing(e);
-            throw new TableMalformedException("Database failed to accept tuple " + e.getMessage(), e);
+            throw new TableMalformedException("Database failed to accept tuple: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -334,7 +330,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to delete tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to delete tuples", e);
+            throw new TableMalformedException("Failed to delete tuples: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

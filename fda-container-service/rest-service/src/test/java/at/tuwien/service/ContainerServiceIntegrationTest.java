@@ -5,7 +5,6 @@ import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.DockerUtil;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
@@ -79,19 +78,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock data */
         userRepository.save(USER_1);
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
         imageRepository.save(IMAGE_1);
     }
 
@@ -151,30 +137,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -221,30 +183,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerAlreadyRunningException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -257,30 +195,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerAlreadyStoppedException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -293,30 +207,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startSavedButNotFound_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -329,30 +219,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_removeSavedButNotFound_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -365,46 +231,24 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void getAll_succeeds() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        final Container CONTAINER_2 = Container.builder()
-                .id(CONTAINER_2_ID)
-                .name(CONTAINER_2_NAME)
-                .internalName(CONTAINER_2_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_2_HASH)
-                .ipAddress(CONTAINER_2_IP)
-                .created(CONTAINER_2_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
         containerRepository.save(CONTAINER_2);
 
         /* test */
-        final List<Container> response = containerService.getAll();
+        final List<Container> response = containerService.getAll(null);
         assertEquals(2, response.size());
+    }
+
+    @Test
+    public void getAll_limit_succeeds() {
+
+        /* mock */
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+
+        /* test */
+        final List<Container> response = containerService.getAll(1);
+        assertEquals(1, response.size());
     }
 
     @Test
@@ -412,30 +256,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotFoundException, ContainerAlreadyRemovedException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -457,30 +277,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_stillRunning_fails() throws InterruptedException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -495,30 +291,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyRunning_fails() throws InterruptedException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -533,30 +305,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startNotFound_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
 
         /* test */
@@ -569,30 +317,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyStopped_fails() throws InterruptedException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         dockerUtil.stopContainer(CONTAINER_1);
@@ -608,30 +332,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopNeverStarted_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
@@ -645,30 +345,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopSavedButNotFound_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -682,30 +358,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         dockerUtil.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
@@ -731,30 +383,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void inspect_notRunning_fails() {
 
         /* mock */
-        final ContainerImage IMAGE_1 = ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        final Container CONTAINER_1 = Container.builder()
-                .id(CONTAINER_1_ID)
-                .name(CONTAINER_1_NAME)
-                .internalName(CONTAINER_1_INTERNALNAME)
-                .imageId(IMAGE_1_ID)
-                .image(IMAGE_1)
-                .hash(CONTAINER_1_HASH)
-                .ipAddress(CONTAINER_1_IP)
-                .created(CONTAINER_1_CREATED)
-                .build();
-        log.info("Container id {}", CONTAINER_1.getId());
         dockerUtil.createContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 

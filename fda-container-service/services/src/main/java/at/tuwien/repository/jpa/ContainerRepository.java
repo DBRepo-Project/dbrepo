@@ -9,8 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ContainerRepository extends JpaRepository<Container, Long> {
 
-    Optional<Container> findByHash(String hash);
-
     Optional<Container> findByInternalName(String internalName);
 
 }

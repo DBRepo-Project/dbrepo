@@ -8,7 +8,8 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.AmqpException;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,10 +55,15 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private IndexConfig indexInitializer;
 
     @MockBean
-    private RabbitMqListenerImpl rabbitMqListener;
-
-    @MockBean
     private RabbitMqConsumer rabbitMqConsumer;
+
+    /* keep */
+    @MockBean
+    private MessageQueueListener messageQueueListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
     private AmqpConfig amqpConfig;
