@@ -116,7 +116,7 @@
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-db-test</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
         <!-- DataSource -->
         <dependency>

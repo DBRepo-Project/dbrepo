@@ -177,7 +177,7 @@ public class UserEndpoint {
                     description = "User was not found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "405",
                     description = "Reset of password is not allowed while logged-in",
                     content = {@Content(
