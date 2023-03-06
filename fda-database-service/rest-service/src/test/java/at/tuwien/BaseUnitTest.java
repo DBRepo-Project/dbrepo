@@ -330,8 +330,8 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
-    public final static String CONTAINER_BROKER_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
+    public final static String CONTAINER_BROKER_NAME = "dbrepo-broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
     public final static String CONTAINER_BROKER_IP = "172.31.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
     public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);

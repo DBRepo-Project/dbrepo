@@ -146,7 +146,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static String CONTAINER_1_NAME = "u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "172.30.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
 
@@ -154,7 +154,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
 
@@ -162,7 +162,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_3_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
 
