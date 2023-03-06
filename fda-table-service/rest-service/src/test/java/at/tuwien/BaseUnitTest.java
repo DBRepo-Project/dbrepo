@@ -83,9 +83,9 @@ public abstract class BaseUnitTest {
 
     public final static String DATABASE_NET = "fda-userdb";
 
-    public final static String BROKER_NAME = "fda-broker-service";
-    public final static String BROKER_IP = "172.29.0.2";
-    public final static String BROKER_HOSTNAME = "broker-service";
+    public final static String BROKER_NAME = "dbrepo-broker-service";
+    public final static String BROKER_IP = "172.31.0.2";
+    public final static String BROKER_HOSTNAME = "dbrepo-broker-service";
     public final static Integer BROKER_MANAGEMENT_PORT = 15672;
     public final static String BROKER_IMAGE = "rabbitmq";
     public final static String BROKER_TAG = "3-management-alpine";
@@ -147,7 +147,7 @@ public abstract class BaseUnitTest {
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static String CONTAINER_1_IP = "172.30.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -155,7 +155,7 @@ public abstract class BaseUnitTest {
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -163,7 +163,7 @@ public abstract class BaseUnitTest {
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
 
     public final static Long DATABASE_1_ID = 1L;
@@ -739,7 +739,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_NGINX_NET = "fda-public";
     public final static String CONTAINER_NGINX_NAME = "file-service";
     public final static String CONTAINER_NGINX_INTERNALNAME = "fda-test-file-service";
-    public final static String CONTAINER_NGINX_IP = "172.29.0.3";
+    public final static String CONTAINER_NGINX_IP = "172.31.0.3";
     public final static Instant CONTAINER_NGINX_CREATED = Instant.now().minus(3, HOURS);
 
     public final static Long CONCEPT_1_ID = 1L;

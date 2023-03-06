@@ -285,7 +285,7 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static String CONTAINER_1_IP = "172.30.0.5";
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
@@ -314,7 +314,7 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_HASH = "deadbeef";
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
 
     public final static Container CONTAINER_2 = Container.builder()

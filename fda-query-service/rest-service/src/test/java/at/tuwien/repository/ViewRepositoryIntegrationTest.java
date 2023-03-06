@@ -40,7 +40,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     /* keep */
     @MockBean
-    private MessageQueueListener messageQueueListener;
+    private RabbitMqListenerImpl rabbitMqListener;
 
     /* keep */
     @MockBean

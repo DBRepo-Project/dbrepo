@@ -43,7 +43,7 @@ public class TableServiceUnitTest extends BaseUnitTest {
 
     /* keep */
     @MockBean
-    private MessageQueueListener messageQueueListener;
+    private RabbitMqListenerImpl rabbitMqListener;
 
     /* keep */
     @MockBean

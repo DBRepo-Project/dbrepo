@@ -59,7 +59,7 @@ public class DockerConfig {
         final CreateContainerResponse response = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())
                 .withHostConfig(hostConfig.withNetworkMode("fda-userdb"))
                 .withName(container.getInternalName())
-                .withIpv4Address("172.28.0.5")
+                .withIpv4Address("172.30.0.5")
                 .withHostName(container.getInternalName())
                 .withEnv("MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather")
                 .exec();
@@ -132,14 +132,14 @@ public class DockerConfig {
                 .withName("fda-userdb")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
+                                .withSubnet("172.30.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
         dockerClient.createNetworkCmd()
                 .withName("fda-public")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
+                                .withSubnet("172.31.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
     }
