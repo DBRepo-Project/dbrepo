@@ -18,9 +18,6 @@ spring:
         default_schema: fda
         jdbc:
           time_zone: UTC
-  rabbitmq:
-    username: "${BROKER_USERNAME}"
-    password: "${BROKER_PASSWORD}"
   application:
     name: authentication-service
   cloud:
