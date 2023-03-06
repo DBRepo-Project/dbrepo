@@ -142,6 +142,8 @@ services:
     depends_on:
       dbrepo-discovery-service:
         condition: service_healthy
+      dbrepo-gateway-service:
+        condition: service_healthy
       dbrepo-broker-service:
         condition: service_started
       dbrepo-metadata-db:

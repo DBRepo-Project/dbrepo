@@ -129,6 +129,11 @@ public class AuthenticationEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = JwtResponseDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<JwtResponseDto> reAuthenticateUser(Principal principal) {
         log.debug("endpoint renew authentication token, principal={}", principal);

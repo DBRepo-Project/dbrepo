@@ -21,6 +21,7 @@ import at.tuwien.service.TimeSecretService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -213,6 +214,42 @@ public class UserEndpoint {
     @Transactional
     @Timed(value = "user.reset", description = "Time needed to reset a user password")
     @Operation(summary = "Reset user password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "302",
+                    description = "Password reset succeeded",
+                    headers = {@Header(name="Location", description = "Redirect to this address", required = true)},
+                    content = {@Content}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Reset of user password is not allowed while logged-in",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "User password change at broker service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Time secret is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "428",
+                    description = "Sending e-mail failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public void reset(@NotNull @Valid @RequestBody UserResetDto data,
                       @NotNull HttpServletResponse httpServletResponse,
                       @Null Principal principal) throws UserEmailFailedException,
@@ -238,6 +275,28 @@ public class UserEndpoint {
     @Timed(value = "user.find", description = "Time needed to find a user")
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Find some user", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found user",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Orcid is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") Long id) throws UserNotFoundException,
             OrcidMalformedException {
         log.debug("endpoint find user, id={}", id);
@@ -253,6 +312,28 @@ public class UserEndpoint {
     @Timed(value = "user.update", description = "Time needed to update a user")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_USER')")
     @Operation(summary = "Update user", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated user information",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Orcid is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> update(@NotNull @PathVariable("id") Long id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data)
             throws UserNotFoundException, OrcidMalformedException {
@@ -269,6 +350,28 @@ public class UserEndpoint {
     @Timed(value = "user.roles", description = "Time needed to update a user role")
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
     @Operation(summary = "Update user roles", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated user roles",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Orcid or role uniqueness is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User or role was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> updateRoles(@NotNull @PathVariable("id") Long id,
                                                @NotNull @Valid @RequestBody UserRolesDto data)
             throws UserNotFoundException, RoleNotFoundException, RoleUniqueException, OrcidMalformedException {
@@ -285,6 +388,26 @@ public class UserEndpoint {
     @Timed(value = "user.theme", description = "Time needed to update a user theme")
     @PreAuthorize("hasPermission(#id, 'UPDATE_THEME')")
     @Operation(summary = "Update user theme", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "User theme was updated",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "400",
+                    description = "Payload body is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<Void> updateTheme(@NotNull @PathVariable("id") Long id,
                                             @NotNull @Valid @RequestBody UserThemeSetDto data)
             throws UserNotFoundException {
@@ -299,6 +422,38 @@ public class UserEndpoint {
     @Timed(value = "user.password", description = "Time needed to update a user password")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_PASSWORD')")
     @Operation(summary = "Update user password", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "User password was updated",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Payload body or orcid is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "User password update on broker service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "428",
+                    description = "Sending e-mail failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> updatePassword(@NotNull @PathVariable("id") Long id,
                                                   @NotNull @Valid @RequestBody UserPasswordDto data)
             throws UserNotFoundException, BrokerUserCreationException, OrcidMalformedException,
@@ -329,6 +484,33 @@ public class UserEndpoint {
     @Timed(value = "user.email", description = "Time needed to update a user email")
     @PreAuthorize("hasRole('ROLE_DEVELOPER') or hasPermission(#id, 'UPDATE_EMAIL')")
     @Operation(summary = "Update user email", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "User email was updated",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Payload body or orcid is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Authentication token is invalid",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "428",
+                    description = "Sending e-mail failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> updateEmail(@NotNull @PathVariable("id") Long id,
                                                @NotNull @Valid @RequestBody UserEmailDto data)
             throws UserNotFoundException, OrcidMalformedException, UserEmailFailedException {
