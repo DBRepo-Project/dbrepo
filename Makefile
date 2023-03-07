@@ -203,4 +203,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.dbrepo2/teardown
+	./.junit/teardown
