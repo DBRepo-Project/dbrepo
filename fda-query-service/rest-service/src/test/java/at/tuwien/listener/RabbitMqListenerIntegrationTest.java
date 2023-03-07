@@ -62,9 +62,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     private RabbitMqListenerImpl rabbitMqListener;
 
     @Autowired
-    private TableColumnRepository tableColumnRepository;
-
-    @Autowired
     private H2Utils h2Utils;
 
     @Autowired
@@ -107,6 +104,9 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     @Test
     public void updateConsumers_succeeds() throws AmqpException, IOException, InterruptedException {
 
+        /* pre-condition */
+        assertEquals(2, amqpConfig.getAmqpConsumers());
+
         /* mock */
         channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.FANOUT);
         channel.queueDeclare(TABLE_1_QUEUE_NAME, true, false, false, null);
@@ -118,9 +118,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
         when(brokerServiceGateway.findAllConsumers())
                 .thenReturn(List.of());
 
-        /* pre-condition */
-        assertEquals(2, amqpConfig.getAmqpConsumers());
-
         /* test */
         rabbitMqListener.updateConsumers();
         Thread.sleep(10 * 1000);
@@ -128,7 +125,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
                 .stream()
                 .filter(c -> List.of(TABLE_1_QUEUE_NAME, TABLE_2_QUEUE_NAME, TABLE_3_QUEUE_NAME).contains(c.getQueue().getName()))
                 .collect(Collectors.toList());
-        assertEquals(6, response.size());
         assertEquals(2, (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_1_QUEUE_NAME)).count());
         assertEquals(2, (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_2_QUEUE_NAME)).count());
         assertEquals(2, (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_3_QUEUE_NAME)).count());
