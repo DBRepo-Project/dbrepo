@@ -190,6 +190,7 @@ coverage-frontend: build-frontend
 test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
 	yarn --cwd ./fda-ui run test:unit || true
+	yarn --cwd ./fda-ui run coverage || true
 
 clean:
 	docker system prune -f --volumes
