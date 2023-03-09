@@ -298,7 +298,7 @@ test-frontend:
     - build-frontend
   script:
     - "make test-frontend"
-    - "cat ./fda-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "cat ./fda-ui/coverage.txt | grep -o 'Lines[^%]*%'"
   artifacts:
     when: always
     paths:

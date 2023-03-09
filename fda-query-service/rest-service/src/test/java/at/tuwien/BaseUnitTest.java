@@ -300,6 +300,16 @@ public abstract class BaseUnitTest {
             .tag(IMAGE_ELASTIC_TAG)
             .build();
 
+    public final static Long IMAGE_PROXY_ID = 4L;
+    public final static String IMAGE_PROXY_REPOSITORY = "nginx";
+    public final static String IMAGE_PROXY_TAG = "latest";
+
+    public final static ContainerImage IMAGE_PROXY = ContainerImage.builder()
+            .id(IMAGE_PROXY_ID)
+            .repository(IMAGE_PROXY_REPOSITORY)
+            .tag(IMAGE_PROXY_TAG)
+            .build();
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
@@ -431,6 +441,28 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_ELASTIC_HASH)
             .ipAddress(CONTAINER_ELASTIC_IP)
             .created(CONTAINER_ELASTIC_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_PROXY_ID = 7L;
+    public final static String CONTAINER_PROXY_NAME = "dbrepo-proxy";
+    public final static String CONTAINER_PROXY_INTERNAL_NAME = "dbrepo-proxy";
+    public final static String CONTAINER_PROXY_IP = "172.31.0.4";
+    public final static String CONTAINER_PROXY_HASH = "deadbeef";
+    public final static Instant CONTAINER_PROXY_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_PROXY_ENV = new String[]{};
+    public final static HealthCheck CONTAINER_PROXY_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "service", "nginx", "status"));
+
+    public final static Container CONTAINER_PROXY = Container.builder()
+            .id(CONTAINER_PROXY_ID)
+            .name(CONTAINER_PROXY_NAME)
+            .internalName(CONTAINER_PROXY_INTERNAL_NAME)
+            .imageId(IMAGE_PROXY_ID)
+            .image(IMAGE_PROXY)
+            .hash(CONTAINER_PROXY_HASH)
+            .ipAddress(CONTAINER_PROXY_IP)
+            .created(CONTAINER_PROXY_CREATED)
             .creator(USER_1)
             .build();
 
