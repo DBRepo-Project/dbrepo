@@ -26,10 +26,10 @@ stages:
   - build-docker
   - release
 
-build-metadata-db:
+build-backend-metadata-db:
   stage: build-backend
   script:
-    - "make build-metadata-db"
+    - "make build-backend-metadata-db"
 
 build-backend-authentication:
   stage: build-backend
