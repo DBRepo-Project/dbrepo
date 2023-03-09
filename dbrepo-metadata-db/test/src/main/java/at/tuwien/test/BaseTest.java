@@ -211,6 +211,8 @@ public abstract class BaseTest {
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
+            .emailVerified(true)
+            .themeDark(false)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
             .firstname(USER_2_FIRSTNAME)

@@ -81,7 +81,7 @@ services:
     restart: on-failure
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service:1.2
+    image: dbrepo/database-service:latest
     networks:
       userdb:
       core:
@@ -172,7 +172,7 @@ services:
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-search-service:
-        condition: service_healthy
+        condition: service_started
       dbrepo-broker-service:
         condition: service_started
     logging:

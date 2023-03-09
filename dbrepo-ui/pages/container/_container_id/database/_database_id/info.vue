@@ -114,33 +114,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="hasIdentifier || (isCreator && isResearcher) || isDataSteward" />
-        <v-card flat tile>
-          <v-card-title>Container</v-card-title>
-          <v-card-text>
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_name" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Container Internal Name
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_internal_name" />
-                  </v-list-item-content>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
-        </v-card>
-        <v-divider />
+        <v-divider v-if="isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher)" />
         <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
@@ -199,6 +173,32 @@
                   <v-list-item-content v-if="contact">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="contact" />
+                  </v-list-item-content>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+        <v-divider />
+        <v-card flat tile>
+          <v-card-title>Container</v-card-title>
+          <v-card-text>
+            <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_name" />
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container Internal Name
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_internal_name" />
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>

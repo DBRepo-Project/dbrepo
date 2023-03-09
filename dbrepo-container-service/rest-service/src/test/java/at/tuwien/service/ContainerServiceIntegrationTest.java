@@ -215,8 +215,20 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_2);
 
         /* test */
-        final List<Container> response = containerService.getAll();
+        final List<Container> response = containerService.getAll(null);
         assertEquals(2, response.size());
+    }
+
+    @Test
+    public void getAll_limit_succeeds() {
+
+        /* mock */
+        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_2);
+
+        /* test */
+        final List<Container> response = containerService.getAll(1);
+        assertEquals(1, response.size());
     }
 
     @Test

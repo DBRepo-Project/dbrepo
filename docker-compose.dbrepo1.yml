@@ -172,7 +172,7 @@ services:
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-search-service:
-        condition: service_healthy
+        condition: service_started
       dbrepo-broker-service:
         condition: service_started
     logging:

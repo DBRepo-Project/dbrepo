@@ -1,4 +1,3 @@
-# FROM node:lts as build
 FROM node:14-alpine as build
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
@@ -35,6 +34,9 @@ COPY ./utils ./utils
 
 RUN yarn build > /dev/null
 
+FROM node:14-alpine as runtime
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
 EXPOSE 3000
 EXPOSE 9100
 
@@ -50,6 +52,13 @@ ENV ELASTIC_PASSWORD=elastic
 ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
+
+WORKDIR /app
+
+COPY --from=build /usr/local/bin/node_exporter/ /usr/local/bin/node_exporter/
+COPY --from=build /app /app
+
+RUN ls -la
 
 COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh

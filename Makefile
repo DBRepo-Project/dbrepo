@@ -150,94 +150,36 @@ release-search:
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-pull: pull-identifier pull-container pull-search pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-metadata
-
-pull-analyse:
-	docker pull "dbrepo/analyse-service:${TAG}"
-
-pull-authentication:
-	docker pull "dbrepo/authentication-service:${TAG}"
-
-pull-metadata-db:
-	docker pull "dbrepo/metadata-db:${TAG}"
-
-pull-ui:
-	docker pull "dbrepo/ui:${TAG}"
-
-pull-identifier:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-pull-container:
-	docker pull "dbrepo/container-service:${TAG}"
-
-pull-database:
-	docker pull "dbrepo/database-service:${TAG}"
-
-pull-discovery:
-	docker pull "dbrepo/discovery-service:${TAG}"
-
-pull-gateway:
-	docker pull "dbrepo/gateway-service:${TAG}"
-
-pull-query:
-	docker pull "dbrepo/query-service:${TAG}"
-
-pull-table:
-	docker pull "dbrepo/table-service:${TAG}"
-
-pull-units:
-	docker pull "dbrepo/semantics-service:${TAG}"
-
-pull-broker:
-	docker pull "dbrepo/broker-service:${TAG}"
-
-pull-metadata:
-	docker pull "dbrepo/metadata-service:${TAG}"
-
-pull-search:
-	docker pull "dbrepo/search-service:${TAG}"
-
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
-test-authentication-service: build-backend-metadata-db build-backend-authentication
-	docker system prune -f --volumes
+test-authentication-service: clean build-metadata-db build-authentication-service
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./dbrepo-authentication-service/pom.xml clean test verify
 
-test-identifier-service: build-backend-metadata-db build-backend-identifier
-	docker system prune -f --volumes
+test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
 
-test-container-service: build-backend-metadata-db build-backend-container
-	docker system prune -f --volumes
-	docker pull mysql:8.0
+test-container-service: clean build-metadata-db build-container-service
 	mvn -f ./dbrepo-container-service/pom.xml clean test verify
 
-test-database-service: build-backend-metadata-db build-backend-database
-	docker system prune -f --volumes
+test-database-service: clean build-metadata-db build-database-service
 	docker pull rabbitmq:3-management-alpine
-	docker pull nginx:alpine
 	mvn -f ./dbrepo-database-service/pom.xml clean test verify
 
-test-discovery-service: build-backend-metadata-db build-backend-discovery
-	docker system prune -f --volumes
+test-discovery-service: clean build-metadata-db build-discovery-service
 	mvn -f ./dbrepo-discovery-service/pom.xml clean test verify
 
-test-gateway-service: build-backend-metadata-db build-backend-gateway
-	docker system prune -f --volumes
+test-gateway-service: clean build-metadata-db build-gateway-service
 	mvn -f ./dbrepo-gateway-service/pom.xml clean test verify
 
-test-query-service: build-backend-metadata-db build-backend-query
-	docker system prune -f --volumes
+test-query-service: clean build-metadata-db build-query-service
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify
 
-test-table-service: build-backend-metadata-db build-backend-table
-	docker system prune -f --volumes
+test-table-service: clean build-metadata-db build-table-service
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
-test-metadata-service: build-backend-metadata-db build-backend-metadata
-	docker system prune -f --volumes
-	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
+test-metadata-service: clean build-metadata-db build-metadata-service
+	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
 test-semantics-service: build-semantics-service
 	bash ./dbrepo-semantics-service/test.sh
@@ -259,4 +201,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.dbrepo2/teardown
+	./.junit/teardown

@@ -102,12 +102,16 @@ public class DockerConfig extends BaseTest {
         final HostConfig hostConfig1;
         final String network = (container.getInternalName().contains("userdb") ? "fda-userdb" : "fda-public");
         if (bind == null) {
+            log.trace("map standard binding /tmp:/tmp");
             hostConfig1 = hostConfig.withNetworkMode(network)
                     .withBinds(Bind.parse("/tmp:/tmp"));
         } else {
-            hostConfig1 = hostConfig.withNetworkMode(network).withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"));
+            log.trace("map non-standard binding {}, /tmp:/tmp", bind);
+            hostConfig1 = hostConfig.withNetworkMode(network)
+                    .withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"));
         }
         if (port != null) {
+            log.trace("map port binding {}:{}", port, port);
             hostConfig1.withPortBindings(PortBinding.parse(port + ":" + port));
         }
         final CreateContainerCmd cmd = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())

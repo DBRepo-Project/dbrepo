@@ -6,6 +6,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ContainerMapper;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import io.micrometer.core.annotation.Timed;
@@ -59,9 +60,10 @@ public class ContainerEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ContainerBriefDto[].class))}),
     })
-    public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal) {
-        log.debug("endpoint find all containers, principal={}", principal);
-        final List<Container> containers = containerService.getAll();
+    public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal,
+                                                           @RequestParam(required = false) Integer limit) {
+        log.debug("endpoint find all containers, principal={}, limit={}", principal, limit);
+        final List<Container> containers = containerService.getAll(limit);
         return ResponseEntity.ok()
                 .body(containers.stream()
                         .map(containerMapper::containerToDatabaseContainerBriefDto)
@@ -178,7 +180,7 @@ public class ContainerEndpoint {
                                                     @Valid @RequestBody ContainerChangeDto changeDto,
                                                     @NotNull Principal principal)
             throws ContainerNotFoundException, ContainerAlreadyRunningException, ContainerAlreadyStoppedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, DockerClientException {
         log.debug("endpoint modify container, containerId={}, changeDto={}, principal={}", containerId, changeDto, principal);
         final User user = userService.findByUsername(principal.getName());
         final Container container = containerService.find(containerId);
@@ -222,7 +224,7 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull Principal principal) throws ContainerNotFoundException,
-            ContainerStillRunningException, ContainerAlreadyRemovedException {
+            ContainerStillRunningException, ContainerAlreadyRemovedException, DockerClientException {
         log.debug("endpoint delete container, containerId={}, principal={}", containerId, principal);
         containerService.remove(containerId);
         return ResponseEntity.accepted()

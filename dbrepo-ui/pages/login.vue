@@ -18,6 +18,7 @@
                 autocomplete="off"
                 autofocus
                 required
+                name="username"
                 :rules="[v => !!v || $t('Required')]"
                 label="Username *" />
             </v-col>
@@ -29,6 +30,7 @@
                 autocomplete="off"
                 type="password"
                 required
+                name="password"
                 :rules="[v => !!v || $t('Required')]"
                 label="Password *" />
             </v-col>
@@ -41,6 +43,7 @@
             :disabled="!valid"
             color="primary"
             type="submit"
+            name="submit"
             :loading="loading"
             @click="login">
             Login

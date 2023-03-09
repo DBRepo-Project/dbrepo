@@ -4,12 +4,9 @@ import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -32,7 +29,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -44,27 +40,22 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final IdentifierMapper identifierMapper;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
-    private final IdentifierService identifierService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, ContainerService containerService,
                             UserService userService, MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
-                            IdentifierService identifierService, IdentifierMapper identifierMapper,
                             MessageQueueService messageQueueService, AccessService accessService,
                             DatabaseAccessRepository databaseAccessRepository) {
         super(databaseService, containerService, databaseAccessRepository);
         this.userService = userService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
-        this.identifierMapper = identifierMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
-        this.identifierService = identifierService;
         this.messageQueueService = messageQueueService;
         this.databaseAccessRepository = databaseAccessRepository;
     }
@@ -83,18 +74,10 @@ public class DatabaseEndpoint extends AbstractEndpoint {
     public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull Principal principal) {
         log.debug("endpoint list databases, containerId={}, principal={}", containerId, principal);
-        final List<Identifier> identifiers = identifierService.findAll(containerId);
         final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
                 .stream()
                 .map(databaseMapper::databaseToDatabaseBriefDto)
                 .collect(Collectors.toList());
-        databases.forEach(db -> {
-            final Optional<Identifier> id = identifiers.stream()
-                    .filter(i -> i.getContainerId().equals(containerId) && i.getDatabaseId().equals(containerId) &&
-                            i.getType().equals(IdentifierType.DATABASE))
-                    .findFirst();
-            id.ifPresent(identifier -> db.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier)));
-        });
         log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
     }
@@ -285,12 +268,6 @@ public class DatabaseEndpoint extends AbstractEndpoint {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
-        try { // TODO improve this by proper mapping
-            final Identifier identifier = identifierService.find(databaseId, IdentifierType.DATABASE);
-            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
-        } catch (IdentifierNotFoundException e) {
-            // ignore
-        }
         if (principal != null && database.getOwner().getUsername().equals(principal.getName())) {
             /* only owner sees the access rights */ // TODO improve this by proper mapping
             final List<DatabaseAccess> accesses = accessService.list(databaseId);

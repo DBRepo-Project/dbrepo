@@ -138,7 +138,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void delete_developer_succeeds() throws ContainerStillRunningException, ContainerAlreadyRemovedException,
-            ContainerNotFoundException {
+            ContainerNotFoundException, DockerClientException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -166,7 +166,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     public void findAll_anonymous_succeeds() {
 
         /* test */
-        findAll_generic(null);
+        findAll_generic(null, null);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     public void findAll_anonymous2_succeeds() {
 
         /* test */
-        findAll_generic(null);
+        findAll_generic(null, null);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        findAll_generic(USER_1_PRINCIPAL);
+        findAll_generic(USER_1_PRINCIPAL, null);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        findAll_generic(USER_2_PRINCIPAL);
+        findAll_generic(USER_2_PRINCIPAL, null);
     }
 
     @Test
@@ -210,7 +210,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        findAll_generic(USER_3_PRINCIPAL);
+        findAll_generic(USER_3_PRINCIPAL, null);
     }
 
     @Test
@@ -333,7 +333,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void modify_researcherStart_succeeds() throws ContainerAlreadyRunningException,
-            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException {
+            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException,
+            DockerClientException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -363,7 +364,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void modify_researcherStop_succeeds() throws ContainerAlreadyRunningException,
-            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException {
+            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException,
+            DockerClientException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -394,7 +396,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void modify_developerForeignStart_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
-            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException {
+            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException, DockerClientException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -407,7 +409,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
     public void modify_developerForeignStop_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
-            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException {
+            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException, DockerClientException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -467,7 +469,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     public void delete_generic(Long containerId, Container container, Principal principal) throws ContainerNotFoundException,
-            ContainerStillRunningException, ContainerAlreadyRemovedException {
+            ContainerStillRunningException, ContainerAlreadyRemovedException, DockerClientException {
 
         /* mock */
         when(containerService.find(containerId))
@@ -482,14 +484,14 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
         assertNull(response.getBody());
     }
 
-    public void findAll_generic(Principal principal) {
+    public void findAll_generic(Principal principal, Integer limit) {
 
         /* mock */
-        when(containerService.getAll())
+        when(containerService.getAll(limit))
                 .thenReturn(List.of(CONTAINER_1, CONTAINER_2));
 
         /* test */
-        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll(principal);
+        final ResponseEntity<List<ContainerBriefDto>> response = containerEndpoint.findAll(principal, limit);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<ContainerBriefDto> body = response.getBody();
@@ -519,7 +521,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
 
     public void modify_generic(ContainerActionTypeDto data, Long containerId, Container container, Principal principal)
             throws ContainerAlreadyRunningException, ContainerNotFoundException, ContainerAlreadyStoppedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, DockerClientException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(data)
                 .build();

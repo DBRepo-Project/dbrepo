@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="canRead">
     <TableToolbar :selection="selection" @modified="modified" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>

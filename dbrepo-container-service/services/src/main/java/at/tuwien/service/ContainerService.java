@@ -68,11 +68,12 @@ public interface ContainerService {
     Container inspect(Long containerId) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException;
 
     /**
-     * Finds all containers.
+     * Finds all containers up to the number limit or all containers.
      *
+     * @param limit The limit. Optional. If null, no limit is passed.
      * @return The list of containers.
      */
-    List<Container> getAll();
+    List<Container> getAll(Integer limit);
 
     /**
      * Starts a container with given id.

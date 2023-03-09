@@ -5,16 +5,15 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import lombok.*;
-import net.sf.jsqlparser.statement.select.FromItem;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
@@ -28,7 +27,7 @@ import java.util.List;
 @javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
 })
-public class Database {
+public class Database implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
@@ -72,6 +71,13 @@ public class Database {
             @JoinColumn(name = "contact_person", referencedColumnName = "UserID")
     })
     private User contact;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumnsOrFormulas({
+            @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),
+            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
+    })
+    private Identifier identifier;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient

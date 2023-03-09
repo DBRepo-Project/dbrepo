@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Log4j2
@@ -35,6 +34,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
+    @Override
     @Scheduled(fixedDelay = 5000)
     @Transactional(readOnly = true)
     public void updateConsumers() throws AmqpException {

@@ -18,6 +18,7 @@
                 v-model="data.username"
                 autocomplete="off"
                 autofocus
+                name="username"
                 label="Username" />
             </v-col>
           </v-row>
@@ -27,6 +28,7 @@
                 v-model="data.email"
                 autocomplete="off"
                 type="email"
+                name="email"
                 label="E-Mail Address" />
             </v-col>
           </v-row>
@@ -38,6 +40,7 @@
             :disabled="!valid || !formValid"
             color="primary"
             type="submit"
+            name="submit"
             @click="forgot">
             Reset password
           </v-btn>

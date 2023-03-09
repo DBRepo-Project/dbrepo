@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;

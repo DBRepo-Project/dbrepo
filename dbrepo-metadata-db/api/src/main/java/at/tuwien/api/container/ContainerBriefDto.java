@@ -1,5 +1,6 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,6 +36,9 @@ public class ContainerBriefDto {
     @JsonProperty("internal_name")
     @Schema(example = "air-quality")
     private String internalName;
+
+    @org.springframework.data.annotation.Transient
+    private DatabaseBriefDto database;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

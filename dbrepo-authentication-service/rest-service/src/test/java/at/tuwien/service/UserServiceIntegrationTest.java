@@ -6,6 +6,7 @@ import at.tuwien.api.user.RoleTypeDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserRolesDto;
 import at.tuwien.config.AuthenticationConfig;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.RoleType;

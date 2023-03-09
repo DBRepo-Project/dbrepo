@@ -3,10 +3,11 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+dbrepo-*
 # Notebooks
 .jupyter/
 .pytest_cache/
+__pycache__/
 
 # demo
 .demo
