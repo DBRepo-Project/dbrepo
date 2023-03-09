@@ -34,63 +34,63 @@ build-backend-metadata-db:
 build-backend-authentication:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-authentication"
 
 build-backend-identifier:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-identifier"
 
 build-backend-container:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-container"
 
 build-backend-database:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-database"
 
 build-backend-discovery:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-discovery"
 
 build-backend-gateway:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-gateway"
 
 build-backend-query:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-query"
 
 build-backend-table:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-table"
 
 build-backend-metadata:
   stage: build-backend
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
   script:
     - "make build-backend-metadata"
 
@@ -313,7 +313,7 @@ test-frontend:
 build-docker:
   stage: build-docker
   needs:
-    - build-metadata-db
+    - build-backend-metadata-db
     - build-backend-authentication
     - build-backend-identifier
     - build-backend-container
