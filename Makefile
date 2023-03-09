@@ -4,12 +4,15 @@ TAG ?= latest
 
 all:
 
+install-dependencies:
+	sudo apt-get install -y python3-dev libmariadb3 libmariadb-dev gcc maven
+
 clean:
 	bash ./.dbrepo2/clean.sh
 
-build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-analyse-service
+build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-backend-analyse build-backend-semantics
 
-build-backend-metadata-db:
+build-backend-metadata-db: install-dependencies
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install
 
 build-backend-authentication: build-backend-metadata-db
@@ -39,10 +42,10 @@ build-backend-query: build-backend-metadata-db
 build-backend-metadata: build-backend-metadata-db
 	mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests
 
-build-semantics-service:
+build-backend-semantics: install-dependencies
 	bash ./dbrepo-semantics-service/build.sh
 
-build-analyse-service:
+build-backend-analyse:
 	bash ./dbrepo-analyse-service/build.sh
 
 build-docker:
@@ -152,39 +155,39 @@ release-metadata:
 
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
-test-authentication-service: clean build-metadata-db build-authentication-service
+test-authentication-service: clean build-backend-authentication
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./dbrepo-authentication-service/pom.xml clean test verify
 
-test-identifier-service: clean build-metadata-db build-identifier-service
+test-identifier-service: clean build-backend-identifier
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
 
-test-container-service: clean build-metadata-db build-container-service
+test-container-service: clean build-backend-container
 	mvn -f ./dbrepo-container-service/pom.xml clean test verify
 
-test-database-service: clean build-metadata-db build-database-service
+test-database-service: clean build-backend-database
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./dbrepo-database-service/pom.xml clean test verify
 
-test-discovery-service: clean build-metadata-db build-discovery-service
+test-discovery-service: clean build-backend-discovery
 	mvn -f ./dbrepo-discovery-service/pom.xml clean test verify
 
-test-gateway-service: clean build-metadata-db build-gateway-service
+test-gateway-service: clean build-backend-gateway
 	mvn -f ./dbrepo-gateway-service/pom.xml clean test verify
 
-test-query-service: clean build-metadata-db build-query-service
+test-query-service: clean build-backend-query
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify
 
-test-table-service: clean build-metadata-db build-table-service
+test-table-service: clean build-backend-table
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
-test-metadata-service: clean build-metadata-db build-metadata-service
+test-metadata-service: clean build-backend-metadata
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
-test-semantics-service: build-semantics-service
+test-semantics-service: build-backend-semantics
 	bash ./dbrepo-semantics-service/test.sh
 
-test-analyse-service: build-analyse-service
+test-analyse-service: build-backend-analyse
 	bash ./dbrepo-analyse-service/test.sh
 
 coverage-frontend: clean build-frontend
