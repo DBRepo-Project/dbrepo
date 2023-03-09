@@ -53,10 +53,10 @@ function formatUser (user) {
   if (!user) {
     return null
   }
-  if (!('firstname' in user) || !('lastname' in user)) {
-    return user.username
-  }
-  if (user.firstname === null || user.lastname === null) {
+  if (!('firstname' in user) || !('lastname' in user) || user.firstname === null || user.lastname === null) {
+    if (!('username' in user)) {
+      return null
+    }
     return user.username
   }
   let name = ''
@@ -68,13 +68,6 @@ function formatUser (user) {
     name += ' ' + user.titles_after
   }
   return name
-}
-
-function padLeft (str, padString, length) {
-  while (str.length < length) {
-    str = padString + str
-  }
-  return str
 }
 
 function formatDateUTC (str) {
@@ -117,8 +110,8 @@ function formatTimestamp (str) {
 }
 
 function formatCreators (container) {
-  if (!container.database.identifier || !container.database.identifier.creators) {
-    return ''
+  if (!container || !('database' in container) || !('identifier' in container.database) || !container.database.identifier || !('creators' in container.database.identifier) || !container.database.identifier.creators) {
+    return null
   }
   const creators = container.database.identifier.creators
   if (creators.length === 0) {
@@ -127,8 +120,8 @@ function formatCreators (container) {
   let str = ''
   for (let i = 0; i < creators.length; i++) {
     /* separator */
-    if (i > 0 && creators.length === 2) {
-      str += ' & '
+    if (creators.length > 1 && i === creators.length - 1) {
+      str += ', & '
     } else if (i > 0 && creators.length !== 2) {
       str += ', '
     }
@@ -170,7 +163,6 @@ module.exports = {
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  padLeft,
   formatCreators,
   isDeveloper,
   isResearcher,

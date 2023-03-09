@@ -9,7 +9,7 @@
     <div v-for="(item,i) in views" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item two-line :class="clazz(item)" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${item.id}`">
+        <v-list-item two-line :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/${item.id}`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
             <v-list-item-subtitle class="mt-2">
@@ -127,12 +127,6 @@ export default {
         this.$toast.error('Failed to delete view')
         console.error('Failed to delete view')
       }
-    },
-    clazz (view) {
-      if (view.is_public === false) {
-        return null
-      }
-      return 'primary--text'
     }
   }
 }

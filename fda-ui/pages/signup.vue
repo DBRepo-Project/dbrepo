@@ -20,6 +20,7 @@
                 autocomplete="off"
                 autofocus
                 required
+                name="email"
                 :rules="[v => !!v || $t('Required')]"
                 hint="e.g. max.mustermann@work.com"
                 label="Work E-Mail Address *" />
@@ -31,6 +32,7 @@
                 v-model="createAccount.username"
                 autocomplete="off"
                 required
+                name="username"
                 :rules="[v => !!v || $t('Required'),
                          v => /^[a-z0-9]{3,}$/.test(v) || $t('Only lowercase letters, min. 3 length')]"
                 hint="e.g. mmustermann"
@@ -43,6 +45,7 @@
                 v-model="createAccount.password"
                 autocomplete="off"
                 required
+                name="password"
                 :rules="[v => !!v || $t('Required')]"
                 type="password"
                 label="Password *" />
@@ -54,6 +57,7 @@
                 v-model="password2"
                 autocomplete="off"
                 required
+                name="password-confirm"
                 :rules="[v => !!v || $t('Required'), v => (!!v && v) === createAccount.password || $t('Not matching!')]"
                 type="password"
                 label="Repeat Password *" />
@@ -64,6 +68,7 @@
               <v-checkbox
                 v-model="consent"
                 required
+                name="consent"
                 :rules="[v => !!v || $t('Required')]"
                 label="I understand the warning and do not use production data" />
             </v-col>
@@ -73,6 +78,7 @@
               <v-checkbox
                 v-model="privacy"
                 required
+                name="privacy"
                 :rules="[v => !!v || $t('Required')]"
                 label="I have read and accept the privacy statement" />
             </v-col>
@@ -84,6 +90,7 @@
             :disabled="!valid"
             color="primary"
             type="submit"
+            name="submit"
             :loading="loading"
             @click="register">
             Submit

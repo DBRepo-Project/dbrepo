@@ -85,6 +85,7 @@ public interface DatabaseMapper {
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "engine", source = "container.image", qualifiedByName = "engineMapping"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
+            @Mapping(target = "container", ignore = true),
     })
     DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
 

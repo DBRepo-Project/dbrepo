@@ -174,7 +174,7 @@ export default {
     async updateDatabaseVisibility () {
       try {
         this.loading = true
-        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/transfer`, this.modifyVisibility, this.config)
+        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/visibility`, this.modifyVisibility, this.config)
         this.$toast.success('Successfully updated the database')
         location.reload()
       } catch (err) {

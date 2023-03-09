@@ -3,19 +3,16 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
-import at.tuwien.entities.user.Token;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
@@ -29,7 +26,7 @@ import java.util.List;
 @javax.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
 })
-public class Identifier {
+public class Identifier implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include

@@ -10,6 +10,8 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseAccessRepository;
@@ -52,8 +54,13 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexInitializer;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private DatabaseAccessRepository databaseAccessRepository;

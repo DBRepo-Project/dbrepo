@@ -165,7 +165,7 @@ public interface QueryService {
     QueryResultDto viewFindAll(Long containerId, Long databaseId, View view,
                                Long page, Long size, Principal principal) throws ViewNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, ViewMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException;
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException, TableMalformedException;
 
     /**
      * Finds one query by container-database-query triple.

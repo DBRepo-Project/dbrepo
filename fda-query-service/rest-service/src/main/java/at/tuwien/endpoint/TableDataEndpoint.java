@@ -147,7 +147,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+            NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
         log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
@@ -156,16 +156,9 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing data view permission");
         }
         validateDataParams(page, size, sortDirection, sortColumn);
-        /* find */
-        // TODO: Remove these comments
-        //final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
-        //log.debug("find table data has produced {} tuples", count);
-        //final HttpHeaders headers = new HttpHeaders();
-        //headers.set("FDA-COUNT", count.toString());
         final QueryResultDto response = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
-        //        .headers(headers)
                 .body(response);
     }
 

@@ -5,6 +5,8 @@ import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
@@ -36,8 +38,13 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private IndexConfig indexConfig;

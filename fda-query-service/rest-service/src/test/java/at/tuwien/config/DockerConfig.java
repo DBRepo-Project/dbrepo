@@ -90,12 +90,16 @@ public class DockerConfig extends BaseUnitTest {
         final HostConfig hostConfig1;
         final String network = (container.getInternalName().contains("userdb") ? "fda-userdb" : "fda-public");
         if (bind == null) {
+            log.trace("map standard binding /tmp:/tmp");
             hostConfig1 = hostConfig.withNetworkMode(network)
                     .withBinds(Bind.parse("/tmp:/tmp"));
         } else {
-            hostConfig1 = hostConfig.withNetworkMode(network).withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"));
+            log.trace("map non-standard binding {}, /tmp:/tmp", bind);
+            hostConfig1 = hostConfig.withNetworkMode(network)
+                    .withBinds(Bind.parse(bind), Bind.parse("/tmp:/tmp"));
         }
         if (port != null) {
+            log.trace("map port binding {}:{}", port, port);
             hostConfig1.withPortBindings(PortBinding.parse(port + ":" + port));
         }
         final CreateContainerCmd cmd = dockerClient.createContainerCmd(container.getImage().getRepository() + ":" + container.getImage().getTag())
@@ -158,14 +162,14 @@ public class DockerConfig extends BaseUnitTest {
                 .withName("fda-userdb")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
+                                .withSubnet("172.30.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
         dockerClient.createNetworkCmd()
                 .withName("fda-public")
                 .withIpam(new Network.Ipam()
                         .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
+                                .withSubnet("172.31.0.0/16")))
                 .withEnableIpv6(false)
                 .exec();
     }
@@ -191,6 +195,9 @@ public class DockerConfig extends BaseUnitTest {
             case 5:
                 log.debug("container with id {} has a health check config", containerId);
                 return CONTAINER_BROKER_HEALTHCHECK;
+            case 7:
+                log.debug("container with id {} has a health check config", containerId);
+                return CONTAINER_PROXY_HEALTHCHECK;
         }
         log.trace("container with id {} does not have a healthcheck config", containerId);
         return null;

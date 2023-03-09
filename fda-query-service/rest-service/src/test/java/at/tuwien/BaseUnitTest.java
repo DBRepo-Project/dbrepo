@@ -300,12 +300,22 @@ public abstract class BaseUnitTest {
             .tag(IMAGE_ELASTIC_TAG)
             .build();
 
+    public final static Long IMAGE_PROXY_ID = 4L;
+    public final static String IMAGE_PROXY_REPOSITORY = "nginx";
+    public final static String IMAGE_PROXY_TAG = "latest";
+
+    public final static ContainerImage IMAGE_PROXY = ContainerImage.builder()
+            .id(IMAGE_PROXY_ID)
+            .repository(IMAGE_PROXY_REPOSITORY)
+            .tag(IMAGE_PROXY_TAG)
+            .build();
+
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static String CONTAINER_1_NAME = "u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
+    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
+    public final static String CONTAINER_1_IP = "172.30.0.5";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(1, HOURS);
     public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
             "MARIADB_DATABASE=weather"};
@@ -328,8 +338,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_2_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static String CONTAINER_2_NAME = "u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
+    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
+    public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(1, HOURS);
     public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_USER=mariadb", "MARIADB_PASSWORD=mariadb", "MARIADB_ROOT_PASSWORD=mariadb",
             "MARIADB_DATABASE=zoo"};
@@ -352,8 +362,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_3_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
+    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
+    public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -373,8 +383,8 @@ public abstract class BaseUnitTest {
     public final static String CONTAINER_4_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
     public final static String CONTAINER_4_NAME = "u04";
-    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
-    public final static String CONTAINER_4_IP = "172.28.0.8";
+    public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
+    public final static String CONTAINER_4_IP = "172.30.0.8";
     public final static Instant CONTAINER_4_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
@@ -394,9 +404,9 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
-    public final static String CONTAINER_BROKER_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_NAME = "dbrepo-broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.31.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
     public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
@@ -418,7 +428,7 @@ public abstract class BaseUnitTest {
     public final static Long CONTAINER_ELASTIC_ID = 6L;
     public final static String CONTAINER_ELASTIC_NAME = "fda-elastic-service";
     public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "search-mock-service";
-    public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
+    public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
 
@@ -431,6 +441,28 @@ public abstract class BaseUnitTest {
             .hash(CONTAINER_ELASTIC_HASH)
             .ipAddress(CONTAINER_ELASTIC_IP)
             .created(CONTAINER_ELASTIC_CREATED)
+            .creator(USER_1)
+            .build();
+
+    public final static Long CONTAINER_PROXY_ID = 7L;
+    public final static String CONTAINER_PROXY_NAME = "dbrepo-proxy";
+    public final static String CONTAINER_PROXY_INTERNAL_NAME = "dbrepo-proxy";
+    public final static String CONTAINER_PROXY_IP = "172.31.0.4";
+    public final static String CONTAINER_PROXY_HASH = "deadbeef";
+    public final static Instant CONTAINER_PROXY_CREATED = Instant.now().minus(1, HOURS);
+    public final static String[] CONTAINER_PROXY_ENV = new String[]{};
+    public final static HealthCheck CONTAINER_PROXY_HEALTHCHECK = new HealthCheck()
+            .withTest(List.of("CMD", "service", "nginx", "status"));
+
+    public final static Container CONTAINER_PROXY = Container.builder()
+            .id(CONTAINER_PROXY_ID)
+            .name(CONTAINER_PROXY_NAME)
+            .internalName(CONTAINER_PROXY_INTERNAL_NAME)
+            .imageId(IMAGE_PROXY_ID)
+            .image(IMAGE_PROXY)
+            .hash(CONTAINER_PROXY_HASH)
+            .ipAddress(CONTAINER_PROXY_IP)
+            .created(CONTAINER_PROXY_CREATED)
             .creator(USER_1)
             .build();
 

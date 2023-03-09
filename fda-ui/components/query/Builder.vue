@@ -209,10 +209,6 @@ export default {
     }
   },
   computed: {
-    selectItems () {
-      const columns = this.tableDetails && this.tableDetails.columns
-      return columns || []
-    },
     columnNames () {
       return this.columns && this.columns.map(s => s.internal_name)
     },

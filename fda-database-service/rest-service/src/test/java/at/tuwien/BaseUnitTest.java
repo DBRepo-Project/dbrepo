@@ -50,7 +50,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static String GATEWAY_NAME = "fda-gateway-service";
-    public final static String GATEWAY_IP = "172.29.0.3";
+    public final static String GATEWAY_IP = "172.31.0.3";
     public final static String GATEWAY_HOSTNAME = "gateway-service";
     public final static Integer GATEWAY_PORT = 9095;
     public final static String GATEWAY_IMAGE = "nginx";
@@ -58,7 +58,7 @@ public abstract class BaseUnitTest {
 
     public final static String CONTAINER_SEARCH_NAME = "search-mock-service";
     public final static String CONTAINER_SEARCH_INTERNAL_NAME = "search-mock-service";
-    public final static String CONTAINER_SEARCH_IP = "172.29.0.3";
+    public final static String CONTAINER_SEARCH_IP = "172.31.0.3";
     public final static String CONTAINER_SEARCH_REPOSITORY = "elasticsearch";
     public final static String CONTAINER_SEARCH_TAG = "7.13.4";
 
@@ -330,9 +330,9 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long CONTAINER_BROKER_ID = 5L;
-    public final static String CONTAINER_BROKER_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_NAME = "dbrepo-broker-service";
+    public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
+    public final static String CONTAINER_BROKER_IP = "172.31.0.2";
     public final static String CONTAINER_BROKER_HASH = "deadbeef";
     public final static Instant CONTAINER_BROKER_CREATED = Instant.now().minus(1, HOURS);
     public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
@@ -366,9 +366,9 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
-    public final static String CONTAINER_1_IP = "172.28.0.5";
-    public final static String CONTAINER_1_NAME = "fda-userdb-u01";
-    public final static String CONTAINER_1_INTERNALNAME = "fda-userdb-u01";
+    public final static String CONTAINER_1_IP = "172.30.0.5";
+    public final static String CONTAINER_1_NAME = "u01";
+    public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static Instant CONTAINER_1_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_1_UPDATED = Instant.now();
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
@@ -393,9 +393,9 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static String CONTAINER_2_HASH = "deadbeef";
-    public final static String CONTAINER_2_IP = "172.28.0.6";
-    public final static String CONTAINER_2_NAME = "fda-userdb-u02";
-    public final static String CONTAINER_2_INTERNALNAME = "fda-userdb-u02";
+    public final static String CONTAINER_2_IP = "172.30.0.6";
+    public final static String CONTAINER_2_NAME = "u02";
+    public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static Instant CONTAINER_2_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_2_UPDATED = Instant.now();
     public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
@@ -420,9 +420,9 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_3_ID = 3L;
     public final static String CONTAINER_3_HASH = "deadbeef";
-    public final static String CONTAINER_3_IP = "172.28.0.7";
-    public final static String CONTAINER_3_NAME = "fda-userdb-u03";
-    public final static String CONTAINER_3_INTERNALNAME = "fda-userdb-u03";
+    public final static String CONTAINER_3_IP = "172.30.0.7";
+    public final static String CONTAINER_3_NAME = "u03";
+    public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static Instant CONTAINER_3_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_3_UPDATED = Instant.now();
     public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
@@ -447,9 +447,9 @@ public abstract class BaseUnitTest {
 
     public final static Long CONTAINER_4_ID = 4L;
     public final static String CONTAINER_4_HASH = "deadbeef";
-    public final static String CONTAINER_4_IP = "172.28.0.8";
-    public final static String CONTAINER_4_NAME = "fda-userdb-u04";
-    public final static String CONTAINER_4_INTERNALNAME = "fda-userdb-u04";
+    public final static String CONTAINER_4_IP = "172.30.0.8";
+    public final static String CONTAINER_4_NAME = "u04";
+    public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
     public final static Instant CONTAINER_4_CREATED = Instant.now().minus(2, HOURS);
     public final static Instant CONTAINER_4_UPDATED = Instant.now();
     public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
@@ -473,7 +473,7 @@ public abstract class BaseUnitTest {
     public final static Long CONTAINER_ELASTIC_ID = 5L;
     public final static String CONTAINER_ELASTIC_NAME = "fda-elastic-service";
     public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "search-mock-service";
-    public final static String CONTAINER_ELASTIC_IP = "172.29.0.3";
+    public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.now().minus(1, HOURS);
 

@@ -6,6 +6,7 @@ import at.tuwien.api.user.RoleTypeDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserRolesDto;
 import at.tuwien.config.AuthenticationConfig;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.RoleType;
@@ -14,8 +15,6 @@ import at.tuwien.exception.*;
 import at.tuwien.repositories.ImageRepository;
 import at.tuwien.repositories.UserRepository;
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -25,13 +24,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import javax.validation.ConstraintViolationException;
-import java.util.Arrays;
 import java.util.List;
 
 import static at.tuwien.config.DockerConfig.*;
@@ -71,57 +67,28 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() {
         afterAll();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.createAllNetworks();
     }
 
     @BeforeEach
     public void beforeEach() {
+        afterEach();
+        DockerConfig.createAllNetworks();
+        /* metadata database */
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
     }
 
     @AfterEach
     public void afterEach() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @Test
