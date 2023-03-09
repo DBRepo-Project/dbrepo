@@ -8,7 +8,7 @@ install-dependencies:
 	sudo apt-get install -y python3-dev libmariadb3 libmariadb-dev gcc maven
 
 clean:
-	bash ./.dbrepo2/clean.sh
+	bash ./.gitlab/clean.sh
 
 build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-backend-analyse build-backend-semantics
 
@@ -195,8 +195,8 @@ coverage-frontend: clean build-frontend
 
 test-frontend: clean build-frontend
 	yarn --cwd ./dbrepo-ui install
-	docker compose up -d
-	yarn --cwd ./dbrepo-ui run test
+	yarn --cwd ./dbrepo-ui run test:unit
+	yarn --cwd ./dbrepo-ui run coverage
 
 test-clients:
 	bash ./.gitlab/test.sh

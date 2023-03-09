@@ -12,7 +12,7 @@
     "ver": "nuxt --version",
     "lint:js": "eslint --ext .js,.vue --ignore-path .gitignore .",
     "lint": "yarn lint:js",
-    "coverage": "nyc ava test/unit/**/* test/specs/**/* > ./coverage.txt",
+    "coverage": "nyc ava test/unit/**/* test/specs/**/*",
     "test:unit": "ava test/unit/**/* test/specs/**/*",
     "test:watch": "ava --watch test/unit/**/* test/specs/**/*",
     "test:e2e": "yarn clean && cross-env PORT=3001 ava --timeout=2h --fail-fast test/e2e/**",

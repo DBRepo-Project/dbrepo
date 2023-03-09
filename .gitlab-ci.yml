@@ -31,83 +31,83 @@ build-metadata-db:
   script:
     - "make build-metadata-db"
 
-build-authentication-service:
+build-backend-authentication:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-authentication-service"
+    - "make build-backend-authentication"
 
-build-identifier-service:
+build-backend-identifier:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-identifier-service"
+    - "make build-backend-identifier"
 
-build-container-service:
+build-backend-container:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-container-service"
+    - "make build-backend-container"
 
-build-database-service:
+build-backend-database:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-database-service"
+    - "make build-backend-database"
 
-build-discovery-service:
+build-backend-discovery:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-discovery-service"
+    - "make build-backend-discovery"
 
-build-gateway-service:
+build-backend-gateway:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-gateway-service"
+    - "make build-backend-gateway"
 
-build-query-service:
+build-backend-query:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-query-service"
+    - "make build-backend-query"
 
-build-table-service:
+build-backend-table:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-table-service"
+    - "make build-backend-table"
 
-build-metadata-service:
+build-backend-metadata:
   stage: build-backend
   needs:
     - build-metadata-db
   script:
-    - "make build-metadata-service"
+    - "make build-backend-metadata"
 
-build-semantics-service:
+build-backend-semantics:
   stage: build-backend
   script:
-    - "make build-semantics-service"
+    - "make build-backend-semantics"
 
-build-analyse-service:
+build-backend-analyse:
   stage: build-backend
   script:
-    - "make build-analyse-service"
+    - "make build-backend-analyse"
 
 test-backend-authentication:
   stage: test-backend
   needs:
-    - build-authentication-service
+    - build-backend-authentication
   script:
     - "make test-authentication-service"
     - "cat ./dbrepo-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -124,7 +124,7 @@ test-backend-authentication:
 test-identifier-service:
   stage: test-backend
   needs:
-    - build-authentication-service
+    - build-backend-authentication
   script:
     - "make test-identifier-service"
     - "cat ./dbrepo-identifier-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -141,7 +141,7 @@ test-identifier-service:
 test-container-service:
   stage: test-backend
   needs:
-    - build-container-service
+    - build-backend-container
   script:
     - "make test-container-service"
     - "cat ./dbrepo-container-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -158,7 +158,7 @@ test-container-service:
 test-database-service:
   stage: test-backend
   needs:
-    - build-database-service
+    - build-backend-database
   script:
     - "docker pull elasticsearch:7.13.4"
     - "make test-database-service"
@@ -177,7 +177,7 @@ test-database-service:
 test-discovery-service:
   stage: test-backend
   needs:
-    - build-discovery-service
+    - build-backend-discovery
   script:
     - "make test-discovery-service"
     - "cat ./dbrepo-discovery-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -194,7 +194,7 @@ test-discovery-service:
 test-query-service:
   stage: test-backend
   needs:
-    - build-query-service
+    - build-backend-query
   script:
     - "make test-query-service"
     - "cat ./dbrepo-query-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -212,7 +212,7 @@ test-query-service:
 test-table-service:
   stage: test-backend
   needs:
-    - build-table-service
+    - build-backend-table
   script:
     - "make test-table-service"
     - "cat ./dbrepo-table-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -229,7 +229,7 @@ test-table-service:
 test-metadata-service:
   stage: test-backend
   needs:
-    - build-metadata-service
+    - build-backend-metadata
   script:
     - "make test-metadata-service"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -246,7 +246,7 @@ test-metadata-service:
 test-gateway-service:
   stage: test-backend
   needs:
-    - build-gateway-service
+    - build-backend-gateway
   script:
     - "make test-gateway-service"
     - "echo 'Jacoco Coverage Total: 100%'"
@@ -263,7 +263,7 @@ test-gateway-service:
 test-semantics-service:
   stage: test-backend
   needs:
-    - build-semantics-service
+    - build-backend-semantics
   script:
     - "make test-semantics-service"
     - "cat ./dbrepo-semantics-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
@@ -279,7 +279,7 @@ test-semantics-service:
 test-analyse-service:
   stage: test-backend
   needs:
-    - build-analyse-service
+    - build-backend-analyse
   script:
     - "make test-analyse-service"
     - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
@@ -298,31 +298,33 @@ test-frontend:
     - build-frontend
   script:
     - "make test-frontend"
-    - "cat ./fda-ui/coverage.txt | grep -o 'Lines[^%]*%'"
+    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9\.]*' | head -1"
   artifacts:
     when: always
     paths:
-      - ./fda-analyse-service/report.xml
+      - ./dbrepo-ui/coverage/
     expire_in: 1 days
     reports:
-      junit: ./fda-analyse-service/report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: ./dbrepo-ui/coverage/cobertura-coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 build-docker:
   stage: build-docker
   needs:
     - build-metadata-db
-    - build-authentication-service
-    - build-identifier-service
-    - build-container-service
-    - build-database-service
-    - build-discovery-service
-    - build-gateway-service
-    - build-query-service
-    - build-table-service
-    - build-metadata-service
-    - build-semantics-service
-    - build-analyse-service
+    - build-backend-authentication
+    - build-backend-identifier
+    - build-backend-container
+    - build-backend-database
+    - build-backend-discovery
+    - build-backend-gateway
+    - build-backend-query
+    - build-backend-table
+    - build-backend-metadata
+    - build-backend-semantics
+    - build-backend-analyse
   script:
     - cp .env.unix.example .env
     - make build-docker
