@@ -4,15 +4,12 @@ TAG ?= latest
 
 all:
 
-install-dependencies:
-	sudo apt-get install -y python3-dev libmariadb3 libmariadb-dev gcc maven
-
 clean:
 	bash ./.gitlab/clean.sh
 
 build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-backend-analyse build-backend-semantics
 
-build-backend-metadata-db: install-dependencies
+build-backend-metadata-db:
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install
 
 build-backend-authentication: build-backend-metadata-db
@@ -42,7 +39,7 @@ build-backend-query: build-backend-metadata-db
 build-backend-metadata: build-backend-metadata-db
 	mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests
 
-build-backend-semantics: install-dependencies
+build-backend-semantics:
 	bash ./dbrepo-semantics-service/build.sh
 
 build-backend-analyse:
