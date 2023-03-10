@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -100,9 +101,11 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException, SQLException {
+    public void beforeEach() throws InterruptedException {
         afterEach();
+        /* create networks */
         DockerConfig.createAllNetworks();
+        /* create containers */
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         /* metadata database */
@@ -384,6 +387,19 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         assertThrows(QueryNotFoundException.class, () -> {
             storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_2_ID, principal);
         });
+    }
+
+    @Test
+    public void deleteStaleQueries_succeeds() throws QueryStoreException, ImageNotSupportedException, SQLException {
+
+        /* mock */
+        when(databaseRepository.findAll())
+                .thenReturn(List.of(DATABASE_1));
+
+        /* test */
+        storeService.deleteStaleQueries();
+        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME);
+        assertEquals(2, response.size());
     }
 
 }

@@ -62,6 +62,9 @@ public class Query implements Serializable {
     @CreatedDate
     private Instant created;
 
+    @javax.persistence.Column(nullable = false, updatable = false)
+    private Instant executed;
+
     @javax.persistence.Column(nullable = false)
     private String createdBy;
 

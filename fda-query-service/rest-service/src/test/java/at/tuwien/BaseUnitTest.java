@@ -1031,7 +1031,7 @@ public abstract class BaseUnitTest {
     public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
     public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
     public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
-    public final static Instant QUERY_1_CREATED = Instant.now();
+    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377);
     public final static Instant QUERY_1_EXECUTION = Instant.now();
     public final static Boolean QUERY_1_PERSISTED = false;
 
@@ -1043,6 +1043,8 @@ public abstract class BaseUnitTest {
             .created(QUERY_1_CREATED)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
+            .executed(QUERY_1_EXECUTION)
+            .created(QUERY_1_CREATED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()

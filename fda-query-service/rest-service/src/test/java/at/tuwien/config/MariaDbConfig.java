@@ -24,6 +24,29 @@ public class MariaDbConfig {
         connection.close();
     }
 
+    public static List<Map<String, Object>> listQueryStore(String hostname, String database) throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        log.trace("connect to database {}", jdbc);
+        final Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb");
+        final Statement statement = connection.createStatement();
+        final ResultSet result = statement.executeQuery("SELECT created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed FROM qs_queries");
+        final List<Map<String, Object>> rows = new LinkedList<>();
+        while (result.next()) {
+            rows.add(new HashMap<>() {{
+                put("created_by", result.getString(1));
+                put("query", result.getString(2));
+                put("query_normalized", result.getString(3));
+                put("is_persisted", result.getBoolean(4));
+                put("query_hash", result.getString(5));
+                put("result_hash", result.getString(6));
+                put("result_number", result.getLong(7));
+                put("created", result.getTimestamp(8));
+                put("executed", result.getTimestamp(9));
+            }});
+        }
+        return rows;
+    }
+
     public static List<Map<String, String>> selectQuery(String hostname, String database, String query, String... columns)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
