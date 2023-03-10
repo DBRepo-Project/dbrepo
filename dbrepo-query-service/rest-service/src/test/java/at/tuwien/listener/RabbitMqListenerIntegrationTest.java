@@ -6,7 +6,6 @@ import at.tuwien.config.*;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
-import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.*;
@@ -97,7 +96,7 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled("Not Testable")
+    @Disabled("Not testable")
     public void updateConsumers_succeeds() throws IOException, InterruptedException {
 
         /* pre-condition */
@@ -112,7 +111,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
         channel.queueBind(TABLE_2_QUEUE_NAME, DATABASE_1_EXCHANGE, TABLE_2_ROUTING_KEY);
         channel.queueDeclare(TABLE_3_QUEUE_NAME, true, false, false, null);
         channel.queueBind(TABLE_3_QUEUE_NAME, DATABASE_1_EXCHANGE, TABLE_3_ROUTING_KEY);
-
 
         /* test */
         Thread.sleep(30 * 1000) /* wait for scheduled insert */;
