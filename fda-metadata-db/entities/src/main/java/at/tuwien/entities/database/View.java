@@ -1,5 +1,6 @@
 package at.tuwien.entities.database;
 
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -11,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Entity
@@ -81,6 +83,21 @@ public class View {
         }
         return this.getInternalName().equals(name);
     }
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinTable(name = "mdb_view_columns",
+            joinColumns = {
+                    @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "vcid", referencedColumnName = "vcid", insertable = false, updatable = false),
+                    @JoinColumn(name = "vdbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "ctid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            })
+    @OrderColumn(name = "position")
+    private List<TableColumn> columns;
 
     @Column(nullable = false, updatable = false)
     @CreatedDate

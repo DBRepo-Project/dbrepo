@@ -37,6 +37,7 @@
           Start
         </v-btn>
       </v-card-text>
+      <v-divider v-if="idx - 1 === databases.length" class="mx-4" />
     </v-card>
     <v-toolbar v-if="false" flat>
       <v-toolbar-title>
