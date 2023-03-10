@@ -126,7 +126,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
-            throw new ColumnParseException(e.getMessage(), e);
+            throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
         final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), false, null, null);
         return executeCountNonPersistent(containerId, databaseId, statement);

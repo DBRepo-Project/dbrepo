@@ -41,7 +41,7 @@
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import TableToolbar from '@/components/TableToolbar'
-import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
+import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
 
 export default {
   components: {
@@ -278,7 +278,7 @@ export default {
               if (columnDefinition[0].column_type === 'date') {
                 row[col] = formatDateUTC(row[col])
               } else if (columnDefinition[0].column_type === 'timestamp') {
-                row[col] = formatTimestampUTCLabel(row[col])
+                row[col] = formatTimestampUTC(row[col])
               }
             }
           }

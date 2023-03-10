@@ -543,16 +543,19 @@ public interface QueryMapper {
         statement.append(";");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
                 if (entry.getValue() == null) {
                     log.trace("entry is null, preparing null");
                     pstmt.setNull(i++, Types.NULL);
+                } else if (entry.getValue().equals(true) || entry.getValue().equals(false)) {
+                    log.trace("entry is not null, preparing boolean");
+                    pstmt.setBoolean(i++, Boolean.parseBoolean(String.valueOf(entry.getValue())));
                 } else {
                     log.trace("entry is not null, preparing string");
                     pstmt.setString(i++, String.valueOf(entry.getValue()));
                 }
             }
+            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
             return pstmt;
         } catch (SQLException e) {
             log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());

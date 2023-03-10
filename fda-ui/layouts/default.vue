@@ -301,13 +301,12 @@ export default {
         this.$store.commit('SET_TABLE', res.data)
         console.debug('table', this.table)
       } catch (error) {
-        const { status, data } = error.response
+        const { status } = error.response
         if (status === 405) {
           const table = this.database.tables.filter(t => t.id === Number(this.$route.params.table_id))[0]
-          console.debug('====>', table, this.$route.params.table_id)
           this.$store.commit('SET_TABLE', table)
         } else {
-          const { message } = data
+          const { message } = error.response.data
           console.error('Failed to load table', error)
           this.$toast.error(`Failed to load table: ${message}`)
         }
@@ -337,7 +336,7 @@ export default {
       this.loading = false
     },
     async loadIdentifier () {
-      if ('identifier' in this.database) {
+      if (!this.database || 'identifier' in this.database) {
         return
       }
       try {

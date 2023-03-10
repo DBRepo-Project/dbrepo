@@ -39,7 +39,7 @@
       </v-card-text>
       <v-divider v-if="idx - 1 === databases.length" class="mx-4" />
     </v-card>
-    <v-toolbar flat>
+    <v-toolbar v-if="false" flat>
       <v-toolbar-title>
         <v-btn
           small
@@ -63,6 +63,7 @@ export default {
       databases: [],
       containers: [],
       searchQuery: null,
+      limit: 100,
       createDatabaseDto: {
         name: null,
         is_public: true
@@ -142,7 +143,7 @@ export default {
       this.createDbDialog = false
       try {
         this.loadingContainers = true
-        const res = await this.$axios.get('/api/container?limit=100')
+        const res = await this.$axios.get(`/api/container?limit=${this.limit}`)
         this.containers = res.data
         console.debug('containers', this.containers)
         this.error = false
