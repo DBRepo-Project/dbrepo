@@ -18,9 +18,18 @@ public class MariaDbConfig {
         final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
         log.trace("connect to database {}", jdbc);
         final Connection connection = DriverManager.getConnection(jdbc, "root", "mariadb");
-        final Statement statement = connection.createStatement();
-        statement.execute("INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number) " +
-                "VALUES ('" + username + "', '" + query.getQuery() + "', '" + query.getQuery() + "', true, '" + query.getQueryHash() + "', '" + query.getResultHash() + "', " + query.getResultNumber() + ")");
+        final PreparedStatement prepareStatement = connection.prepareStatement("INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed) VALUES (?,?,?,?,?,?,?,?,?)");
+        prepareStatement.setString(1, username);
+        prepareStatement.setString(2, query.getQuery());
+        prepareStatement.setString(3, query.getQuery());
+        prepareStatement.setBoolean(4, query.getIsPersisted());
+        prepareStatement.setString(5, query.getQueryHash());
+        prepareStatement.setString(6, query.getResultHash());
+        prepareStatement.setLong(7, query.getResultNumber());
+        prepareStatement.setTimestamp(8, Timestamp.from(query.getCreated()));
+        prepareStatement.setTimestamp(9, Timestamp.from(query.getExecuted()));
+        log.trace("prepared statement: {}", prepareStatement);
+        prepareStatement.executeUpdate();
         connection.close();
     }
 
