@@ -20,7 +20,7 @@ public class MariadbListenerImpl implements DatabaseListener {
     }
 
     @Override
-    @Scheduled(cron = "0 2 * * *" /* at 2am */)
+    @Scheduled(cron = "0 0 2 * * *" /* at 2am, non-standard CRON syntax */)
     @Transactional(readOnly = true)
     public void deleteStaleQueries() throws QueryStoreException, ImageNotSupportedException {
         storeService.deleteStaleQueries();
