@@ -179,7 +179,7 @@ test-table-service: clean build-backend-table
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
 test-metadata-service: clean build-backend-metadata
-	mvn -f ./fda-metadata-service/pom.xml clean test verify
+	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-semantics-service: build-backend-semantics
 	bash ./dbrepo-semantics-service/test.sh
