@@ -1,5 +1,5 @@
 <template>
-  <div v-if="tuple">
+  <div v-if="localTuple">
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
@@ -8,7 +8,7 @@
           <div v-for="(attr,idx) in columns" :key="idx">
             <v-text-field
               v-if="attr.column_type === 'number'"
-              v-model.number="tuple[attr.internal_name]"
+              v-model.number="localTuple[attr.internal_name]"
               :disabled="(!edit && attr.auto_generated)"
               class="mb-2"
               :hint="hint(attr)"
@@ -19,7 +19,7 @@
               type="number" />
             <v-text-field
               v-if="attr.column_type === 'string' || attr.column_type === 'text' || attr.column_type === 'decimal'"
-              v-model="tuple[attr.internal_name]"
+              v-model="localTuple[attr.internal_name]"
               :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
               class="mb-2"
               :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
@@ -28,7 +28,7 @@
               type="text" />
             <v-text-field
               v-if="attr.column_type === 'timestamp'"
-              v-model="tuple[attr.internal_name]"
+              v-model="localTuple[attr.internal_name]"
               suffix="UTC"
               hint="e.g. 2022-07-12 18:32:59"
               :rules="(attr.auto_generated) ? [] : (attr.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')])"
@@ -46,7 +46,7 @@
               min-width="auto">
               <template v-slot:activator="{ on, attrs }">
                 <v-text-field
-                  v-model="tuple[attr.internal_name]"
+                  v-model="localTuple[attr.internal_name]"
                   :label="label(attr)"
                   suffix="UTC"
                   readonly
@@ -54,25 +54,27 @@
                   v-on="on" />
               </template>
               <v-date-picker
-                v-model="tuple[attr.internal_name]"
+                v-model="localTuple[attr.internal_name]"
                 color="primary"
                 no-title
                 scrollable />
             </v-menu>
             <v-select
               v-if="attr.column_type === 'ENUM'"
-              v-model="tuple[attr.internal_name]"
+              v-model="localTuple[attr.internal_name]"
               class="mb-2"
               :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
               :required="required(attr)"
               :items="attr.enum_values"
               :label="label(attr)" />
-            <v-checkbox
+            <v-select
               v-if="attr.column_type === 'boolean'"
-              v-model="tuple[attr.internal_name]"
-              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
-              :required="required(attr)"
+              v-model="localTuple[attr.internal_name]"
               class="mb-2"
+              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => v !== null || $t('Required') ]"
+              :required="required(attr)"
+              :items="bools"
+              :clearable="attr.is_null_allowed"
               :label="label(attr)" />
           </div>
         </v-card-text>
@@ -127,7 +129,12 @@ export default {
       loading: false,
       error: false,
       menu: false,
-      columns: this.$parent.$parent.$parent.$parent.table.columns
+      columns: this.$parent.$parent.$parent.$parent.table.columns,
+      localTuple: null,
+      bools: [
+        { text: 'true', value: true },
+        { text: 'false', value: false }
+      ]
     }
   },
   computed: {
@@ -140,6 +147,14 @@ export default {
     title () {
       return (this.edit ? 'Edit' : 'Add') + ' tuple'
     }
+  },
+  watch: {
+    tuple (val) {
+      this.localTuple = val
+    }
+  },
+  mounted () {
+    this.localTuple = Object.assign({}, this.tuple)
   },
   methods: {
     submit () {
@@ -178,7 +193,7 @@ export default {
           constraints[c.internal_name] = this.tuple[c.internal_name]
         })
       const data = {
-        data: this.tuple,
+        data: this.localTuple,
         keys: constraints
       }
       try {
@@ -188,9 +203,10 @@ export default {
         console.info('update result')
         this.$toast.success('Successfully updated tuple!')
         this.$emit('close', { success: true })
-      } catch (err) {
-        console.error('Failed to update tuple', err)
-        this.$toast.error('Failed to update tuple')
+      } catch (error) {
+        console.error('Failed to update tuple', error)
+        const { message } = error.response.data
+        this.$toast.error('Failed to update tuple: ' + message)
       }
     },
     async addTuple () {
@@ -198,7 +214,7 @@ export default {
       this.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
-          constraints[c.internal_name] = this.tuple[c.internal_name]
+          constraints[c.internal_name] = this.localTuple[c.internal_name]
         })
       try {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {

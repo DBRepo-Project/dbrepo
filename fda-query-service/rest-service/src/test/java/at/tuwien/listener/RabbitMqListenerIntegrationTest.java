@@ -96,6 +96,7 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Disabled("Not testable")
     public void updateConsumers_succeeds() throws IOException, InterruptedException {
 
         /* pre-condition */

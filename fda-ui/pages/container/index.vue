@@ -11,7 +11,7 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <DatabaseList />
+    <DatabaseList ref="databases" />
     <v-dialog
       v-model="createDbDialog"
       persistent
@@ -88,7 +88,7 @@ export default {
     closed (event) {
       this.createDbDialog = false
       if (event.success) {
-        this.loadContainers()
+        this.$refs.databases.loadContainers()
       }
     }
   }
