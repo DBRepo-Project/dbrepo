@@ -199,7 +199,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void restore_succeeds() throws AmqpException, IOException, InterruptedException {
+    public void restore_succeeds() throws AmqpException, IOException {
 
         /* mock */
         when(tableRepository.findAll())
@@ -207,7 +207,6 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         messageQueueService.restore();
-        Thread.sleep(5 * 1000);
         final List<ConsumerDto> response = rabbitMqConfig.findAllConsumers();
         assertEquals(amqpConfig.getAmqpConsumers(), (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_1_QUEUE_NAME)).count());
     }
