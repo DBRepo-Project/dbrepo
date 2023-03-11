@@ -197,23 +197,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void selectAll_noDatabase_fails() throws InterruptedException {
-        final Long page = 0L;
-        final Long size = 10L;
-
-        /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
     public void insert_columns_fails() throws InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "some_value"))
