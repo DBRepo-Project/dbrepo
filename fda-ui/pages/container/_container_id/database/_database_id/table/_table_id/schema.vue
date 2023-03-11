@@ -183,10 +183,10 @@ export default {
       return null
     },
     hasUnit (item) {
-      return item.unit !== null
+      return item.unit && 'uri' in item.unit
     },
     hasConcept (item) {
-      return item.concept !== null
+      return item.concept && 'uri' in item.concept
     },
     pick (item) {
       this.column = item

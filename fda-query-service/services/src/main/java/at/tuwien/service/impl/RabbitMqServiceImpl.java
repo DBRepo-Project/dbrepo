@@ -1,19 +1,22 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.amqp.RabbitMqConsumer;
+import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryService;
+import at.tuwien.service.TableService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -23,14 +26,19 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     private final AmqpConfig amqpConfig;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
+    private final TableService tableService;
+    private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
     public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, ObjectMapper objectMapper,
-                               QueryService queryService) {
+                               QueryService queryService, TableService tableService,
+                               BrokerServiceGateway brokerServiceGateway) {
         this.channel = channel;
         this.amqpConfig = amqpConfig;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
+        this.tableService = tableService;
+        this.brokerServiceGateway = brokerServiceGateway;
     }
 
     @Override
@@ -51,6 +59,27 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         } catch (Exception e) {
             log.error("Failed unknown: {}", e.getMessage());
             /* ignore */
+        }
+    }
+
+    @Override
+    public void restore() throws AmqpException {
+        final List<Table> tables = tableService.findAll();
+        final List<ConsumerDto> consumers = brokerServiceGateway.findAllConsumers();
+        for (Table table : tables) {
+            final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getQueueName())).count();
+            if (consumerCount >= amqpConfig.getAmqpConsumers()) {
+                log.trace("listener table with name {} already has {} consumers (max. {})", table.getName(),
+                        consumerCount, amqpConfig.getAmqpConsumers());
+                continue;
+            }
+            log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount,
+                    amqpConfig.getAmqpConsumers());
+            for (long i = consumerCount; i < amqpConfig.getAmqpConsumers(); i++) {
+                createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
+                        table.getDatabase().getId(), table.getId());
+                log.trace("creating consumer #{}", i);
+            }
         }
     }
 

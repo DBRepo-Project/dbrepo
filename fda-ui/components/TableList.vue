@@ -9,7 +9,9 @@
     <div v-for="(item,i) in tables" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item two-line :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
+        <v-list-item
+          two-line
+          :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${item.id}`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
             <v-list-item-subtitle class="mt-2" v-text="item.description" />
@@ -113,29 +115,11 @@ export default {
       }
       return formatTimestampUTCLabel(this.tableDetails.created)
     },
-    hasReadAccess () {
-      if (!this.database) {
+    canRead () {
+      if (!this.user || !this.access) {
         return false
       }
-      if (this.database.is_public) {
-        /* database is public */
-        return true
-      }
-      if (!this.user) {
-        return false
-      }
-      if (this.database.creator.username === this.user.username) {
-        /* user is creator of database */
-        return true
-      }
-      if (!this.access) {
-        return false
-      }
-      if (this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all') {
-        /* user has some level of access */
-        return true
-      }
-      return false
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canModify () {
       if (!this.token || !this.user.username) {
@@ -171,7 +155,7 @@ export default {
       /* use cache */
       this.tableDetails = table
       /* load remaining info */
-      if (this.hasReadAccess) {
+      if (this.canRead) {
         try {
           this.loadingDetails = true
           const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)

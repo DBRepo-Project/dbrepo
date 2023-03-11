@@ -209,10 +209,6 @@ export default {
     }
   },
   computed: {
-    selectItems () {
-      const columns = this.tableDetails && this.tableDetails.columns
-      return columns || []
-    },
     columnNames () {
       return this.columns && this.columns.map(s => s.internal_name)
     },
@@ -334,7 +330,7 @@ export default {
         this.$toast.error(err.response.data.message)
       }
       this.loadingQuery = false
-      await this.$refs.queryResults.reExecute(this.resultId)
+      await Promise.all([this.$refs.queryResults.reExecute(this.resultId), this.$refs.queryResults.reExecuteCount(this.resultId)])
     },
     async buildQuery () {
       if (!this.table) {

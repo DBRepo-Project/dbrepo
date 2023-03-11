@@ -64,6 +64,19 @@
                 required />
             </v-col>
           </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="visibility"
+                v-model="visibility"
+                name="visibility"
+                label="Visibility *"
+                :items="['Public']"
+                disabled
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
           <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
@@ -200,6 +213,7 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
+      visibility: 'Public',
       identifier: {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),

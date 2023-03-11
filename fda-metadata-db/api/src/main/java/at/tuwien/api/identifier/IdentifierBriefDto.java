@@ -12,6 +12,7 @@ import lombok.Setter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Getter
@@ -42,6 +43,24 @@ public class IdentifierBriefDto {
 
     @NotNull
     private IdentifierTypeDto type;
+
+    @NotNull
+    @Schema(example = "everyone")
+    private VisibilityTypeDto visibility;
+
+    @Schema(example = "10.1038/nphys1170")
+    private String doi;
+
+    @Schema(example = "TU Wien")
+    private String publisher;
+
+    @NotNull
+    @JsonProperty("publication_year")
+    @Schema(example = "2022")
+    private Integer publicationYear;
+
+    @NotNull
+    private List<CreatorBriefDto> creators;
 
     @JsonIgnore
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

@@ -294,7 +294,7 @@ public abstract class BaseUnitTest {
     public final static Long CONTAINER_BROKER_ID = 1L;
     public final static String CONTAINER_BROKER_NAME = "broker-service";
     public final static String CONTAINER_BROKER_INTERNAL_NAME = "broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.29.0.2";
+    public final static String CONTAINER_BROKER_IP = "172.31.0.2";
 
     public final static Container CONTAINER_BROKER = Container.builder()
             .id(CONTAINER_BROKER_ID)

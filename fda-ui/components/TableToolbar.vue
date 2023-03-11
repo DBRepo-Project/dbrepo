@@ -35,7 +35,7 @@
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/info`">
         Info
       </v-tab>
-      <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
+      <v-tab v-if="canRead" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
         Data
       </v-tab>
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`">

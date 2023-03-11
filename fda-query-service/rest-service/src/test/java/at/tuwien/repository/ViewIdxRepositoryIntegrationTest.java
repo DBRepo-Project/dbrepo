@@ -7,6 +7,8 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
@@ -16,6 +18,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
@@ -45,8 +48,13 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private UserRepository userRepository;
@@ -85,6 +93,12 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     public static void afterAll() {
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
+        DATABASE_1.setViews(List.of(VIEW_1));
     }
 
     @Test

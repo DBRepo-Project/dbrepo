@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -148,7 +147,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+            NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
         log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
@@ -157,17 +156,35 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing data view permission");
         }
         validateDataParams(page, size, sortDirection, sortColumn);
-        /* find */
-        final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
-        log.debug("find table data has produced {} tuples", count);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("FDA-COUNT", count.toString());
-        final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal);
+        final QueryResultDto response = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
-                .headers(headers)
                 .body(response);
     }
 
+    @GetMapping("/count")
+    @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
+    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Long> getCount(@NotNull @PathVariable("id") Long containerId,
+                                                 @NotNull @PathVariable("databaseId") Long databaseId,
+                                                 @NotNull @PathVariable("tableId") Long tableId,
+                                                 @NotNull Principal principal,
+                                                 @RequestParam(required = false) Instant timestamp)
+            throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
+            ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
+            QueryStoreException, NotAllowedException, QueryMalformedException, SortException, UserNotFoundException {
+        log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}",
+                containerId, databaseId, tableId, principal, timestamp);
+        /* check */
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
+            log.error("Missing data view permission");
+            throw new NotAllowedException("Missing data view permission");
+        }
+        /* find */
+        final Long count = queryService.tableCount(containerId, databaseId, tableId, timestamp, principal);
+        log.debug("table data count is {} tuples", count);
+        return ResponseEntity.ok()
+                .body(count);
+    }
 
 }

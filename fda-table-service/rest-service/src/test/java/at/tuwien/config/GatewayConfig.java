@@ -21,7 +21,7 @@ public class GatewayConfig {
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://broker-service:15672"));
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://dbrepo-broker-service:15672"));
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
         return restTemplate;

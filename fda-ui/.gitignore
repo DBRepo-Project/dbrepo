@@ -21,6 +21,7 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage/
+coverage.txt
 
 # nyc test coverage
 .nyc_output
@@ -93,4 +94,5 @@ sw.*
 *.swp
 
 # CI records some videos for the e2e tests
-videos
+videos/
+screenshots/

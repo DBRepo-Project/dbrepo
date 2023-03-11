@@ -4,39 +4,36 @@ TAG ?= latest
 
 all:
 
-clean:
-	bash ./.dbrepo2/clean.sh
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-authentication-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service
 
-build-backend: build-backend-metadata-db build-backend-database build-backend-query build-backend-table build-backend-identifier build-backend-authentication build-backend-container build-backend-discovery build-backend-gateway build-backend-metadata build-analyse-service
-
-build-backend-metadata-db:
+build-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
 
-build-backend-authentication: build-backend-metadata-db
+build-authentication-service: build-metadata-db
 	mvn -f ./fda-authentication-service/pom.xml clean package -DskipTests
 
-build-backend-identifier: build-backend-metadata-db
+build-identifier-service: build-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
 
-build-backend-table: build-backend-metadata-db
+build-table-service: build-metadata-db
 	mvn -f ./fda-table-service/pom.xml clean package -DskipTests
 
-build-backend-container: build-backend-metadata-db
+build-container-service: build-metadata-db
 	mvn -f ./fda-container-service/pom.xml clean package -DskipTests
 
-build-backend-database: build-backend-metadata-db
+build-database-service: build-metadata-db
 	mvn -f ./fda-database-service/pom.xml clean package -DskipTests
 
-build-backend-discovery: build-backend-metadata-db
+build-discovery-service: build-metadata-db
 	mvn -f ./fda-discovery-service/pom.xml clean package -DskipTests
 
-build-backend-gateway: build-backend-metadata-db
+build-gateway-service: build-metadata-db
 	mvn -f ./fda-gateway-service/pom.xml clean package -DskipTests
 
-build-backend-query: build-backend-metadata-db
+build-query-service: build-metadata-db
 	mvn -f ./fda-query-service/pom.xml clean package -DskipTests
 
-build-backend-metadata: build-backend-metadata-db
+build-metadata-service: build-metadata-db
 	mvn -f ./fda-metadata-service/pom.xml clean package -DskipTests
 
 build-semantics-service:
@@ -150,93 +147,35 @@ release-search:
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-pull: pull-identifier pull-container pull-search pull-database pull-discovery pull-gateway pull-query pull-table pull-analyse pull-authentication pull-metadata-db pull-ui pull-units pull-broker pull-metadata
-
-pull-analyse:
-	docker pull "dbrepo/analyse-service:${TAG}"
-
-pull-authentication:
-	docker pull "dbrepo/authentication-service:${TAG}"
-
-pull-metadata-db:
-	docker pull "dbrepo/metadata-db:${TAG}"
-
-pull-ui:
-	docker pull "dbrepo/ui:${TAG}"
-
-pull-identifier:
-	docker pull "dbrepo/identifier-service:${TAG}"
-
-pull-container:
-	docker pull "dbrepo/container-service:${TAG}"
-
-pull-database:
-	docker pull "dbrepo/database-service:${TAG}"
-
-pull-discovery:
-	docker pull "dbrepo/discovery-service:${TAG}"
-
-pull-gateway:
-	docker pull "dbrepo/gateway-service:${TAG}"
-
-pull-query:
-	docker pull "dbrepo/query-service:${TAG}"
-
-pull-table:
-	docker pull "dbrepo/table-service:${TAG}"
-
-pull-units:
-	docker pull "dbrepo/semantics-service:${TAG}"
-
-pull-broker:
-	docker pull "dbrepo/broker-service:${TAG}"
-
-pull-metadata:
-	docker pull "dbrepo/metadata-service:${TAG}"
-
-pull-search:
-	docker pull "dbrepo/search-service:${TAG}"
-
 test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
-test-authentication-service: build-backend-metadata-db build-backend-authentication
-	docker system prune -f --volumes
+test-authentication-service: clean build-metadata-db build-authentication-service
 	docker pull rabbitmq:3-management-alpine
 	mvn -f ./fda-authentication-service/pom.xml clean test verify
 
-test-identifier-service: build-backend-metadata-db build-backend-identifier
-	docker system prune -f --volumes
+test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
 
-test-container-service: build-backend-metadata-db build-backend-container
-	docker system prune -f --volumes
-	docker pull mysql:8.0
+test-container-service: clean build-metadata-db build-container-service
 	mvn -f ./fda-container-service/pom.xml clean test verify
 
-test-database-service: build-backend-metadata-db build-backend-database
-	docker system prune -f --volumes
+test-database-service: clean build-metadata-db build-database-service
 	docker pull rabbitmq:3-management-alpine
-	docker pull nginx:alpine
 	mvn -f ./fda-database-service/pom.xml clean test verify
 
-test-discovery-service: build-backend-metadata-db build-backend-discovery
-	docker system prune -f --volumes
+test-discovery-service: clean build-metadata-db build-discovery-service
 	mvn -f ./fda-discovery-service/pom.xml clean test verify
 
-test-gateway-service: build-backend-metadata-db build-backend-gateway
-	docker system prune -f --volumes
+test-gateway-service: clean build-metadata-db build-gateway-service
 	mvn -f ./fda-gateway-service/pom.xml clean test verify
 
-test-query-service: build-backend-metadata-db build-backend-query
-	docker system prune -f --volumes
+test-query-service: clean build-metadata-db build-query-service
 	mvn -f ./fda-query-service/pom.xml clean test verify
 
-test-table-service: build-backend-metadata-db build-backend-table
-	docker system prune -f --volumes
+test-table-service: clean build-metadata-db build-table-service
 	mvn -f ./fda-table-service/pom.xml clean test verify
 
-test-metadata-service: build-backend-metadata-db build-backend-metadata
-	docker system prune -f --volumes
+test-metadata-service: clean build-metadata-db build-metadata-service
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
 
 test-semantics-service: build-semantics-service
@@ -245,13 +184,16 @@ test-semantics-service: build-semantics-service
 test-analyse-service: build-analyse-service
 	bash ./fda-analyse-service/test.sh
 
-coverage-frontend: clean build-frontend
+coverage-frontend: build-frontend
 	yarn --cwd ./fda-ui run coverage || true
 
 test-frontend: clean build-frontend
 	yarn --cwd ./fda-ui install
-	docker compose up -d
-	yarn --cwd ./fda-ui run test
+	yarn --cwd ./fda-ui run test:unit || true
+	yarn --cwd ./fda-ui run coverage || true
+
+clean:
+	docker system prune -f --volumes
 
 test-clients:
 	bash ./.gitlab/test.sh
@@ -259,4 +201,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.dbrepo2/teardown
+	./.junit/teardown

@@ -33,7 +33,7 @@ public class RabbitMqConfig {
 
     public List<ConsumerDto> findAllConsumers() throws IOException {
         log.trace("gateway broker find all consumers");
-        final URI findUri = URI.create("http://broker-service:15672/api/consumers/%2F");
+        final URI findUri = URI.create("http://dbrepo-broker-service:15672/api/consumers/%2F");
         final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
                 new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
                 });
@@ -52,7 +52,7 @@ public class RabbitMqConfig {
             }
         }
         for (Map.Entry<String, Integer> consumer : consumers.entrySet()) {
-            log.debug("queue {} has {} consumers", consumer.getKey(), consumer.getValue());
+            log.trace("queue {} has {} consumers", consumer.getKey(), consumer.getValue());
         }
         return response.getBody();
     }

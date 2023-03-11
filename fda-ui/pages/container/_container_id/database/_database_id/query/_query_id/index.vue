@@ -336,6 +336,9 @@ export default {
       if (this.query.creator.username === this.username) {
         return true
       }
+      if (!this.query.identifier) {
+        return false
+      }
       return this.query.identifier.visibility === 'everyone'
     },
     canWrite () {
@@ -367,6 +370,7 @@ export default {
   methods: {
     loadResult () {
       this.$refs.queryResults.reExecute(this.query.id)
+      this.$refs.queryResults.reExecuteCount(this.query.id)
     },
     async download (mime) {
       if (mime === 'text/csv') {
