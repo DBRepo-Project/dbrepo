@@ -108,6 +108,32 @@ public class QueryEndpoint extends AbstractEndpoint {
                 .body(result);
     }
 
+    @GetMapping("/{queryId}/data/count")
+    @Transactional(readOnly = true)
+    @Timed(value = "query.reexecute.count", description = "Time needed to re-execute a query")
+    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("id") Long containerId,
+                                                    @NotNull @PathVariable("databaseId") Long databaseId,
+                                                    @NotNull @PathVariable("queryId") Long queryId,
+                                                    Principal principal)
+            throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
+            DatabaseConnectionException, UserNotFoundException {
+        log.debug("endpoint re-execute query count, containerId={}, databaseId={}, queryId={}, principal={}",
+                containerId, databaseId, queryId, principal);
+        /* check */
+        if (!hasQueryPermission(containerId, databaseId, queryId, "QUERY_RE_EXECUTE", principal)) {
+            log.error("Missing re-execute query permission");
+            throw new NotAllowedException("Missing re-execute query permission");
+        }
+        /* execute */
+        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
+        final Long result = queryService.reExecuteCount(containerId, databaseId, query, principal);
+        log.trace("re-execute query count resulted in result {}", result);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(result);
+    }
+
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
     @Timed(value = "query.export", description = "Time needed to export query data")

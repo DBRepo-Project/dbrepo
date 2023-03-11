@@ -2433,8 +2433,8 @@ public abstract class BaseUnitTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
             .owner(USER_1)
-            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
-            .views(List.of())
+            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
+            .views(List.of(VIEW_4))
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
