@@ -439,7 +439,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
                 .queryHash(QUERY_1_QUERY_HASH)
                 .resultHash(null)
+                .resultNumber(0L)
                 .created(QUERY_1_CREATED)
+                .executed(QUERY_1_EXECUTION)
                 .createdBy(USER_1_USERNAME)
                 .isPersisted(true)
                 .build();
