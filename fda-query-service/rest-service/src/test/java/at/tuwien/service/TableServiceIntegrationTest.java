@@ -105,8 +105,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         tableRepository.save(TABLE_1_NOCOLS);
         tableRepository.save(TABLE_2_NOCOLS);
         tableRepository.save(TABLE_3_NOCOLS);
-        tableRepository.save(TABLE_4_NOCOLS);
+        tableRepository.save(TABLE_7_NOCOLS);
         DATABASE_1.setTables(List.of());
+        DATABASE_1.setViews(List.of());
         databaseRepository.save(DATABASE_1);
     }
 

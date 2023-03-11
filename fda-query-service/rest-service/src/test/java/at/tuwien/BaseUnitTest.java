@@ -2309,6 +2309,20 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Table TABLE_7_NOCOLS = Table.builder()
+            .id(TABLE_7_ID)
+            .created(Instant.now())
+            .internalName(TABLE_7_INTERNAL_NAME)
+            .description(TABLE_7_DESCRIPTION)
+            .name(TABLE_7_NAME)
+            .lastModified(TABLE_7_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_7_QUEUE_NAME)
+            .routingKey(TABLE_7_ROUTING_KEY)
+            .columns(List.of())
+            .creator(USER_1)
+            .build();
+
     public final static Long VIEW_1_ID = 1L;
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
@@ -2433,8 +2447,8 @@ public abstract class BaseUnitTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
             .owner(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
-            .views(List.of(VIEW_4))
+            .tables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7))
+            .views(List.of(VIEW_1))
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
