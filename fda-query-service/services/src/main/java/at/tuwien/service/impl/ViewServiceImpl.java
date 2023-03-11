@@ -136,7 +136,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             createViewStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to create view", e);
+            throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

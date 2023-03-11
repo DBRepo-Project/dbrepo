@@ -2361,7 +2361,7 @@ public abstract class BaseUnitTest {
     public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
-    public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus`";
+    public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
 
     public final static View VIEW_2 = View.builder()
             .id(VIEW_2_ID)
@@ -2392,7 +2392,7 @@ public abstract class BaseUnitTest {
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `mock_view` m on m.`location` = w.`location`";
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
 
     public final static View VIEW_3 = View.builder()
             .id(VIEW_3_ID)

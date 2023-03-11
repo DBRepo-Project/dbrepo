@@ -97,16 +97,16 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_1.setViews(List.of(VIEW_3));
+        DATABASE_1.setViews(List.of(VIEW_2, VIEW_3));
     }
 
     @Test
     public void create_viewJoinOnView_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             DatabaseConnectionException, ViewMalformedException, QueryMalformedException, SQLException {
         final ViewCreateDto request = ViewCreateDto.builder()
-                .name(VIEW_3_NAME)
+                .name("Debug")
                 .query(VIEW_3_QUERY)
-                .isPublic(VIEW_3_PUBLIC)
+                .isPublic(true)
                 .build();
 
         /* mock */
@@ -126,7 +126,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_3_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_3_QUERY, response.getQuery());
         final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT j.* FROM `junit3` j", "mintemp", "rainfall", "location", "lat", "lng");
+                "SELECT j.* FROM `debug` j", "mintemp", "rainfall", "location", "lat", "lng");
         assertEquals("13.4", resultSet.get(0).get("mintemp"));
         assertEquals("0.6", resultSet.get(0).get("rainfall"));
         assertEquals("Albury", resultSet.get(0).get("location"));
