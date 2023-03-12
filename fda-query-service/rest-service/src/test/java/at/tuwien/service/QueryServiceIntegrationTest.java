@@ -261,7 +261,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("date", "2008-12-04",
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
                         "location", "Melbourne",
                         "mintemp", 5,
                         "rainfall", 0))
@@ -282,7 +283,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void insert_violatingForeignKey_fails() throws InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("date", "2008-12-04",
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
                         "location", "Mexico City", // not in referenced table
                         "mintemp", 5,
                         "rainfall", 0))
@@ -305,7 +307,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void insert_violatingUnique_fails() throws InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("date", "2008-12-03", // entry with date already exists
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-03", // entry with date already exists
                         "location", "Melbourne",
                         "mintemp", 5,
                         "rainfall", 0))
@@ -328,7 +331,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void insert_violatingCheck_fails() throws InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("date", "2008-12-04",
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
                         "location", "Melbourne",
                         "mintemp", -1, // mintemp is smaller than 0, which is not allowed
                         "rainfall", 0))
