@@ -31,6 +31,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.HOURS;
@@ -100,9 +101,11 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException, SQLException {
+    public void beforeEach() throws InterruptedException {
         afterEach();
+        /* create networks */
         DockerConfig.createAllNetworks();
+        /* create containers */
         DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         /* metadata database */
@@ -143,6 +146,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_2, USER_1_USERNAME);
 
         /* test */
         final List<Query> queries = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, USER_1_PRINCIPAL);
@@ -373,7 +377,7 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void findOne_notFound_fails() {
+    public void findOne_notFound_fails() throws SQLException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -382,8 +386,23 @@ public class StoreServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_2_ID, principal);
+            storeService.findOne(CONTAINER_1_ID, DATABASE_1_ID, 9999L, principal);
         });
+    }
+
+    @Test
+    public void deleteStaleQueries_succeeds() throws QueryStoreException, ImageNotSupportedException, SQLException {
+
+        /* mock */
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_2, USER_1_USERNAME);
+        when(databaseRepository.findAll())
+                .thenReturn(List.of(DATABASE_1));
+
+        /* test */
+        storeService.deleteStaleQueries();
+        final List<Map<String, Object>> response = MariaDbConfig.listQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME);
+        assertEquals(1, response.size());
     }
 
 }

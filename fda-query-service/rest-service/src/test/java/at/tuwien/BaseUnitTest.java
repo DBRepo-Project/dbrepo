@@ -1029,9 +1029,10 @@ public abstract class BaseUnitTest {
     public final static String QUERY_1_DOI = "1111/1";
     public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
+    public final static Long QUERY_1_RESULT_NUMBER = 2L;
     public final static String QUERY_1_QUERY_HASH = "a3b8ac39e38167d14cf3a9c20a69e4b6954d049525390b973a2c23064953a992";
     public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
-    public final static Instant QUERY_1_CREATED = Instant.now();
+    public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377);
     public final static Instant QUERY_1_EXECUTION = Instant.now();
     public final static Boolean QUERY_1_PERSISTED = false;
 
@@ -1040,9 +1041,12 @@ public abstract class BaseUnitTest {
             .query(QUERY_1_STATEMENT)
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
+            .resultNumber(QUERY_1_RESULT_NUMBER)
             .created(QUERY_1_CREATED)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
+            .executed(QUERY_1_EXECUTION)
+            .created(QUERY_1_CREATED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -1076,6 +1080,7 @@ public abstract class BaseUnitTest {
     public final static String QUERY_2_QUERY_HASH = "a2d2dd94ebc7653bb5a3b55dd8ed5e91d3d13c225c6855a1eb4eb7ca14c36ced";
     public final static Long QUERY_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long QUERY_2_DATABASE_ID = DATABASE_2_ID;
+    public final static Long QUERY_2_RESULT_NUMBER = 2L;
     public final static String QUERY_2_RESULT_HASH = "ff3f7cbe1b96d296957f6e39e55b8b1b577fa3d205d4795af99594cfd20cb80d";
     public final static Instant QUERY_2_CREATED = Instant.now().minus(2, MINUTES);
     public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
@@ -1086,9 +1091,12 @@ public abstract class BaseUnitTest {
             .query(QUERY_2_STATEMENT)
             .queryHash(QUERY_2_QUERY_HASH)
             .resultHash(QUERY_2_RESULT_HASH)
+            .resultNumber(QUERY_2_RESULT_NUMBER)
             .created(QUERY_2_CREATED)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_2_PERSISTED)
+            .created(QUERY_2_CREATED)
+            .executed(QUERY_2_EXECUTION)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
@@ -2154,6 +2162,20 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Table TABLE_4_NOCOLS = Table.builder()
+            .id(TABLE_4_ID)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(List.of())
+            .creator(USER_1)
+            .build();
+
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(COLUMN_5_1_ORDINALPOS)
@@ -2287,6 +2309,20 @@ public abstract class BaseUnitTest {
             .creator(USER_1)
             .build();
 
+    public final static Table TABLE_7_NOCOLS = Table.builder()
+            .id(TABLE_7_ID)
+            .created(Instant.now())
+            .internalName(TABLE_7_INTERNAL_NAME)
+            .description(TABLE_7_DESCRIPTION)
+            .name(TABLE_7_NAME)
+            .lastModified(TABLE_7_LAST_MODIFIED)
+            .tdbid(DATABASE_1_ID)
+            .queueName(TABLE_7_QUEUE_NAME)
+            .routingKey(TABLE_7_ROUTING_KEY)
+            .columns(List.of())
+            .creator(USER_1)
+            .build();
+
     public final static Long VIEW_1_ID = 1L;
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
@@ -2325,7 +2361,7 @@ public abstract class BaseUnitTest {
     public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
-    public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus`";
+    public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
 
     public final static View VIEW_2 = View.builder()
             .id(VIEW_2_ID)
@@ -2356,7 +2392,7 @@ public abstract class BaseUnitTest {
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `mock_view` m on m.`location` = w.`location`";
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
 
     public final static View VIEW_3 = View.builder()
             .id(VIEW_3_ID)
@@ -2411,8 +2447,8 @@ public abstract class BaseUnitTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .creator(USER_1)
             .owner(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3))
-            .views(List.of(VIEW_4))
+            .tables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7))
+            .views(List.of(VIEW_1))
             .build();
 
     public final static Database DATABASE_2 = Database.builder()
@@ -2446,7 +2482,6 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;
-    public final static Long QUERY_1_RESULT_NUMBER = 2L;
     public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(
             new HashMap<>() {{
                 put("location", "Albury");
