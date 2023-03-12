@@ -50,7 +50,7 @@
           single-line
           hide-details
           placeholder="Search ..." />
-        <v-btn icon class="ml-2" type="submit" @click="retrieve">
+        <v-btn icon class="ml-2" type="submit" name="search-submit" @click="retrieve">
           <v-icon>mdi-magnify</v-icon>
         </v-btn>
         <v-spacer />
@@ -227,8 +227,10 @@ export default {
     this.loadUser()
     this.setTheme()
     this.loadDatabase()
-      .then(() => this.loadIdentifier())
-    this.loadTable()
+      .then(() => {
+        this.loadIdentifier()
+        this.loadTable()
+      })
     this.loadAccess()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
@@ -298,9 +300,16 @@ export default {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
         this.$store.commit('SET_TABLE', res.data)
         console.debug('table', this.table)
-      } catch (err) {
-        console.error('Could not load table', err)
-        this.$toast.error('Could not load table')
+      } catch (error) {
+        const { status } = error.response
+        if (status === 405) {
+          const table = this.database.tables.filter(t => t.id === Number(this.$route.params.table_id))[0]
+          this.$store.commit('SET_TABLE', table)
+        } else {
+          const { message } = error.response.data
+          console.error('Failed to load table', error)
+          this.$toast.error(`Failed to load table: ${message}`)
+        }
       }
       this.loading = false
     },
@@ -327,7 +336,7 @@ export default {
       this.loading = false
     },
     async loadIdentifier () {
-      if ('identifier' in this.database) {
+      if (!this.database || 'identifier' in this.database) {
         return
       }
       try {

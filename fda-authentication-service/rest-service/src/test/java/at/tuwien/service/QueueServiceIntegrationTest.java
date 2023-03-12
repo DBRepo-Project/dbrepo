@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.amqp.CreateUserDto;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.dto.AmqpUserBriefDto;
@@ -13,9 +14,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Network;
 import com.github.dockerjava.api.model.PortBinding;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -56,24 +55,16 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private RabbitMqConfig amqpConfig;
 
+    @BeforeAll
+    public static void beforeAll() {
+        afterAll();
+        DockerConfig.createAllNetworks();
+    }
+
     @BeforeEach
     public void beforeEach() throws InterruptedException {
         afterEach();
-        /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.28.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.29.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
+        DockerConfig.createAllNetworks();
         /* create container */
         final PortBinding binding = PortBinding.parse("15672:15672");
         final CreateContainerResponse response1 = dockerClient.createContainerCmd(IMAGE_BROKER_IMAGE + ":" + IMAGE_BROKER_TAG)
@@ -92,28 +83,14 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @AfterEach
     public void afterEach() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @Test

@@ -56,9 +56,12 @@ public interface ContainerService {
     Container inspect(Long id) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException;
 
     /**
-     * @return
+     * Retrieve a list of all containers from the metadata database
+     *
+     * @param limit Return at most this amount of results, optional.
+     * @return The list of containers.
      */
-    List<Container> getAll();
+    List<Container> getAll(Integer limit);
 
     /**
      * @param containerId

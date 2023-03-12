@@ -22,6 +22,7 @@ import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.SocketUtils;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -79,7 +81,7 @@ public class ContainerServiceImpl implements ContainerService {
         /* check duplicate */
         final Optional<Container> optional = containerRepository.findByInternalName(container.getInternalName());
         if (optional.isPresent()) {
-            log.error("Failed to create container with internal name {}", container.getInternalName());
+            log.error("Failed to create container with internal name {}, it already exists", container.getInternalName());
             throw new ContainerAlreadyExistsException("Container name already exists");
         }
         /* create the volume */
@@ -212,9 +214,15 @@ public class ContainerServiceImpl implements ContainerService {
     }
 
     @Override
-    @Transactional
-    public List<Container> getAll() {
-        final List<Container> containers = containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
+    @Transactional(readOnly = true)
+    public List<Container> getAll(Integer limit) {
+        final List<Container> containers;
+        if (limit == null) {
+            containers = containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
+        } else {
+            containers = containerRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "created")))
+                    .toList();
+        }
         log.info("Found {} containers", containers.size());
         return containers;
     }

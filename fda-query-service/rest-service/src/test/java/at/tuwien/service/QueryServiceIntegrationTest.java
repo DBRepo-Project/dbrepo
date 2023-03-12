@@ -10,6 +10,8 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
@@ -56,8 +58,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexInitializer;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -79,12 +86,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException {
+    public static void beforeAll() {
         afterAll();
         /* create network */
         DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
-        DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll
@@ -133,7 +138,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
+        final QueryResultDto result = queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
                 null, null, USER_1_PRINCIPAL);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
@@ -169,7 +174,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -187,24 +192,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void selectAll_noDatabase_fails() throws InterruptedException {
-        final Long page = 0L;
-        final Long size = 10L;
-
-        /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
@@ -374,7 +362,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -392,8 +380,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -526,7 +514,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
                 .queryHash(QUERY_1_QUERY_HASH)
                 .resultHash(null)
+                .resultNumber(0L)
                 .created(QUERY_1_CREATED)
+                .executed(QUERY_1_EXECUTION)
                 .createdBy(USER_1_USERNAME)
                 .isPersisted(true)
                 .build();

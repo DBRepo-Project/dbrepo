@@ -10,10 +10,6 @@ import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +42,6 @@ public class ImageEndpoint {
     }
 
     @GetMapping
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found images")
-    })
     @Transactional(readOnly = true)
     @Timed(value = "image.list", description = "Time needed to list the container images")
     @Operation(summary = "Find all images")
@@ -62,10 +55,6 @@ public class ImageEndpoint {
     }
 
     @PostMapping
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Created image"),
-            @ApiResponse(responseCode = "404", description = "Image not found"),
-    })
     @Transactional
     @Timed(value = "image.create", description = "Time needed to create a container image")
     @PreAuthorize("hasRole('ROLE_DEVELOPER')")
@@ -86,10 +75,6 @@ public class ImageEndpoint {
     }
 
     @GetMapping("/{id}")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Found some image"),
-            @ApiResponse(responseCode = "404", description = "Image not found"),
-    })
     @Transactional(readOnly = true)
     @Timed(value = "image.find", description = "Time needed to find a container image")
     @Operation(summary = "Find some image")
@@ -104,10 +89,6 @@ public class ImageEndpoint {
     }
 
     @PutMapping("/{id}")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202", description = "Updated image"),
-            @ApiResponse(responseCode = "404", description = "Image not found"),
-    })
     @Transactional
     @Timed(value = "image.update", description = "Time needed to update a container image")
     @PreAuthorize("hasRole('DEVELOPER')")
@@ -125,11 +106,6 @@ public class ImageEndpoint {
     }
 
     @DeleteMapping("/{id}")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Deleted image"),
-            @ApiResponse(responseCode = "403", description = "Unable to delete image"),
-            @ApiResponse(responseCode = "404", description = "Image not found"),
-    })
     @Transactional
     @Timed(value = "image.delete", description = "Time needed to delete a container image")
     @PreAuthorize("hasRole('DEVELOPER')")

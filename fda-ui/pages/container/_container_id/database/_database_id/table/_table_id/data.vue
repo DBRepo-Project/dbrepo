@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="canRead">
     <TableToolbar :selection="selection" @modified="modified" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
@@ -23,7 +23,7 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-card tile>
-      <v-progress-linear v-if="loadingData || error" :value="loadProgress" :color="error ? 'error' : 'primary'" />
+      <v-progress-linear v-if="loadingData > 0 || error" :value="loadProgress" :color="error ? 'error' : 'primary'" />
       <v-data-table
         :headers="headers"
         :items="rows"
@@ -41,7 +41,7 @@
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import TableToolbar from '@/components/TableToolbar'
-import { formatTimestampUTCLabel, formatDateUTC, formatTimestamp } from '@/utils'
+import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
 
 export default {
   components: {
@@ -51,10 +51,10 @@ export default {
   data () {
     return {
       loading: true,
-      loadingData: true,
+      loadingData: 0,
       loadProgress: 0,
       editTupleDialog: false,
-      total: 0,
+      total: -1,
       footerProps: {
         'items-per-page-options': [10, 20, 30, 40, 50]
       },
@@ -64,6 +64,7 @@ export default {
       selection: [],
       pickVersionDialog: null,
       version: null,
+      lastReload: new Date(),
       tab: null,
       error: false, // XXX: `error` is never changed
       options: {
@@ -165,7 +166,7 @@ export default {
   watch: {
     version (newVersion, oldVersion) {
       console.info('selected new version', newVersion)
-      this.loadData()
+      this.reload()
     },
     options () {
       this.loadData()
@@ -177,7 +178,7 @@ export default {
     }
   },
   mounted () {
-    this.loadData()
+    this.reload()
     this.simulateProgress()
     this.loadProperties()
   },
@@ -254,19 +255,22 @@ export default {
         this.selection = []
       }
       if (success) {
-        this.loadData()
+        this.reload()
       }
+    },
+    reload () {
+      this.lastReload = new Date()
+      this.loadData()
+      this.loadCount()
     },
     async loadData () {
       try {
-        this.loadingData = true
-        let url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data?page=${this.options.page - 1}&size=${this.options.itemsPerPage}`
+        this.loadingData++
+        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data?page=${this.options.page - 1}&size=${this.options.itemsPerPage}&timestamp=${this.versionISO || this.lastReload.toISOString()}`
         if (this.version !== null) {
           console.info('versioning active', this.version)
-          url += `&timestamp=${this.versionISO}`
         }
         const res = await this.$axios.get(url, this.config)
-        this.total = parseInt(res.headers['fda-count'])
         this.rows = res.data.result.map((row) => {
           for (const col in row) {
             const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
@@ -274,7 +278,7 @@ export default {
               if (columnDefinition[0].column_type === 'date') {
                 row[col] = formatDateUTC(row[col])
               } else if (columnDefinition[0].column_type === 'timestamp') {
-                row[col] = formatTimestampUTCLabel(row[col])
+                row[col] = formatTimestampUTC(row[col])
               }
             }
           }
@@ -294,8 +298,36 @@ export default {
           console.error('Failed to load data', code)
           this.$toast.error('Failed to load data: ' + message)
         }
+      } finally {
+        this.loadingData--
       }
-      this.loadingData = false
+    },
+    async loadCount () {
+      try {
+        this.loadingData++
+        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data/count?timestamp=${this.versionISO || this.lastReload.toISOString()}`
+        if (this.version !== null) {
+          console.info('versioning active', this.version)
+        }
+        const res = await this.$axios.get(url, this.config)
+        this.total = res.data
+        console.info('total', this.total)
+      } catch (error) {
+        console.error('Failed to load count', error)
+        this.error = true
+        this.loadProgress = 100
+        const { status, data } = error.response
+        const { message, code } = data
+        if (status === 423) {
+          console.error('Database is offline', code)
+          this.$toast.error('Database is offline: ' + message)
+        } else {
+          console.error('Failed to load data', code)
+          this.$toast.error('Failed to load data: ' + message)
+        }
+      } finally {
+        this.loadingData--
+      }
     },
     simulateProgress () {
       if (this.loadProgress !== 0) {

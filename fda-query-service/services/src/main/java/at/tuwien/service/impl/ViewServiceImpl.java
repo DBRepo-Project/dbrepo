@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -10,10 +11,12 @@ import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.ViewRepository;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.QueryService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
+import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,17 +38,19 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     private final ViewRepository viewRepository;
     private final DatabaseService databaseService;
     private final ViewIdxRepository viewIdxRepository;
+    private final QueryService queryService;
 
     @Autowired
     public ViewServiceImpl(ViewMapper viewMapper, UserService userService, DatabaseMapper databaseMapper,
                            ViewRepository viewRepository, DatabaseService databaseService,
-                           ViewIdxRepository viewIdxRepository) {
+                           ViewIdxRepository viewIdxRepository, QueryService queryService) {
         this.viewMapper = viewMapper;
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.viewRepository = viewRepository;
         this.databaseService = databaseService;
         this.viewIdxRepository = viewIdxRepository;
+        this.queryService = queryService;
     }
 
     @Override
@@ -118,13 +123,20 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* create view */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
                 database.getContainer(), database, root);
+        final List<TableColumn> columns;
+        try {
+            columns = queryService.parseColumns(data.getQuery(), database);
+        } catch (JSQLParserException e) {
+            log.error("Failed to map/parse columns: {}", e.getMessage());
+            throw new QueryMalformedException(e.getMessage(), e);
+        }
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
             createViewStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to create view", e);
+            throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -139,6 +151,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .query(data.getQuery())
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())
+                .columns(columns)
                 .build();
         final View view = viewRepository.save(entity);
         log.info("Created view with id {}", view.getId());

@@ -39,7 +39,7 @@ VALUES (1, '2008-12-01', 'Albury', 13.4, 0.6),
 ## TEST CASE PRE-REQUISITE                                                                                            ##
 ########################################################################################################################
 
-CREATE VIEW mock_view AS
+CREATE VIEW junit2 AS
 (
 SELECT `location`, `lat`, `lng`
 FROM `weather_location`

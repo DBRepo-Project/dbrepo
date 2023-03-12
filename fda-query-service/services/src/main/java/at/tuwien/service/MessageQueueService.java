@@ -15,4 +15,11 @@ public interface MessageQueueService {
      * @throws AmqpException The consumer could not be created.
      */
     void createConsumer(String queueName, Long containerId, Long databaseId, Long tableId) throws AmqpException;
+
+    /**
+     * Restores missing consumers at the Broker Service.
+     *
+     * @throws AmqpException The consumer could not be created.
+     */
+    void restore() throws AmqpException;
 }

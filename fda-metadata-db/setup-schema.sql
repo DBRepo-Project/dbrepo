@@ -402,7 +402,22 @@ CREATE TABLE IF NOT EXISTS mdb_view
     created_by    bigint       NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    PRIMARY KEY (id, vdbid)
+    PRIMARY KEY (id, vcid, vdbid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE mdb_view_columns
+(
+    id               BIGINT  NOT NULL AUTO_INCREMENT,
+    cid              BIGINT  NOT NULL,
+    ctid             BIGINT  NOT NULL,
+    cdbid            BIGINT  NOT NULL,
+    vid              BIGINT  NOT NULL,
+    vcid             BIGINT  NOT NULL,
+    vdbid            BIGINT  NOT NULL,
+    position         INTEGER NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (vid, vcid, vdbid) REFERENCES mdb_view (id, vcid, vdbid),
+    FOREIGN KEY (cid, cdbid, ctid) REFERENCES mdb_columns (ID, cDBID, tID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers

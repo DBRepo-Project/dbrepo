@@ -1,21 +1,17 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.container.*;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.config.DockerUtil;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.endpoints.ImageEndpoint;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
-import at.tuwien.service.impl.ContainerServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +27,6 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.ws.rs.NotAllowedException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +52,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     private ImageEndpoint imageEndpoint;
 
     @Autowired
-    private DockerUtil dockerUtil;
+    private DockerConfig dockerUtil;
 
     @Test
     public void findAll_anonymous_succeeds() {

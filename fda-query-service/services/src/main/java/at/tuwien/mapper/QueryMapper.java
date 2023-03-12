@@ -6,6 +6,7 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
@@ -542,16 +543,19 @@ public interface QueryMapper {
         statement.append(";");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
             for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
                 if (entry.getValue() == null) {
                     log.trace("entry is null, preparing null");
                     pstmt.setNull(i++, Types.NULL);
+                } else if (entry.getValue().equals(true) || entry.getValue().equals(false)) {
+                    log.trace("entry is not null, preparing boolean");
+                    pstmt.setBoolean(i++, Boolean.parseBoolean(String.valueOf(entry.getValue())));
                 } else {
                     log.trace("entry is not null, preparing string");
                     pstmt.setString(i++, String.valueOf(entry.getValue()));
                 }
             }
+            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
             return pstmt;
         } catch (SQLException e) {
             log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
@@ -570,8 +574,8 @@ public interface QueryMapper {
         return selection.toString();
     }
 
-    default PreparedStatement tableToRawCountAllQuery(Connection connection, Table table, Instant timestamp)
-            throws ImageNotSupportedException, QueryMalformedException {
+    default String tableToRawCountAllQuery(Table table, Instant timestamp)
+            throws ImageNotSupportedException {
         log.trace("mapping table to raw count query, table={}, timestamp={}", table, timestamp);
         /* check image */
         if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
@@ -582,25 +586,35 @@ public interface QueryMapper {
             log.trace("timestamp is null, setting it to now");
             timestamp = Instant.now();
         }
-        final StringBuilder statement = new StringBuilder("SELECT COUNT(*) FROM `")
-                .append(nameToInternalName(table.getName()))
-                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
-                .append("';");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped raw count query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        return columnsToRawCountAllQuery(table.getInternalName(), timestamp);
     }
 
-    default PreparedStatement queryToRawTimestampedQuery(Connection connection, String query, Database database,
-                                                         Instant timestamp, Boolean selection, Long page, Long size)
-            throws ImageNotSupportedException,
-            QueryMalformedException {
+    default String viewToRawCountAllQuery(View view)
+            throws ImageNotSupportedException {
+        log.trace("mapping table to raw count query, view={}", view);
+        /* check image */
+        if (!view.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
+        }
+        return columnsToRawCountAllQuery(view.getInternalName(), null);
+    }
+
+    default String columnsToRawCountAllQuery(String tableName, Instant timestamp) {
+        final StringBuilder statement = new StringBuilder("SELECT COUNT(*) FROM `")
+                .append(nameToInternalName(tableName))
+                .append("`");
+        if(timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
+                    .append("'");
+        }
+        statement.append(";");
+        return statement.toString();
+    }
+
+    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Boolean selection, Long page, Long size)
+            throws ImageNotSupportedException, QueryMalformedException {
         log.trace("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
                 query, database, timestamp, selection, page, size);
         /* param check */
@@ -670,17 +684,11 @@ public interface QueryMapper {
                     + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
                     + "' ");
         }
-        try {
-            log.debug("mapped timestamped query: {}", statement);
-            return connection.prepareStatement(statement.toString());
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        return statement.toString();
     }
 
-    default PreparedStatement tableToRawFindAllQuery(Connection connection, Table table, Instant timestamp, Long size, Long page)
-            throws ImageNotSupportedException, QueryMalformedException {
+    default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
+            throws ImageNotSupportedException {
         log.trace("mapping table to find all query, table={}, timestamp={}, size={}, page={}",
                 table, timestamp, size, page);
         /* param check */
@@ -694,18 +702,35 @@ public interface QueryMapper {
         } else {
             log.trace("timestamp provided {}", timestamp);
         }
+        return columnsToRawFindAllQuery(table.getInternalName(), table.getColumns(), timestamp, size, page);
+    }
+
+    default String viewToRawFindAllQuery(View view, Long size, Long page)
+            throws ImageNotSupportedException {
+        log.trace("mapping view to find all query, view={}, size={}, page={}", view, size, page);
+        /* param check */
+        if (!view.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        return columnsToRawFindAllQuery(view.getInternalName(), view.getColumns(), null, size, page);
+    }
+
+    private String columnsToRawFindAllQuery(String tableName, List<TableColumn> columns, Instant timestamp, Long size, Long page) {
         final int[] idx = new int[]{0};
         final StringBuilder statement = new StringBuilder("SELECT ");
-        table.getColumns()
-                .forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
+        columns.forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(column.getInternalName())
                         .append("`"));
         statement.append(" FROM `")
-                .append(nameToInternalName(table.getName()))
-                .append("` FOR SYSTEM_TIME AS OF TIMESTAMP '")
-                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
-                .append("'");
+                .append(nameToInternalName(tableName))
+                .append("`");
+        if (timestamp != null) {
+            statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                    .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
+                    .append("'");
+        }
         if (size != null && page != null) {
             log.trace("pagination size/limit of {}", size);
             statement.append(" LIMIT ")
@@ -714,34 +739,8 @@ public interface QueryMapper {
             statement.append(" OFFSET ")
                     .append(page * size)
                     .append(";");
-
         }
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped timestamped query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
-    default QueryResultDto queryTableToQueryResultDto(ResultSet result, Table table) throws DateTimeException,
-            SQLException {
-        final List<Map<String, Object>> queryResult = new LinkedList<>();
-        while (result.next()) {
-            /* map the result set to the columns through the stored metadata in the metadata database */
-            int[] idx = new int[]{1};
-            final Map<String, Object> map = new HashMap<>();
-            for (int i = 0; i < table.getColumns().size(); i++) {
-                map.put(table.getColumns().get(i).getInternalName(), dataColumnToObject(result.getObject(idx[0]++), table.getColumns().get(i)));
-            }
-            queryResult.add(map);
-        }
-        log.trace("mapped result {} to query result {}", result, queryResult);
-        return QueryResultDto.builder()
-                .result(queryResult)
-                .build();
+        return statement.toString();
     }
 
     @Transactional(readOnly = true)

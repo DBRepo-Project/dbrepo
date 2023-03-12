@@ -2,9 +2,6 @@
   <div>
     <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :value="loadProgress" />
     <v-tabs-items>
-      <v-card v-if="!loadingQueries && queries.length === 0 && !error" flat>
-        <v-card-text v-text="emptyMessage" />
-      </v-card>
       <div v-if="!loadingQueries && !error">
         <div v-for="(item,i) in queries" :key="i">
           <v-divider v-if="i !== 0" class="mx-4" />
@@ -16,12 +13,15 @@
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-action v-if="item.identifier">
+                <v-icon color="primary">mdi-identifier</v-icon>
+              </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
         </div>
       </div>
       <div v-if="!loadingIdentifiers && loadingQueries">
-        <!-- show identifiers when error -->
+        <!-- show identifiers when loading subsets -->
         <div v-for="(item,i) in identifiers" :key="i">
           <v-divider v-if="i !== 0" class="mx-4" />
           <v-list-item-group>
@@ -32,6 +32,28 @@
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-action>
+                <v-icon color="primary">mdi-identifier</v-icon>
+              </v-list-item-action>
+            </v-list-item>
+          </v-list-item-group>
+        </div>
+      </div>
+      <div v-if="!loadingIdentifiers && !isPublicOrOwner">
+        <!-- show identifiers when private -->
+        <div v-for="(item,i) in identifiers" :key="i">
+          <v-divider v-if="i !== 0" class="mx-4" />
+          <v-list-item-group>
+            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
+              <v-list-item-content>
+                <v-list-item-title v-text="item.title" />
+                <v-list-item-subtitle class="mt-2">
+                  <pre>{{ item.query }}</pre>
+                </v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-icon color="primary">mdi-identifier</v-icon>
+              </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
         </div>
@@ -81,11 +103,20 @@ export default {
     creator () {
       return this.queryDetails.creator
     },
-    emptyMessage () {
-      if (this.isPublicOrOwner()) {
-        return '(no subsets)'
+    isPublicOrOwner () {
+      if (!this.database) {
+        return false
       }
-      return '(private database)'
+      if (this.database.is_public) {
+        return true
+      }
+      if (this.token === null) {
+        return false
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.database.creator.username === this.user.username
     }
   },
   mounted () {
@@ -117,10 +148,14 @@ export default {
         const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
         this.queries = res.data
         console.debug('queries', this.queries)
-      } catch (err) {
-        this.error = true
-        console.error('Connection to query store failed', err.response.index)
-        this.$toast.error(err.response.index.message)
+      } catch (error) {
+        const { status, data } = error.response
+        const { message } = data
+        if (status !== 405) {
+          this.error = true
+          console.error('Connection to query store failed', error)
+          this.$toast.error(`Failed to connect to query store: ${message}`)
+        }
       }
       this.loadingQueries = false
     },
@@ -149,28 +184,10 @@ export default {
       return `/pid/${queryOrIdentifier.identifier.id}`
     },
     clazz (queryOrIdentifier) {
-      if (!('identifier' in queryOrIdentifier) || queryOrIdentifier.identifier === null) {
-        return null
-      }
       if ('query_id' in queryOrIdentifier || queryOrIdentifier.identifier) {
         return 'primary--text'
       }
       return null
-    },
-    isPublicOrOwner () {
-      if (!this.database) {
-        return false
-      }
-      if (this.database.is_public) {
-        return true
-      }
-      if (this.token === null) {
-        return false
-      }
-      if (!this.user) {
-        return false
-      }
-      return this.database.creator.username === this.user.username
     },
     simulateProgress () {
       if (this.loadProgress !== 0) {

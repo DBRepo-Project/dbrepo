@@ -9,17 +9,15 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
-import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +28,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static at.tuwien.config.DockerConfig.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -60,8 +56,13 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private ViewIdxRepository viewIdxRepository;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private DatabaseRepository databaseRepository;
@@ -93,13 +94,19 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.removeAllNetworks();
     }
 
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
+        DATABASE_1.setViews(List.of(VIEW_2, VIEW_3));
+    }
+
     @Test
     public void create_viewJoinOnView_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             DatabaseConnectionException, ViewMalformedException, QueryMalformedException, SQLException {
         final ViewCreateDto request = ViewCreateDto.builder()
-                .name(VIEW_3_NAME)
+                .name("Debug")
                 .query(VIEW_3_QUERY)
-                .isPublic(VIEW_3_PUBLIC)
+                .isPublic(true)
                 .build();
 
         /* mock */
@@ -119,7 +126,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_3_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_3_QUERY, response.getQuery());
         final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT j.* FROM `junit3` j", "mintemp", "rainfall", "location", "lat", "lng");
+                "SELECT j.* FROM `debug` j", "mintemp", "rainfall", "location", "lat", "lng");
         assertEquals("13.4", resultSet.get(0).get("mintemp"));
         assertEquals("0.6", resultSet.get(0).get("rainfall"));
         assertEquals("Albury", resultSet.get(0).get("location"));

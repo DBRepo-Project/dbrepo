@@ -1,9 +1,0 @@
-Name                        Stmts   Miss  Cover
------------------------------------------------
-determine_dt.py                56     16    71%
-determine_pk.py                49      0   100%
-test/__init__.py                0      0   100%
-test/test_determine_dt.py      34      7    79%
-test/test_determine_pk.py      41      1    98%
------------------------------------------------
-TOTAL                         180     24    87%

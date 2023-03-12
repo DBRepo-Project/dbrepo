@@ -1,6 +1,0 @@
-#!/bin/bash
-FILES=$(cd /tmp && find -exec basename '{}' ';' 2>/dev/null | egrep '^.{32}$' | egrep "^([a-z0-9]+)$")
-for file in $FILES; do
-  rm -f /tmp/$file
-  echo "Removed /tmp/${file}"
-done

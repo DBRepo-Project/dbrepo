@@ -10,27 +10,26 @@ volumes:
   broker-service-data:
 
 networks:
-  public:
-    name: public
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.29.0.0/16
   userdb:
     name: userdb
     driver: bridge
     ipam:
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.30.0.0/16
+  public:
+    name: public
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
   core:
     name: core
     driver: bridge
     ipam:
       config:
-        - subnet: 172.27.0.0/16
+        - subnet: 172.32.0.0/16
 
 services:
-
   fda-metadata-db:
     restart: on-failure
     container_name: dbrepo-metadata-db

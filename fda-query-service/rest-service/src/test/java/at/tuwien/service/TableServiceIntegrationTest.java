@@ -8,6 +8,8 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.BrokerServiceGateway;
+import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
@@ -50,8 +52,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
+    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
+
+    /* keep */
+    @MockBean
+    private BrokerServiceGateway brokerServiceGateway;
 
     @MockBean
     private TableRepository tableRepository;
@@ -74,9 +81,13 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws InterruptedException {
         afterAll();
+        /* create networks */
         DockerConfig.createAllNetworks();
+        /* start containers */
+        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
     }
 
     @AfterAll
@@ -86,20 +97,18 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        afterEach();
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        h2Utils.runScript("schema.sql");
+    public void beforeEach() {
         /* metadata db */
+        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        tableRepository.save(TABLE_1_NOCOLS);
+        tableRepository.save(TABLE_2_NOCOLS);
+        tableRepository.save(TABLE_3_NOCOLS);
+        tableRepository.save(TABLE_7_NOCOLS);
+        DATABASE_1.setTables(List.of());
+        DATABASE_1.setViews(List.of());
         databaseRepository.save(DATABASE_1);
-    }
-
-    @AfterEach
-    public void afterEach() {
-        DockerConfig.removeAllContainers();
     }
 
     @Test
