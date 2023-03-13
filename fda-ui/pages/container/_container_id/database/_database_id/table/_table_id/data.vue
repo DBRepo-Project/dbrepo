@@ -157,6 +157,9 @@ export default {
       return this.access.type === 'write_all'
     },
     canRead () {
+      if (this.database?.is_public) {
+        return true
+      }
       if (!this.user || !this.access) {
         return false
       }
