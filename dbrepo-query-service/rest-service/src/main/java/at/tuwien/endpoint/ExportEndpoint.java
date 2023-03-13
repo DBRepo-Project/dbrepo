@@ -104,7 +104,7 @@ public class ExportEndpoint extends AbstractEndpoint {
         }
         if (accept == null || accept.equals("text/csv")) {
             final HttpHeaders headers = new HttpHeaders();
-            final ExportResource resource = queryService.findAll(containerId, databaseId, tableId, timestamp, principal);
+            final ExportResource resource = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, principal);
             headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
             log.trace("export table resulted in resource {}", resource);
             return ResponseEntity.ok()

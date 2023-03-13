@@ -13,7 +13,9 @@ CREATE TABLE weather_aus
     location VARCHAR(255)     NULL,
     mintemp  DOUBLE PRECISION NULL,
     rainfall DOUBLE PRECISION NULL,
-    FOREIGN KEY (location) REFERENCES weather_location (location)
+    FOREIGN KEY (location) REFERENCES weather_location (location),
+    UNIQUE (`date`),
+    CHECK (`mintemp` > 0)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE sensor
@@ -44,7 +46,7 @@ VALUES ('2022-12-24 17:00:00', 10.0),
 ## TEST CASE PRE-REQUISITE                                                                                            ##
 ########################################################################################################################
 
-CREATE VIEW mock_view AS
+CREATE VIEW junit2 AS
 (
 SELECT `location`, `lat`, `lng`
 FROM `weather_location`

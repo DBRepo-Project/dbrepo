@@ -208,15 +208,13 @@ CREATE TABLE IF NOT EXISTS mdb_columns
     cName            VARCHAR(100),
     internal_name    VARCHAR(100) NOT NULL,
     Datatype         VARCHAR(50),
+    length           INT          NULL,
     ordinal_position INTEGER      NOT NULL,
     is_primary_key   BOOLEAN      NOT NULL,
-    is_unique        BOOLEAN      NOT NULL,
+    index_length     INT          NULL,
     auto_generated   BOOLEAN               DEFAULT false,
     is_null_allowed  BOOLEAN      NOT NULL,
-    foreign_key      VARCHAR(255),
-    reference_table  VARCHAR(255),
     created_by       bigint       NOT NULL,
-    check_expression character varying(255),
     created          timestamp    NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
     FOREIGN KEY (cDBID, tID) REFERENCES mdb_tables (tDBID, ID),
@@ -280,6 +278,69 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
     PRIMARY KEY (cDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
+(
+    fkid             BIGINT       NOT NULL AUTO_INCREMENT,
+    tid              BIGINT       NOT NULL,
+    tdbid            BIGINT       NOT NULL,
+    rtid             BIGINT       NOT NULL,
+    rtdbid           BIGINT       NOT NULL,
+    on_update        INT          NULL,
+    on_delete        INT          NULL,
+    position         INT          NULL,
+    PRIMARY KEY (fkid),
+    FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid),
+    FOREIGN KEY (rtid, rtdbid) REFERENCES mdb_tables (id, tdbid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key_reference
+(
+    id                BIGINT       NOT NULL AUTO_INCREMENT,
+    fkid              BIGINT       NOT NULL,
+    cid               BIGINT       NOT NULL,
+    ctid              BIGINT       NOT NULL,
+    ctdbid            BIGINT       NOT NULL,
+    rcid              BIGINT       NOT NULL,
+    rctid             BIGINT       NOT NULL,
+    rctdbid           BIGINT       NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
+    FOREIGN KEY (cid, ctdbid, ctid) REFERENCES mdb_columns (id, cdbid, tid),
+    FOREIGN KEY (rcid, rctdbid, rctid) REFERENCES mdb_columns (id, cdbid, tid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS mdb_constraints_unique
+(
+    uid      BIGINT NOT NULL AUTO_INCREMENT,
+    tid      BIGINT NOT NULL,
+    tdbid    BIGINT NOT NULL,
+    position INT    NULL,
+    PRIMARY KEY (uid),
+    FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid)
+);
+
+CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
+(
+    id                BIGINT       NOT NULL AUTO_INCREMENT,
+    uid               BIGINT       NOT NULL,
+    cid               BIGINT       NOT NULL,
+    ctid              BIGINT       NOT NULL,
+    ctdbid            BIGINT       NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
+    FOREIGN KEY (cid, ctdbid, ctid) REFERENCES mdb_columns (id, cdbid, tid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS mdb_constraints_checks
+(
+    id                BIGINT       NOT NULL AUTO_INCREMENT,
+    tid               BIGINT       NOT NULL,
+    tdbid             BIGINT       NOT NULL,
+    checks            VARCHAR(255) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS mdb_concepts
 (
     uri        text      not null,
@@ -341,7 +402,22 @@ CREATE TABLE IF NOT EXISTS mdb_view
     created_by    bigint       NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    PRIMARY KEY (id, vdbid)
+    PRIMARY KEY (id, vcid, vdbid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE mdb_view_columns
+(
+    id               BIGINT  NOT NULL AUTO_INCREMENT,
+    cid              BIGINT  NOT NULL,
+    ctid             BIGINT  NOT NULL,
+    cdbid            BIGINT  NOT NULL,
+    vid              BIGINT  NOT NULL,
+    vcid             BIGINT  NOT NULL,
+    vdbid            BIGINT  NOT NULL,
+    position         INTEGER NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (vid, vcid, vdbid) REFERENCES mdb_view (id, vcid, vdbid),
+    FOREIGN KEY (cid, cdbid, ctid) REFERENCES mdb_columns (ID, cDBID, tID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_identifiers

@@ -39,7 +39,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -104,19 +103,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
-        final QueryResultDto dto;
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.queryToRawTimestampedQuery(connection, query.getQuery(),
-                    database, query.getCreated(), true, page, size);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            dto = queryMapper.resultListToQueryResultDto(columns, resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
-            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), true, page, size);
+        final QueryResultDto dto = executeNonPersistent(containerId, databaseId, statement, columns);
+
         dto.setId(query.getId());
         dto.setResultNumber(query.getResultNumber());
         return dto;
@@ -124,41 +113,137 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
-                                  Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException {
+    public Long reExecuteCount(Long containerId, Long databaseId, Query query, Principal principal)
+            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
+            TableMalformedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
+        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        /* run query */
+        try {
+            parseColumns(query.getQuery(), database);
+        } catch (JSQLParserException e) {
+            log.error("Failed to map/parse columns: {}", e.getMessage());
+            throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
+        }
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), false, null, null);
+        return executeCountNonPersistent(containerId, databaseId, statement);
+    }
+
+    private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
+        try {
+            final PreparedStatement pstmt = connection.prepareStatement(statement);
+            log.trace("mapped timestamped query {} to prepared statement {}", statement, pstmt);
+            return pstmt;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    private QueryResultDto executeNonPersistent(Long containerId, Long databaseId, String statement, List<TableColumn> columns)
+            throws QueryMalformedException, DatabaseNotFoundException, TableMalformedException {
+        /* find */
+        final Database database = databaseService.find(containerId, databaseId);
         final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* run query */
         final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
                 database.getContainer(), database, root);
-        final QueryResultDto result;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.tableToRawFindAllQuery(connection, table, timestamp, size, page);
+            final PreparedStatement preparedStatement = prepareStatement(connection, statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
-            result = queryMapper.queryTableToQueryResultDto(resultSet, table);
-        } catch (DateTimeException e) {
-            log.error("Failed to parse date from the one stored in the metadata database: {}", e.getMessage());
-            throw new TableMalformedException("Could not parse date from format: " + e.getMessage(), e);
+            return queryMapper.resultListToQueryResultDto(columns, resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
+            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    private Long executeCountNonPersistent(Long containerId, Long databaseId, String statement)
+            throws QueryMalformedException, TableMalformedException, DatabaseNotFoundException, QueryStoreException {
+        /* find */
+        final Database database = databaseService.find(containerId, databaseId);
+        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        /* run query */
+        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                database.getContainer(), database, root);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = prepareStatement(connection, statement);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
             throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, QueryMalformedException, UserNotFoundException {
+    public QueryResultDto tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
+                                       Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
+        /* find */
+        final Table table = tableService.find(containerId, databaseId, tableId);
+        /* run query */
+        String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
+        return executeNonPersistent(containerId, databaseId, statement, table.getColumns());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public QueryResultDto viewFindAll(Long containerId, Long databaseId, View view,
+                                      Long page, Long size, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, TableMalformedException {
+        /* find */
+        /* run query */
+        String statement = queryMapper.viewToRawFindAllQuery(view, size, page);
+        return executeNonPersistent(containerId, databaseId, statement, view.getColumns());
+    }
+
+    @Override
+    @Transactional
+    public Long tableCount(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+            throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, QueryStoreException, TableMalformedException {
+        /* find */
+        final Table table = tableService.find(containerId, databaseId, tableId);
+        final String statement = queryMapper.tableToRawCountAllQuery(table, timestamp);
+        return executeCountNonPersistent(containerId, databaseId, statement);
+    }
+
+    @Override
+    @Transactional
+    public Long viewCount(Long containerId, Long databaseId, View view, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, QueryStoreException, TableMalformedException {
+        /* find */
+        final String statement = queryMapper.viewToRawCountAllQuery(view);
+        return executeCountNonPersistent(containerId, databaseId, statement);
+    }
+
+    @Transactional(readOnly = true)
+    public QueryResultDto findAllView(Long containerId, Long databaseId, Long viewId, Instant timestamp, Long page,
+                                      Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
+        /* find */
+        final Table table = tableService.find(containerId, databaseId, viewId);
+        /* run query */
+        String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
+        return executeNonPersistent(containerId, databaseId, statement, table.getColumns());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ExportResource tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
@@ -229,34 +314,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, QueryStoreException, TableMalformedException {
-        /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.tableToRawCountAllQuery(connection, table, timestamp);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToNumber(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to count raw tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to count raw tuples: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
-    @Transactional
     public void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, QueryMalformedException, UserNotFoundException {
+            TableNotFoundException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(containerId, databaseId);
         final Table table = tableService.find(containerId, databaseId, tableId);
@@ -394,7 +454,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
      * @throws JSQLParserException The columns could not be extracted from the query.
      */
     @Transactional(readOnly = true)
-    protected List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
+    public List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
         final List<TableColumn> columns = new ArrayList<>();
         final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
         final Statement statement = parserRealSql.parse(new StringReader(query));

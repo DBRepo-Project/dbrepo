@@ -62,6 +62,17 @@ public interface StoreMapper {
         }
     }
 
+    default PreparedStatement queryStoreRawDeleteStaleQueries(Connection connection) throws QueryStoreException {
+        final String statement = "DELETE FROM `qs_queries` WHERE `is_persisted` = false AND ABS(DATEDIFF(`created`, NOW())) >= 1";
+        try {
+            log.trace("mapped select all query '{}' to prepared statement", statement);
+            return connection.prepareStatement(statement);
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryStoreException("Failed to prepare statement", e);
+        }
+    }
+
     default PreparedStatement queryStoreRawSelectOneQuery(Connection connection, Long queryId) throws QueryStoreException {
         final String statement = "SELECT `id`, `created`, `created_by`, `query`, `query_hash`, `result_hash`, `result_number`, `is_persisted` FROM `qs_queries` q WHERE q.`id` = ?";
         try {

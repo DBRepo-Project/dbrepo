@@ -181,6 +181,34 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         return out;
     }
 
+    @Override
+    public void deleteStaleQueries() throws ImageNotSupportedException, QueryStoreException {
+        /* find */
+        final List<Database> databases = databaseService.findAll();
+        for (Database database : databases) {
+            if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+                log.error("Currently only MariaDB is supported");
+                throw new ImageNotSupportedException("Currently only MariaDB is supported");
+            }
+            final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+            /* run query */
+            final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
+                    database.getContainer(), database, root);
+            /* delete stale queries older than 24hrs */
+            try {
+                final Connection connection = dataSource.getConnection();
+                final PreparedStatement preparedStatement = storeMapper.queryStoreRawDeleteStaleQueries(connection);
+                final int affected = preparedStatement.executeUpdate();
+                log.debug("delete stale queries affected {} rows", affected);
+            } catch (SQLException e) {
+                log.error("Failed to delete stale queries in database with id {}, reason: {}", database.getId(), e.getMessage());
+                throw new QueryStoreException("Failed to delete stale queries in database with id " + database.getId() + ": " + e.getMessage());
+            } finally {
+                dataSource.close();
+            }
+        }
+    }
+
     protected List<Query> resultSetToQueryList(ResultSet resultSet) throws SQLException {
         final List<Query> queries = new LinkedList<>();
         while (resultSet.next()) {

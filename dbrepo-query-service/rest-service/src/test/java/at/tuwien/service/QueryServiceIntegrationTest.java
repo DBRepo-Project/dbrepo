@@ -139,7 +139,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final QueryResultDto result = queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
+        final QueryResultDto result = queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
                 null, null, USER_1_PRINCIPAL);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
@@ -175,7 +175,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -193,24 +193,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void selectAll_noDatabase_fails() throws InterruptedException {
-        final Long page = 0L;
-        final Long size = 10L;
-
-        /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
@@ -279,6 +262,102 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void insert_withConstraints_succeeds() throws UserNotFoundException, TableNotFoundException,
+            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
+                        "location", "Melbourne",
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void insert_violatingForeignKey_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
+                        "location", "Mexico City", // not in referenced table
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void insert_violatingUnique_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-03", // entry with date already exists
+                        "location", "Melbourne",
+                        "mintemp", 5,
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void insert_violatingCheck_fails() throws InterruptedException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(Map.of("id", 4L,
+                        "date", "2008-12-04",
+                        "location", "Melbourne",
+                        "mintemp", -1, // mintemp is smaller than 0, which is not allowed
+                        "rainfall", 0))
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
             ContainerNotFoundException, QueryMalformedException, UserNotFoundException, InterruptedException {
@@ -292,7 +371,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -310,8 +389,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
-        queryService.findAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -444,7 +523,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
                 .queryHash(QUERY_1_QUERY_HASH)
                 .resultHash(null)
+                .resultNumber(0L)
                 .created(QUERY_1_CREATED)
+                .executed(QUERY_1_EXECUTION)
                 .createdBy(USER_1_USERNAME)
                 .isPersisted(true)
                 .build();

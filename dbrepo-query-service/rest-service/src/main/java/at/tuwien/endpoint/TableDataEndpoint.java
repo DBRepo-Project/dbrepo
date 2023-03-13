@@ -268,7 +268,7 @@ public class TableDataEndpoint extends AbstractEndpoint {
                 .build();
     }
 
-    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
+    @GetMapping
     @Transactional(readOnly = true)
     @Timed(value = "data.all", description = "Time needed to find all data from a table")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
@@ -329,16 +329,77 @@ public class TableDataEndpoint extends AbstractEndpoint {
             throw new NotAllowedException("Missing data view permission");
         }
         validateDataParams(page, size, sortDirection, sortColumn);
-        /* find */
-        final Long count = queryService.count(containerId, databaseId, tableId, timestamp, principal);
-        log.debug("find table data has produced {} tuples", count);
-        final HttpHeaders headers = new HttpHeaders();
-        headers.set("FDA-COUNT", count.toString());
-        final QueryResultDto response = queryService.findAll(containerId, databaseId, tableId, timestamp, page, size, principal);
+        final QueryResultDto response = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
-                .headers(headers)
                 .body(response);
+    }
+
+    @GetMapping("/count")
+    @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
+    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Count data successfully",
+                    content = {@Content(
+                            mediaType = "text/plain",
+                            schema = @Schema(implementation = Long.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Could not get the result number in mapping",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table, user, container or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Count data is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "423",
+                    description = "Count of data resulted in an invalid query statement",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Connection to the database failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "504",
+                    description = "Query store failed to query result data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<Long> getCount(@NotNull @PathVariable("id") Long containerId,
+                                         @NotNull @PathVariable("databaseId") Long databaseId,
+                                         @NotNull @PathVariable("tableId") Long tableId,
+                                         @NotNull Principal principal,
+                                         @RequestParam(required = false) Instant timestamp)
+            throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
+            ImageNotSupportedException, TableMalformedException, ContainerNotFoundException,
+            QueryStoreException, NotAllowedException, QueryMalformedException, UserNotFoundException {
+        log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}",
+                containerId, databaseId, tableId, principal, timestamp);
+        /* check */
+        if (!hasTablePermission(containerId, databaseId, tableId, "DATA_VIEW", principal)) {
+            log.error("Missing data view permission");
+            throw new NotAllowedException("Missing data view permission");
+        }
+        /* find */
+        final Long count = queryService.tableCount(containerId, databaseId, tableId, timestamp, principal);
+        log.debug("table data count is {} tuples", count);
+        return ResponseEntity.ok()
+                .body(count);
     }
 
 

@@ -170,6 +170,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setTdbid(databaseId);
         tmp.setDatabase(database);
         tmp.setColumns(List.of());
+        tmp.setConstraints(null);
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
         /* save in metadata database */
@@ -184,6 +185,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 .forEach(column -> {
                     column.setOrdinalPosition(idx[0]++);
                 });
+        /* set constraints */
+        entity.setConstraints(tableMapper.constraintsCreateDtoToConstraints(tableRepository, entity, createDto.getConstraints()));
         /* create history view */
         final ComboPooledDataSource dataSource1 = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {

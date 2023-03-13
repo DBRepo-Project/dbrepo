@@ -80,6 +80,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
+        /* create networks */
         DockerConfig.createAllNetworks();
         /* user container */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
@@ -96,12 +97,15 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata db */
         h2Utils.runScript("schema.sql");
+        /* metadata db */
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
-        TABLE_1.setColumns(List.of());
-        TABLE_2.setColumns(List.of());
-        TABLE_3.setColumns(List.of());
-//        DATABASE_1.setTables(List.of());
+        tableRepository.save(TABLE_1_NOCOLS);
+        tableRepository.save(TABLE_2_NOCOLS);
+        tableRepository.save(TABLE_3_NOCOLS);
+        tableRepository.save(TABLE_7_NOCOLS);
+        DATABASE_1.setTables(List.of());
+        DATABASE_1.setViews(List.of());
         databaseRepository.save(DATABASE_1);
     }
 

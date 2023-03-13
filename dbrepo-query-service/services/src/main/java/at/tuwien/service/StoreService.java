@@ -73,11 +73,18 @@ public interface StoreService {
      * @param principal   The user principal.
      * @return The stored query on success.
      * @throws DatabaseNotFoundException   The database id was not found in the metadata database
-     * @throws ImageNotSupportedException  The image is not supported
+     * @throws ImageNotSupportedException  The image is not supported.
      * @throws DatabaseConnectionException The database connection to the remote container failed.
-     * @throws QueryStoreException         The query store raised some error
+     * @throws QueryStoreException         The query store raised some error.
      */
     Query persist(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 
+    /**
+     * Deletes the stale queries that have not been persisted within 24 hozrs.
+     *
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws QueryStoreException        The query store raised some error.
+     */
+    void deleteStaleQueries() throws ImageNotSupportedException, QueryStoreException;
 }

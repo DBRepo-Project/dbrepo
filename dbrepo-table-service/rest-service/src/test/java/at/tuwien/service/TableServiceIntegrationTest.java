@@ -8,7 +8,14 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.TableRepository;
+import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.exception.NotModifiedException;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Network;
 import com.rabbitmq.client.Channel;
 import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
@@ -19,8 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import javax.transaction.Transactional;
 import java.io.File;
 import java.security.Principal;
 import java.util.List;
@@ -184,6 +193,39 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
             /* ignore */
         }
         tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, principal);
+    }
+
+    @Test
+    public void create_withConstraints_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
+            ContainerNotFoundException {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(tableidxRepository.save(any(TableDto.class)))
+                .thenReturn(null);
+        when(tableColumnidxRepository.saveAll(anyList()))
+                .thenReturn(List.of());
+
+        /* test */
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, principal); // table to reference
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, principal);
+    }
+
+    @Test
+    public void create_withForeignKeyButWithoutReferencingTable_fails() {
+        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
+
+        /* mock */
+        when(tableidxRepository.save(any(TableDto.class)))
+                .thenReturn(null);
+        when(tableColumnidxRepository.saveAll(anyList()))
+                .thenReturn(List.of());
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, principal);
+        });
     }
 
     @Test

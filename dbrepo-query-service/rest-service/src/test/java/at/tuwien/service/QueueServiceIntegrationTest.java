@@ -2,10 +2,9 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.amqp.RabbitMqConsumer;
+import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.AmqpConfig;
-import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
+import at.tuwien.config.*;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.MessageQueueListener;
@@ -14,12 +13,8 @@ import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
-import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,9 +24,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -68,6 +66,9 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private AmqpConfig amqpConfig;
+
+    @Autowired
+    private RabbitMqConfig rabbitMqConfig;
 
     @Autowired
     private Channel channel;
@@ -192,6 +193,20 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         channel.basicPublish(DATABASE_3_EXCHANGE, TABLE_8_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(TABLE_8_CSV_DTO));
+    }
+
+    @Test
+    @Disabled("Not testable")
+    public void restore_succeeds() throws AmqpException, IOException {
+
+        /* mock */
+        when(tableRepository.findAll())
+                .thenReturn(List.of(TABLE_1));
+
+        /* test */
+        messageQueueService.restore();
+        final List<ConsumerDto> response = rabbitMqConfig.findAllConsumers();
+        assertEquals(amqpConfig.getAmqpConsumers(), (int) response.stream().filter(c -> c.getQueue().getName().equals(TABLE_1_QUEUE_NAME)).count());
     }
 
 }

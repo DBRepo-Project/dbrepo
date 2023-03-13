@@ -5,16 +5,20 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
+import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public interface QueryService {
@@ -72,6 +76,26 @@ public interface QueryService {
             DatabaseConnectionException, TableMalformedException, QueryStoreException, UserNotFoundException;
 
     /**
+     * Re-Executes the count-statement of an arbitrary query on the database container. We allow the user to only view
+     * the data, therefore the default "mariadb" user is allowed read-only access "SELECT".
+     *
+     * @param containerId   The container id.
+     * @param databaseId    The database id.
+     * @param query         The query.
+     * @param principal     The user principal.
+     * @return The result.
+     * @throws QueryStoreException        The query store is not reachable.
+     * @throws QueryMalformedException    The query is malformed.
+     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws TableMalformedException    The table is malformed.
+     * @throws ColumnParseException       The column mapping/parsing failed.
+     */
+    Long reExecuteCount(Long containerId, Long databaseId, Query query, Principal principal)
+            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
+            TableMalformedException, QueryStoreException;
+
+    /**
      * Select all data known in the database-table id tuple at a given time and return a page of specific size, using
      * Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user for this.
      *
@@ -90,8 +114,8 @@ public interface QueryService {
      * @throws TableMalformedException    The table is malformed.
      * @throws QueryMalformedException    The query is malformed.
      */
-    QueryResultDto findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp,
-                           Long page, Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
+    QueryResultDto tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp,
+                                Long page, Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
             ContainerNotFoundException, QueryMalformedException, UserNotFoundException;
 
@@ -115,10 +139,33 @@ public interface QueryService {
      * @throws FileStorageException        The file could not be exported.
      * @throws QueryMalformedException     The query is malformed.
      */
-    ExportResource findAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+    ExportResource tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException, ContainerNotFoundException,
             FileStorageException, QueryMalformedException, UserNotFoundException;
+
+    /**
+     * Select all data known in the view id tuple and return a page of specific size.
+     * We use the "mariadb" user for this.
+     *
+     * @param containerId The container-database id pair.
+     * @param databaseId  The container-database id pair.
+     * @param view        The view.
+     * @param page        The page.
+     * @param size        The page size.
+     * @param principal   The user principal.
+     * @return The select all data result
+     * @throws ViewNotFoundException     The view was not found in the metadata database.
+     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws ViewMalformedException    The table is malformed.
+     * @throws QueryMalformedException    The query is malformed.
+     */
+    QueryResultDto viewFindAll(Long containerId, Long databaseId, View view,
+                               Long page, Long size, Principal principal) throws ViewNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseConnectionException, ViewMalformedException, PaginationException,
+            ContainerNotFoundException, QueryMalformedException, UserNotFoundException, TableMalformedException;
 
     /**
      * Finds one query by container-database-query triple.
@@ -156,8 +203,25 @@ public interface QueryService {
      * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      */
-    Long count(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+    Long tableCount(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws ContainerNotFoundException, DatabaseNotFoundException, TableNotFoundException,
+            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
+
+    /**
+     * Count the total tuples for a given table id within a container-database id tuple at a given time.
+     *
+     * @param containerId The container id.
+     * @param databaseId  The database id.
+     * @param view        The view.
+     * @param principal   The user principal.
+     * @return The number of records, if successful
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws DatabaseNotFoundException  The database was not found in the remote database.
+     * @throws TableMalformedException    The view columns are messed up what we got from the metadata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     */
+    Long viewCount(Long containerId, Long databaseId, View view, Principal principal)
+            throws ContainerNotFoundException, DatabaseNotFoundException,
             TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
 
     /**
@@ -231,4 +295,14 @@ public interface QueryService {
      */
     void insert(Long containerId, Long databaseId, Long tableId, ImportDto data, Principal principal) throws ImageNotSupportedException,
             TableMalformedException, DatabaseNotFoundException, TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
+
+    /**
+     * Parses the stored columns from a given query.
+     *
+     * @param query    The query.
+     * @param database The database that contains the list of tables with list of columns.
+     * @return List of columns in the order they are referenced in the query.
+     * @throws JSQLParserException The columns could not be extracted from the query.
+     */
+    List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException;
 }

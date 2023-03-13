@@ -7,13 +7,22 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.constraints.Constraints;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.tuwien.entities.database.table.constraints.foreignKey.ReferenceType;
+import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
+import at.tuwien.repository.jpa.TableRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -25,6 +34,7 @@ import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface TableMapper {
@@ -53,7 +63,6 @@ public interface TableMapper {
 
     /* keep */
     @Mappings({
-            @Mapping(target = "unique", source = "isUnique"),
             @Mapping(target = "tableId", source = "tid"),
             @Mapping(target = "containerId", source = "cdbid"),
             @Mapping(target = "databaseId", source = "cdbid"),
@@ -63,7 +72,101 @@ public interface TableMapper {
 
     ColumnTypeDto columnTypeToColumnTypeDto(TableColumnType data);
 
+    @Mappings({
+            @Mapping(target = "constraints", ignore = true)
+    })
     Table tableCreateDtoToTable(TableCreateDto data);
+
+    default TableColumn columnNameToTableColumn(Table table, String name) throws TableMalformedException {
+        String internalName = nameToInternalName(name);
+        for (TableColumn column : table.getColumns()) {
+            if (column.getInternalName().equals(internalName)) {
+                return column;
+            }
+        }
+        throw new TableMalformedException("Could not find column in table.");
+    }
+
+    default List<TableColumn> columnNameListToTableColumn(Table table, List<String> names) throws TableMalformedException {
+        List<TableColumn> columns = new ArrayList<>();
+        for (String name : names) {
+            columns.add(columnNameToTableColumn(table, name));
+        }
+        return columns;
+    }
+
+    default Unique columnNameListToUnique(Table table, List<String> names) throws TableMalformedException {
+        return Unique.builder().columns(columnNameListToTableColumn(table, names)).build();
+    }
+
+    ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
+
+    default ForeignKey foreignKeyCreateDtoToForeignKey(TableRepository repo, Table table, ForeignKeyCreateDto data) throws TableMalformedException {
+        ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
+                .tid(table.getId())
+                .tdbid(table.getTdbid())
+                .table(table)
+                .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
+                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()));
+        Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getTdbid(), nameToInternalName(data.getReferencedTable()));
+
+        if (referencedTable.isEmpty()) {
+            throw new TableMalformedException("Could not find table referenced in foreign key.");
+        }
+
+        builder.rtid(table.getId())
+                .rtdbid(table.getTdbid())
+                .referencedTable(referencedTable.get());
+        List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
+        List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
+
+        if (columns.isEmpty()) {
+            throw new TableMalformedException("Foreign key does not have any columns.");
+        }
+        if (columns.size() != referencedColumns.size()) {
+            throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key.");
+        }
+
+        List<ForeignKeyReference> references = new ArrayList<>();
+        ForeignKey foreignKey = builder.references(references).build();
+
+        for (int i = 0; i < columns.size(); i++) {
+            TableColumn column = columns.get(i);
+            TableColumn referencedColumn = referencedColumns.get(i);
+            references.add(ForeignKeyReference.builder()
+                    .foreignKey(foreignKey)
+                    .column(column)
+                    .referencedColumn(referencedColumn)
+                    .build());
+        }
+
+        return foreignKey;
+    }
+
+    default Constraints constraintsCreateDtoToConstraints(TableRepository repo, Table table, ConstraintsCreateDto data) throws TableMalformedException {
+        if (data == null) {
+            return null;
+        }
+
+        Constraints.ConstraintsBuilder builder = Constraints.builder();
+
+        if (data.getUniques() != null) {
+            List<Unique> uniques = new ArrayList<>();
+            for (List<String> columns : data.getUniques()) {
+                uniques.add(columnNameListToUnique(table, columns));
+            }
+            builder.uniques(uniques);
+        }
+        if (data.getForeignKeys() != null) {
+            List<ForeignKey> foreignKeys = new ArrayList<>();
+            for (ForeignKeyCreateDto foreignKeyData : data.getForeignKeys()) {
+                foreignKeys.add(foreignKeyCreateDtoToForeignKey(repo, table, foreignKeyData));
+            }
+            builder.foreignKeys(foreignKeys);
+        }
+
+        return builder.build();
+    }
 
     @Mappings({
             @Mapping(source = "table.id", target = "tid"),
@@ -75,7 +178,6 @@ public interface TableMapper {
             @Mapping(source = "data.name", target = "name"),
             @Mapping(source = "data.internalName", target = "internalName"),
             @Mapping(source = "data.created", target = "created"),
-            @Mapping(source = "data.isUnique", target = "isUnique"),
             @Mapping(source = "data.dfid", target = "dfid"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
@@ -98,13 +200,10 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "primaryKey", target = "isPrimaryKey"),
-            @Mapping(source = "unique", target = "isUnique"),
             @Mapping(source = "type", target = "columnType"),
             @Mapping(source = "nullAllowed", target = "isNullAllowed"),
             @Mapping(source = "name", target = "name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
-            @Mapping(source = "checkExpression", target = "checkExpression"),
-            @Mapping(source = "foreignKey", target = "foreignKey"),
     })
     TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data);
 
@@ -112,11 +211,8 @@ public interface TableMapper {
         if (!data.getPrimaryKey()) {
             throw new IllegalArgumentException("Not a primary key");
         }
-        if (data.getType().equals(ColumnTypeDto.BLOB)) {
-            return "(255)";
-        }
-        if (data.getType().equals(ColumnTypeDto.TEXT)) {
-            return "(255)";
+        if (EnumSet.of(ColumnTypeDto.BLOB, ColumnTypeDto.TEXT).contains(data.getType())) {
+            return "(" + Objects.requireNonNullElse(data.getIndexLength(), 255) + ")";
         }
         return "";
     }
@@ -132,7 +228,7 @@ public interface TableMapper {
             case TEXT:
                 return "TEXT";
             case STRING:
-                return "VARCHAR(255)";
+                return "VARCHAR(" + Objects.requireNonNullElse(data.getLength(), 255) + ")";
             case NUMBER:
                 return "BIGINT";
             case DECIMAL:
@@ -204,7 +300,6 @@ public interface TableMapper {
                     .primaryKey(true)
                     .type(ColumnTypeDto.NUMBER)
                     .nullAllowed(false)
-                    .unique(true)
                     .build();
             log.trace("attempt to create id column {}", idColumn);
             if (data.getColumns().stream().anyMatch(c -> c.getName().equals("id"))) {
@@ -228,10 +323,7 @@ public interface TableMapper {
                     .append(column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
                     .append(!primaryColumnExists && column.getName().equals(
-                            "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "")
-                    /* check expressions */
-                    .append(column.getCheckExpression() != null &&
-                            !column.getCheckExpression().isEmpty() ? " CHECK (" + column.getCheckExpression() + ")" : "");
+                            "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
         }
         /* create primary key index */
         query.append(", PRIMARY KEY (")
@@ -242,29 +334,44 @@ public interface TableMapper {
                                 c.getName()) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(c))
                         .toArray(String[]::new)))
                 .append(")");
-        /* create unique indices */
-        log.trace("columns are {}", new ArrayList<>(data.getColumns()));
-        data.getColumns()
-                .stream()
-                .filter(c -> Objects.nonNull(c.getUnique()))
-                .filter(ColumnCreateDto::getUnique)
-                .filter(c -> Objects.nonNull(c.getPrimaryKey()))
-                .filter(c -> !c.getPrimaryKey())
-                .forEach(c -> query.append(", ")
-                        .append("UNIQUE KEY (`")
-                        .append(nameToInternalName(c.getName()))
-                        .append("`)"));
-        /* create foreign key indices */
-        data.getColumns()
-                .stream()
-                .filter(c -> Objects.nonNull(c.getForeignKey()))
-                .forEach(c -> query.append(", FOREIGN KEY (`")
-                        .append(nameToInternalName(c.getName()))
-                        .append("`) REFERENCES ")
-                        .append(nameToInternalName(c.getReferences()))
-                        .append(" (`")
-                        .append(nameToInternalName(c.getForeignKey()))
-                        .append("`) ON DELETE CASCADE ON UPDATE RESTRICT"));
+        if (data.getConstraints() != null) {
+            log.trace("constraints are {}", data.getConstraints());
+            if (data.getConstraints().getUniques() != null) {
+                /* create unique indices */
+                data.getConstraints().getUniques()
+                        .forEach(u -> query.append(", ")
+                                .append("UNIQUE KEY (`")
+                                .append(u.stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                .append("`)"));
+            }
+            if (data.getConstraints().getForeignKeys() != null) {
+                /* create foreign key indices */
+                data.getConstraints().getForeignKeys()
+                        .forEach(fk -> {
+                            query.append(", FOREIGN KEY (`")
+                                    .append(fk.getColumns().stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                    .append("`) REFERENCES `")
+                                    .append(nameToInternalName(fk.getReferencedTable()))
+                                    .append("` (`")
+                                    .append(fk.getReferencedColumns().stream().map(this::nameToInternalName).collect(Collectors.joining("`,`")))
+                                    .append("`)");
+                            if (fk.getOnDelete() != null) {
+                                query.append(" ON DELETE ").append(fk.getOnDelete());
+                            }
+                            if (fk.getOnUpdate() != null) {
+                                query.append(" ON UPDATE ").append(fk.getOnUpdate());
+                            }
+                        });
+            }
+            if (data.getConstraints().getChecks() != null) {
+                /* create check constraints */
+                data.getConstraints().getChecks()
+                        .forEach(ck -> query.append(", ")
+                                .append("CHECK (")
+                                .append(ck)
+                                .append(")"));
+            }
+        }
         query.append(") WITH SYSTEM VERSIONING;");
         log.trace("create table query built with {} columns and system versioning", data.getColumns().size());
         try {

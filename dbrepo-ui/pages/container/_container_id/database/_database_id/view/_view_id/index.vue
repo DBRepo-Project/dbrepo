@@ -191,6 +191,7 @@ export default {
         return
       }
       this.$refs.queryResults.reExecute(viewId)
+      this.$refs.queryResults.reExecuteCount(viewId)
     },
     formatUTC (timestamp) {
       return formatTimestampUTCLabel(timestamp)

@@ -370,6 +370,7 @@ export default {
   methods: {
     loadResult () {
       this.$refs.queryResults.reExecute(this.query.id)
+      this.$refs.queryResults.reExecuteCount(this.query.id)
     },
     async download (mime) {
       if (mime === 'text/csv') {
