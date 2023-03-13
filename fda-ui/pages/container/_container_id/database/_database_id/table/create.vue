@@ -57,6 +57,7 @@
 
 <script>
 import TableSchema from '@/components/TableSchema'
+
 const { notEmpty, isResearcher } = require('@/utils')
 
 export default {
@@ -84,7 +85,11 @@ export default {
           to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' }
+        {
+          text: 'Tables',
+          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`,
+          activeClass: ''
+        }
       ]
     }
   },
@@ -144,7 +149,40 @@ export default {
     async createTable () {
       try {
         this.loading = true
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, this.config)
+        const table = this.tableCreate.columns.reduce((table, column) => {
+          // eslint-disable-next-line camelcase
+          const { name, type, null_allowed, primary_key } = column
+          table.columns.push({
+            name,
+            type,
+            null_allowed,
+            primary_key
+          })
+          if (column.unique) {
+            table.constraints.uniques.push([column.name])
+          }
+          if (column.check_expression) {
+            table.checks.push(column.check_expression)
+          }
+          if (column.foreign_key && column.references) {
+            table.foreign_keys.push({
+              columns: [column.name],
+              referenced_table: column.foreign_key,
+              referenced_columns: [column.references]
+            })
+          }
+          return table
+        }, {
+          name: this.tableCreate.name,
+          description: this.tableCreate.description,
+          columns: [],
+          constraints: {
+            foreign_keys: [],
+            uniques: [],
+            checks: []
+          }
+        })
+        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, table, this.config)
         if (res.status === 201) {
           this.error = false
           this.$toast.success('Table created')
