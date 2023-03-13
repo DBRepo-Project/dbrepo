@@ -116,6 +116,9 @@ export default {
       return formatTimestampUTCLabel(this.tableDetails.created)
     },
     canRead () {
+      if (this.database?.is_public) {
+        return true
+      }
       if (!this.user || !this.access) {
         return false
       }

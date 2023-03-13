@@ -327,6 +327,7 @@ export default {
         this.$store.commit('SET_ACCESS', res.data)
         console.debug('access', this.access)
       } catch (err) {
+        this.$store.commit('SET_ACCESS', null)
         const { status } = err.response
         if (status !== 401 && status !== 403) {
           console.error('Failed to check access', err)

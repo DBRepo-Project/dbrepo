@@ -101,6 +101,9 @@ export default {
       return this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canRead () {
+      if (this.database?.is_public) {
+        return true
+      }
       if (!this.access) {
         return false
       }
