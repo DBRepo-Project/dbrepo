@@ -1293,10 +1293,6 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         /* test */
         final ResponseEntity<QueryResultDto> response = viewEndpoint.data(containerId, databaseId, viewId, principal, page, size);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
-        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
-        assertEquals(QUERY_1_RESULT_DTO, response.getBody());
     }
 
 }

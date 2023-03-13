@@ -837,7 +837,7 @@ public abstract class BaseTest {
             .lastModified(DATABASE_1_LAST_MODIFIED)
             .creator(DATABASE_1_CREATOR)
             .owner(DATABASE_1_OWNER)
-            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
+            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
             .views(List.of())
             .build();
 
@@ -848,7 +848,7 @@ public abstract class BaseTest {
             .name(DATABASE_1_NAME)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
-            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3 */
+            .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
             .views(List.of())
             .build();
 
@@ -1163,10 +1163,30 @@ public abstract class BaseTest {
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
 
+    public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
+            .uniques(List.of(List.of("id")))
+            .build();
+
+    public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO = ConstraintsCreateDto.builder()
+            .uniques(List.of(List.of("id")))
+            .foreignKeys(List.of(ForeignKeyCreateDto.builder()
+                    .referencedTable("weather_location")
+                    .columns(List.of("fahrzeug"))
+                    .referencedColumns(List.of("doesnotexist")).build()))
+            .build();
+
     public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_3_NAME)
             .description(TABLE_3_DESCRIPTION)
             .columns(List.of())
+            .constraints(TABLE_3_CONSTRAINTS_CREATE_DTO)
+            .build();
+
+    public final static TableCreateDto TABLE_3_INVALID_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_3_NAME)
+            .description(TABLE_3_DESCRIPTION)
+            .columns(List.of())
+            .constraints(TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO)
             .build();
 
     public final static Long TABLE_4_ID = 4L;
@@ -1431,6 +1451,8 @@ public abstract class BaseTest {
     public final static String COLUMN_4_1_FOREIGN_KEY = null;
     public final static String COLUMN_4_1_CHECK = null;
     public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
+    public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static String[] COLUMN_4_1_ENUM_VALUES_ARRAY = null;
 
     public final static Long COLUMN_4_2_ID = 10L;
     public final static Integer COLUMN_4_2_ORDINALPOS = 1;
@@ -3097,24 +3119,34 @@ public abstract class BaseTest {
             .build());
 
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE = List.of(ColumnCreateDto.builder()
-            .name(COLUMN_4_2_NAME)
-            .type(COLUMN_4_2_TYPE_DTO)
-            .dfid(COLUMN_4_2_DATE_FORMAT)
-            .nullAllowed(COLUMN_4_2_NULL)
-            .primaryKey(COLUMN_4_2_PRIMARY)
-            .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
-            .build());
+                    .name(COLUMN_4_1_NAME)
+                    .type(COLUMN_4_1_TYPE_DTO)
+                    .dfid(COLUMN_4_1_DATE_FORMAT)
+                    .nullAllowed(COLUMN_4_1_NULL)
+                    .primaryKey(COLUMN_4_1_PRIMARY)
+                    .enumValues(COLUMN_4_1_ENUM_VALUES_ARRAY)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_4_2_NAME)
+                    .type(COLUMN_4_2_TYPE_DTO)
+                    .dfid(COLUMN_4_2_DATE_FORMAT)
+                    .nullAllowed(COLUMN_4_2_NULL)
+                    .primaryKey(COLUMN_4_2_PRIMARY)
+                    .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
+                    .build());
 
     public final static TableCreateDto TABLE_4_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_4_NAME)
             .description(TABLE_4_DESCRIPTION)
             .columns(TABLE_4_COLUMNS_CREATE)
+            .constraints(null)
             .build();
 
     public final static TableCreateDto TABLE_4_INVALID_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_4_NAME)
             .description(TABLE_4_DESCRIPTION)
-            .columns(TABLE_4_COLUMNS_INVALID_CREATE)
+            .columns(TABLE_4_COLUMNS_CREATE)
+            .constraints(TABLE_4_CONSTRAINTS_INVALID_CREATE)
             .build();
 
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
