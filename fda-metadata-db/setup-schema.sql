@@ -1,3 +1,5 @@
+CREATE DATABASE keycloak;
+
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS mdb_users

@@ -3,6 +3,22 @@ FROM fda-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
+FROM keycloak/keycloak:21.0 as config
+
+# Enable health and metrics support
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
+ENV KC_FEATURES=account-api
+
+# Configure a database vendor
+ENV KC_DB=mariadb
+
+WORKDIR /opt/keycloak
+# for demonstration purposes only, please make sure to use proper certificates in production instead
+RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysize 2048 -dname "CN=server" -alias server -ext "SAN:c=DNS:localhost,IP:127.0.0.1" -keystore conf/server.keystore
+RUN /opt/keycloak/bin/kc.sh build
+
+###### THIRD STAGE ######
 FROM maven:slim as build
 
 COPY ./pom.xml ./
@@ -18,8 +34,16 @@ COPY ./report ./report
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests
 
-###### THIRD STAGE ######
-FROM openjdk:11-jre-slim as runtime
+###### FOURTH STAGE ######
+FROM keycloak/keycloak:21.0 as runtime
+COPY --from=config /opt/keycloak/ /opt/keycloak/
+
+USER root
+
+COPY ./service_ready /usr/bin
+COPY ./docker-entrypoint.sh /usr/bin
+COPY dbrepo-keycloak-realm.json /dbrepo-keycloak-realm.json
+RUN chmod +x /usr/bin/service_ready /usr/bin/docker-entrypoint.sh
 
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
@@ -40,13 +64,18 @@ ENV SMTP_PORT=""
 ENV SMTP_USERNAME=""
 ENV SMTP_PASSWORD=""
 ENV LOG_LEVEL=debug
-ENV DEFAULT_ROLES=ROLE_RESEARCHER
-ENV SUPERUSERS=""
+
+ENV KC_DB=mariadb
+ENV KC_DB_URL=jdbc:mariadb://fda-metadata-db/keycloak
+ENV KC_DB_USERNAME=${METADATA_USERNAME}
+ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
+ENV KC_HOSTNAME=localhost
+
+ENV KEYCLOAK_IMPORT=/dbrepo-keycloak-realm.json
+ENV KEYCLOAK_ADMIN=keycloak
+ENV KEYCLOAK_ADMIN_PASSWORD=keycloak
 
 VOLUME /tmp
-
-COPY ./service_ready /usr/bin
-RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
@@ -54,4 +83,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./authentication-serv
 
 EXPOSE 9097
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./authentication-service.jar"]
+ENTRYPOINT ["/usr/bin/docker-entrypoint.sh"]
