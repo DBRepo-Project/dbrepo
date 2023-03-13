@@ -130,7 +130,7 @@ export default {
       error: false,
       menu: false,
       columns: this.$parent.$parent.$parent.$parent.table.columns,
-      localTuple: null,
+      localTuple: {},
       bools: [
         { text: 'true', value: true },
         { text: 'false', value: false }
@@ -150,7 +150,7 @@ export default {
   },
   watch: {
     tuple (val) {
-      this.localTuple = val
+      this.localTuple = Object.assign({}, val)
     }
   },
   mounted () {
@@ -218,7 +218,7 @@ export default {
         })
       try {
         const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-          data: this.tuple
+          data: this.localTuple
         }, {
           headers: { Authorization: `Bearer ${this.token}` }
         })
