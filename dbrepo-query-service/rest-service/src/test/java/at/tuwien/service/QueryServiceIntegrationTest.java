@@ -268,7 +268,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
-                        "location", "Melbourne",
+                        "location", "Albury" /* the constraint -> weather_location (location) */,
                         "mintemp", 5,
                         "rainfall", 0))
                 .build();
