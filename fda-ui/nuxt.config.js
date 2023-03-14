@@ -10,6 +10,7 @@ if (process.env.SANDBOX) {
 
 const configTitle = process.env.TITLE || 'Database Repository'
 const configIcon = process.env.ICON || '/favicon.ico'
+const sandbox = process.env.SANDBOX || false
 
 export default {
   target: 'server',
@@ -40,10 +41,10 @@ export default {
   ],
 
   plugins: [
-    { src: '~/plugins/toast', ssr: false },
-    { src: '~/plugins/vendors', ssr: false },
-    { src: '~/plugins/axios' },
-    { src: '~/plugins/vuex-persist.js', mode: 'client' }
+    { src: '@/plugins/toast', ssr: false },
+    { src: '@/plugins/vendors', ssr: false },
+    { src: '@/plugins/axios' },
+    { src: '@/plugins/vuex-persist.js', mode: 'client' }
   ],
 
   // Auto import components (https://go.nuxtjs.dev/config-components)
@@ -75,16 +76,18 @@ export default {
   publicRuntimeConfig: {
     brokerUsername: process.env.BROKER_USERNAME || 'fda',
     brokerPassword: process.env.BROKER_PASSWORD || 'fda',
-    sandbox: process.env.SANDBOX || false,
+    sandbox,
     sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
     version: process.env.VERSION || 'latest',
     logo: process.env.LOGO || '/logo.png',
     mailVerify: process.env.MAIL_VERIFY || false,
     tokenMax: process.env.TOKEN_MAX || 5,
-    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic'
+    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic',
+    client_secret: process.env.CLIENT_SECRET
   },
 
   proxy: {
+    '/auth': process.env.KEYCLOAK || 'https://localhost:8443',
     '/api': process.env.API || 'http://localhost:9095',
     '/pid': {
       target: process.env.API + '/api' || 'http://localhost:9095/api',

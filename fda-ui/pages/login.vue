@@ -63,8 +63,11 @@ export default {
       error: false, // XXX: `error` is never changed
       valid: false,
       loginAccount: {
+        client_id: 'dbrepo-client',
         username: null,
-        password: null
+        password: null,
+        grant_type: 'password',
+        client_secret: this.$config.client_secret
       }
     }
   },
@@ -103,7 +106,7 @@ export default {
     async login () {
       try {
         this.loading = true
-        const res = await this.$axios.post('/api/auth', this.loginAccount)
+        const res = await this.$axios.post('/auth/realms/dbrepo/protocol/openid-connect/token', this.loginAccount)
         console.debug('login user', res.data)
         const { token } = res.data
         this.$store.commit('SET_TOKEN', token)

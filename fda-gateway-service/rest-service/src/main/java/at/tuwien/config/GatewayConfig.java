@@ -11,11 +11,10 @@ public class GatewayConfig {
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("authentication-service", r -> r.path("/api/auth/**",
-                                "/api/user/**")
+                .route("authentication-service", r -> r.path("/api/auth/**")
                         .and()
                         .method("POST", "GET", "PUT", "DELETE")
-                        .and()
+                        .filters(f -> f.rewritePath("/api/auth/(?<segment>.*)", "/${segment}"))
                         .uri("lb://authentication-service"))
                 .route("broker-service", r -> r.path("/api/broker/**")
                         .and()

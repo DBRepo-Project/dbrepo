@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt --port 3001",
+    "dev": "export NODE_TLS_REJECT_UNAUTHORIZED=0 && nuxt --env.NODE_TLS_REJECT_UNAUTHORIZED=0 --port 3001",
     "docker": "nuxt > /dev/null",
     "build": "nuxt build",
     "start": "nuxt start",

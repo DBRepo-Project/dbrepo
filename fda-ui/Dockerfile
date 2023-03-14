@@ -41,6 +41,7 @@ EXPOSE 3000
 EXPOSE 9100
 
 ENV API=http://gateway-service:9095
+ENV KEYCLOAK=https://authentication-service:8443
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false
@@ -52,6 +53,7 @@ ENV ELASTIC_PASSWORD=elastic
 ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
+ENV CLIENT_SECRET=""
 
 WORKDIR /app
 
