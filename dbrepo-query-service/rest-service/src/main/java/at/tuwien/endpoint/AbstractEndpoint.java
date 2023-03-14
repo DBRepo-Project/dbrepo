@@ -75,6 +75,10 @@ public abstract class AbstractEndpoint {
             log.debug("grant permission {} because user has access {}", permissionCode, access.getType());
             return true;
         }
+        if (List.of("CREATE_VIEW").contains(permissionCode) && database.getOwner().getId().equals(access.getHuserid())) {
+            log.debug("grant permission {} because user is owner {}", permissionCode, access.getType());
+            return true;
+        }
         /* has role researcher */
         final Authentication authentication = (Authentication) principal /* with pre-authorization this always holds */;
         if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_RESEARCHER"))) {

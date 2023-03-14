@@ -167,7 +167,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_publicAnonymous_succeeds() {
+    public void create_publicAnonymous_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -177,7 +177,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void create_publicAnonymous2_succeeds() {
+    public void create_publicAnonymous2_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -251,7 +251,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_3_DATA_STEWARD_READ_ACCESS);
+            create_generic(CONTAINER_4_ID, DATABASE_4_ID, DATABASE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_4_DATA_STEWARD_READ_ACCESS);
         });
     }
 
@@ -261,7 +261,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_3_DATA_STEWARD_WRITE_OWN_ACCESS);
+            create_generic(CONTAINER_4_ID, DATABASE_4_ID, DATABASE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_4_DATA_STEWARD_WRITE_OWN_ACCESS);
         });
     }
 
@@ -271,8 +271,17 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS);
+            create_generic(CONTAINER_4_ID, DATABASE_4_ID, DATABASE_4, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_4_DATA_STEWARD_WRITE_ALL_ACCESS);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
+    public void create_publicDataStewardOwnerWriteAll_fails() throws UserNotFoundException, DatabaseConnectionException,
+            ViewMalformedException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException {
+
+        /* test */
+        create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -759,7 +768,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_READ_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_READ_ACCESS);
         });
     }
 
@@ -769,7 +778,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_WRITE_OWN_ACCESS);
         });
     }
 
@@ -779,7 +788,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_WRITE_ALL_ACCESS);
         });
     }
 

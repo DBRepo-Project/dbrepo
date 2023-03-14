@@ -82,6 +82,10 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Query 5</li>
  * <li>View 5</li>
  * </ul>
+ * <p>
+ * Database 4 (Public, User 4)
+ * <ul>
+ * </ul>
  */
 public abstract class BaseTest {
 
@@ -1113,7 +1117,7 @@ public abstract class BaseTest {
 
     public final static Long DATABASE_4_ID = 4L;
     public final static String DATABASE_4_NAME = "Weather AT";
-    public final static Boolean DATABASE_4_PUBLIC = false;
+    public final static Boolean DATABASE_4_PUBLIC = true;
     public final static String DATABASE_4_INTERNALNAME = "weather_at";
     public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
     public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
@@ -1134,6 +1138,60 @@ public abstract class BaseTest {
             .owner(USER_4)
             .tables(List.of())
             .views(List.of())
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_RESEARCHER_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_RESEARCHER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_RESEARCHER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_1_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DEVELOPER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DEVELOPER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_2_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_READ_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.READ)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_OWN)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_3_ID)
+            .build();
+
+    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+            .type(AccessType.WRITE_ALL)
+            .hdbid(DATABASE_4_ID)
+            .huserid(USER_3_ID)
             .build();
 
     public final static Long TABLE_1_ID = 1L;
