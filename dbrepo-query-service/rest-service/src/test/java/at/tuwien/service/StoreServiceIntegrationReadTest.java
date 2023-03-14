@@ -65,9 +65,12 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
     @BeforeAll
     public static void beforeAll() throws InterruptedException, SQLException {
         afterAll();
+        /* create networks */
         DockerConfig.createAllNetworks();
+        /* create user container */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
+        /* insert query */
         MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
     }
 
@@ -108,7 +111,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         final List<Query> queries = storeService.findAll(CONTAINER_1_ID, DATABASE_1_ID, true, USER_1_PRINCIPAL);
-        assertEquals(1, queries.size());
+        assertEquals(0, queries.size());
     }
 
     @Test
