@@ -1,6 +1,7 @@
 package at.tuwien.api.database.table;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -69,5 +70,7 @@ public class TableDto {
     @NotNull(message = "columns are required")
     @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
+
+    private ConstraintsDto constraints;
 
 }

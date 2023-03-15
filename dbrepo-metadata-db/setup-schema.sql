@@ -405,7 +405,7 @@ CREATE TABLE IF NOT EXISTS mdb_view
     PRIMARY KEY (id, vcid, vdbid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_view_columns
+CREATE TABLE IF NOT EXISTS mdb_view_columns
 (
     id               BIGINT  NOT NULL AUTO_INCREMENT,
     cid              BIGINT  NOT NULL,

@@ -147,6 +147,9 @@ export default {
       return this.$store.state.table
     },
     canRead () {
+      if (this.database?.is_public) {
+        return true
+      }
       if (!this.user || !this.access) {
         return false
       }

@@ -13,7 +13,7 @@
         <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
       </template>
       <template v-slot:item.unique="{ item }">
-        <span v-if="item.unique">●</span> {{ item.unique }}
+        <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
       </template>
       <template v-slot:item.column_type="{ item }">
         {{ columnName(item) }}
@@ -169,6 +169,9 @@ export default {
   mounted () {
   },
   methods: {
+    isUnique (column) {
+      return !!this.table.constraints?.uniques?.some(uniqueCols => [...uniqueCols].every(unique => unique.id === column.id))
+    },
     columnName (column) {
       const filter = this.columnTypes.filter(t => t.value === column.column_type)
       if (filter.length > 0) {

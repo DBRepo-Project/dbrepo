@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
@@ -58,6 +59,7 @@ public interface TableMapper {
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
             @Mapping(source = "database.isPublic", target = "isPublic"),
+            @Mapping(source = "constraints", target = "constraints"),
     })
     TableDto tableToTableDto(Table data);
 
@@ -95,8 +97,17 @@ public interface TableMapper {
         return columns;
     }
 
+    default List<ColumnDto> uniqueToColumnList(Unique unique) {
+        return unique.getColumns().stream().map(this::tableColumnToColumnDto).collect(Collectors.toList());
+    }
+
     default Unique columnNameListToUnique(Table table, List<String> names) throws TableMalformedException {
-        return Unique.builder().columns(columnNameListToTableColumn(table, names)).build();
+        return Unique.builder()
+                .tid(table.getId())
+                .tdbid(table.getTdbid())
+                .table(table)
+                .columns(columnNameListToTableColumn(table, names))
+                .build();
     }
 
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
@@ -141,6 +152,29 @@ public interface TableMapper {
         }
 
         return foreignKey;
+    }
+
+    ReferenceTypeDto referenceTypeDtoToReferenceType(ReferenceType data);
+
+    default ForeignKeyDto foreignKeyCreateDtoToForeignKey(ForeignKey data) {
+        if (data == null) {
+            return null;
+        }
+
+        ForeignKeyDto dto = new ForeignKeyDto(
+                new ArrayList<>(),
+                tableToTableBriefDto(data.getReferencedTable()),
+                new ArrayList<>(),
+                referenceTypeDtoToReferenceType(data.getOnUpdate()),
+                referenceTypeDtoToReferenceType(data.getOnDelete())
+        );
+
+        for (ForeignKeyReference reference : data.getReferences()) {
+            dto.getColumns().add(tableColumnToColumnDto(reference.getColumn()));
+            dto.getReferencedColumns().add(tableColumnToColumnDto(reference.getReferencedColumn()));
+        }
+
+        return dto;
     }
 
     default Constraints constraintsCreateDtoToConstraints(TableRepository repo, Table table, ConstraintsCreateDto data) throws TableMalformedException {
