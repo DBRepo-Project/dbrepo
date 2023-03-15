@@ -29,8 +29,12 @@ COPY --from=binary /usr/bin/curl /usr/bin/curl
 USER root
 
 COPY ./dbrepo-realm.json /opt/keycloak/data/import/dbrepo-realm.json
-COPY ./service-register.sh /app/service-register.sh
-COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
+
+WORKDIR /app
+
+COPY ./service-register.sh ./service-register.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+COPY ./healthcheck.sh ./healthcheck.sh
 
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
@@ -44,5 +48,7 @@ ENV KC_HOSTNAME=localhost
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=keycloak
 ENV KEYCLOAK_ADMIN_PASSWORD=keycloak
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ["bash", "/app/healthcheck.sh"]
 
 ENTRYPOINT ["bash", "/app/docker-entrypoint.sh"]
