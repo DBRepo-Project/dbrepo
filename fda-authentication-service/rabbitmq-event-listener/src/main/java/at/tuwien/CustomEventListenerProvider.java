@@ -7,10 +7,13 @@ import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.AdminEvent;
+import org.keycloak.events.admin.OperationType;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RealmProvider;
 import org.keycloak.models.UserModel;
+
+import java.util.Map;
 
 public class CustomEventListenerProvider implements EventListenerProvider {
 
@@ -26,45 +29,26 @@ public class CustomEventListenerProvider implements EventListenerProvider {
 
     @Override
     public void onEvent(Event event) {
+        if (event.getType().equals(EventType.REGISTER)) {
 
-        if (EventType.REGISTER.equals(event.getType())) {
-            log.infof("## NEW %s EVENT", event.getType());
-            log.info("-----------------------------------------------------------");
-
-            RealmModel realm = this.model.getRealm(event.getRealmId());
-            UserModel newRegisteredUser = this.session.users().getUserById(realm, event.getUserId());
-
-            String emailPlainContent = "New user registration\n\n" +
-                    "Email: " + newRegisteredUser.getEmail() + "\n" +
-                    "Username: " + newRegisteredUser.getUsername() + "\n" +
-                    "Client: " + event.getClientId();
-
-            String emailHtmlContent = "<h1>New user registration</h1>" +
-                    "<ul>" +
-                    "<li>Email: " + newRegisteredUser.getEmail() + "</li>" +
-                    "<li>Username: " + newRegisteredUser.getUsername() + "</li>" +
-                    "<li>Client: " + event.getClientId() + "</li>" +
-                    "</ul>";
-
-            DefaultEmailSenderProvider senderProvider = new DefaultEmailSenderProvider(session);
-
-            try {
-                senderProvider.send(session.getContext().getRealm().getSmtpConfig(), "admin@example.com", "Keycloak - New Registration", emailPlainContent, emailHtmlContent);
-            } catch (EmailException e) {
-                log.error("Failed to send email", e);
-            }
-            log.info("-----------------------------------------------------------");
         }
-
     }
 
     @Override
     public void onEvent(AdminEvent adminEvent, boolean b) {
-
+        if (adminEvent.getOperationType().equals(OperationType.CREATE) && adminEvent.getResourcePath().startsWith("users/")) {
+            log.infof("=======> Created user!!");
+        } else if (adminEvent.getOperationType().equals(OperationType.ACTION) && adminEvent.getResourcePath().startsWith("users/") && adminEvent.getResourcePath().endsWith("reset-password")) {
+            log.infof("=======> Modified user password!!");
+        }
     }
 
     @Override
     public void close() {
+
+    }
+
+    private void createUser(String username) {
 
     }
 }
