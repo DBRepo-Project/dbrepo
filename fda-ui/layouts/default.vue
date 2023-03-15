@@ -61,13 +61,6 @@
           @click="login">
           <v-icon left>mdi-login</v-icon> Login
         </v-btn>
-        <v-btn
-          v-if="!token"
-          class="mr-2"
-          color="primary"
-          to="/signup">
-          <v-icon left>mdi-account-plus</v-icon> Signup
-        </v-btn>
         <v-btn v-if="user" to="/user" plain>
           {{ user.username }} <sup v-if="isDeveloper">
             <v-tooltip bottom>

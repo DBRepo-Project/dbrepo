@@ -43,7 +43,7 @@ export default {
   plugins: [
     { src: '@/plugins/toast', ssr: false },
     { src: '@/plugins/vendors', ssr: false },
-    { src: '@/plugins/axios' },
+    { src: '@/plugins/axios', ssr: false },
     { src: '@/plugins/vuex-persist.js', mode: 'client' }
   ],
 
@@ -87,7 +87,6 @@ export default {
   },
 
   proxy: {
-    '/auth': process.env.KEYCLOAK || 'https://localhost:8443',
     '/api': process.env.API || 'http://localhost:9095',
     '/pid': {
       target: process.env.API + '/api' || 'http://localhost:9095/api',

@@ -56,6 +56,8 @@
 </template>
 
 <script>
+import VueJwtDecode from 'vue-jwt-decode'
+import qs from 'qs'
 export default {
   data () {
     return {
@@ -67,7 +69,8 @@ export default {
         username: null,
         password: null,
         grant_type: 'password',
-        client_secret: this.$config.client_secret
+        client_secret: this.$config.client_secret,
+        scope: 'openid'
       }
     }
   },
@@ -88,6 +91,11 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    keycloakConfig () {
+      return {
+        headers: { ContentType: 'application/x-www-form-urlencoded' }
+      }
     }
   },
   mounted () {
@@ -106,11 +114,23 @@ export default {
     async login () {
       try {
         this.loading = true
-        const res = await this.$axios.post('/auth/realms/dbrepo/protocol/openid-connect/token', this.loginAccount)
+        const res = await this.$axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(this.loginAccount), this.keycloakConfig)
         console.debug('login user', res.data)
-        const { token } = res.data
-        this.$store.commit('SET_TOKEN', token)
-        await this.setUser()
+        // eslint-disable-next-line camelcase
+        const { access_token } = res.data
+        this.$store.commit('SET_TOKEN', access_token)
+        const data = VueJwtDecode.decode(access_token)
+        const user = {
+          id: data.sub,
+          firstname: data.given_name,
+          lastname: data.family_name,
+          username: data.preferred_username,
+          theme_dark: data.theme_dark,
+          email_verified: data.email_verified
+        }
+        this.$store.commit('SET_USER', user)
+        this.$vuetify.theme.dark = false
+        await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
         const { status } = error.response
         if (status === 418) {
@@ -125,19 +145,6 @@ export default {
         }
         this.loading = false
       }
-    },
-    async setUser () {
-      try {
-        const res = await this.$axios.put('/api/auth', {}, this.config)
-        this.$store.commit('SET_USER', res.data)
-        this.$vuetify.theme.dark = res.data.theme_dark
-        await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
-      } catch (error) {
-        const { message } = error.response
-        console.error('Failed to load user information', error)
-        this.$toast.error('Failed to load user information: ' + message)
-      }
-      this.loading = false
     },
     signup () {
       this.$router.push('/signup')

@@ -16,12 +16,21 @@ RUN keytool -genkeypair -storepass password -storetype PKCS12 -keyalg RSA -keysi
 RUN /opt/keycloak/bin/kc.sh build
 
 ###### SECOND STAGE ######
+FROM redhat/ubi9-minimal as binary
+
+RUN microdnf update -y && microdnf install -y curl-minimal libcurl-minimal
+
+###### THIRD STAGE ######
 FROM keycloak/keycloak:21.0 as runtime
 COPY --from=config /opt/keycloak/ /opt/keycloak/
+COPY --from=binary /usr/lib64 /usr/lib64
+COPY --from=binary /usr/bin/curl /usr/bin/curl
 
 USER root
 
-COPY ./dbrepo-realm.json /dbrepo-realm.json
+COPY ./dbrepo-realm.json /opt/keycloak/data/import/dbrepo-realm.json
+COPY ./service-register.sh /app/service-register.sh
+COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
 
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
@@ -32,10 +41,8 @@ ENV KC_DB_USERNAME=${METADATA_USERNAME}
 ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
 ENV KC_HOSTNAME=localhost
 
-ENV KEYCLOAK_IMPORT=/dbrepo-realm.json
+ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=keycloak
 ENV KEYCLOAK_ADMIN_PASSWORD=keycloak
 
-USER 1000
-
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start"]
+ENTRYPOINT ["bash", "/app/docker-entrypoint.sh"]
