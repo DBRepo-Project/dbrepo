@@ -31,13 +31,6 @@ build-metadata-db:
   script:
     - "make build-metadata-db"
 
-build-authentication-service:
-  stage: build-backend
-  needs:
-    - build-metadata-db
-  script:
-    - "make build-authentication-service"
-
 build-identifier-service:
   stage: build-backend
   needs:
@@ -104,27 +97,10 @@ build-analyse-service:
   script:
     - "make build-analyse-service"
 
-test-backend-authentication:
-  stage: test-backend
-  needs:
-    - build-authentication-service
-  script:
-    - "make test-authentication-service"
-    - "cat ./fda-authentication-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./fda-authentication-service/report/target/site/jacoco-aggregate/
-      - ./fda-authentication-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./fda-authentication-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
 test-identifier-service:
   stage: test-backend
   needs:
-    - build-authentication-service
+    - build-identifier-service
   script:
     - "make test-identifier-service"
     - "cat ./fda-identifier-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
@@ -312,7 +288,6 @@ build-docker:
   stage: build-docker
   needs:
     - build-metadata-db
-    - build-authentication-service
     - build-identifier-service
     - build-container-service
     - build-database-service

@@ -4,13 +4,10 @@ TAG ?= latest
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-authentication-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service
 
 build-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
-
-build-authentication-service: build-metadata-db
-	mvn -f ./fda-authentication-service/pom.xml clean package -DskipTests
 
 build-identifier-service: build-metadata-db
 	mvn -f ./fda-identifier-service/pom.xml clean package -DskipTests
@@ -147,11 +144,7 @@ release-search:
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-authentication-service test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
-
-test-authentication-service: clean build-metadata-db build-authentication-service
-	docker pull rabbitmq:3-management-alpine
-	mvn -f ./fda-authentication-service/pom.xml clean test verify
+test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
 
 test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
