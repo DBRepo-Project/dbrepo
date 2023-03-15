@@ -4,10 +4,28 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 dbrepo-*
+
 # Notebooks
 .jupyter/
 .pytest_cache/
 __pycache__/
+
+# Previous directories
+fda-analyse-service/
+fda-authentication-service/
+fda-broker-service/
+fda-container-service/
+fda-database-service/
+fda-discovery-service/
+fda-gateway-service/
+fda-identifier-service/
+fda-metadata-db/
+fda-metadata-service/
+fda-query-service/
+fda-search-service/
+fda-semantics-service/
+fda-table-service/
+fda-ui/
 
 # demo
 .demo

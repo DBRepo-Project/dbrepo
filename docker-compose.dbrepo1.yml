@@ -48,7 +48,7 @@ services:
     logging:
       driver: json-file
 
-  discovery-service:
+  dbrepo-discovery-service:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
