@@ -1,16 +1,13 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
+import { sandbox, title, icon, brokerUsername, brokerPassword, sharedFilesystem, version, logo, mailVerify, tokenMax, elasticPassword, clientSecret, api, search } from './config'
 
 // pick env vars from .env file or get them passed through docker-compose
 require('dotenv').config()
 
-if (process.env.SANDBOX) {
+if (sandbox) {
   console.info('[FDA] Running in sandbox environment')
 }
-
-const configTitle = process.env.TITLE || 'Database Repository'
-const configIcon = process.env.ICON || '/favicon.ico'
-const sandbox = process.env.SANDBOX || false
 
 export default {
   target: 'server',
@@ -25,14 +22,14 @@ export default {
   },
 
   head: {
-    title: configTitle,
+    title,
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       { hid: 'description', name: 'description', content: '' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: configIcon }
+      { rel: 'icon', type: 'image/x-icon', href: icon }
     ]
   },
 
@@ -74,20 +71,20 @@ export default {
   },
 
   publicRuntimeConfig: {
-    brokerUsername: process.env.BROKER_USERNAME || 'fda',
-    brokerPassword: process.env.BROKER_PASSWORD || 'fda',
+    brokerUsername,
+    brokerPassword,
     sandbox,
-    sharedFilesystem: process.env.SHARED_FILESYSTEM || '/tmp',
-    version: process.env.VERSION || 'latest',
-    logo: process.env.LOGO || '/logo.png',
-    mailVerify: process.env.MAIL_VERIFY || false,
-    tokenMax: process.env.TOKEN_MAX || 5,
-    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic',
-    client_secret: process.env.CLIENT_SECRET
+    sharedFilesystem,
+    version,
+    logo,
+    mailVerify,
+    tokenMax,
+    elasticPassword,
+    clientSecret
   },
 
   proxy: {
-    '/api': process.env.API || 'http://localhost:9095',
+    '/api': api,
     '/pid': {
       target: process.env.API + '/api' || 'http://localhost:9095/api',
       changeOrigin: true,
@@ -96,7 +93,7 @@ export default {
       }
     },
     '/retrieve': {
-      target: process.env.SEARCH || 'http://localhost:9200',
+      target: search,
       changeOrigin: true,
       pathRewrite: {
         '^/retrieve': ''

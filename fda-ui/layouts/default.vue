@@ -122,7 +122,7 @@
 </template>
 
 <script>
-import { isDeveloper } from '@/utils'
+import { isDeveloper, jwtToUser } from '@/utils'
 export default {
   name: 'DefaultLayout',
   data () {
@@ -136,7 +136,13 @@ export default {
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
-      search: null
+      search: null,
+      refreshToken: {
+        client_id: 'dbrepo-client',
+        grant_type: 'refresh_token',
+        client_secret: this.$config.client_secret,
+        refresh_token: null
+      }
     }
   },
   computed: {
@@ -171,6 +177,14 @@ export default {
       }
       return {
         headers: { Authorization: `Bearer ${this.token}` }
+      }
+    },
+    keycloakConfig () {
+      return {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          ContentType: 'application/x-www-form-urlencoded'
+        }
       }
     },
     silentConfig () {
@@ -238,6 +252,7 @@ export default {
     },
     logout () {
       this.$store.commit('SET_TOKEN', null)
+      this.$store.commit('SET_REFRESH_TOKEN', null)
       this.$store.commit('SET_USER', null)
       this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
@@ -250,11 +265,13 @@ export default {
       try {
         this.loadingUser = true
         const res = await this.$axios.get('/api/auth/realms/dbrepo/protocol/openid-connect/userinfo', this.keycloakConfig)
-        this.$store.commit('SET_USER', res.data)
-        console.debug('user information', this.user)
-        this.$vuetify.theme.dark = this.user.theme_dark
+        const user = jwtToUser(res.data)
+        console.debug('user information', user)
+        this.$store.commit('SET_USER', user)
+        this.$vuetify.theme.dark = user.theme_dark
         this.loading = false
       } catch (err) {
+        console.error('Failed to load user', err)
         const { status } = err.response
         if (status === 401) {
           console.error('Token expired', err)

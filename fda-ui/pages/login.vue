@@ -14,7 +14,7 @@
           <v-row dense>
             <v-col sm="6">
               <v-text-field
-                v-model="loginAccount.username"
+                v-model="username"
                 autocomplete="off"
                 autofocus
                 required
@@ -26,7 +26,7 @@
           <v-row dense>
             <v-col sm="6">
               <v-text-field
-                v-model="loginAccount.password"
+                v-model="password"
                 autocomplete="off"
                 type="password"
                 required
@@ -56,22 +56,15 @@
 </template>
 
 <script>
-import VueJwtDecode from 'vue-jwt-decode'
-import qs from 'qs'
+import { authenticate } from '@/api/user'
 export default {
   data () {
     return {
       loading: false,
       error: false, // XXX: `error` is never changed
       valid: false,
-      loginAccount: {
-        client_id: 'dbrepo-client',
-        username: null,
-        password: null,
-        grant_type: 'password',
-        client_secret: this.$config.client_secret,
-        scope: 'openid'
-      }
+      username: null,
+      password: null
     }
   },
   computed: {
@@ -91,11 +84,6 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
-    },
-    keycloakConfig () {
-      return {
-        headers: { ContentType: 'application/x-www-form-urlencoded' }
-      }
     }
   },
   mounted () {
@@ -114,36 +102,38 @@ export default {
     async login () {
       try {
         this.loading = true
-        const res = await this.$axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(this.loginAccount), this.keycloakConfig)
+        const res = await authenticate(this.username, this.password)
         console.debug('login user', res.data)
         // eslint-disable-next-line camelcase
-        const { access_token } = res.data
-        this.$store.commit('SET_TOKEN', access_token)
-        const data = VueJwtDecode.decode(access_token)
-        const user = {
-          id: data.sub,
-          firstname: data.given_name,
-          lastname: data.family_name,
-          username: data.preferred_username,
-          theme_dark: data.theme_dark,
-          email_verified: data.email_verified
-        }
-        this.$store.commit('SET_USER', user)
-        this.$vuetify.theme.dark = false
-        await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
+        // const { access_token, refresh_token } = res.data
+        // this.$store.commit('SET_TOKEN', access_token)
+        // this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
+        // const data = VueJwtDecode.decode(access_token)
+        // const user = {
+        //   id: data.sub,
+        //   firstname: data.given_name,
+        //   lastname: data.family_name,
+        //   username: data.preferred_username,
+        //   theme_dark: data.theme_dark,
+        //   email_verified: data.email_verified
+        // }
+        // this.$store.commit('SET_USER', user)
+        // this.$vuetify.theme.dark = user?.theme_dark || false
+        // await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
-        const { status } = error.response
-        if (status === 418) {
-          this.$toast.error('Check your inbox and confirm your e-mail address')
-          console.error('user has not confirmed e-mail', error)
-        } else if (status === 404) {
-          this.$toast.error('Username not found')
-          console.error('user has not confirmed e-mail', error)
-        } else {
-          this.$toast.error('Login not successful')
-          console.error('login user failed', error)
-        }
-        this.loading = false
+        console.error('Failed to login', error)
+        // const { status } = error.response
+        // if (status === 418) {
+        //   this.$toast.error('Check your inbox and confirm your e-mail address')
+        //   console.error('user has not confirmed e-mail', error)
+        // } else if (status === 404) {
+        //   this.$toast.error('Username not found')
+        //   console.error('user has not confirmed e-mail', error)
+        // } else {
+        //   this.$toast.error('Login not successful')
+        //   console.error('login user failed', error)
+        // }
+        // this.loading = false
       }
     },
     signup () {

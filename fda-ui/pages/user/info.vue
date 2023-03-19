@@ -1,5 +1,6 @@
 <template>
   <div v-if="token">
+    <pre>{{ user }}</pre>
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>

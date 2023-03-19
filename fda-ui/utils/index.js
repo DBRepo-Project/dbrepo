@@ -1,4 +1,5 @@
 const { format } = require('date-fns')
+const VueJwtDecode = require('vue-jwt-decode')
 
 function notEmpty (str) {
   return typeof str === 'string' && str.trim().length > 0
@@ -152,6 +153,29 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
+function jwtToUser (jwt) {
+  // eslint-disable-next-line camelcase
+  const { access_token } = jwt
+  const data = VueJwtDecode.decode(access_token)
+  return {
+    id: data.sub,
+    firstname: data.given_name,
+    lastname: data.family_name,
+    username: data.preferred_username,
+    theme_dark: data?.theme_dark,
+    orcid: data?.orcid,
+    titles_before: data?.titles_before,
+    titles_after: data?.titles_after,
+    email_verified: data.email_verified
+  }
+}
+
+function isTokenExpired (accessToken) {
+  const data = VueJwtDecode.decode(accessToken)
+  const exp = new Date(data.exp)
+  return exp <= new Date()
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -166,5 +190,7 @@ module.exports = {
   formatCreators,
   isDeveloper,
   isResearcher,
-  isDataSteward
+  isDataSteward,
+  jwtToUser,
+  isTokenExpired
 }
