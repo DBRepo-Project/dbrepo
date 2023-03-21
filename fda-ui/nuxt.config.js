@@ -2,9 +2,6 @@ import path from 'path'
 import colors from 'vuetify/es5/util/colors'
 import { sandbox, title, icon, brokerUsername, brokerPassword, sharedFilesystem, version, logo, mailVerify, tokenMax, elasticPassword, clientSecret, api, search } from './config'
 
-// pick env vars from .env file or get them passed through docker-compose
-require('dotenv').config()
-
 if (sandbox) {
   console.info('[FDA] Running in sandbox environment')
 }

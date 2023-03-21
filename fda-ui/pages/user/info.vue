@@ -1,5 +1,6 @@
 <template>
   <div v-if="token">
+    <pre>{{ model }}</pre>
     <pre>{{ user }}</pre>
     <UserToolbar />
     <v-tabs-items v-model="tab">
@@ -174,15 +175,7 @@ export default {
     }
   },
   mounted () {
-    this.model.id = this.user.id
-    this.model.username = this.user.username
-    this.model.firstname = this.user.firstname
-    this.model.lastname = this.user.lastname
-    this.model.titles_before = this.user.titles_before
-    this.model.titles_after = this.user.titles_after
-    this.model.affiliation = this.user.affiliation
-    this.model.orcid = this.user.orcid
-    this.model.theme_dark = this.user.theme_dark
+    this.model = Object.assign({}, this.user)
   },
   methods: {
     submit () {

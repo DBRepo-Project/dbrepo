@@ -122,7 +122,8 @@
 </template>
 
 <script>
-import { isDeveloper, jwtToUser } from '@/utils'
+import { isDeveloper } from '@/utils'
+import { tokenToUser } from '@/api/user'
 export default {
   name: 'DefaultLayout',
   data () {
@@ -136,13 +137,7 @@ export default {
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
-      search: null,
-      refreshToken: {
-        client_id: 'dbrepo-client',
-        grant_type: 'refresh_token',
-        client_secret: this.$config.client_secret,
-        refresh_token: null
-      }
+      search: null
     }
   },
   computed: {
@@ -179,13 +174,8 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
-    keycloakConfig () {
-      return {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          ContentType: 'application/x-www-form-urlencoded'
-        }
-      }
+    clientSecret () {
+      return this.$config.clientSecret
     },
     silentConfig () {
       return {
@@ -252,21 +242,19 @@ export default {
     },
     logout () {
       this.$store.commit('SET_TOKEN', null)
-      this.$store.commit('SET_REFRESH_TOKEN', null)
       this.$store.commit('SET_USER', null)
       this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
-    async loadUser () {
+    loadUser () {
       if (!this.token) {
         return
       }
       try {
         this.loadingUser = true
-        const res = await this.$axios.get('/api/auth/realms/dbrepo/protocol/openid-connect/userinfo', this.keycloakConfig)
-        const user = jwtToUser(res.data)
-        console.debug('user information', user)
+        const user = tokenToUser(this.token)
+        console.debug('user', user)
         this.$store.commit('SET_USER', user)
         this.$vuetify.theme.dark = user.theme_dark
         this.loading = false
