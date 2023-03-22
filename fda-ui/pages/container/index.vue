@@ -6,7 +6,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="isResearcher" color="primary" name="create-database" @click.stop="createDbDialog = true">
+        <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
           <v-icon left>mdi-plus</v-icon> Database
         </v-btn>
       </v-toolbar-title>
@@ -25,7 +25,7 @@
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
 import DatabaseList from '@/components/DatabaseList'
-import { isResearcher } from '@/utils'
+import { tokenToRoles } from '@/api/user'
 
 export default {
   components: {
@@ -64,8 +64,12 @@ export default {
         headers: { Authorization: `Bearer ${this.token}` }
       }
     },
-    isResearcher () {
-      return isResearcher(this.user)
+    canCreateDatabase () {
+      if (!this.token) {
+        return false
+      }
+      const roles = tokenToRoles(this.token)
+      return roles.includes('create-container') && roles.includes('create-database')
     }
   },
   methods: {

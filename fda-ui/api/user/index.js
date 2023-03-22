@@ -42,14 +42,19 @@ export function tokenToUser (token) {
   const data = jwt_decode(token)
   return {
     id: data.sub,
-    firstname: data.given_name,
-    lastname: data.family_name,
+    firstname: data.given_name || null,
+    lastname: data.family_name || null,
     username: data.preferred_username,
-    theme_dark: data.theme_dark,
-    titles_before: data.titles_before,
-    titles_after: data.titles_after,
-    affiliation: data.affiliation,
-    orcid: data.orcid,
-    email_verified: data.email_verified
+    theme_dark: data.metadata?.theme_dark || false,
+    titles_before: data.metadata?.titles_before || null,
+    titles_after: data.metadata?.titles_after || null,
+    affiliation: data.metadata?.affiliation || null,
+    orcid: data.metadata?.orcid || null,
+    email_verified: data.metadata?.email_verified || null
   }
+}
+
+export function tokenToRoles (token) {
+  const data = jwt_decode(token)
+  return data.realm_access.roles
 }

@@ -1,22 +1,21 @@
 <template>
   <div v-if="token">
-    <pre>{{ model }}</pre>
-    <pre>{{ user }}</pre>
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card flat>
           <v-card-title>User Information</v-card-title>
+          <v-card-subtitle>Your identity is externally managed</v-card-subtitle>
           <v-card-text>
             <v-form v-model="valid1" @submit.prevent="submit">
               <v-row dense>
-                <v-col md="2">
+                <v-col md="3">
                   <v-text-field
                     v-model="model.id"
                     disabled
                     label="ID" />
                 </v-col>
-                <v-col md="4">
+                <v-col md="3">
                   <v-text-field
                     v-model="model.username"
                     disabled
@@ -26,25 +25,8 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="roles"
-                    disabled
-                    label="Roles" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="model.titles_before"
-                    :disabled="error"
-                    hint="e.g. Prof."
-                    label="Titles Before" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
                     v-model="model.firstname"
-                    :disabled="error"
+                    disabled
                     :rules="[v => !!v || $t('Required')]"
                     required
                     label="Firstname *" />
@@ -54,7 +36,7 @@
                 <v-col md="6">
                   <v-text-field
                     v-model="model.lastname"
-                    :disabled="error"
+                    disabled
                     :rules="[v => !!v || $t('Required')]"
                     required
                     label="Lastname *" />
@@ -63,17 +45,8 @@
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="model.titles_after"
-                    :disabled="error"
-                    hint="e.g. BSc"
-                    label="Titles After" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
                     v-model="model.affiliation"
-                    :disabled="error"
+                    disabled
                     hint="e.g. University of xyz"
                     label="Affiliation" />
                 </v-col>
@@ -82,42 +55,27 @@
                 <v-col md="6">
                   <v-text-field
                     v-model="model.orcid"
-                    :disabled="error"
+                    disabled
                     maxlength="19"
                     hint="e.g. 0000-0002-1825-0097"
                     label="ORCID" />
                 </v-col>
               </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-btn
-                    small
-                    color="primary"
-                    :disabled="!valid1 || error"
-                    type="submit"
-                    @click="updateInfo">
-                    Update
-                  </v-btn>
-                </v-col>
-              </v-row>
             </v-form>
           </v-card-text>
           <v-divider />
-          <v-card-title>Theme</v-card-title>
+          <v-card-title>Roles</v-card-title>
           <v-card-text>
-            <v-form v-model="valid2" @submit.prevent="submit">
-              <v-row dense>
-                <v-col cols="5">
-                  <v-switch
-                    v-model="model.theme_dark"
-                    inset
-                    label="Dark Mode"
-                    :disabled="error"
-                    :loading="loading"
-                    @click="toggleTheme" />
-                </v-col>
-              </v-row>
-            </v-form>
+            <v-row dense>
+              <v-col>
+                <v-select
+                  v-model="roles"
+                  :items="roles"
+                  multiple
+                  chips
+                  disabled />
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -126,7 +84,8 @@
 </template>
 
 <script>
-import UserToolbar from '@/components/UserToolbar'
+import { UserToolbar } from '@/components/UserToolbar'
+import { tokenToRoles } from '@/api/user'
 
 export default {
   components: {
@@ -160,10 +119,9 @@ export default {
       return this.$store.state.user
     },
     roles () {
-      if (!this.user.roles) {
-        return null
-      }
-      return this.user.roles.join(', ')
+      const roles = tokenToRoles(this.token)
+      console.debug('roles', roles)
+      return roles
     },
     config () {
       if (this.token === null) {

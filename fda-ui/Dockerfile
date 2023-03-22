@@ -21,7 +21,9 @@ RUN yarn install --frozen-lockfile > /dev/null 2>&1
 COPY ./nuxt.config.js ./
 COPY ./ava.config.cjs ./
 COPY ./babel.config.js ./
+COPY ./config.js ./
 COPY ./assets ./assets
+COPY ./api ./api
 COPY ./components ./components
 COPY ./lang ./lang
 COPY ./layouts ./layouts
