@@ -78,7 +78,7 @@ public abstract class BaseUnitTest {
             .image(IMAGE_SEARCH)
             .build();
 
-    public final static Long USER_1_ID = 1L;
+    public final static String USER_1_ID = "090dc12a-a46a-4515-b1f0-cff697d5f985";
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_PASSWORD = "junit";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -116,6 +116,7 @@ public abstract class BaseUnitTest {
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
@@ -125,11 +126,13 @@ public abstract class BaseUnitTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-    public final static Long USER_2_ID = 2L;
-    public final static String USER_2_USERNAME = "junit2";
-    public final static String USER_2_PASSWORD = "junit2";
+    public final static String USER_2_ID = "0153f998-bd4c-4154-993e-75c355499044";
+    public final static String USER_2_USERNAME = "dev";
+    public final static String USER_2_EMAIL = "dev@gmail.com";
+    public final static Boolean USER_2_EMAIL_VERIFIED = false;
+    public final static Boolean USER_2_THEME_DARK = false;
+    public final static String USER_2_PASSWORD = "p455w0rdh45";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static String USER_2_EMAIL = "junit2@ossdip.at";
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_THEME = false;
 
@@ -172,11 +175,13 @@ public abstract class BaseUnitTest {
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
-    public final static Long USER_3_ID = 3L;
-    public final static String USER_3_USERNAME = "junit3";
-    public final static String USER_3_PASSWORD = "junit3";
+    public final static String USER_3_ID = "fea123c7-1851-4e01-969a-53407fa6a451";
+    public final static String USER_3_USERNAME = "steward";
+    public final static String USER_3_EMAIL = "steward@gmail.com";
+    public final static Boolean USER_3_EMAIL_VERIFIED = false;
+    public final static Boolean USER_3_THEME_DARK = false;
+    public final static String USER_3_PASSWORD = "p455w0rdh45";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static String USER_3_EMAIL = "junit3@ossdip.at";
     public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_THEME = false;
 
@@ -184,10 +189,9 @@ public abstract class BaseUnitTest {
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
-            .emailVerified(USER_3_VERIFIED)
-            .themeDark(USER_3_THEME)
+            .emailVerified(USER_3_EMAIL_VERIFIED)
+            .themeDark(USER_3_THEME_DARK)
             .password(USER_3_PASSWORD)
-            .roles(List.of(RoleType.ROLE_DEVELOPER))
             .databasePassword(USER_3_DATABASE_PASSWORD)
             .build();
 
@@ -212,22 +216,23 @@ public abstract class BaseUnitTest {
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
-    public final static Long USER_4_ID = 4L;
-    public final static String USER_4_USERNAME = "junit4";
-    public final static String USER_4_PASSWORD = "junit4";
-    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE847AABCF49680A157D85D44A117E9";
-    public final static String USER_4_EMAIL = "junit4@ossdip.at";
-    public final static Boolean USER_4_VERIFIED = true;
-    public final static Boolean USER_4_THEME = false;
+    public final static String USER_4_ID = "824d2c13-78d9-43c5-a4af-288120e2b44b";
+    public final static String USER_4_USERNAME = "nobody";
+    public final static String USER_4_EMAIL = "nobody@gmail.com";
+    public final static Boolean USER_4_EMAIL_VERIFIED = false;
+    public final static Boolean USER_4_THEME_DARK = false;
+    public final static String USER_4_PASSWORD = "p455w0rdh45";
+    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
-            .emailVerified(USER_4_VERIFIED)
-            .themeDark(USER_4_THEME)
+            .emailVerified(USER_4_EMAIL_VERIFIED)
+            .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
+            .roles(List.of())
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()

@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User find(Long id) throws UserNotFoundException {
+    public User find(String id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve user with id {}", id);

@@ -330,7 +330,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     }
 
     protected QueryDto find_generic(Long containerId, Long databaseId, Database database, Long queryId, Query query,
-                                    Long userId, User user, Principal principal) throws QueryStoreException,
+                                    String userId, User user, Principal principal) throws QueryStoreException,
             QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
             NotAllowedException, DatabaseConnectionException {
 

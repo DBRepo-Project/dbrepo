@@ -25,8 +25,8 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with username {}", username);
-            throw new UserNotFoundException("Failed to find user");
+            log.error("Failed to find user with username '{}'", username);
+            throw new UserNotFoundException("Failed to find user with username '" + username + "'");
         }
         return optional.get();
     }

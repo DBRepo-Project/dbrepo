@@ -29,7 +29,7 @@ public class TimeSecret {
     private Long id;
 
     @Column(nullable = false)
-    private Long uid;
+    private String uid;
 
     @ToString.Exclude
     @Column(nullable = false, updatable = false)

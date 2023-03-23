@@ -33,7 +33,7 @@ public class Token {
     private Long id;
 
     @Column(nullable = false, updatable = false)
-    private Long creator;
+    private String creator;
 
     @Transient
     @ToString.Exclude

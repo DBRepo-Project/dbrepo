@@ -29,7 +29,7 @@ import static java.time.temporal.ChronoUnit.*;
 @TestPropertySource(locations = "classpath:application.properties")
 public abstract class BaseUnitTest {
 
-    public final static Long USER_1_ID = 1L;
+    public final static String USER_1_ID = "090dc12a-a46a-4515-b1f0-cff697d5f985";
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
@@ -56,7 +56,7 @@ public abstract class BaseUnitTest {
             .password("password")
             .build();
 
-    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_ID = "0153f998-bd4c-4154-993e-75c355499044";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_EMAIL = "junit2@example.com";
     public final static String USER_2_PASSWORD = "password";

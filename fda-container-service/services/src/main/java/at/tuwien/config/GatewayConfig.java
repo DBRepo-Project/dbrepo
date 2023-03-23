@@ -1,16 +1,24 @@
 package at.tuwien.config;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+@Getter
 @Configuration
 public class GatewayConfig {
 
     @Value("${fda.gateway.endpoint}")
     private String gatewayEndpoint;
+
+    @Value("${fda.client_secret}")
+    private String clientSecret;
+
+    @Value("${fda.client_id}")
+    private String clientId;
 
     @Bean
     public RestTemplate restTemplate() {

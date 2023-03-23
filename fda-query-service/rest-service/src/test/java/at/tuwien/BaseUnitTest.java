@@ -66,7 +66,7 @@ public abstract class BaseUnitTest {
 
     public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
 
-    public final static Long USER_1_ID = 1L;
+    public final static String USER_1_ID = "090dc12a-a46a-4515-b1f0-cff697d5f985";
     public final static String USER_1_USERNAME = "guest";
     public final static String USER_1_EMAIL = "junit@example.com";
     public final static String USER_1_PASSWORD = "password";
@@ -105,7 +105,7 @@ public abstract class BaseUnitTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_ID = "0153f998-bd4c-4154-993e-75c355499044";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_EMAIL = "junit2@example.com";
     public final static String USER_2_PASSWORD = "password";
@@ -135,7 +135,7 @@ public abstract class BaseUnitTest {
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
-    public final static Long USER_3_ID = 3L;
+    public final static String USER_3_ID = "fea123c7-1851-4e01-969a-53407fa6a451";
     public final static String USER_3_USERNAME = "system";
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
@@ -164,6 +164,41 @@ public abstract class BaseUnitTest {
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
+
+    public final static String USER_4_ID = "824d2c13-78d9-43c5-a4af-288120e2b44b";
+    public final static String USER_4_USERNAME = "nobody";
+    public final static String USER_4_EMAIL = "nobody@gmail.com";
+    public final static Boolean USER_4_EMAIL_VERIFIED = false;
+    public final static Boolean USER_4_THEME_DARK = false;
+    public final static String USER_4_PASSWORD = "p455w0rdh45";
+    public final static String USER_4_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+
+    public final static User USER_4 = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .emailVerified(USER_4_EMAIL_VERIFIED)
+            .themeDark(USER_4_THEME_DARK)
+            .password(USER_4_PASSWORD)
+            .databasePassword(USER_4_DATABASE_PASSWORD)
+            .roles(List.of())
+            .build();
+
+    public final static String USER_5_ID = "d2f3a8f4-c7fe-49e8-9d14-6dad0f6b9406";
+    public final static String USER_5_USERNAME = "mweise";
+    public final static String USER_5_EMAIL = "mweise@gmail.com";
+    public final static Boolean USER_5_EMAIL_VERIFIED = false;
+    public final static Boolean USER_5_THEME_DARK = false;
+    public final static String USER_5_PASSWORD = "p455w0rdh45";
+    public final static String USER_5_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+
+    public final static UserDetailsDto USER_5_DETAILS_DTO = UserDetailsDto.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .email(USER_5_EMAIL)
+            .password(USER_5_PASSWORD)
+            .authorities(List.of())
+            .build();
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REPOSITORY = "mariadb";

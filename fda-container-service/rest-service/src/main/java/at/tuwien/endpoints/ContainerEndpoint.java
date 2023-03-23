@@ -60,7 +60,7 @@ public class ContainerEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasAuthority('create-container')")
     @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data,
                                                     @NotNull Principal principal)

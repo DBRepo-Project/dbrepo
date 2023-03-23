@@ -12,9 +12,9 @@ import java.util.Optional;
 @Repository
 public interface DatabaseAccessRepository extends JpaRepository<DatabaseAccess, Long> {
 
-    void deleteByHdbidAndHuserid(Long databaseId, Long userId);
+    void deleteByHdbidAndHuserid(Long databaseId, String userId);
 
-    Optional<DatabaseAccess> findByHdbidAndHuserid(Long databaseId, Long userId);
+    Optional<DatabaseAccess> findByHdbidAndHuserid(Long databaseId, String userId);
 
     List<DatabaseAccess> findByHdbid(Long databaseId);
 

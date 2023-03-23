@@ -29,6 +29,8 @@ ENV BROKER_PASSWORD=fda
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
 ENV LOG_LEVEL=debug
+ENV CLIENT_SECRET=client-secret
+ENV CLIENT_ID=dbrepo-client
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

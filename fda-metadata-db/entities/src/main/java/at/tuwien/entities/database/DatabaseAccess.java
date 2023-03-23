@@ -22,7 +22,7 @@ public class DatabaseAccess {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "user_id", updatable = false)
-    private Long huserid;
+    private String huserid;
 
     @Id
     @EqualsAndHashCode.Include

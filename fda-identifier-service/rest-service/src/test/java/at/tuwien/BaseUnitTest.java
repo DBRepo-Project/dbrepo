@@ -16,6 +16,7 @@ import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.TestPropertySource;
@@ -32,7 +33,7 @@ public abstract class BaseUnitTest {
 
     public final static String JWT_1 = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtd2Vpc2UiLCJybmQiOjk2NjIyNzAwMCwiZXhwIjoxNjczODg2MDk5LCJpYXQiOjE2NzM3OTk2OTl9.y1jqokCfZE7c_Ztt_nLQlf73jCYXPH5TZpCvo3RwS0C5azyrqLh03bphl6R8A24g6Kv_3qjzvnubNIwmO7y7pA";
 
-    public final static Long USER_1_ID = 1L;
+    public final static String USER_1_ID = "090dc12a-a46a-4515-b1f0-cff697d5f985";
     public final static String USER_1_USERNAME = "junit";
     public final static String USER_1_PASSWORD = "junit";
     public final static String USER_1_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -89,7 +90,7 @@ public abstract class BaseUnitTest {
     public final static Principal USER_1_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_1_DETAILS,
             USER_1_PASSWORD, USER_1_DETAILS.getAuthorities());
 
-    public final static Long USER_2_ID = 2L;
+    public final static String USER_2_ID = "0153f998-bd4c-4154-993e-75c355499044";
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
@@ -134,15 +135,18 @@ public abstract class BaseUnitTest {
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
-    public final static String USER_3_USERNAME = "junit3";
-    public final static String USER_3_PASSWORD = "junit3";
-    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static String USER_3_EMAIL = "junit3@example.com";
-    public final static Boolean USER_3_EMAIL_VERIFIED = true;
+    public final static String USER_3_ID = "fea123c7-1851-4e01-969a-53407fa6a451";
+    public final static String USER_3_USERNAME = "steward";
+    public final static String USER_3_EMAIL = "steward@gmail.com";
+    public final static Boolean USER_3_EMAIL_VERIFIED = false;
     public final static Boolean USER_3_THEME_DARK = false;
+    public final static String USER_3_PASSWORD = "p455w0rdh45";
+    public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
+    public final static RoleType USER_3_ROLE_TYPE = RoleType.ROLE_DATA_STEWARD;
     public final static Instant USER_3_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
     public final static Instant USER_3_LAST_MODIFIED = USER_3_CREATED;
+    public final static GrantedAuthority USER_3_AUTHORITY = new SimpleGrantedAuthority("ROLE_DATA_STEWARD");
 
     public final static User USER_3 = User.builder()
             .username(USER_3_USERNAME)

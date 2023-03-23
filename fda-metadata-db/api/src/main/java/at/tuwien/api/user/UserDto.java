@@ -19,15 +19,20 @@ import java.util.List;
 public class UserDto {
 
     @NotNull
-    private Long id;
+    @JsonProperty("sub")
+    private String id;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     private List<GrantedAuthorityDto> authorities;
 
     @NotNull
+    @JsonProperty("preferred_username")
     @Schema(example = "jcarberry", description = "Only contains lowercase characters")
     private String username;
+
+    @Schema(example = "Josiah Carberry")
+    private String name;
 
     @JsonProperty("titles_before")
     @Schema(example = "Prof.")
@@ -36,9 +41,11 @@ public class UserDto {
     @JsonProperty("titles_after")
     private String titlesAfter;
 
+    @JsonProperty("given_name")
     @Schema(example = "Josiah")
     private String firstname;
 
+    @JsonProperty("family_name")
     @Schema(example = "Carberry")
     private String lastname;
 

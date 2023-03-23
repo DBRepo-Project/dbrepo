@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UserDetailsDto implements UserDetails {
 
-    private Long id;
+    private String id;
 
     private List<? extends GrantedAuthority> authorities;
 

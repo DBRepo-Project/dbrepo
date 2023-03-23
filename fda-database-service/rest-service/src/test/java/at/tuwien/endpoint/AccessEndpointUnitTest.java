@@ -260,7 +260,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_find(Long containerId, Long databaseId, Database database, DatabaseAccess access,
-                                String username, Long userId, Principal principal) throws AccessDeniedException,
+                                String username, String userId, Principal principal) throws AccessDeniedException,
             NotAllowedException {
 
         /* mock */

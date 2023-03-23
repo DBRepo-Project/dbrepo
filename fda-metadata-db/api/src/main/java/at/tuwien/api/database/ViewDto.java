@@ -57,7 +57,7 @@ public class ViewDto {
     private Instant created;
 
     @JsonIgnore
-    private Long createdBy;
+    private String createdBy;
 
     @NotNull
     private UserDto creator;

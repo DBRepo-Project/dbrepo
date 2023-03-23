@@ -38,4 +38,6 @@ fda:
   network: userdb
   mount.path: /tmp
   ready.path: /ready
+  client_secret: "${CLIENT_SECRET}"
+  client_id: "${CLIENT_ID}"
   gateway.endpoint: http://gateway-service:9095

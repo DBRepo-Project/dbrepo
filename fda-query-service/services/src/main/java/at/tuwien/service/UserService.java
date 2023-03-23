@@ -42,5 +42,5 @@ public interface UserService {
      * @return The user.
      * @throws UserNotFoundException The user was not found in the metadata database.
      */
-    User find(Long id) throws UserNotFoundException;
+    User find(String id) throws UserNotFoundException;
 }

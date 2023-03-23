@@ -283,7 +283,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void create_generic(AccessTypeDto accessTypeDto, AccessType access, String username, Long userId)
+    protected void create_generic(AccessTypeDto accessTypeDto, AccessType access, String username, String userId)
             throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
             DatabaseMalformedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
@@ -301,7 +301,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     }
 
     protected void update_generic(Long containerId, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
-                                  String username, Long userId) throws UserNotFoundException, NotAllowedException,
+                                  String username, String userId) throws UserNotFoundException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)

@@ -23,7 +23,10 @@ import java.util.List;
 @Table(name = "mdb_users")
 @NamedNativeQueries({
         @NamedNativeQuery(name = "User.findAll",
-                query = "SELECT * FROM `mdb_users` WHERE `username` = 'system'",
+                query = "SELECT e.* FROM `keycloak`.`REALM` r JOIN `keycloak`.`USER_ENTITY` e ON r.`ID` = e.`REALM_ID` WHERE r.`NAME` = 'dbrepo' AND e.`USERNAME` != 'system'",
+                resultClass = User.class),
+        @NamedNativeQuery(name = "User.findByUsername",
+                query = "SELECT e.* FROM `keycloak`.`REALM` r JOIN `keycloak`.`USER_ENTITY` e ON r.`ID` = e.`REALM_ID` WHERE r.`NAME` = 'dbrepo' AND e.`USERNAME` = ?",
                 resultClass = User.class)
 })
 public class User {
@@ -33,8 +36,8 @@ public class User {
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "users-sequence")
     @GenericGenerator(name = "users-sequence", strategy = "increment")
-    @Column(name = "userid", updatable = false, nullable = false)
-    private Long id;
+    @Column(updatable = false, nullable = false)
+    private String id;
 
     @Column(unique = true, nullable = false)
     private String username;

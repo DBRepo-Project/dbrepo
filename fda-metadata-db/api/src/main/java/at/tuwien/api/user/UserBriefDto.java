@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -18,24 +19,33 @@ import java.util.List;
 public class UserBriefDto {
 
     @NotNull
-    private Long id;
+    @JsonProperty("sub")
+    private String id;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    private List<GrantedAuthorityDto> authorities;
 
     @NotNull
-    @Schema(example = "user", description = "Only contains lowercase characters")
+    @JsonProperty("preferred_username")
+    @Schema(example = "jcarberry", description = "Only contains lowercase characters")
     private String username;
 
-    @JsonIgnore
+    @Schema(example = "Josiah Carberry")
+    private String name;
+
     @JsonProperty("titles_before")
     @Schema(example = "Prof.")
     private String titlesBefore;
 
-    @JsonIgnore
     @JsonProperty("titles_after")
     private String titlesAfter;
 
+    @JsonProperty("given_name")
     @Schema(example = "Josiah")
     private String firstname;
 
+    @JsonProperty("family_name")
     @Schema(example = "Carberry")
     private String lastname;
 
@@ -44,11 +54,6 @@ public class UserBriefDto {
 
     @Schema(example = "0000-0002-1825-0097")
     private String orcid;
-
-    @NotNull
-    @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
-    @org.springframework.data.annotation.Transient
-    private List<String> roles;
 
     @JsonIgnore
     @JsonProperty("theme_dark")

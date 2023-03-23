@@ -35,7 +35,7 @@ public class QueryBriefDto {
 
     @JsonIgnore
     @NotNull(message = "created by is required")
-    private Long createdBy;
+    private String createdBy;
 
     @NotNull(message = "creator is required")
     private UserDto creator;

@@ -1,34 +1,31 @@
-CREATE DATABASE keycloak;
+CREATE DATABASE IF NOT EXISTS keycloak;
 
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS mdb_users
 (
-    UserID               bigint       not null AUTO_INCREMENT,
-    external_id          VARCHAR(255) UNIQUE,
-    OID                  bigint,
-    username             VARCHAR(255) not null,
+    UserID               character varying(255) not null default uuid(),
+    username             VARCHAR(255)           not null,
     First_name           VARCHAR(50),
     Last_name            VARCHAR(50),
     Gender               ENUM ('M', 'F', 'D'),
     Preceding_titles     VARCHAR(255),
     Postpositioned_title VARCHAR(255),
     orcid                VARCHAR(16),
-    theme_dark           BOOLEAN      NOT NULL DEFAULT false,
+    theme_dark           BOOLEAN                NOT NULL DEFAULT false,
     affiliation          VARCHAR(255),
-    Main_Email           VARCHAR(255) not null,
-    main_email_verified  bool         not null default false,
-    password             VARCHAR(255) not null,
-    database_password    VARCHAR(255) not null,
-    created              timestamp    NOT NULL DEFAULT NOW(),
+    Main_Email           VARCHAR(255)           not null,
+    main_email_verified  bool                   not null default false,
+    password             VARCHAR(255)           not null,
+    database_password    VARCHAR(255)           not null,
+    created              timestamp              NOT NULL DEFAULT NOW(),
     last_modified        timestamp,
     PRIMARY KEY (UserID),
     UNIQUE (username),
-    UNIQUE (Main_Email),
-    UNIQUE (OID)
+    UNIQUE (Main_Email)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_images
+CREATE TABLE IF NOT EXISTS mdb_images
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     repository    character varying(255) NOT NULL,
@@ -46,10 +43,10 @@ CREATE TABLE mdb_images
     UNIQUE (repository, tag)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_time_secrets
+CREATE TABLE IF NOT EXISTS mdb_time_secrets
 (
     id        bigint                 not null AUTO_INCREMENT,
-    uid       bigint                 not null,
+    uid       character varying(255) not null,
     token     character varying(255) NOT NULL,
     processed boolean                NOT NULL default false,
     created   timestamp              NOT NULL DEFAULT NOW(),
@@ -58,19 +55,19 @@ CREATE TABLE mdb_time_secrets
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_tokens
+CREATE TABLE IF NOT EXISTS mdb_tokens
 (
-    id         bigint       not null AUTO_INCREMENT,
-    token_hash varchar(255) NOT NULL,
-    creator    bigint       not null,
-    created    timestamp    NOT NULL DEFAULT NOW(),
-    expires    timestamp    NOT NULL,
+    id         bigint                 not null AUTO_INCREMENT,
+    token_hash varchar(255)           NOT NULL,
+    creator    character varying(255) not null,
+    created    timestamp              NOT NULL DEFAULT NOW(),
+    expires    timestamp              NOT NULL,
     last_used  timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_images_date
+CREATE TABLE IF NOT EXISTS mdb_images_date
 (
     id              bigint                 NOT NULL AUTO_INCREMENT,
     iid             bigint                 NOT NULL,
@@ -94,8 +91,8 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     image_id      bigint                 NOT NULL,
     ip_address    character varying(255),
     created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    bigint                 NOT NULL,
-    owned_by      bigint                 NOT NULL,
+    created_by    character varying(255) NOT NULL,
+    owned_by      character varying(255) NOT NULL,
     LAST_MODIFIED timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
@@ -103,7 +100,7 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_images_environment_item
+CREATE TABLE IF NOT EXISTS mdb_images_environment_item
 (
     id            bigint                                                                      NOT NULL AUTO_INCREMENT,
     `key`         character varying(255)                                                      NOT NULL,
@@ -129,10 +126,10 @@ CREATE TABLE IF NOT EXISTS mdb_data
 
 CREATE TABLE IF NOT EXISTS mdb_user_roles
 (
-    id            bigint       NOT NULL AUTO_INCREMENT,
-    uid           bigint       not null,
-    role          varchar(255) not null,
-    created       timestamp    NOT NULL DEFAULT NOW(),
+    id            bigint                 NOT NULL AUTO_INCREMENT,
+    uid           character varying(255) not null,
+    role          varchar(255)           not null,
+    created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
@@ -156,9 +153,9 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     description    TEXT,
     engine         character varying(20),
     is_public      BOOLEAN                NOT NULL DEFAULT TRUE,
-    created_by     bigint                 NOT NULL,
-    owned_by       bigint                 NOT NULL,
-    contact_person bigint,
+    created_by     character varying(255) NOT NULL,
+    owned_by       character varying(255) NOT NULL,
+    contact_person character varying(255),
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
@@ -194,7 +191,7 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     element_false VARCHAR(50),
     Version       TEXT,
     created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    bigint                 NOT NULL,
+    created_by    character varying(255) NOT NULL,
     last_modified timestamp,
     PRIMARY KEY (ID, tDBID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
@@ -203,21 +200,21 @@ CREATE TABLE IF NOT EXISTS mdb_tables
 
 CREATE TABLE IF NOT EXISTS mdb_columns
 (
-    ID               bigint       NOT NULL AUTO_INCREMENT,
-    cDBID            bigint       NOT NULL,
-    tID              bigint       NOT NULL,
+    ID               bigint                 NOT NULL AUTO_INCREMENT,
+    cDBID            bigint                 NOT NULL,
+    tID              bigint                 NOT NULL,
     dfID             bigint,
     cName            VARCHAR(100),
-    internal_name    VARCHAR(100) NOT NULL,
+    internal_name    VARCHAR(100)           NOT NULL,
     Datatype         VARCHAR(50),
-    length           INT          NULL,
-    ordinal_position INTEGER      NOT NULL,
-    is_primary_key   BOOLEAN      NOT NULL,
-    index_length     INT          NULL,
-    auto_generated   BOOLEAN               DEFAULT false,
-    is_null_allowed  BOOLEAN      NOT NULL,
-    created_by       bigint       NOT NULL,
-    created          timestamp    NOT NULL DEFAULT NOW(),
+    length           INT                    NULL,
+    ordinal_position INTEGER                NOT NULL,
+    is_primary_key   BOOLEAN                NOT NULL,
+    index_length     INT                    NULL,
+    auto_generated   BOOLEAN                         DEFAULT false,
+    is_null_allowed  BOOLEAN                NOT NULL,
+    created_by       character varying(255) NOT NULL,
+    created          timestamp              NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
     FOREIGN KEY (cDBID, tID) REFERENCES mdb_tables (tDBID, ID),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
@@ -282,14 +279,14 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
 
 CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
 (
-    fkid             BIGINT       NOT NULL AUTO_INCREMENT,
-    tid              BIGINT       NOT NULL,
-    tdbid            BIGINT       NOT NULL,
-    rtid             BIGINT       NOT NULL,
-    rtdbid           BIGINT       NOT NULL,
-    on_update        INT          NULL,
-    on_delete        INT          NULL,
-    position         INT          NULL,
+    fkid      BIGINT NOT NULL AUTO_INCREMENT,
+    tid       BIGINT NOT NULL,
+    tdbid     BIGINT NOT NULL,
+    rtid      BIGINT NOT NULL,
+    rtdbid    BIGINT NOT NULL,
+    on_update INT    NULL,
+    on_delete INT    NULL,
+    position  INT    NULL,
     PRIMARY KEY (fkid),
     FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid),
     FOREIGN KEY (rtid, rtdbid) REFERENCES mdb_tables (id, tdbid)
@@ -297,14 +294,14 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
 
 CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key_reference
 (
-    id                BIGINT       NOT NULL AUTO_INCREMENT,
-    fkid              BIGINT       NOT NULL,
-    cid               BIGINT       NOT NULL,
-    ctid              BIGINT       NOT NULL,
-    ctdbid            BIGINT       NOT NULL,
-    rcid              BIGINT       NOT NULL,
-    rctid             BIGINT       NOT NULL,
-    rctdbid           BIGINT       NOT NULL,
+    id      BIGINT NOT NULL AUTO_INCREMENT,
+    fkid    BIGINT NOT NULL,
+    cid     BIGINT NOT NULL,
+    ctid    BIGINT NOT NULL,
+    ctdbid  BIGINT NOT NULL,
+    rcid    BIGINT NOT NULL,
+    rctid   BIGINT NOT NULL,
+    rctdbid BIGINT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (fkid) REFERENCES mdb_constraints_foreign_key (fkid) ON UPDATE CASCADE,
     FOREIGN KEY (cid, ctdbid, ctid) REFERENCES mdb_columns (id, cdbid, tid),
@@ -323,11 +320,11 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_unique
 
 CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
 (
-    id                BIGINT       NOT NULL AUTO_INCREMENT,
-    uid               BIGINT       NOT NULL,
-    cid               BIGINT       NOT NULL,
-    ctid              BIGINT       NOT NULL,
-    ctdbid            BIGINT       NOT NULL,
+    id     BIGINT NOT NULL AUTO_INCREMENT,
+    uid    BIGINT NOT NULL,
+    cid    BIGINT NOT NULL,
+    ctid   BIGINT NOT NULL,
+    ctdbid BIGINT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
     FOREIGN KEY (cid, ctdbid, ctid) REFERENCES mdb_columns (id, cdbid, tid)
@@ -335,10 +332,10 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
 
 CREATE TABLE IF NOT EXISTS mdb_constraints_checks
 (
-    id                BIGINT       NOT NULL AUTO_INCREMENT,
-    tid               BIGINT       NOT NULL,
-    tdbid             BIGINT       NOT NULL,
-    checks            VARCHAR(255) NOT NULL,
+    id     BIGINT       NOT NULL AUTO_INCREMENT,
+    tid    BIGINT       NOT NULL,
+    tdbid  BIGINT       NOT NULL,
+    checks VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid)
 ) WITH SYSTEM VERSIONING;
@@ -348,7 +345,7 @@ CREATE TABLE IF NOT EXISTS mdb_concepts
     uri        text      not null,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
-    created_by bigint,
+    created_by character varying(255),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
@@ -358,7 +355,7 @@ CREATE TABLE IF NOT EXISTS mdb_units
     uri        text      not null,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
-    created_by bigint,
+    created_by character varying(255),
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
@@ -389,34 +386,34 @@ CREATE TABLE IF NOT EXISTS mdb_columns_units
 
 CREATE TABLE IF NOT EXISTS mdb_view
 (
-    id            bigint       NOT NULL AUTO_INCREMENT,
-    vcid          bigint       NOT NULL,
-    vdbid         bigint       NOT NULL,
-    vName         VARCHAR(255) NOT NULL,
-    internal_name VARCHAR(255) NOT NULL,
-    Query         TEXT         NOT NULL,
-    Public        BOOLEAN      NOT NULL,
+    id            bigint                 NOT NULL AUTO_INCREMENT,
+    vcid          bigint                 NOT NULL,
+    vdbid         bigint                 NOT NULL,
+    vName         VARCHAR(255)           NOT NULL,
+    internal_name VARCHAR(255)           NOT NULL,
+    Query         TEXT                   NOT NULL,
+    Public        BOOLEAN                NOT NULL,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    InitialView   BOOLEAN      NOT NULL,
-    created       timestamp    NOT NULL DEFAULT NOW(),
+    InitialView   BOOLEAN                NOT NULL,
+    created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    created_by    bigint       NOT NULL,
+    created_by    character varying(255) NOT NULL,
     FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
     PRIMARY KEY (id, vcid, vdbid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE mdb_view_columns
+CREATE TABLE IF NOT EXISTS mdb_view_columns
 (
-    id               BIGINT  NOT NULL AUTO_INCREMENT,
-    cid              BIGINT  NOT NULL,
-    ctid             BIGINT  NOT NULL,
-    cdbid            BIGINT  NOT NULL,
-    vid              BIGINT  NOT NULL,
-    vcid             BIGINT  NOT NULL,
-    vdbid            BIGINT  NOT NULL,
-    position         INTEGER NULL,
+    id       BIGINT  NOT NULL AUTO_INCREMENT,
+    cid      BIGINT  NOT NULL,
+    ctid     BIGINT  NOT NULL,
+    cdbid    BIGINT  NOT NULL,
+    vid      BIGINT  NOT NULL,
+    vcid     BIGINT  NOT NULL,
+    vdbid    BIGINT  NOT NULL,
+    position INTEGER NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (vid, vcid, vdbid) REFERENCES mdb_view (id, vcid, vdbid),
     FOREIGN KEY (cid, cdbid, ctid) REFERENCES mdb_columns (ID, cDBID, tID)
@@ -446,7 +443,7 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     result_number     bigint,
     doi               VARCHAR(255),
     created           timestamp                            NOT NULL DEFAULT NOW(),
-    created_by        bigint                               NOT NULL,
+    created_by        character varying(255)               NOT NULL,
     last_modified     timestamp,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
@@ -457,13 +454,13 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
 
 CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 (
-    id            bigint       NOT NULL AUTO_INCREMENT,
-    iid           bigint       NOT NULL,
-    value         varchar(255) NOT NULL,
+    id            bigint                 NOT NULL AUTO_INCREMENT,
+    iid           bigint                 NOT NULL,
+    value         varchar(255)           NOT NULL,
     type          varchar(255),
     relation      varchar(255),
-    created       timestamp    NOT NULL DEFAULT NOW(),
-    created_by    bigint       NOT NULL,
+    created       timestamp              NOT NULL DEFAULT NOW(),
+    created_by    character varying(255) NOT NULL,
     last_modified timestamp,
     PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
@@ -472,17 +469,17 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
 
 CREATE TABLE IF NOT EXISTS mdb_creators
 (
-    id            bigint       NOT NULL AUTO_INCREMENT,
-    pid           bigint       NOT NULL,
-    firstname     VARCHAR(255) NOT NULL,
-    lastname      VARCHAR(255) NOT NULL,
+    id            bigint                 NOT NULL AUTO_INCREMENT,
+    pid           bigint                 NOT NULL,
+    firstname     VARCHAR(255)           NOT NULL,
+    lastname      VARCHAR(255)           NOT NULL,
     affiliation   VARCHAR(255),
     orcid         VARCHAR(255),
-    created       timestamp    NOT NULL DEFAULT NOW(),
-    created_by    bigint       NOT NULL,
-    last_modified timestamp    NOT NULL,
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
+    created       timestamp              NOT NULL DEFAULT NOW(),
+    created_by    character varying(255) NOT NULL,
+    last_modified timestamp              NOT NULL,
     PRIMARY KEY (id, pid),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -490,24 +487,27 @@ CREATE TABLE IF NOT EXISTS mdb_feed
 (
     fDBID   bigint,
     fID     bigint,
-    fUserId bigint REFERENCES mdb_users (UserID),
+    fUserId character varying(255) not null,
     fDataID bigint REFERENCES mdb_data (ID),
-    created timestamp NOT NULL DEFAULT NOW(),
+    created timestamp              NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (fDBID, fID, fUserId, fDataID),
     FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
-    PRIMARY KEY (fDBID, fID, fUserId, fDataID)
+    FOREIGN KEY (fUserId) REFERENCES mdb_users (UserID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_update
 (
-    uUserID bigint REFERENCES mdb_users (UserID),
-    uDBID   bigint REFERENCES mdb_databases (id),
-    created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (uUserID, uDBID)
+    uUserID character varying(255) NOT NULL,
+    uDBID   bigint                 NOT NULL,
+    created timestamp              NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (uUserID, uDBID),
+    FOREIGN KEY (uUserID) REFERENCES mdb_users (UserID),
+    FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS mdb_access
 (
-    aUserID  bigint REFERENCES mdb_users (UserID),
+    aUserID  character varying(255) REFERENCES mdb_users (UserID),
     aDBID    bigint REFERENCES mdb_databases (id),
     attime   TIMESTAMP,
     download BOOLEAN,
@@ -517,7 +517,7 @@ CREATE TABLE IF NOT EXISTS mdb_access
 
 CREATE TABLE IF NOT EXISTS mdb_have_access
 (
-    user_id     bigint REFERENCES mdb_users (UserID),
+    user_id     character varying(255) REFERENCES mdb_users (UserID),
     database_id bigint REFERENCES mdb_databases (id),
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     timestamp                               NOT NULL DEFAULT NOW(),
