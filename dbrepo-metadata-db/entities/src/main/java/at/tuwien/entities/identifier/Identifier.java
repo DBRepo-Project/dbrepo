@@ -109,7 +109,8 @@ public class Identifier implements Serializable {
 
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'TRUSTED', 'SELF')")
     @Enumerated(EnumType.STRING)
-    private VisibilityType visibility = VisibilityType.SELF;
+    @Builder.Default
+    private VisibilityType visibility = VisibilityType.EVERYONE;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({

@@ -4,7 +4,10 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.identifier.Creator;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -17,6 +20,7 @@ import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Profile("!doi")
 @Service
 public class IdentifierServiceImpl implements IdentifierService {
 
@@ -96,13 +101,10 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Transactional
     public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
-            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException {
+            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
+            IdentifierRequestException {
         /* check */
         final Database database = databaseService.find(data.getDbid());
-        if (database.getIsPublic() && !data.getVisibility().equals(VisibilityTypeDto.EVERYONE)) {
-            log.error("Identifier cannot restrict the result set");
-            throw new IdentifierPublishingNotAllowedException("Identifier cannot restrict the result set");
-        }
         if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDbid(), IdentifierType.DATABASE)) {
             log.error("Identifier already issued for database with id {}", data.getDbid());
             throw new IdentifierAlreadyExistsException("Database identifier already exists");
@@ -120,7 +122,6 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
             final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
-            tmp.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(data.getVisibility()));
             tmp.setQuery(query.getQuery());
             tmp.setQueryId(query.getId());
             tmp.setQueryNormalized(query.getQueryNormalized());
@@ -128,9 +129,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             tmp.setExecution(query.getExecution());
             tmp.setResultNumber(query.getResultNumber());
             tmp.setResultHash(query.getResultHash());
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE)) {
-            log.debug("identifier describes a database");
-            tmp.setVisibility(identifierMapper.databaseToVisibilityType(database));
         }
         /* create in metadata database */
         final Identifier entity = identifierRepository.save(tmp);
@@ -245,9 +243,15 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional
     public Identifier update(Long identifierId, IdentifierDto data)
-            throws IdentifierNotFoundException {
+            throws IdentifierNotFoundException, IdentifierRequestException {
         /* check */
-        find(identifierId);
+        Identifier old = find(identifierId);
+        if(data.getVisibility() != VisibilityTypeDto.EVERYONE) {
+            throw new IdentifierRequestException("Cannot set visibility to other value than \"EVERYONE\".");
+        }
+        if(data.getDoi() != null && !data.getDoi().equals(old.getDoi())) {
+            throw new IdentifierRequestException("The DOI of an identifier cannot be changed.");
+        }
         /* map */
         final Identifier entity = identifierMapper.identifierDtoToIdentifier(data);
         entity.getCreators()
@@ -264,29 +268,12 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier publish(Long identifierId, VisibilityTypeDto visibility)
-            throws IdentifierNotFoundException, IdentifierAlreadyPublishedException {
-        final Identifier identifier = find(identifierId);
-        if (identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
-            /* once published, the identifier cannot be reverted, it is persistent! */
-            log.error("Identifier with id {} is already published for everyone", identifier.getId());
-            throw new IdentifierAlreadyPublishedException("Identifier with id " + identifier.getId() + " is already published for everyone");
-        }
-        identifier.setVisibility(identifierMapper.visibilityTypeDtoToVisibilityType(visibility));
-        final Identifier entity = identifierRepository.save(identifier);
-        log.info("Published identifier with id {}", identifierId);
-        log.trace("published identifier {}", entity);
-        /* elastic search */
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
-        log.info("Published identifier with id {} in elastic search", identifierId);
-        return entity;
-    }
-
-    @Override
-    @Transactional
-    public void delete(Long identifierId) throws IdentifierNotFoundException {
+    public void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException {
         /* check */
         final Identifier identifier = find(identifierId);
+        if(identifier.getDoi() != null) {
+            throw new NotAllowedException("Identifiers with a DOI cannot be deleted.");
+        }
         /* delete */
         identifierRepository.delete(identifier);
         log.info("Deleted identifier with id {}", identifierId);

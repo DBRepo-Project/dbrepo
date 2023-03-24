@@ -37,13 +37,6 @@ public class IdentifierCreateDto {
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
-    @NotNull
-    @Schema(example = "everyone")
-    private VisibilityTypeDto visibility;
-
-    @Schema(example = "10.1038/nphys1170")
-    private String doi;
-
     @JsonProperty("publication_day")
     @Schema(example = "15")
     private Integer publicationDay;
