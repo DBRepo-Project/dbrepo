@@ -5,7 +5,7 @@
   "type": "database",
   "title": "Sweden weather data",
   "description": "Selecting all from the weather Sweden table",
-  "doi": "10.1000/184",
+  "doi": null,
   "visibility": "everyone",
   "publisher": "Swedish Government",
   "publication_day": 14,
