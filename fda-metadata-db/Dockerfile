@@ -1,6 +1,7 @@
 ###### FIRST STAGE ######
 FROM maven:slim as build
 MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
+LABEL db=metadata
 
 COPY ./pom.xml ./
 

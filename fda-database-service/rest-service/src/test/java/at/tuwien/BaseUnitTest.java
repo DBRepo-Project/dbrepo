@@ -20,7 +20,6 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.VisibilityType;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -93,7 +92,6 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_1_VERIFIED)
             .themeDark(USER_1_THEME)
             .password(USER_1_PASSWORD)
-            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .build();
 
@@ -143,7 +141,6 @@ public abstract class BaseUnitTest {
             .emailVerified(USER_2_VERIFIED)
             .themeDark(USER_2_THEME)
             .password(USER_2_PASSWORD)
-            .roles(List.of(RoleType.ROLE_DATA_STEWARD))
             .databasePassword(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -232,7 +229,6 @@ public abstract class BaseUnitTest {
             .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
-            .roles(List.of())
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()

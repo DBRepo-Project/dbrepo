@@ -56,7 +56,7 @@ public class Creator {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
     })
     private User creator;
 

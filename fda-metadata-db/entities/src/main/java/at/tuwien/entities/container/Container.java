@@ -38,13 +38,13 @@ public class Container {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
     })
     private User creator;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "ownedBy", referencedColumnName = "UserID")
+            @JoinColumn(name = "ownedBy", referencedColumnName = "ID")
     })
     private User owner;
 

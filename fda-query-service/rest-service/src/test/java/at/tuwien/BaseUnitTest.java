@@ -21,7 +21,6 @@ import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.VisibilityType;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
@@ -81,7 +80,6 @@ public abstract class BaseUnitTest {
             .themeDark(false)
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
             .build();
@@ -120,7 +118,6 @@ public abstract class BaseUnitTest {
             .themeDark(false)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_2_CREATED)
             .lastModified(USER_2_CREATED)
             .build();
@@ -150,7 +147,6 @@ public abstract class BaseUnitTest {
             .themeDark(false)
             .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_3_CREATED)
             .lastModified(USER_3_CREATED)
             .build();
@@ -181,7 +177,6 @@ public abstract class BaseUnitTest {
             .themeDark(USER_4_THEME_DARK)
             .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
-            .roles(List.of())
             .build();
 
     public final static String USER_5_ID = "d2f3a8f4-c7fe-49e8-9d14-6dad0f6b9406";

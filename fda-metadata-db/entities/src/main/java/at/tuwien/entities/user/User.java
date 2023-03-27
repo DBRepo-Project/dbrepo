@@ -3,7 +3,6 @@ package at.tuwien.entities.user;
 import at.tuwien.entities.container.Container;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -76,18 +75,6 @@ public class User {
     @ToString.Exclude
     @Column(nullable = false)
     private String databasePassword;
-
-    @ElementCollection(targetClass = RoleType.class)
-    @JoinTable(name = "mdb_user_roles", joinColumns = @JoinColumn(name = "uid"), uniqueConstraints = {
-            @UniqueConstraint(columnNames = {"uid", "role"})
-    })
-    @Column(name = "role", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private List<RoleType> roles;
-
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
-    private List<TimeSecret> tokens;
 
     @Transient
     @ToString.Exclude

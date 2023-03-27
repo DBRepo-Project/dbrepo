@@ -46,7 +46,7 @@ public class Identifier implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
     })
     private User creator;
 

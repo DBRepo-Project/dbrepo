@@ -1,31 +1,8 @@
-CREATE DATABASE IF NOT EXISTS keycloak;
+CREATE DATABASE IF NOT EXISTS `keycloak`;
 
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS mdb_users
-(
-    UserID               character varying(255) not null default uuid(),
-    username             VARCHAR(255)           not null,
-    First_name           VARCHAR(50),
-    Last_name            VARCHAR(50),
-    Gender               ENUM ('M', 'F', 'D'),
-    Preceding_titles     VARCHAR(255),
-    Postpositioned_title VARCHAR(255),
-    orcid                VARCHAR(16),
-    theme_dark           BOOLEAN                NOT NULL DEFAULT false,
-    affiliation          VARCHAR(255),
-    Main_Email           VARCHAR(255)           not null,
-    main_email_verified  bool                   not null default false,
-    password             VARCHAR(255)           not null,
-    database_password    VARCHAR(255)           not null,
-    created              timestamp              NOT NULL DEFAULT NOW(),
-    last_modified        timestamp,
-    PRIMARY KEY (UserID),
-    UNIQUE (username),
-    UNIQUE (Main_Email)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS mdb_images
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     repository    character varying(255) NOT NULL,
@@ -43,31 +20,7 @@ CREATE TABLE IF NOT EXISTS mdb_images
     UNIQUE (repository, tag)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_time_secrets
-(
-    id        bigint                 not null AUTO_INCREMENT,
-    uid       character varying(255) not null,
-    token     character varying(255) NOT NULL,
-    processed boolean                NOT NULL default false,
-    created   timestamp              NOT NULL DEFAULT NOW(),
-    valid_to  timestamp              NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (uid) REFERENCES mdb_users (UserID)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS mdb_tokens
-(
-    id         bigint                 not null AUTO_INCREMENT,
-    token_hash varchar(255)           NOT NULL,
-    creator    character varying(255) not null,
-    created    timestamp              NOT NULL DEFAULT NOW(),
-    expires    timestamp              NOT NULL,
-    last_used  timestamp,
-    PRIMARY KEY (id),
-    FOREIGN KEY (creator) REFERENCES mdb_users (UserID)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS mdb_images_date
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
 (
     id              bigint                 NOT NULL AUTO_INCREMENT,
     iid             bigint                 NOT NULL,
@@ -81,7 +34,7 @@ CREATE TABLE IF NOT EXISTS mdb_images_date
     UNIQUE (database_format, unix_format, example)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_containers
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     HASH          character varying(255) NOT NULL,
@@ -95,12 +48,10 @@ CREATE TABLE IF NOT EXISTS mdb_containers
     owned_by      character varying(255) NOT NULL,
     LAST_MODIFIED timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_images_environment_item
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_environment_item`
 (
     id            bigint                                                                      NOT NULL AUTO_INCREMENT,
     `key`         character varying(255)                                                      NOT NULL,
@@ -113,7 +64,7 @@ CREATE TABLE IF NOT EXISTS mdb_images_environment_item
     FOREIGN KEY (iid) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_data
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_data`
 (
     ID           bigint NOT NULL AUTO_INCREMENT,
     PROVENANCE   TEXT,
@@ -124,19 +75,7 @@ CREATE TABLE IF NOT EXISTS mdb_data
     PRIMARY KEY (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_user_roles
-(
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    uid           character varying(255) not null,
-    role          varchar(255)           not null,
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    last_modified timestamp,
-    PRIMARY KEY (id),
-    FOREIGN KEY (uid) REFERENCES mdb_users (UserID),
-    UNIQUE (uid, role)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS mdb_licenses
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
 (
     identifier character varying(255) NOT NULL,
     uri        TEXT                   NOT NULL,
@@ -144,7 +83,7 @@ CREATE TABLE IF NOT EXISTS mdb_licenses
     UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_databases
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
 (
     id             bigint                 NOT NULL AUTO_INCREMENT,
     name           character varying(255) NOT NULL,
@@ -159,20 +98,17 @@ CREATE TABLE IF NOT EXISTS mdb_databases
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    FOREIGN KEY (owned_by) REFERENCES mdb_users (UserID),
-    FOREIGN KEY (contact_person) REFERENCES mdb_users (UserID),
     FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_databases_subjects
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases_subjects`
 (
     dbid     BIGINT                 NOT NULL,
     subjects character varying(255) NOT NULL,
     PRIMARY KEY (dbid, subjects)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_tables
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_tables`
 (
     ID            bigint                 NOT NULL AUTO_INCREMENT,
     tDBID         bigint                 NOT NULL,
@@ -194,11 +130,10 @@ CREATE TABLE IF NOT EXISTS mdb_tables
     created_by    character varying(255) NOT NULL,
     last_modified timestamp,
     PRIMARY KEY (ID, tDBID),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
 (
     ID               bigint                 NOT NULL AUTO_INCREMENT,
     cDBID            bigint                 NOT NULL,
@@ -217,11 +152,10 @@ CREATE TABLE IF NOT EXISTS mdb_columns
     created          timestamp              NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
     FOREIGN KEY (cDBID, tID) REFERENCES mdb_tables (tDBID, ID),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (ID, cDBID, tID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_enums
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
 (
     ID            bigint                 NOT NULL AUTO_INCREMENT,
     eDBID         bigint                 NOT NULL,
@@ -234,7 +168,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_enums
     PRIMARY KEY (ID, eDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_nom
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_nom`
 (
     cDBID         bigint,
     tID           bigint,
@@ -246,7 +180,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_nom
     PRIMARY KEY (cDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_num
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_num`
 (
     cDBID         bigint,
     tID           bigint,
@@ -264,7 +198,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_num
     PRIMARY KEY (cDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_cat
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_cat`
 (
     cDBID         bigint,
     tID           bigint,
@@ -277,7 +211,7 @@ CREATE TABLE IF NOT EXISTS mdb_columns_cat
     PRIMARY KEY (cDBID, tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key`
 (
     fkid      BIGINT NOT NULL AUTO_INCREMENT,
     tid       BIGINT NOT NULL,
@@ -292,7 +226,7 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key
     FOREIGN KEY (rtid, rtdbid) REFERENCES mdb_tables (id, tdbid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key_reference
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key_reference`
 (
     id      BIGINT NOT NULL AUTO_INCREMENT,
     fkid    BIGINT NOT NULL,
@@ -308,7 +242,7 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_foreign_key_reference
     FOREIGN KEY (rcid, rctdbid, rctid) REFERENCES mdb_columns (id, cdbid, tid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_unique
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique`
 (
     uid      BIGINT NOT NULL AUTO_INCREMENT,
     tid      BIGINT NOT NULL,
@@ -318,7 +252,7 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_unique
     FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid)
 );
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique_columns`
 (
     id     BIGINT NOT NULL AUTO_INCREMENT,
     uid    BIGINT NOT NULL,
@@ -330,7 +264,7 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_unique_columns
     FOREIGN KEY (cid, ctdbid, ctid) REFERENCES mdb_columns (id, cdbid, tid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_constraints_checks
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 (
     id     BIGINT       NOT NULL AUTO_INCREMENT,
     tid    BIGINT       NOT NULL,
@@ -340,51 +274,47 @@ CREATE TABLE IF NOT EXISTS mdb_constraints_checks
     FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_concepts
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
     uri        text      not null,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
     created_by character varying(255),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_units
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
     uri        text      not null,
     name       VARCHAR(255),
     created    timestamp NOT NULL DEFAULT NOW(),
     created_by character varying(255),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_concepts
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
 (
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
     uri     text      NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    #FOREIGN KEY (uri) REFERENCES mdb_concepts (uri), -- does not work in MariaDB as of 10.5+
-    PRIMARY KEY (cDBID, tID, cID)
+    PRIMARY KEY (cDBID, tID, cID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_columns_units
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
 (
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
     uri     text      NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    #FOREIGN KEY (uri) REFERENCES mdb_concepts (uri), -- does not work in MariaDB as of 10.5+
-    PRIMARY KEY (cDBID, tID, cID)
+    PRIMARY KEY (cDBID, tID, cID),
+    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_view
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     vcid          bigint                 NOT NULL,
@@ -399,12 +329,11 @@ CREATE TABLE IF NOT EXISTS mdb_view
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
     created_by    character varying(255) NOT NULL,
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
-    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
-    PRIMARY KEY (id, vcid, vdbid)
+    PRIMARY KEY (id, vcid, vdbid),
+    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_view_columns
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 (
     id       BIGINT  NOT NULL AUTO_INCREMENT,
     cid      BIGINT  NOT NULL,
@@ -419,7 +348,7 @@ CREATE TABLE IF NOT EXISTS mdb_view_columns
     FOREIGN KEY (cid, cdbid, ctid) REFERENCES mdb_columns (ID, cDBID, tID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_identifiers
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 (
     id                bigint                               NOT NULL AUTO_INCREMENT,
     cid               bigint                               NOT NULL,
@@ -448,11 +377,10 @@ CREATE TABLE IF NOT EXISTS mdb_identifiers
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     UNIQUE (cid, dbid, qid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_related_identifiers
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     iid           bigint                 NOT NULL,
@@ -463,11 +391,10 @@ CREATE TABLE IF NOT EXISTS mdb_related_identifiers
     created_by    character varying(255) NOT NULL,
     last_modified timestamp,
     PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID)
+    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_creators
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     pid           bigint                 NOT NULL,
@@ -479,11 +406,10 @@ CREATE TABLE IF NOT EXISTS mdb_creators
     created_by    character varying(255) NOT NULL,
     last_modified timestamp              NOT NULL,
     PRIMARY KEY (id, pid),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (UserID),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_feed
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`
 (
     fDBID   bigint,
     fID     bigint,
@@ -491,57 +417,41 @@ CREATE TABLE IF NOT EXISTS mdb_feed
     fDataID bigint REFERENCES mdb_data (ID),
     created timestamp              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (fDBID, fID, fUserId, fDataID),
-    FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
-    FOREIGN KEY (fUserId) REFERENCES mdb_users (UserID)
+    FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_update
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_update`
 (
     uUserID character varying(255) NOT NULL,
     uDBID   bigint                 NOT NULL,
     created timestamp              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (uUserID, uDBID),
-    FOREIGN KEY (uUserID) REFERENCES mdb_users (UserID),
     FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_access
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_access`
 (
-    aUserID  character varying(255) REFERENCES mdb_users (UserID),
+    aUserID  character varying(255) NOT NULL,
     aDBID    bigint REFERENCES mdb_databases (id),
     attime   TIMESTAMP,
     download BOOLEAN,
-    created  timestamp NOT NULL DEFAULT NOW(),
+    created  timestamp              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (aUserID, aDBID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS mdb_have_access
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_have_access`
 (
-    user_id     character varying(255) REFERENCES mdb_users (UserID),
+    user_id     character varying(255)                  NOT NULL,
     database_id bigint REFERENCES mdb_databases (id),
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     timestamp                               NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, database_id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE VIEW IF NOT EXISTS mdb_invalid_tokens AS
-(
-SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
-FROM (SELECT `id`, `token_hash`, `creator`, `created`, `expires`, `last_used`
-      FROM `mdb_tokens` FOR SYSTEM_TIME ALL) as t
-WHERE NOT EXISTS(SELECT `token_hash`
-                 FROM mdb_tokens AS tt
-                 WHERE ROW_END > NOW()
-                   AND tt.`token_hash` = t.`token_hash`)
-GROUP BY `id`);
-
 COMMIT;
 BEGIN;
 
-INSERT INTO mdb_users (username, Main_Email, password, database_password)
-VALUES ('system', 'system@example.com', SHA1(RAND(512)), '*A8C67ABBEAE837AABCF49680A157D85D44A117E9');
-
-INSERT INTO mdb_licenses (identifier, uri)
+INSERT INTO `fda`.`mdb_licenses` (identifier, uri)
 VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('GPL-3.0-only', 'https://www.gnu.org/licenses/gpl-3.0-standalone.html'),
        ('BSD-3-Clause', 'https://opensource.org/licenses/BSD-3-Clause'),
@@ -550,16 +460,16 @@ VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
-INSERT INTO mdb_images (repository, tag, default_port, dialect, driver_class, jdbc_method)
+INSERT INTO `fda`.`mdb_images` (repository, tag, default_port, dialect, driver_class, jdbc_method)
 VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
-INSERT INTO mdb_images_environment_item (`key`, value, etype, iid)
+INSERT INTO `fda`.`mdb_images_environment_item` (`key`, value, etype, iid)
 VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
        ('MARIADB_ROOT_PASSWORD', 'mariadb', 'PRIVILEGED_PASSWORD', 1),
        ('MARIADB_USER', 'mariadb', 'USERNAME', 1),
        ('MARIADB_PASSWORD', 'mariadb', 'PASSWORD', 1);
 
-INSERT INTO mdb_images_date (iid, database_format, unix_format, example, has_time)
+INSERT INTO `fda`.`mdb_images_date` (iid, database_format, unix_format, example, has_time)
 VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
        (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true);
 

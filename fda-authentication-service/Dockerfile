@@ -1,6 +1,7 @@
 ###### FIRST STAGE ######
 FROM keycloak/keycloak:21.0 as config
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+LABEL service=authentication
 
 # Enable health and metrics support
 ENV KC_HEALTH_ENABLED=true

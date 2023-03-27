@@ -36,13 +36,13 @@ public class Database implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "UserID")
+            @JoinColumn(name = "created_by", referencedColumnName = "ID")
     })
     private User creator;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "UserID")
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID")
     })
     private User owner;
 
@@ -68,7 +68,7 @@ public class Database implements Serializable {
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "contact_person", referencedColumnName = "UserID")
+            @JoinColumn(name = "contact_person", referencedColumnName = "ID")
     })
     private User contact;
 

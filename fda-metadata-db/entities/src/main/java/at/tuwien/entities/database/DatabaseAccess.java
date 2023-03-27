@@ -32,7 +32,7 @@ public class DatabaseAccess {
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE})
     @JoinColumns({
-            @JoinColumn(name = "user_id", referencedColumnName = "userid", updatable = false, insertable = false)
+            @JoinColumn(name = "user_id", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User user;
 

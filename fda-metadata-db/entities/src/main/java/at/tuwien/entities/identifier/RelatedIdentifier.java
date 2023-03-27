@@ -50,7 +50,7 @@ public class RelatedIdentifier {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "UserID")
+            @JoinColumn(name = "created_by", referencedColumnName = "ID")
     })
     private User creator;
 

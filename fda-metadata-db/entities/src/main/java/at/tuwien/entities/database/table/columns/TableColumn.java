@@ -60,7 +60,7 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "UserID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
     })
     private User creator;
 

@@ -10,7 +10,6 @@ import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.*;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.entities.container.Container;
@@ -21,7 +20,6 @@ import at.tuwien.entities.database.table.columns.TableColumnType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.*;
@@ -43,7 +41,6 @@ public abstract class BaseUnitTest {
             .themeDark(false)
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_1_CREATED)
             .lastModified(USER_1_CREATED)
             .build();
@@ -70,7 +67,6 @@ public abstract class BaseUnitTest {
             .themeDark(false)
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .roles(Collections.singletonList(RoleType.ROLE_RESEARCHER))
             .created(USER_2_CREATED)
             .lastModified(USER_2_CREATED)
             .build();

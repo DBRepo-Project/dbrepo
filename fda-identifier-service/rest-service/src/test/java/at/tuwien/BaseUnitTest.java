@@ -13,7 +13,6 @@ import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.*;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -62,7 +61,6 @@ public abstract class BaseUnitTest {
             .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .email(USER_1_EMAIL)
-            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .emailVerified(USER_1_EMAIL_VERIFIED)
             .themeDark(USER_1_THEME_DARK)
             .created(USER_1_CREATED)
@@ -107,7 +105,6 @@ public abstract class BaseUnitTest {
             .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
             .email(USER_2_EMAIL)
-            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .emailVerified(USER_2_EMAIL_VERIFIED)
             .themeDark(USER_2_THEME_DARK)
             .created(USER_2_CREATED)
@@ -142,7 +139,6 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_3_THEME_DARK = false;
     public final static String USER_3_PASSWORD = "p455w0rdh45";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static RoleType USER_3_ROLE_TYPE = RoleType.ROLE_DATA_STEWARD;
     public final static Instant USER_3_CREATED = Instant.now()
             .minus(1, ChronoUnit.DAYS);
     public final static Instant USER_3_LAST_MODIFIED = USER_3_CREATED;
@@ -153,7 +149,6 @@ public abstract class BaseUnitTest {
             .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
             .email(USER_3_EMAIL)
-            .roles(List.of(RoleType.ROLE_DATA_STEWARD))
             .emailVerified(USER_3_EMAIL_VERIFIED)
             .themeDark(USER_3_THEME_DARK)
             .created(USER_3_CREATED)
