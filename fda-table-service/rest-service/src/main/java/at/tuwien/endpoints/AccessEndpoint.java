@@ -25,14 +25,13 @@ import java.security.Principal;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/access")
-public class AccessEndpoint extends AbstractEndpoint {
+public class AccessEndpoint {
 
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
 
     @Autowired
     public AccessEndpoint(DatabaseService databaseService, AccessService accessService, DatabaseMapper databaseMapper) {
-        super(accessService, databaseService);
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
     }
@@ -40,19 +39,15 @@ public class AccessEndpoint extends AbstractEndpoint {
     @GetMapping
     @Transactional
     @Timed(value = "access.check", description = "Time needed to check access to a table")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER')")
+    @PreAuthorize("hasAuthority('check-access')")
     @Operation(summary = "Check access to some table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> checkAccess(@NotBlank @PathVariable("id") Long containerId,
                                                          @NotBlank @PathVariable("databaseId") Long databaseId,
                                                          @NotBlank @PathVariable("tableId") Long tableId,
                                                          @NotNull Principal principal)
-            throws NotAllowedException, AccessDeniedException {
+            throws AccessDeniedException {
         log.debug("endpoint check access to database, containerId={}, databaseId={}, principal={}",
                 containerId, databaseId, principal);
-        if (!hasTablePermission(containerId, databaseId, tableId, "CHECK_ACCESS", principal)) {
-            log.error("Missing check access permission");
-            throw new NotAllowedException("Missing check access permission");
-        }
         final DatabaseAccess access = accessService.hasAccess(databaseId, tableId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);

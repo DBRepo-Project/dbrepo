@@ -77,7 +77,6 @@ public interface DatabaseMapper {
                 .get(0);
         return User.builder()
                 .username(username)
-                .databasePassword(password)
                 .build();
     }
 
@@ -105,7 +104,6 @@ public interface DatabaseMapper {
         final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
                 .append(user.getUsername())
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
-                .append(user.getDatabasePassword())
                 .append("';");
         log.trace("statement={}", statement);
         try {

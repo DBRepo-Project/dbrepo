@@ -58,24 +58,16 @@ public abstract class BaseUnitTest {
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
-            .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
-            .themeDark(USER_1_THEME_DARK)
-            .created(USER_1_CREATED)
-            .lastModified(USER_1_LAST_MODIFIED)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
-            .password(USER_1_PASSWORD)
             .email(USER_1_EMAIL)
-            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
-            .roles(List.of("ROLE_RESEARCHER"))
             .emailVerified(USER_1_EMAIL_VERIFIED)
-            .themeDark(USER_1_THEME_DARK)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -102,24 +94,16 @@ public abstract class BaseUnitTest {
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
-            .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
             .email(USER_2_EMAIL)
             .emailVerified(USER_2_EMAIL_VERIFIED)
-            .themeDark(USER_2_THEME_DARK)
-            .created(USER_2_CREATED)
-            .lastModified(USER_2_LAST_MODIFIED)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
-            .password(USER_2_PASSWORD)
             .email(USER_2_EMAIL)
-            .authorities(List.of(AUTHORITY_RESEARCHER_DTO))
-            .roles(List.of("ROLE_RESEARCHER"))
             .emailVerified(USER_2_EMAIL_VERIFIED)
-            .themeDark(USER_2_THEME_DARK)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -146,13 +130,9 @@ public abstract class BaseUnitTest {
 
     public final static User USER_3 = User.builder()
             .username(USER_3_USERNAME)
-            .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
             .email(USER_3_EMAIL)
             .emailVerified(USER_3_EMAIL_VERIFIED)
-            .themeDark(USER_3_THEME_DARK)
-            .created(USER_3_CREATED)
-            .lastModified(USER_3_LAST_MODIFIED)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()

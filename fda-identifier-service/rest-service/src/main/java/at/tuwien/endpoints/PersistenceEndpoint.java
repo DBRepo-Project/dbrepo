@@ -9,9 +9,7 @@ import at.tuwien.exception.IdentifierRequestException;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.mapper.IdentifierMapper;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +18,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,7 +30,7 @@ import java.util.regex.Pattern;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/pid")
-public class PersistenceEndpoint extends AbstractEndpoint {
+public class PersistenceEndpoint {
 
     private final EndpointConfig endpointConfig;
     private final IdentifierMapper identifierMapper;
@@ -39,9 +38,7 @@ public class PersistenceEndpoint extends AbstractEndpoint {
 
     @Autowired
     public PersistenceEndpoint(EndpointConfig endpointConfig, IdentifierMapper identifierMapper,
-                               IdentifierService identifierService, DatabaseService databaseService,
-                               UserService userService) {
-        super(userService, databaseService);
+                               IdentifierService identifierService) {
         this.endpointConfig = endpointConfig;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
@@ -49,6 +46,7 @@ public class PersistenceEndpoint extends AbstractEndpoint {
 
     @GetMapping("/{pid}")
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('find-identifier')")
     @Timed(value = "pid.find", description = "Time needed to find a persisted identifier")
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,

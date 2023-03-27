@@ -21,6 +21,7 @@ RUN mvn -q clean install > /dev/null
 ###### SECOND STAGE ######
 FROM mariadb:10.5 as runtime
 
+# install curl for prometheus metrics
 RUN apt-get update && apt-get install -y curl
 RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
 
@@ -29,6 +30,9 @@ ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV MARIADB_DATABASE="${METADATA_DB}"
 ENV MARIADB_ROOT_PASSWORD="${METADATA_PASSWORD}"
+
+# force lower-case table names
+COPY ./51-dbrepo.cnf /etc/mysql/mariadb.conf.d/51-dbrepo.cnf
 
 # Scripts are copied to /docker-entrypoint-initdb.d/ in docker-compose from analyze service
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent

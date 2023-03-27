@@ -47,11 +47,9 @@ public class DatabaseMapperTest extends BaseUnitTest {
         final UserBriefDto creator = response.getCreator();
         assertEquals(USER_1_ID, creator.getId());
         assertEquals(USER_1_USERNAME, creator.getUsername());
-        assertEquals(USER_1_THEME, creator.getThemeDark());
         final UserBriefDto owner = response.getOwner();
         assertEquals(USER_1_ID, owner.getId());
         assertEquals(USER_1_USERNAME, owner.getUsername());
-        assertEquals(USER_1_THEME, owner.getThemeDark());
     }
 
 }

@@ -22,10 +22,6 @@ public class UserDto {
     @JsonProperty("sub")
     private String id;
 
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    private List<GrantedAuthorityDto> authorities;
-
     @NotNull
     @JsonProperty("preferred_username")
     @Schema(example = "jcarberry", description = "Only contains lowercase characters")
@@ -34,13 +30,6 @@ public class UserDto {
     @Schema(example = "Josiah Carberry")
     private String name;
 
-    @JsonProperty("titles_before")
-    @Schema(example = "Prof.")
-    private String titlesBefore;
-
-    @JsonProperty("titles_after")
-    private String titlesAfter;
-
     @JsonProperty("given_name")
     @Schema(example = "Josiah")
     private String firstname;
@@ -48,23 +37,6 @@ public class UserDto {
     @JsonProperty("family_name")
     @Schema(example = "Carberry")
     private String lastname;
-
-    @Schema(example = "Brown University")
-    private String affiliation;
-
-    @Schema(example = "0000-0002-1825-0097")
-    private String orcid;
-
-    @NotNull
-    @Schema(description = "Roles of the user", example = "[ROLE_RESEARCHER]")
-    @org.springframework.data.annotation.Transient
-    private List<String> roles;
-
-    @NotNull
-    @JsonProperty("theme_dark")
-    @Schema(example = "true")
-    @org.springframework.data.annotation.Transient
-    private Boolean themeDark;
 
     @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
@@ -77,12 +49,6 @@ public class UserDto {
     @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient
     private List<ContainerDto> identifiers;
-
-    @JsonIgnore
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
-    private String password;
 
     @NotNull
     @Schema(example = "jcarberry@brown.edu")

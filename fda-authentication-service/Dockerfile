@@ -43,7 +43,7 @@ ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 
 ENV KC_DB=mariadb
-ENV KC_DB_URL=jdbc:mariadb://fda-metadata-db/keycloak
+ENV KC_DB_URL=jdbc:mariadb://fda-metadata-db/fda
 ENV KC_DB_USERNAME=${METADATA_USERNAME}
 ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
 ENV KC_HOSTNAME=localhost

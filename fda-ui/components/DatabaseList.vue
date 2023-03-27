@@ -5,7 +5,6 @@
       v-for="(container, idx) in containers"
       :key="idx"
       :to="link(container)"
-      :disabled="!container.database"
       flat
       tile>
       <v-divider class="mx-4" />
@@ -32,7 +31,7 @@
         <v-btn
           small
           secondary
-          :loading="container.database.loading"
+          :loading="container?.loading"
           @click.stop="initDatabase(container)">
           Start
         </v-btn>
@@ -53,6 +52,8 @@
 
 <script>
 import { formatCreators, formatUser, formatYearUTC, isResearcher } from '@/utils'
+import { listContainers, startContainer } from '@/api/container'
+import { createDatabase } from '@/api/database'
 
 export default {
   data () {
@@ -64,10 +65,6 @@ export default {
       containers: [],
       searchQuery: null,
       limit: 100,
-      createDatabaseDto: {
-        name: null,
-        is_public: true
-      },
       items: [
         { text: 'Databases', to: '/container', activeClass: '' }
       ],
@@ -109,13 +106,13 @@ export default {
       return creators || this.formatCreator(container.creator)
     },
     canInit (container) {
-      if (!this.token) {
+      if (!this.user) {
         return false
       }
-      if (container.creator.username !== this.user.username) {
+      if (container.creator.sub !== this.user.id) {
         return false
       }
-      return !container.database.id && !this.loadingDatabases
+      return !container.database
     },
     hasDatabase (container) {
       return container.database
@@ -128,13 +125,13 @@ export default {
         .then(() => this.createDatabase(container))
     },
     identifierCreated (container) {
-      if (!container.database.identifier) {
+      if (!container || !container.database || !container.database.identifier) {
         return null
       }
       return formatYearUTC(container.database.identifier.created)
     },
     identifierDescription (container) {
-      if (!container.database.identifier) {
+      if (!container || !container.database || !container.database.identifier) {
         return null
       }
       return container.database.identifier.description
@@ -143,7 +140,7 @@ export default {
       this.createDbDialog = false
       try {
         this.loadingContainers = true
-        const res = await this.$axios.get(`/api/container?limit=${this.limit}`)
+        const res = await listContainers(this.limit)
         this.containers = res.data
         console.debug('containers', this.containers)
         this.error = false
@@ -157,18 +154,35 @@ export default {
     },
     async startContainer (container) {
       try {
-        container.database.loading = true
-        const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
+        container.loading = true
+        const res = await startContainer(this.token, container.id)
         console.debug('started container', res.data)
         this.error = false
       } catch (error) {
+        console.error('start container', error)
         const { status } = error.response
         if (status !== 409) {
           this.error = true
           this.$toast.error('Failed to start container')
         }
       }
-      container.database.loading = false
+      container.loading = false
+    },
+    async createDatabase (container) {
+      try {
+        container.loading = true
+        const res = await createDatabase(this.token, container.id)
+        container.database = res.data
+        console.debug('created database', container.database)
+        this.error = false
+      } catch (error) {
+        console.error('create database', error)
+        const { message } = error.response
+        this.error = true
+        console.error('Failed to create database', error)
+        this.$toast.error(`${message}`)
+      }
+      container.loading = false
     },
     link (container) {
       if (!container.database || !container.database.id) {

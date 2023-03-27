@@ -91,7 +91,7 @@ public class ContainerEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "container.modify", description = "Time needed to modify the container state")
-    @PreAuthorize("hasRole('ROLE_RESEARCHER') or hasRole('ROLE_DEVELOPER')")
+    @PreAuthorize("hasAuthority('modify-container-state')")
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
                                                     @Valid @RequestBody ContainerChangeDto changeDto,
@@ -101,7 +101,7 @@ public class ContainerEndpoint {
         log.debug("endpoint modify container, containerId={}, changeDto={}, principal={}", containerId, changeDto, principal);
         final User user = userService.findByUsername(principal.getName());
         final Container container = containerService.find(containerId);
-        if (!(container.getCreator().getId().equals(user.getId()) || user.getRoles().stream().anyMatch(r -> r.name().equals("ROLE_DEVELOPER")))) {
+        if (!(container.getCreator().getId().equals(user.getId()))) {
             log.error("Failed to modify container because it is not owned '{}' by the current user {} or is not developer", container.getCreator().getUsername(), user.getUsername());
             throw new NotAllowedException("Failed to modify container because it is not owned by the current user or is not developer");
         }
@@ -122,7 +122,7 @@ public class ContainerEndpoint {
     @DeleteMapping("/{id}")
     @Transactional
     @Timed(value = "container.delete", description = "Time needed to delete the container")
-    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
+    @PreAuthorize("hasAuthority('delete-container')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull Principal principal) throws ContainerNotFoundException,

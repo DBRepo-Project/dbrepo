@@ -77,11 +77,7 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .created(USER_1_CREATED)
-            .lastModified(USER_1_CREATED)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -89,8 +85,6 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_1_PASSWORD)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -115,11 +109,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .created(USER_2_CREATED)
-            .lastModified(USER_2_CREATED)
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -144,11 +134,7 @@ public abstract class BaseUnitTest {
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
-            .created(USER_3_CREATED)
-            .lastModified(USER_3_CREATED)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
@@ -174,8 +160,6 @@ public abstract class BaseUnitTest {
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .emailVerified(USER_4_EMAIL_VERIFIED)
-            .themeDark(USER_4_THEME_DARK)
-            .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
             .build();
 

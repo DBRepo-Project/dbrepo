@@ -5,8 +5,6 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,15 +23,13 @@ import java.security.Principal;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/column/{columnId}")
-public class TableColumnEndpoint extends AbstractEndpoint {
+public class TableColumnEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
 
     @Autowired
-    public TableColumnEndpoint(TableMapper tableMapper, TableService tableService, DatabaseService databaseService,
-                               AccessService accessService) {
-        super(accessService, databaseService);
+    public TableColumnEndpoint(TableMapper tableMapper, TableService tableService) {
         this.tableMapper = tableMapper;
         this.tableService = tableService;
     }
@@ -48,14 +44,10 @@ public class TableColumnEndpoint extends AbstractEndpoint {
                                             @NotNull @PathVariable("columnId") Long columnId,
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
                                             @NotNull Principal principal) throws NotAllowedException,
-            AccessDeniedException, TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
             ContainerNotFoundException, UnitNotFoundException, ConceptNotFoundException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
-        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_UPDATE", principal)) {
-            log.error("Missing table update permission");
-            throw new NotAllowedException("Missing table update permission");
-        }
         final TableColumn column = tableService.update(containerId, databaseId, tableId, columnId, updateDto, principal);
         log.info("Updated table semantics of table with id {} and database with id {}", tableId, databaseId);
         final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);

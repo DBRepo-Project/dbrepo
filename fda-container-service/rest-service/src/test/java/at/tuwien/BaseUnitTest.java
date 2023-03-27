@@ -9,9 +9,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
-import at.tuwien.entities.user.RoleType;
 import at.tuwien.entities.user.User;
-import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.model.HealthCheck;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -49,11 +47,7 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
-            .affiliation(USER_1_AFFILIATION)
-            .themeDark(USER_1_THEME_DARK)
-            .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .roles(List.of(RoleType.ROLE_RESEARCHER))
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -61,11 +55,6 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(USER_1_EMAIL_VERIFIED)
-            .affiliation(USER_1_AFFILIATION)
-            .themeDark(USER_1_THEME_DARK)
-            .password(USER_1_PASSWORD)
-            .roles(List.of("ROLE_RESEARCHER"))
-            .authorities(List.of(RESEARCHER_AUTHORITY_DTO))
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -96,7 +85,6 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_2_THEME_DARK = false;
     public final static String USER_2_PASSWORD = "p455w0rdh45";
     public final static String USER_2_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static RoleType USER_2_ROLE_TYPE = RoleType.ROLE_DEVELOPER;
     public final static GrantedAuthority USER_2_AUTHORITY = new SimpleGrantedAuthority("ROLE_DEVELOPER");
 
     public final static User USER_2 = User.builder()
@@ -104,10 +92,7 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .emailVerified(USER_2_EMAIL_VERIFIED)
-            .themeDark(USER_2_THEME_DARK)
-            .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .roles(List.of(USER_2_ROLE_TYPE))
             .build();
 
     public final static UserDetails USER_2_DETAILS = UserDetailsDto.builder()
@@ -133,7 +118,6 @@ public abstract class BaseUnitTest {
     public final static Boolean USER_3_THEME_DARK = false;
     public final static String USER_3_PASSWORD = "p455w0rdh45";
     public final static String USER_3_DATABASE_PASSWORD = "*A8C67ABBEAE837AABCF49680A157D85D44A117E9";
-    public final static RoleType USER_3_ROLE_TYPE = RoleType.ROLE_DATA_STEWARD;
     public final static GrantedAuthority USER_3_AUTHORITY = new SimpleGrantedAuthority("ROLE_DATA_STEWARD");
 
     public final static User USER_3 = User.builder()
@@ -141,10 +125,7 @@ public abstract class BaseUnitTest {
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .emailVerified(USER_3_EMAIL_VERIFIED)
-            .themeDark(USER_3_THEME_DARK)
-            .password(USER_3_PASSWORD)
             .databasePassword(USER_3_DATABASE_PASSWORD)
-            .roles(List.of(USER_3_ROLE_TYPE))
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
@@ -176,10 +157,7 @@ public abstract class BaseUnitTest {
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .emailVerified(USER_4_EMAIL_VERIFIED)
-            .themeDark(USER_4_THEME_DARK)
-            .password(USER_4_PASSWORD)
             .databasePassword(USER_4_DATABASE_PASSWORD)
-            .roles(List.of())
             .build();
 
     public final static String USER_5_ID = "d2f3a8f4-c7fe-49e8-9d14-6dad0f6b9406";

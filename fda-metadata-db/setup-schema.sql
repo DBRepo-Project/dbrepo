@@ -1,5 +1,3 @@
-CREATE DATABASE IF NOT EXISTS `keycloak`;
-
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`

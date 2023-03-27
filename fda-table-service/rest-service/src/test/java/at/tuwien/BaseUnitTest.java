@@ -38,19 +38,13 @@ public abstract class BaseUnitTest {
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_1_PASSWORD)
             .databasePassword(USER_1_DATABASE_PASSWORD)
-            .created(USER_1_CREATED)
-            .lastModified(USER_1_CREATED)
             .build();
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password("password")
             .build();
 
     public final static String USER_2_ID = "0153f998-bd4c-4154-993e-75c355499044";
@@ -64,19 +58,13 @@ public abstract class BaseUnitTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password(USER_2_PASSWORD)
             .databasePassword(USER_2_DATABASE_PASSWORD)
-            .created(USER_2_CREATED)
-            .lastModified(USER_2_CREATED)
             .build();
     public final static UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .emailVerified(true)
-            .themeDark(false)
-            .password("password")
             .build();
 
     public final static String DATABASE_NET = "fda-userdb";

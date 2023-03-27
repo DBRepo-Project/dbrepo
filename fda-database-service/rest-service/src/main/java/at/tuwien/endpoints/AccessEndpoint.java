@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,22 +28,20 @@ import java.security.Principal;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/container/{id}/database/{databaseId}/access")
-public class AccessEndpoint extends AbstractEndpoint {
+public class AccessEndpoint {
 
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
 
     @Autowired
-    public AccessEndpoint(DatabaseAccessRepository databaseAccessRepository, DatabaseService databaseService,
-                          ContainerService containerService, AccessService accessService,
-                          DatabaseMapper databaseMapper) {
-        super(databaseService, containerService, databaseAccessRepository);
+    public AccessEndpoint(AccessService accessService, DatabaseMapper databaseMapper) {
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
     }
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasAuthority('create-access')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -52,10 +51,6 @@ public class AccessEndpoint extends AbstractEndpoint {
             DatabaseMalformedException {
         log.debug("endpoint give access to database, containerId={}, databaseId={}, accessDto={}, principal={}",
                 containerId, databaseId, accessDto, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "GIVE_ACCESS", principal)) {
-            log.error("Missing give access permission");
-            throw new NotAllowedException("Missing give access permission");
-        }
         try {
             accessService.find(databaseId, accessDto.getUsername());
             log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
@@ -70,6 +65,7 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @PutMapping("/{username}")
     @Transactional
+    @PreAuthorize("hasAuthority('modify-access')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -80,10 +76,6 @@ public class AccessEndpoint extends AbstractEndpoint {
             QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify access to database, containerId={}, databaseId={}, username={}, accessDto={}, principal={}",
                 containerId, databaseId, username, accessDto, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "MODIFY_ACCESS", principal)) {
-            log.error("Missing modify access permission");
-            throw new NotAllowedException("Missing modify access permission");
-        }
         accessService.find(databaseId, username);
         accessService.update(containerId, databaseId, username, accessDto);
         return ResponseEntity.accepted()
@@ -92,6 +84,7 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @GetMapping
     @Transactional
+    @PreAuthorize("hasAuthority('check-access')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
                                                   @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -99,10 +92,6 @@ public class AccessEndpoint extends AbstractEndpoint {
             AccessDeniedException {
         log.debug("endpoint check access to database, containerId={}, databaseId={}, principal={}",
                 containerId, databaseId, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "CHECK_ACCESS", principal)) {
-            log.error("Missing modify access permission");
-            throw new NotAllowedException("Missing modify access permission");
-        }
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
@@ -111,6 +100,7 @@ public class AccessEndpoint extends AbstractEndpoint {
 
     @DeleteMapping("/{username}")
     @Transactional
+    @PreAuthorize("hasAuthority('modify-access')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -120,10 +110,6 @@ public class AccessEndpoint extends AbstractEndpoint {
             QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint revoke access to database, containerId={}, databaseId={}, username={}, principal={}",
                 containerId, databaseId, username, principal);
-        if (!hasDatabasePermission(containerId, databaseId, "REVOKE_ACCESS", principal)) {
-            log.error("Missing revoke access permission");
-            throw new NotAllowedException("Missing revoke access permission");
-        }
         accessService.find(databaseId, username);
         accessService.delete(containerId, databaseId, username);
         return ResponseEntity.accepted()

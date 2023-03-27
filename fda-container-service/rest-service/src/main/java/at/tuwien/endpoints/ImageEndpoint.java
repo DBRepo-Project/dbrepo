@@ -57,7 +57,7 @@ public class ImageEndpoint {
     @PostMapping
     @Transactional
     @Timed(value = "image.create", description = "Time needed to create a container image")
-    @PreAuthorize("hasRole('ROLE_DEVELOPER')")
+    @PreAuthorize("hasAuthority('create-image')")
     @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            @NotNull Principal principal) throws ImageNotFoundException,
@@ -91,7 +91,7 @@ public class ImageEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "image.update", description = "Time needed to update a container image")
-    @PreAuthorize("hasRole('DEVELOPER')")
+    @PreAuthorize("hasAuthority('modify-image')")
     @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id,
                                            @RequestBody @Valid ImageChangeDto changeDto,
@@ -108,7 +108,7 @@ public class ImageEndpoint {
     @DeleteMapping("/{id}")
     @Transactional
     @Timed(value = "image.delete", description = "Time needed to delete a container image")
-    @PreAuthorize("hasRole('DEVELOPER')")
+    @PreAuthorize("hasAuthority('delete-image')")
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable Long imageId,
                                     @NotNull Principal principal) throws ImageNotFoundException {

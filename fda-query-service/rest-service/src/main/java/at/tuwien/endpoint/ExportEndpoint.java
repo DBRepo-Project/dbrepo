@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,19 +24,18 @@ import java.time.Instant;
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/export")
-public class ExportEndpoint extends AbstractEndpoint {
+public class ExportEndpoint {
 
     private final QueryService queryService;
 
     @Autowired
-    public ExportEndpoint(QueryService queryService, DatabaseService databaseService, AccessService accessService,
-                          IdentifierService identifierService, TableService tableService, QueryConfig queryConfig) {
-        super(tableService, accessService, databaseService, identifierService, queryConfig);
+    public ExportEndpoint(QueryService queryService) {
         this.queryService = queryService;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('export-table')")
     @Timed(value = "table.export", description = "Time needed to export table data")
     @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
@@ -45,13 +45,9 @@ public class ExportEndpoint extends AbstractEndpoint {
                                                       Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, NotAllowedException, QueryMalformedException, UserNotFoundException {
+            FileStorageException, QueryMalformedException, UserNotFoundException {
         log.debug("endpoint export table, id={}, databaseId={}, tableId={}, timestamp={}, principal={}", containerId, databaseId,
                 tableId, timestamp, principal);
-        if (!hasTablePermission(containerId, databaseId, tableId, "TABLE_EXPORT", principal)) {
-            log.error("Missing data export permission");
-            throw new NotAllowedException("Missing data export permission");
-        }
         final HttpHeaders headers = new HttpHeaders();
         final ExportResource resource = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, principal);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");
