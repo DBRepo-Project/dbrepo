@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
@@ -187,6 +188,39 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void update_doiChange_fails() {
+
+        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).doi("10.000/thisisadoi").build();
+        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            identifierService.update(IDENTIFIER_1_ID, identifierDto);
+        });
+    }
+
+    @Test
+    public void update_notVisibleByEveryone_fails() {
+
+        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).build();
+        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.TRUSTED).build();
+        IDENTIFIER_1_DTO.setVisibility(VisibilityTypeDto.TRUSTED);
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            identifierService.update(IDENTIFIER_1_ID, identifierDto);
+        });
+    }
+
+    @Test
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
@@ -278,6 +312,24 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
+            identifierService.delete(IDENTIFIER_1_ID);
+        });
+    }
+
+    @Test
+    public void delete_withDoi_fails() {
+
+        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).doi("10.000/thisisadoi").build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+        doNothing()
+                .when(identifierRepository)
+                .delete(IDENTIFIER_1);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
             identifierService.delete(IDENTIFIER_1_ID);
         });
     }
