@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Profile("!doi")
 @Service
 public class IdentifierServiceImpl implements IdentifierService {
 
@@ -180,9 +179,11 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* context */
         final Context context = new Context();
         if(identifier.getDoi() != null) {
-            context.setVariable("doi", identifier.getDoi());
+            context.setVariable("identifierType", "DOI");
+            context.setVariable("identifier", identifier.getDoi());
         } else {
-            context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+            context.setVariable("identifierType", "PID");
+            context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
         }
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("title", identifier.getTitle());
@@ -207,7 +208,13 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        if(identifier.getDoi() != null) {
+            context.setVariable("identifierType", "doi");
+            context.setVariable("identifier", identifier.getDoi());
+        } else {
+            context.setVariable("identifierType", "url");
+            context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        }
         context.setVariable("creator", identifier.getCreator());
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("title", identifier.getTitle());
