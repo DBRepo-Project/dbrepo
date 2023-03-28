@@ -109,10 +109,8 @@ public interface IdentifierService {
      * @param data         The metadata.
      * @return The updated identifier if successful.
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
-     * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long identifierId, IdentifierDto data) throws IdentifierNotFoundException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException;
+    Identifier update(Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the database, but sets it as deleted.

@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.DataCiteConfig;
@@ -17,11 +18,14 @@ import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.repository.jpa.RelatedIdentifierRepository;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -32,29 +36,25 @@ import org.thymeleaf.TemplateEngine;
 
 import javax.transaction.Transactional;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Primary
 @Profile("doi")
 @Service
-public class DataCiteIdentifierServiceImpl extends IdentifierServiceImpl {
+public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     private final DataCiteConfig dataCiteConfig;
     private final EndpointConfig endpointConfig;
     private final DataCiteMapper dataCiteMapper;
     private final RestTemplateBuilder restTemplateBuilder;
     private final IdentifierRepository identifierRepository;
+    private final IdentifierService identifierService;
 
     public DataCiteIdentifierServiceImpl(DataCiteConfig dataCiteConfig, DataCiteMapper dataCiteMapper,
-                                         RestTemplateBuilder restTemplateBuilder,
-                                         UserService userService, EndpointConfig endpointConfig,
-                                         TemplateEngine templateEngine, DatabaseService databaseService,
-                                         IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
-                                         IdentifierRepository identifierRepository,
-                                         IdentifierIdxRepository identifierIdxRepository,
-                                         RelatedIdentifierRepository relatedIdentifierRepository) {
-        super(userService, endpointConfig, templateEngine, databaseService, identifierMapper, queryServiceGateway,
-                identifierRepository, identifierIdxRepository, relatedIdentifierRepository);
+                                         RestTemplateBuilder restTemplateBuilder, EndpointConfig endpointConfig,
+                                         IdentifierRepository identifierRepository, IdentifierServiceImpl identifierService) {
         this.dataCiteConfig = dataCiteConfig;
         this.dataCiteMapper = dataCiteMapper;
         this.restTemplateBuilder =
@@ -62,15 +62,31 @@ public class DataCiteIdentifierServiceImpl extends IdentifierServiceImpl {
                         .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
         this.endpointConfig = endpointConfig;
         this.identifierRepository = identifierRepository;
+        this.identifierService = identifierService;
     }
 
     @Override
-    @Transactional
+    public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+        return identifierService.findAll(databaseId, queryId);
+    }
+
+    @Override
+    public Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+        return identifierService.find(databaseId, queryId);
+    }
+
+    @Override
+    public List<Identifier> findAll() {
+        return identifierService.findAll();
+    }
+
+    @Override
+    @Transactional(rollbackOn = {Exception.class})
     public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException {
-        Identifier identifier = super.create(data, principal, authorization);
+        Identifier identifier = identifierService.create(data, principal, authorization);
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         HttpHeaders headers = new HttpHeaders();
@@ -103,8 +119,10 @@ public class DataCiteIdentifierServiceImpl extends IdentifierServiceImpl {
             identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
             this.identifierRepository.save(identifier);
         } catch(HttpClientErrorException e) {
+            log.error("Invalid DOI metadata.", e);
             throw new IdentifierRequestException("Invalid DOI metadata.", e);
         } catch(RestClientException e) {
+            log.error("Could not fulfil request to DataCite server.", e);
             throw new InternalError("Could not fulfil request to DataCite server.", e);
         }
 
@@ -112,9 +130,33 @@ public class DataCiteIdentifierServiceImpl extends IdentifierServiceImpl {
     }
 
     @Override
+    public Identifier find(Long identifierId) throws IdentifierNotFoundException {
+        return identifierService.find(identifierId);
+    }
+
+    @Override
+    public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
+        return identifierService.exportMetadata(id);
+    }
+
+    @Override
+    public String exportBibliography(Long id, BibliographyTypeDto style)
+            throws IdentifierNotFoundException, IdentifierRequestException {
+        return identifierService.exportBibliography(id, style);
+    }
+
+    @Override
+    public InputStreamResource exportResource(Long identifierId)
+            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
+            IdentifierRequestException {
+        return identifierService.exportResource(identifierId);
+    }
+
+    @Override
+    @Transactional(rollbackOn = {Exception.class})
     public Identifier update(Long identifierId, IdentifierDto data)
             throws IdentifierNotFoundException, IdentifierRequestException {
-        Identifier identifier = super.update(identifierId, data);
+        Identifier identifier = identifierService.update(identifierId, data);
         if(identifier.getDoi() == null) {
             return identifier;
         }
@@ -152,12 +194,19 @@ public class DataCiteIdentifierServiceImpl extends IdentifierServiceImpl {
             identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
             this.identifierRepository.save(identifier);
         } catch(HttpClientErrorException e) {
+            log.error("Invalid DOI metadata.", e);
             throw new IdentifierRequestException("Invalid DOI metadata.", e);
         } catch(RestClientException e) {
+            log.error("Could not fulfil request to DataCite server.", e);
             throw new InternalError("Could not fulfil request to DataCite server.", e);
         }
 
         return identifier;
+    }
+
+    @Override
+    public void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException {
+        identifierService.delete(identifierId);
     }
 
 }
