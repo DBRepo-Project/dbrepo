@@ -179,7 +179,11 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        if(identifier.getDoi() != null) {
+            context.setVariable("doi", identifier.getDoi());
+        } else {
+            context.setVariable("doi", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
+        }
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("title", identifier.getTitle());
         context.setVariable("publisher", identifier.getPublisher());
