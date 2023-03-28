@@ -81,7 +81,8 @@ export default {
     logo: process.env.LOGO || '/logo.png',
     mailVerify: process.env.MAIL_VERIFY || false,
     tokenMax: process.env.TOKEN_MAX || 5,
-    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic'
+    elasticPassword: process.env.ELASTIC_PASSWORD || 'elastic',
+    doiUrl: process.env.DOI_URL || 'https://doi.org'
   },
 
   proxy: {

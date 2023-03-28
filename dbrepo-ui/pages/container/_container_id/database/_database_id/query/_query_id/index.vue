@@ -84,7 +84,7 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <a :href="`${baseUrl}/pid/${query.identifier.id}`">{{ baseUrl }}/pid/{{ query.identifier.id }}</a>
+                <Banner :identifier="query.identifier" />
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
@@ -220,13 +220,15 @@
 <script>
 import Persist from '@/components/dialogs/Persist'
 import Citation from '@/components/identifier/Citation'
+import Banner from '@/components/identifier/Banner'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 
 export default {
   name: 'QueryShow',
   components: {
     Persist,
-    Citation
+    Citation,
+    Banner
   },
   data () {
     return {

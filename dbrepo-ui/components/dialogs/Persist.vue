@@ -64,19 +64,6 @@
                 required />
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col>
-              <v-select
-                id="visibility"
-                v-model="visibility"
-                name="visibility"
-                label="Visibility *"
-                :items="['Public']"
-                disabled
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
           <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
@@ -109,7 +96,7 @@
                 label="ORCID" />
             </v-col>
             <v-col cols="1" class="mt-5">
-              <v-btn icon x-small @click="deleteCreator(i)">
+              <v-btn v-if="!i" icon x-small @click="deleteCreator(i)">
                 <v-icon>mdi-close</v-icon>
               </v-btn>
             </v-col>
@@ -225,10 +212,15 @@ export default {
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),
         license: null,
-        visibility: 'everyone',
         type: this.type,
-        doi: null,
-        creators: [],
+        creators: [
+          {
+            firstname: null,
+            lastname: null,
+            affiliation: null,
+            orcid: null
+          }
+        ],
         related_identifiers: []
       },
       relatedTypes: [
