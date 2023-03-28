@@ -146,8 +146,6 @@ services:
     depends_on:
       fda-discovery-service:
         condition: service_healthy
-      fda-broker-service:
-        condition: service_started
       fda-metadata-db:
         condition: service_healthy
     logging:
@@ -198,7 +196,7 @@ services:
       fda-search-service:
         condition: service_started
       fda-broker-service:
-        condition: service_started
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -302,6 +300,8 @@ services:
       - .env
     depends_on:
       fda-discovery-service:
+        condition: service_healthy
+      fda-authentication-service:
         condition: service_healthy
     volumes:
       - broker-service-data:/var/lib/rabbitmq/
