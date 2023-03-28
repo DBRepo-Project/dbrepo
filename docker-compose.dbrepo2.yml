@@ -187,6 +187,8 @@ services:
       core:
     env_file:
       - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=doi
     depends_on:
       dbrepo-query-service:
         condition: service_healthy
