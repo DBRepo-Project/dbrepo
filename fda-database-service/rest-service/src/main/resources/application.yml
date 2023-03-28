@@ -43,4 +43,6 @@ fda:
     username: elastic
     password: "${ELASTIC_PASSWORD}"
   ready.path: /ready
+  client_secret: "${CLIENT_SECRET}"
+  client_id: "${CLIENT_ID}"
   gateway.endpoint: http://gateway-service:9095

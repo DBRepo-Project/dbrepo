@@ -73,22 +73,6 @@ export default {
     }
   },
   methods: {
-    async createDatabase (container) {
-      try {
-        container.database.loading = true
-        this.createDatabaseDto.name = container.name
-        const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
-        container.database = res.data
-        console.debug('created database', container.database)
-        this.error = false
-      } catch (error) {
-        const { message } = error.response
-        this.error = true
-        console.error('Failed to create database', error)
-        this.$toast.error(`${message}`)
-      }
-      container.database.loading = false
-    },
     closed (event) {
       this.createDbDialog = false
       if (event.success) {

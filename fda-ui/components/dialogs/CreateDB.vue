@@ -55,6 +55,8 @@
 
 <script>
 const { notEmpty } = require('@/utils')
+const { createContainer, startContainer } = require('@/api/container')
+const { createDatabase } = require('@/api/database')
 
 export default {
   data () {
@@ -142,11 +144,12 @@ export default {
       this.createContainerDto.tag = this.engine.tag
       try {
         this.loading = true
-        const res = await this.$axios.post('/api/container', this.createContainerDto, this.config)
+        const res = await createContainer(this.token, this.createContainerDto)
         this.container = res.data
         console.debug('created container', this.container)
         this.error = false
-      } catch (err) {
+      } catch (error) {
+        console.error('create container', error)
         this.error = true
         this.$toast.error('Failed to create container')
       }
@@ -155,7 +158,7 @@ export default {
     async startContainer (container) {
       try {
         this.loading = true
-        const res = await this.$axios.put(`/api/container/${container.id}`, { action: 'start' }, this.config)
+        const res = await startContainer(this.token, container.id)
         console.debug('started container', res.data)
         this.error = false
       } catch (error) {
@@ -170,13 +173,15 @@ export default {
     async createDatabase (container) {
       try {
         this.loading = true
+        this.createDatabaseDto.id = container.id
         this.createDatabaseDto.name = container.name
-        const res = await this.$axios.post(`/api/container/${container.id}/database`, this.createDatabaseDto, this.config)
+        const res = await createDatabase(this.token, this.createDatabaseDto)
         container.database = res.data
         console.debug('created database', container.database)
         this.error = false
         this.$emit('close', { success: true })
-      } catch (err) {
+      } catch (error) {
+        console.error('create database', error)
         this.error = true
         this.$toast.error('Failed to create database')
       }

@@ -68,12 +68,7 @@
           <v-card-text>
             <v-row dense>
               <v-col>
-                <v-select
-                  v-model="roles"
-                  :items="roles"
-                  multiple
-                  chips
-                  disabled />
+                <pre>{{ roles.join(', ') }}</pre>
               </v-col>
             </v-row>
           </v-card-text>
@@ -84,7 +79,7 @@
 </template>
 
 <script>
-import { UserToolbar } from '@/components/UserToolbar'
+import UserToolbar from '@/components/UserToolbar'
 import { tokenToRoles } from '@/api/user'
 
 export default {

@@ -15,6 +15,13 @@ public class GatewayConfig {
     @Value("${fda.gateway.endpoint}")
     private String gatewayEndpoint;
 
+    @Value("${fda.client_secret}")
+    private String clientSecret;
+
+    @Value("${fda.client_id}")
+    private String clientId;
+
+
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 

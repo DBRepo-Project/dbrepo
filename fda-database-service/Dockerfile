@@ -31,6 +31,8 @@ ENV SEARCH_USERNAME=elastic
 ENV SEARCH_PASSWORD=elastic
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV LOG_LEVEL=debug
+ENV CLIENT_SECRET=client-secret
+ENV CLIENT_ID=dbrepo-client
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

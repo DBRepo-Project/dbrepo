@@ -55,20 +55,12 @@ function formatUser (user) {
     return null
   }
   if (!('firstname' in user) || !('lastname' in user) || user.firstname === null || user.lastname === null) {
-    if (!('username' in user)) {
+    if (!('preferred_username' in user)) {
       return null
     }
-    return user.username
+    return user.preferred_username
   }
-  let name = ''
-  if (user.titles_before) {
-    name += user.titles_before + ' '
-  }
-  name += user.firstname + ' ' + user.lastname
-  if (user.titles_after) {
-    name += ' ' + user.titles_after
-  }
-  return name
+  return user.firstname + ' ' + user.lastname
 }
 
 function formatDateUTC (str) {

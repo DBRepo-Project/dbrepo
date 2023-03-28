@@ -77,6 +77,7 @@ public interface DatabaseMapper {
                 .get(0);
         return User.builder()
                 .username(username)
+                .databasePassword(password)
                 .build();
     }
 

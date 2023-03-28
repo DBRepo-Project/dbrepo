@@ -9,7 +9,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")

@@ -14,7 +14,7 @@
       </v-card-title>
       <v-card-subtitle v-if="!hasIdentifier(container)" class="db-subtitle" v-text="formatCreator(container.creator)" />
       <v-card-subtitle v-if="hasIdentifier(container)" class="db-subtitle" v-text="formatCreatorz(container)" />
-      <v-card-text class="db-description">
+      <v-card-text v-if="hasDatabase(container)" class="db-description">
         <div class="db-tags">
           <v-chip v-if="hasDatabase(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
           <v-chip v-if="hasDatabase(container) && !container.database.is_public" small color="red" outlined>Private</v-chip>
@@ -36,7 +36,6 @@
           Start
         </v-btn>
       </v-card-text>
-      <v-divider v-if="idx - 1 === databases.length" class="mx-4" />
     </v-card>
     <v-toolbar v-if="false" flat>
       <v-toolbar-title>
@@ -171,7 +170,7 @@ export default {
     async createDatabase (container) {
       try {
         container.loading = true
-        const res = await createDatabase(this.token, container.id)
+        const res = await createDatabase(this.token, container)
         container.database = res.data
         console.debug('created database', container.database)
         this.error = false

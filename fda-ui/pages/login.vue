@@ -56,14 +56,14 @@
 </template>
 
 <script>
-import { authenticate, tokenToUser } from '@/api/user'
+import { authenticate, refresh, tokenToExp, tokenToUser } from '@/api/user'
 export default {
   data () {
     return {
       loading: false,
       error: false, // XXX: `error` is never changed
       valid: false,
-      username: 'mweise',
+      username: null,
       password: null
     }
   },
@@ -73,6 +73,9 @@ export default {
     },
     token () {
       return this.$store.state.token
+    },
+    refreshToken () {
+      return this.$store.state.refreshToken
     },
     user () {
       return this.$store.state.user
@@ -107,11 +110,15 @@ export default {
         this.loading = true
         const res = await authenticate(this.clientSecret, this.username, this.password)
         console.debug('login user', res.data)
-        this.$store.commit('SET_TOKEN', res.data.access_token)
+        // eslint-disable-next-line camelcase
+        const { access_token, refresh_token } = res.data
+        this.$store.commit('SET_TOKEN', access_token)
+        this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
         const user = tokenToUser(this.token)
         console.debug('user', user)
         this.$store.commit('SET_USER', user)
         this.$vuetify.theme.dark = user?.theme_dark || false
+        await this.refreshTokenIfNecessary()
         await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
         console.error('Failed to login', error)
@@ -128,6 +135,36 @@ export default {
         }
         this.loading = false
       }
+    },
+    async refreshTokenIfNecessary () {
+      if (!this.token) {
+        return
+      }
+      const exp = tokenToExp(this.token)
+      if (exp > new Date()) {
+        console.debug('token will be refreshed', exp, 'timeout is', exp - new Date())
+        setTimeout(() => this.refreshTokenIfNecessary(), exp - new Date())
+        return
+      }
+      const refreshExp = tokenToExp(this.refreshToken)
+      if (refreshExp > new Date()) {
+        try {
+          const res = await refresh(this.clientSecret, this.refreshToken)
+          // eslint-disable-next-line camelcase
+          const { access_token, refresh_token } = res.data
+          this.$store.commit('SET_TOKEN', access_token)
+          this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
+          console.info('refreshed tokens')
+          const user = tokenToUser(this.token)
+          console.debug('user', user)
+          this.$store.commit('SET_USER', user)
+          return
+        } catch (error) {
+          console.error('Failed to login', error)
+          this.$toast.error('Failed to refresh tokens')
+        }
+      }
+      this.logout('Your session has expired')
     },
     signup () {
       this.$router.push('/signup')

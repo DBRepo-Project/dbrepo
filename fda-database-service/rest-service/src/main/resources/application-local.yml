@@ -39,8 +39,10 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   elastic:
-    endpoint: search-service:9200
+    endpoint: localhost:9200
     username: elastic
     password: elastic
   ready.path: ./ready
+  client_secret: Gp9IALXWsfftK8ek1J6jNT9hNfWV5U5c
+  client_id: dbrepo-client
   gateway.endpoint: http://localhost:9095

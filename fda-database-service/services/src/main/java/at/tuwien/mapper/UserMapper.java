@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.auth.TokenIntrospectDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
@@ -7,6 +8,9 @@ import at.tuwien.api.user.UserDto;
 import org.mapstruct.Mapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
@@ -16,6 +20,16 @@ public interface UserMapper {
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
     UserBriefDto userDtoToUserBriefDto(UserDto data);
+
+    default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
+        return UserDetailsDto.builder()
+                .id(data.getSub())
+                .username(data.getUsername())
+                .authorities(Arrays.stream(data.getRealmAccess().getRoles())
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
