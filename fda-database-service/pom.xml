@@ -31,6 +31,7 @@
         <springfox.version>3.0.0</springfox.version>
         <jacoco.version>0.8.7</jacoco.version>
         <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <jwt.version>4.3.0</jwt.version>
     </properties>
 
     <dependencies>
@@ -58,6 +59,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Authentication -->
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>${jwt.version}</version>
         </dependency>
         <!-- Entities and API -->
         <dependency>

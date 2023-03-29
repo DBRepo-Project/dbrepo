@@ -1,8 +1,15 @@
 package at.tuwien.auth;
 
-import at.tuwien.gateway.AuthenticationServiceGateway;
+import at.tuwien.api.auth.RealmAccessDto;
+import at.tuwien.api.user.UserDetailsDto;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -14,22 +21,30 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    private final AuthenticationServiceGateway authenticationServiceGateway;
+    @Value("${fda.jwt.issuer}")
+    private String issuer;
 
-    public AuthTokenFilter(AuthenticationServiceGateway authenticationServiceGateway) {
-        this.authenticationServiceGateway = authenticationServiceGateway;
-    }
+    @Value("${fda.jwt.public_key}")
+    private String publicKey;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         final String jwt = parseJwt(request);
         if (jwt != null) {
-            final UserDetails userDetails = authenticationServiceGateway.validate(jwt);
+            final UserDetails userDetails = verifyJwt(jwt);
             log.debug("authenticated user {}", userDetails);
             final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
@@ -38,6 +53,35 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);
+    }
+
+    public UserDetails verifyJwt(String token) throws ServletException {
+        final KeyFactory kf;
+        try {
+            kf = KeyFactory.getInstance("RSA");
+        } catch (NoSuchAlgorithmException e) {
+            log.error("Failed to find RSA algorithm");
+            throw new ServletException("Failed to find RSA algorithm", e);
+        }
+        final X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
+        final RSAPublicKey pubKey;
+        try {
+            pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+        } catch (InvalidKeySpecException e) {
+            log.error("Provided public key is invalid");
+            throw new ServletException("Provided public key is invalid", e);
+        }
+        final Algorithm algorithm = Algorithm.RSA256(pubKey, null);
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer(issuer)
+                .withAudience("spring")
+                .build();
+        final DecodedJWT jwt = verifier.verify(token);
+        final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);
+        return UserDetailsDto.builder()
+                .username(jwt.getClaim("client_id").asString())
+                .authorities(Arrays.stream(realmAccess.getRoles()).map(SimpleGrantedAuthority::new).collect(Collectors.toList()))
+                .build();
     }
 
     /**

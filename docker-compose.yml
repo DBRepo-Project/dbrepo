@@ -282,6 +282,8 @@ services:
         condition: service_healthy
       fda-metadata-db:
         condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
     logging:
       driver: json-file
 

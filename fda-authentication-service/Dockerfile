@@ -49,8 +49,8 @@ ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
 ENV KC_HOSTNAME=localhost
 
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
-ENV KEYCLOAK_ADMIN=keycloak
-ENV KEYCLOAK_ADMIN_PASSWORD=keycloak
+ENV KEYCLOAK_ADMIN=fda
+ENV KEYCLOAK_ADMIN_PASSWORD=fda
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ["bash", "/app/healthcheck.sh"]
 

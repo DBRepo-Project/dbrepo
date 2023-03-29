@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.repository.jpa.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +23,6 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -41,9 +38,6 @@ public class AuthTokenFilterTest extends BaseUnitTest {
 
     @MockBean
     private UserRepository userRepository;
-
-    @MockBean
-    private AuthenticationServiceGateway authenticationServiceGateway;
 
     @Autowired
     private AuthTokenFilter authTokenFilter;
@@ -64,9 +58,6 @@ public class AuthTokenFilterTest extends BaseUnitTest {
         final FilterChain chain = new MockFilterChain();
 
         /* mock */
-        doThrow(new ServletException("Username not found"))
-                .when(authenticationServiceGateway)
-                .validate(anyString());
         when(userRepository.findByUsername("mweise"))
                 .thenReturn(Optional.empty());
 
@@ -84,8 +75,6 @@ public class AuthTokenFilterTest extends BaseUnitTest {
         final FilterChain chain = new MockFilterChain();
 
         /* mock */
-        when(authenticationServiceGateway.validate(anyString()))
-                .thenReturn(USER_1_DETAILS);
         when(userRepository.findByUsername("mweise"))
                 .thenReturn(Optional.of(USER_1));
 

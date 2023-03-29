@@ -1,10 +1,8 @@
 package at.tuwien.config;
 
 import at.tuwien.auth.AuthTokenFilter;
-import at.tuwien.gateway.AuthenticationServiceGateway;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,16 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 )
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final AuthenticationServiceGateway authenticationServiceGateway;
-
-    @Autowired
-    public WebSecurityConfig(AuthenticationServiceGateway authenticationServiceGateway) {
-        this.authenticationServiceGateway = authenticationServiceGateway;
-    }
-
     @Bean
     public AuthTokenFilter authTokenFilter() {
-        return new AuthTokenFilter(authenticationServiceGateway);
+        return new AuthTokenFilter();
     }
 
     @Override

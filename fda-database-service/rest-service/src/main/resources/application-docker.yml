@@ -43,6 +43,9 @@ fda:
     username: elastic
     password: "${ELASTIC_PASSWORD}"
   ready.path: /ready
+  jwt:
+    issuer: "${JWT_ISSUER}"
+    public_key: "${JWT_PUBKEY}"
   client_secret: "${CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
