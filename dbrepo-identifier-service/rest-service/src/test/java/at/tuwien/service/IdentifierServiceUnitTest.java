@@ -190,16 +190,15 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_doiChange_fails() {
 
-        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).doi("10.000/thisisadoi").build();
-        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
+        IdentifierDto identifierWithNewDoiDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(identifier));
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, identifierDto);
+            identifierService.update(IDENTIFIER_1_ID, identifierWithNewDoiDto);
         });
     }
 
@@ -319,11 +318,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     @Test
     public void delete_withDoi_fails() {
 
-        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).doi("10.000/thisisadoi").build();
-
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(identifier));
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
         doNothing()
                 .when(identifierRepository)
                 .delete(IDENTIFIER_1);

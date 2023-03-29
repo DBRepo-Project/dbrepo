@@ -98,9 +98,8 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
             IdentifierRequestException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
-        final String doi = "10.000/thisisadoi";
         final DataCiteBody<DataCiteDoi> response =
-                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(doi)));
+                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
         when(identifierService.create(any(IdentifierCreateDto.class), eq(principal), eq(bearer)))
@@ -112,7 +111,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         /* test */
         Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal, bearer);
         assertTrue(identifierRepository.existsById(result.getId()));
-        assertEquals(doi, result.getDoi());
+        assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }
 
     @Test
@@ -162,42 +161,36 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_existing_succeeds()
             throws IdentifierRequestException, IdentifierNotFoundException {
-        final String doi = "10.000/thisisanotherdoi";
         final DataCiteBody<DataCiteDoi> response =
-                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(doi)));
-        IDENTIFIER_1.setDoi(doi);
+                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
+                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(doi)))
+                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenReturn(ResponseEntity.ok(response));
 
         /* test */
-        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
         assertTrue(identifierRepository.existsById(IDENTIFIER_1_ID));
-        assertEquals(doi, result.getDoi());
+        assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }
 
     @Test
     public void update_invalidMetadata_fails()
             throws IdentifierRequestException, IdentifierNotFoundException {
-        final String doi = "10.000/thisisanotherdoi";
-        final DataCiteBody<DataCiteDoi> response =
-                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(doi)));
-        IDENTIFIER_1.setDoi(doi);
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
+                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(doi)))
+                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenThrow(HttpClientErrorException.BadRequest.class);
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
         });
         assertEquals(0, identifierRepository.count());
     }
@@ -205,21 +198,17 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_restClientException_fails()
             throws IdentifierRequestException, IdentifierNotFoundException {
-        final String doi = "10.000/thisisanotherdoi";
-        final DataCiteBody<DataCiteDoi> response =
-                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(doi)));
-        IDENTIFIER_1.setDoi(doi);
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
+                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(doi)))
+                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenThrow(RestClientException.class);
 
         /* test */
         assertThrows(InternalError.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
         });
         assertEquals(0, identifierRepository.count());
     }
