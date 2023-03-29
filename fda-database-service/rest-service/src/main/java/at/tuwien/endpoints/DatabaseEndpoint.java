@@ -85,9 +85,10 @@ public class DatabaseEndpoint {
                 principal);
         final Database database = databaseService.create(containerId, createDto, principal);
         final User user = userService.findByUsername(principal.getName());
+        messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        queryStoreService.create(containerId, database.getId(), principal);
         messageQueueService.updatePermissions(principal);
+        queryStoreService.create(containerId, database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);

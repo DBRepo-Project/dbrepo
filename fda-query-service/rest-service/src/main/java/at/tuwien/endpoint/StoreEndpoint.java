@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
@@ -56,7 +55,6 @@ public class StoreEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Timed(value = "store.list", description = "Time needed to list queries from the query store")
-    @PreAuthorize("hasAuthority('find-queries')")
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -89,7 +87,6 @@ public class StoreEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('find-query')")
     @Timed(value = "store.find", description = "Time needed to find a query from the query store")
     @Operation(summary = "Find some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long containerId,

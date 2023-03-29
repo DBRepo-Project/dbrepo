@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;

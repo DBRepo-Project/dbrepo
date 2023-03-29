@@ -1,9 +1,8 @@
 package at.tuwien.api.amqp;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -13,9 +12,8 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class CreateUserDto {
 
-    @NotNull
-    @ToString.Exclude
-    private String password;
+    @JsonProperty("password_hash")
+    private String passwordHash;
 
     @Schema(example = "administrator")
     private String tags;

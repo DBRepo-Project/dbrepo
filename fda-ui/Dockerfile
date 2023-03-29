@@ -55,7 +55,7 @@ ENV ELASTIC_PASSWORD=elastic
 ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
-ENV CLIENT_SECRET=""
+ENV DBREPO_CLIENT_SECRET=client-secret
 
 WORKDIR /app
 

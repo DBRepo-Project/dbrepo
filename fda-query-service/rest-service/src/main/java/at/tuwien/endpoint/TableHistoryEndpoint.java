@@ -33,7 +33,6 @@ public class TableHistoryEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('data-history')")
     @Timed(value = "history.list", description = "Time needed to retrieve table history")
     @Operation(summary = "Find all history", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<TableHistoryDto>> getAll(@NotNull @PathVariable("id") Long containerId,

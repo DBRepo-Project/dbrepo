@@ -244,7 +244,7 @@ export default {
       const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
-    logout (message = null) {
+    logout (message) {
       if (message) {
         this.$toast.warning(message)
       }

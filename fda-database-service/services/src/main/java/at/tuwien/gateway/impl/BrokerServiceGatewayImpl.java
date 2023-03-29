@@ -1,5 +1,6 @@
 package at.tuwien.gateway.impl;
 
+import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
@@ -52,6 +53,21 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerVirtualHostGrantException("Failed to grant exchange");
         }
         log.info("Grant exchange for user with username {}", username);
+    }
+
+    @Override
+    public void createUser(String username) throws BrokerVirtualHostCreationException {
+        final CreateUserDto data = CreateUserDto.builder()
+                .passwordHash("")
+                .tags("")
+                .build();
+        final ResponseEntity<Void> response = restTemplate.exchange(gatewayConfig.getGatewayEndpoint() + "/api/broker/users/" + username, HttpMethod.PUT,
+                new HttpEntity<>(data), Void.class);
+        if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to create user: {}", response.getStatusCode());
+            throw new BrokerVirtualHostCreationException("Failed to create user");
+        }
+        log.info("Created user with username {}", username);
     }
 
     @Override

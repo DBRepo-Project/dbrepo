@@ -42,7 +42,7 @@ public class TableDataEndpoint {
     @PostMapping
     @Transactional
     @Timed(value = "data.insert", description = "Time needed to insert data into a table")
-    @PreAuthorize("hasAuthority('modify-data')")
+    @PreAuthorize("hasAuthority('insert-table-data')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> insert(@NotNull @PathVariable("id") Long containerId,
                                        @NotNull @PathVariable("databaseId") Long databaseId,
@@ -62,7 +62,7 @@ public class TableDataEndpoint {
     @PutMapping
     @Transactional
     @Deprecated
-    @PreAuthorize("hasAuthority('modify-data')")
+    @PreAuthorize("hasAuthority('insert-table-data')")
     @Timed(value = "data.update", description = "Time needed to update data in a table")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> update(@NotNull @PathVariable("id") Long containerId,
@@ -82,7 +82,7 @@ public class TableDataEndpoint {
 
     @DeleteMapping
     @Transactional
-    @PreAuthorize("hasAuthority('modify-data')")
+    @PreAuthorize("hasAuthority('delete-table-data')")
     @Timed(value = "data.delete", description = "Time needed to delete data into a table")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
@@ -102,7 +102,7 @@ public class TableDataEndpoint {
 
     @PostMapping("/import")
     @Transactional
-    @PreAuthorize("hasAuthority('modify-data')")
+    @PreAuthorize("hasAuthority('insert-table-data')")
     @Timed(value = "data.insertbulk", description = "Time needed to insert data from .csv into a table")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> importCsv(@NotNull @PathVariable("id") Long containerId,
@@ -122,7 +122,6 @@ public class TableDataEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('get-data')")
     @Timed(value = "data.all", description = "Time needed to find all data from a table")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("id") Long containerId,
@@ -148,7 +147,6 @@ public class TableDataEndpoint {
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasAuthority('get-data')")
     @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> getCount(@NotNull @PathVariable("id") Long containerId,

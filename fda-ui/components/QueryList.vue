@@ -1,6 +1,11 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :value="loadProgress" />
+    <v-card v-if="!(loadingIdentifiers || loadingQueries) && queries && queries.length === 0" flat>
+      <v-card-text>
+        (no subsets)
+      </v-card-text>
+    </v-card>
     <v-tabs-items>
       <div v-if="!loadingQueries && !error">
         <div v-for="(item,i) in queries" :key="i">

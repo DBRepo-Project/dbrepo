@@ -28,6 +28,14 @@ public interface BrokerServiceGateway {
             throws BrokerVirtualHostGrantException;
 
     /**
+     * Create user on the broker service
+     *
+     * @param username The new username.
+     * @throws BrokerVirtualHostCreationException The user could not be created.
+     */
+    void createUser(String username) throws BrokerVirtualHostCreationException;
+
+    /**
      * Grants a user permission at a virtual host in the queue service.
      *
      * @param username The username of the user.

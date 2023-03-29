@@ -14,6 +14,6 @@ config.mailVerify = process.env.MAIL_VERIFY || false
 config.tokenMax = process.env.TOKEN_MAX || 5
 config.elasticPassword = process.env.ELASTIC_PASSWORD || 'elastic'
 config.elasticPassword = process.env.ELASTIC_PASSWORD || 'elastic'
-config.clientSecret = process.env.CLIENT_SECRET
+config.clientSecret = process.env.DBREPO_CLIENT_SECRET
 
 module.exports = config

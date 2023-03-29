@@ -21,7 +21,7 @@ public class DatabaseAccessDto {
     @NotNull
     @JsonIgnore
     @ToString.Exclude
-    private Long huserid;
+    private String huserid;
 
     @NotNull
     @JsonIgnore

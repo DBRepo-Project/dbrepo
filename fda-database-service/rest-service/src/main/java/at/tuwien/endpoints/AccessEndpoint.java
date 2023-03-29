@@ -41,7 +41,7 @@ public class AccessEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasAuthority('create-access')")
+    @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -65,7 +65,7 @@ public class AccessEndpoint {
 
     @PutMapping("/{username}")
     @Transactional
-    @PreAuthorize("hasAuthority('modify-access')")
+    @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -84,7 +84,7 @@ public class AccessEndpoint {
 
     @GetMapping
     @Transactional
-    @PreAuthorize("hasAuthority('check-access')")
+    @PreAuthorize("hasAuthority('check-database-access')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
                                                   @NotBlank @PathVariable("databaseId") Long databaseId,
@@ -100,7 +100,7 @@ public class AccessEndpoint {
 
     @DeleteMapping("/{username}")
     @Transactional
-    @PreAuthorize("hasAuthority('modify-access')")
+    @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,

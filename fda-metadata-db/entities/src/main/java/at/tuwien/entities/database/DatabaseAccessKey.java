@@ -7,7 +7,7 @@ import java.io.Serializable;
 @EqualsAndHashCode
 public class DatabaseAccessKey implements Serializable {
 
-    private Long huserid;
+    private String huserid;
 
     private Long hdbid;
 }

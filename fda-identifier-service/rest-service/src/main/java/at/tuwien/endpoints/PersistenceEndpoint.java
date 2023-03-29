@@ -46,7 +46,6 @@ public class PersistenceEndpoint {
 
     @GetMapping("/{pid}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('find-identifier')")
     @Timed(value = "pid.find", description = "Time needed to find a persisted identifier")
     @Operation(summary = "Find some identifier")
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,

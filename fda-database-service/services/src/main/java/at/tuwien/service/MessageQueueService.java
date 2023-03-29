@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import javax.annotation.PostConstruct;
@@ -19,6 +20,14 @@ public interface MessageQueueService {
      * @throws AmqpException Could not create the exchange.
      */
     void createExchange(Database database, Principal principal) throws AmqpException;
+
+    /**
+     * Create user on the broker service
+     *
+     * @param user The new user.
+     * @throws BrokerVirtualHostCreationException The user could not be created.
+     */
+    void createUser(User user) throws BrokerVirtualHostCreationException;
 
     /**
      * Updates the virtual host permissions in the broker service.

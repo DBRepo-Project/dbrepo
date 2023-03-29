@@ -6,6 +6,8 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 FROM rabbitmq:3-management-alpine as runtime
 
 ENV PYTHONUNBUFFERED=1
+ENV JWT_PUBKEY=public-key
+ENV JWT_CERT=cert
 
 COPY ./rabbitmq.conf /etc/rabbitmq/
 
@@ -15,7 +17,7 @@ RUN pip3 install -r ./requirements.txt
 
 WORKDIR /app
 
-COPY ./init.py ./init.py
+COPY ./init.sh ./init.sh
 COPY ./register.py ./register.py
 COPY ./service_ready /usr/bin/service_ready
 COPY ./docker-entrypoint.sh ./docker-entrypoint.sh

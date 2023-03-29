@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
@@ -64,6 +65,11 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to declare exchange {}", database.getExchangeName());
             throw new AmqpException("Failed to declare exchange", e);
         }
+    }
+
+    @Override
+    public void createUser(User user) throws BrokerVirtualHostCreationException {
+        brokerServiceGateway.createUser(user.getUsername());
     }
 
     @Override

@@ -51,7 +51,6 @@ public class ViewEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('find-views')")
     @Timed(value = "view.list", description = "Time needed to list all views in a database")
     @Operation(summary = "Find all views", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
@@ -72,7 +71,7 @@ public class ViewEndpoint {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasAuthority('create-view')")
+    @PreAuthorize("hasAuthority('create-database-view')")
     @Timed(value = "view.create", description = "Time needed to create a view")
     @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("id") Long containerId,
@@ -95,7 +94,6 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('find-view')")
     @Timed(value = "view.find", description = "Time needed to find a view")
     @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ViewDto> find(@NotNull @PathVariable("id") Long containerId,
@@ -114,7 +112,7 @@ public class ViewEndpoint {
 
     @DeleteMapping("/{viewId}")
     @Transactional
-    @PreAuthorize("hasAuthority('delete-view')")
+    @PreAuthorize("hasAuthority('delete-database-view')")
     @Timed(value = "view.delete", description = "Time needed to delete a view")
     @Operation(summary = "Delete one view", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
@@ -132,7 +130,6 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}/data")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('view-view')")
     @Timed(value = "view.data", description = "Time needed to retrieve data from a view")
     @Operation(summary = "Find view data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("id") Long containerId,
@@ -161,7 +158,6 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}/data/count")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('view-view')")
     @Timed(value = "view.data.count", description = "Time needed to retrieve data count from a view")
     @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> count(@NotNull @PathVariable("id") Long containerId,

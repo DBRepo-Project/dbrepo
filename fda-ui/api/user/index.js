@@ -10,7 +10,7 @@ export function authenticate (clientSecret, username, password) {
     password,
     grant_type: 'password',
     client_secret: clientSecret,
-    scope: 'openid'
+    scope: 'openid roles'
   }
   return axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
     headers: { ContentType: 'application/form-data' }
@@ -44,13 +44,8 @@ export function tokenToUser (token) {
     id: data.sub,
     firstname: data.given_name || null,
     lastname: data.family_name || null,
-    username: data.preferred_username,
-    theme_dark: data.metadata?.theme_dark || false,
-    titles_before: data.metadata?.titles_before || null,
-    titles_after: data.metadata?.titles_after || null,
-    affiliation: data.metadata?.affiliation || null,
-    orcid: data.metadata?.orcid || null,
-    email_verified: data.metadata?.email_verified || null
+    username: data.client_id,
+    roles: data.realm_access.roles || []
   }
 }
 

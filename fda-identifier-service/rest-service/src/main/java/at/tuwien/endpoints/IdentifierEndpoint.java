@@ -41,7 +41,6 @@ public class IdentifierEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('find-identifiers')")
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
