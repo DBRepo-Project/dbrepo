@@ -3635,6 +3635,7 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_TITLE = "Austrian weather data";
     public final static String IDENTIFIER_1_TITLE_MODIFY = "Austrian weather some data";
     public final static String IDENTIFIER_1_DOI = null;
+    public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.1000/183";
     public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352) /* 2022-01-07 20:45:52 */;
@@ -3693,6 +3694,30 @@ public abstract class BaseTest {
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .build();
 
+    public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI_NOT_NULL)
+            .visibility(IDENTIFIER_1_VISIBILITY)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE)
+            .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .build();
+
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
             .containerId(IDENTIFIER_1_CONTAINER_ID)
@@ -3701,6 +3726,31 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
+            .created(IDENTIFIER_1_CREATED)
+            .lastModified(IDENTIFIER_1_MODIFIED)
+            .execution(IDENTIFIER_1_EXECUTION)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .queryHash(IDENTIFIER_1_QUERY_HASH)
+            .resultHash(IDENTIFIER_1_RESULT_HASH)
+            .query(IDENTIFIER_1_QUERY)
+            .queryNormalized(IDENTIFIER_1_NORMALIZED)
+            .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .creator(USER_1_DTO)
+            .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .build();
+
+    public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_1_ID)
+            .containerId(IDENTIFIER_1_CONTAINER_ID)
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .queryId(IDENTIFIER_1_QUERY_ID)
+            .description(IDENTIFIER_1_DESCRIPTION)
+            .title(IDENTIFIER_1_TITLE)
+            .doi(IDENTIFIER_1_DOI_NOT_NULL)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)

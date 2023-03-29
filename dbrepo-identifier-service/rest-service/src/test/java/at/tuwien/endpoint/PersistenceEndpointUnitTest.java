@@ -308,6 +308,25 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void find_bibliographyApa4_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
+            RemoteUnavailableException, IdentifierRequestException, IOException {
+        final String accept = "text/bibliography; style=apa";
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
+                StandardCharsets.UTF_8);
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+
+        /* test */
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = (String) response.getBody();
+        assertNotNull(body);
+        assertEquals(compare, body);
+    }
+
+    @Test
     public void find_bibliographyIeee0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=ieee";
@@ -365,6 +384,25 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void find_bibliographyIeee3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
+            RemoteUnavailableException, IdentifierRequestException, IOException {
+        final String accept = "text/bibliography; style=ieee";
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee3.txt"),
+                StandardCharsets.UTF_8);
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+
+        /* test */
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = (String) response.getBody();
+        assertNotNull(body);
+        assertEquals(compare, body);
+    }
+
+    @Test
     public void find_bibliographyBibtex0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=bibtex";
@@ -415,6 +453,25 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = (String) response.getBody();
+        assertNotNull(body);
+        assertEquals(compare, body);
+    }
+
+    @Test
+    public void find_bibliographyBibtex3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
+            RemoteUnavailableException, IdentifierRequestException, IOException {
+        final String accept = "text/bibliography; style=bibtex";
+        final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex3.txt"),
+                StandardCharsets.UTF_8);
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+
+        /* test */
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
