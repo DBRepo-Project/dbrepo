@@ -8,7 +8,7 @@ load_dotenv()
 
 if __name__ == "__main__":
     token = os.getenv("TOKEN")
-    credentials = pika.credentials.PlainCredentials("mweise", token)
+    credentials = pika.credentials.PlainCredentials("", token)
     parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
 
     connection = pika.BlockingConnection(parameters)
