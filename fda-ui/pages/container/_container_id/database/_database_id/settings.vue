@@ -5,8 +5,7 @@
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card v-if="isOwner" flat tile>
-          <v-card-title>Modify database access</v-card-title>
-          <v-card-subtitle>This is a dangerous operation</v-card-subtitle>
+          <v-card-title>Access</v-card-title>
           <v-data-table
             :headers="headers"
             :items="database.accesses"
@@ -34,15 +33,8 @@
         </v-card>
         <v-divider />
         <v-card v-if="canModifyVisibility" flat tile>
-          <v-card-title>Modify database visibility</v-card-title>
-          <v-card-subtitle>This is a dangerous operation</v-card-subtitle>
+          <v-card-title>Visibility</v-card-title>
           <v-card-text>
-            <v-alert
-              v-if="database.is_public !== modifyVisibility.is_public"
-              border="left"
-              color="warning">
-              <strong>Dangerous operation:</strong> you are about to change the visibility of the database. This affects all (sensitive) data held in the database.
-            </v-alert>
             <v-row dense>
               <v-col sm="6">
                 <v-select
@@ -55,7 +47,29 @@
             </v-row>
             <v-btn
               small
-              :disabled="database.is_public === modifyVisibility.is_public"
+              color="warning"
+              class="black--text"
+              @click="updateDatabaseVisibility">
+              Modify Visibility
+            </v-btn>
+          </v-card-text>
+        </v-card>
+        <v-divider />
+        <v-card v-if="canModifyOwnership" flat tile>
+          <v-card-title>Ownership</v-card-title>
+          <v-card-text>
+            <v-row dense>
+              <v-col sm="6">
+                <v-select
+                  id="owner"
+                  v-model="modifyOwner.username"
+                  :items="users"
+                  label="Owner"
+                  name="owner" />
+              </v-col>
+            </v-row>
+            <v-btn
+              small
               color="warning"
               class="black--text"
               @click="updateDatabaseVisibility">
@@ -89,11 +103,16 @@ export default {
       dialogDelete: false,
       confirm: null,
       username: null,
+      users: [],
       loading: false,
+      loadingUsers: false,
       editAccessDialog: false,
       editVisibilityDialog: false,
       modifyVisibility: {
         is_public: null
+      },
+      modifyOwner: {
+        username: null
       },
       visibility: [
         { text: 'Public', value: true },
@@ -153,6 +172,12 @@ export default {
         return false
       }
       return this.user.roles.includes('modify-database-visibility')
+    },
+    canModifyOwnership () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.user.roles.includes('modify-database-owner')
     }
   },
   watch: {
@@ -164,6 +189,7 @@ export default {
     }
   },
   mounted () {
+    this.loadUsers()
     if (!this.database) {
       return
     }
@@ -196,6 +222,19 @@ export default {
     modifyAccess (item) {
       this.username = item.user.username
       this.editAccessDialog = true
+    },
+    async loadUsers () {
+      this.loadingUsers = true
+      try {
+        const res = await this.$axios.get('/api/user', this.config)
+        this.users = res.data
+        console.debug('users', this.users)
+      } catch (error) {
+        console.error('Failed to load users', error)
+        const { message } = error.response.data
+        this.$toast.error(`Failed to load users: ${message}`)
+      }
+      this.loadingUsers = false
     },
     async loadDatabase () {
       if (!this.$route.params.container_id || !this.$route.params.database_id) {

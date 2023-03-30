@@ -77,7 +77,7 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator,i) in identifier.creators" :key="`c-${i}`" dense>
+          <v-row v-for="(creator, i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
                 v-model="creator.firstname"
@@ -108,7 +108,7 @@
                 name="orcid"
                 label="ORCID" />
             </v-col>
-            <v-col cols="1" class="mt-5">
+            <v-col v-if="i > 0" cols="1" class="mt-5">
               <v-btn icon x-small @click="deleteCreator(i)">
                 <v-icon>mdi-close</v-icon>
               </v-btn>
@@ -334,6 +334,8 @@ export default {
   },
   mounted () {
     this.loadLicenses()
+    this.addCreator()
+    this.identifier.publisher = this.$config.defaultPublisher
   },
   methods: {
     cancel () {
@@ -356,6 +358,9 @@ export default {
       })
     },
     deleteCreator (index) {
+      if (index === 0) {
+        return
+      }
       this.identifier.creators.splice(index, 1)
     },
     deleteRelatedIdentifier (index) {

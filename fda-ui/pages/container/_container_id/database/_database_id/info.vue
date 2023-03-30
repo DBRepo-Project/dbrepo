@@ -4,24 +4,38 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher)" flat tile>
+        <v-card v-if="showIdentifierCard" flat tile>
           <v-card-title>Identifier</v-card-title>
           <v-card-text v-if="hasIdentifier">
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title v-if="publisher" class="mt-2">
+                  <v-list-item-title class="mt-2">
                     Persistent Identifier
                   </v-list-item-title>
-                  <v-list-item-content v-if="publisher">
+                  <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <a v-if="!loading" :href="pid">{{ pid }}</a>
                   </v-list-item-content>
-                  <v-list-item-title v-if="publisher" class="mt-2">
+                  <v-list-item-title class="mt-2">
+                    Database Title
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
+                    <span v-if="!loading">{{ identifier.title }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Database Description
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
+                    <span v-if="!loading">{{ identifier.description }}</span>
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
                     Database Publisher
                   </v-list-item-title>
-                  <v-list-item-content v-if="publisher">
-                    {{ publisher }}
+                  <v-list-item-content>
+                    {{ database.identifier.publisher }}
                   </v-list-item-content>
                   <v-list-item-title v-if="identifier.creators.length > 0" class="mt-2">
                     Creators
@@ -93,18 +107,17 @@
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-text>
+          <v-card-text v-if="canCreateIdentifier || canDeleteIdentifier">
             <v-card-actions>
               <v-btn
-                v-if="!hasIdentifier && (isDataSteward || (!hasIdentifier && isCreator && isResearcher))"
+                v-if="canCreateIdentifier"
                 small
                 color="primary"
                 @click="editDbDialog = true">
                 Get Database PID
               </v-btn>
-              <!--                v-if="isDataSteward && hasIdentifier"-->
               <v-btn
-                v-if="false"
+                v-if="canDeleteIdentifier"
                 small
                 :loading="loadingDelete"
                 color="error"
@@ -114,7 +127,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="isDataSteward || hasIdentifier || (!hasIdentifier && isCreator && isResearcher)" />
+        <v-divider v-if="showIdentifierCard" />
         <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
@@ -134,13 +147,6 @@
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading">{{ internal_name }}</span>
-                  </v-list-item-content>
-                  <v-list-item-title v-if="description" class="mt-2">
-                    Database Description
-                  </v-list-item-title>
-                  <v-list-item-content v-if="description">
-                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
-                    <span v-if="!loading">{{ description }}</span>
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Creator
@@ -222,7 +228,7 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
-import { formatTimestampUTCLabel, formatUser, isDataSteward, isResearcher } from '@/utils'
+import { formatTimestampUTCLabel, formatUser } from '@/utils'
 
 export default {
   components: {
@@ -254,18 +260,6 @@ export default {
     baseUrl () {
       return location.protocol + '//' + location.host
     },
-    description () {
-      if (!this.hasIdentifier) {
-        return ''
-      }
-      return this.database.identifier.description
-    },
-    publisher () {
-      if (!this.hasIdentifier) {
-        return ''
-      }
-      return this.database.identifier.publisher
-    },
     token () {
       return this.$store.state.token
     },
@@ -273,10 +267,10 @@ export default {
       return this.$store.state.user
     },
     identifier () {
-      if (this.database) {
-        return this.$store.state.database.identifier
+      if (!this.database) {
+        return null
       }
-      return null
+      return this.$store.state?.database.identifier
     },
     access () {
       return this.$store.state.access
@@ -294,26 +288,11 @@ export default {
         headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
       }
     },
-    isResearcher () {
-      return isResearcher(this.user)
-    },
-    isDataSteward () {
-      return isDataSteward(this.user)
-    },
     pid () {
       return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
-    },
-    isCreator () {
-      if (!this.database) {
-        return false
-      }
-      if (!this.database.creator.username || !this.user || !this.user.username) {
-        return false
-      }
-      return this.database.creator.username === this.user.username
     },
     language () {
       return this.database.identifier.language
@@ -326,6 +305,30 @@ export default {
     },
     container_internal_name () {
       return this.database.container.internal_name
+    },
+    showIdentifierCard () {
+      if (this.hasIdentifier) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.canCreateIdentifier || this.canDeleteIdentifier || this.user.roles.includes('modify-identifier-metadata')
+    },
+    canCreateIdentifier () {
+      if (!this.user) {
+        return false
+      }
+      if (this.hasIdentifier) {
+        return false
+      }
+      return this.user.roles.includes('create-identifier')
+    },
+    canDeleteIdentifier () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('delete-identifier')
     },
     contact () {
       if (this.database.contact === null || this.database.contact === undefined) {

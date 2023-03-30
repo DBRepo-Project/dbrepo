@@ -262,6 +262,26 @@ services:
     logging:
       driver: json-file
 
+  fda-user-service:
+    restart: on-failure
+    container_name: dbrepo-user-service
+    hostname: user-service
+    build: ./fda-user-service
+    image: fda-user-service
+    networks:
+      core:
+    ports:
+      - "9098:9098"
+    env_file:
+      - .env
+    depends_on:
+      fda-metadata-db:
+        condition: service_healthy
+      fda-authentication-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
   fda-semantics-service:
     restart: on-failure
     container_name: dbrepo-semantics-service
