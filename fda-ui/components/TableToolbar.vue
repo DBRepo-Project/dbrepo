@@ -11,22 +11,22 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!loading && canAdd && !editTupleDialog" class="mr-2 mb-1" @click="addTuple">
+        <v-btn v-if="canAddTuple" class="mr-2 mb-1" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="!loading && canEdit && !editTupleDialog" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
+        <v-btn v-if="canEditTuple" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="!loading && canDelete && !editTupleDialog" color="error" class="mr-2 mb-1" @click="deleteItems">
+        <v-btn v-if="canDeleteTuple" color="error" class="mr-2 mb-1" :loading="loadingDelete" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="!loading && canRead" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="!loading && canModify" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
-        <v-btn v-if="!loading && canModify" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import csv
         </v-btn>
       </v-toolbar-title>
@@ -35,7 +35,7 @@
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/info`">
         Info
       </v-tab>
-      <v-tab v-if="canRead" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
+      <v-tab v-if="canReadData" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
         Data
       </v-tab>
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`">
@@ -71,6 +71,7 @@ export default {
     return {
       tab: null,
       loading: false,
+      loadingDelete: false,
       error: false,
       edit: false,
       editTupleDialog: false
@@ -95,36 +96,47 @@ export default {
     token () {
       return this.$store.state.token
     },
-    canModify () {
-      if (!this.user || !this.access || !this.database || !this.database.creator) {
+    canAddTuple () {
+      if (!this.user) {
         return false
       }
-      if (this.database.creator.username === this.user.username) {
-        return true
-      }
-      return this.access.type === 'write_own' || this.access.type === 'write_all'
+      return this.user.roles.includes('insert-table-data')
     },
-    canRead () {
-      if (this.database?.is_public) {
-        return true
-      }
-      if (!this.access) {
+    canEditTuple () {
+      if (!this.user) {
         return false
       }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
+      return this.user.roles.includes('insert-table-data')
     },
-    canDelete () {
-      return this.selection.length !== 0 && this.canModify
-    },
-    canEdit () {
-      if (this.selection.length !== 1) { return false }
-      return this.canModify
-    },
-    canAdd () {
-      if (this.canEdit) {
+    canDeleteTuple () {
+      if (!this.user) {
         return false
       }
-      return this.canModify
+      return this.user.roles.includes('delete-table-data')
+    },
+    canExecuteQuery () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('execute-query')
+    },
+    canCreateView () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('create-database-view')
+    },
+    canReadData () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('view-table-data')
+    },
+    canImportCsv () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('insert-table-data')
     },
     tuple () {
       return this.edit ? this.selection[0] : {}
@@ -187,6 +199,7 @@ export default {
         return
       }
       try {
+        this.loadingDelete = true
         for (const select of this.selection) {
           /* remove in container */
           const constraints = {}
@@ -195,12 +208,12 @@ export default {
             .forEach((c) => {
               constraints[c.internal_name] = select[c.internal_name]
             })
-          const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
+          await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
             headers: { Authorization: `Bearer ${this.token}` },
             data: { keys: constraints }
           })
-          console.debug('tuple delete result', res)
         }
+        console.info(`Deleted ${this.selection.length} rows(s)`)
         this.$toast.success(`Deleted ${this.selection.length} rows(s)`)
         this.$emit('modified', { success: true, action: 'delete' })
       } catch (error) {
@@ -209,6 +222,7 @@ export default {
         const { message } = data
         this.$toast.error(`Failed to delete rows: ${message}`)
       }
+      this.loadingDelete = false
     },
     close (event) {
       console.debug('closed edit/create tuple dialog', event)
