@@ -98,14 +98,14 @@ public class DatabaseEndpoint {
 
     @PutMapping("/{databaseId}/visibility")
     @Transactional
-    @PreAuthorize("hasAuthority('modify-database')")
+    @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Timed(value = "database.visibility", description = "Time needed to modify a database visibility")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable Long databaseId,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException {
         log.debug("endpoint update database, containerId={}, databaseId={}, data={}, principal={}", containerId,
                 databaseId, data, principal);
         final Database database = databaseService.visibility(containerId, databaseId, data);
@@ -117,14 +117,14 @@ public class DatabaseEndpoint {
 
     @PutMapping("/{databaseId}/transfer")
     @Transactional
-    @PreAuthorize("hasAuthority('transfer-database')")
+    @PreAuthorize("hasAuthority('modify-database-owner')")
     @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
     @Operation(summary = "Transfer database", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException {
+            throws DatabaseNotFoundException, UserNotFoundException {
         log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
                 databaseId, transferDto, principal);
         final Database database = databaseService.transfer(containerId, databaseId, transferDto);

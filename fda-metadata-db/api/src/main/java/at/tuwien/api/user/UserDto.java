@@ -1,7 +1,6 @@
 package at.tuwien.api.user;
 
 import at.tuwien.api.container.ContainerDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -23,7 +22,6 @@ public class UserDto {
     private String id;
 
     @NotNull
-    @JsonProperty("preferred_username")
     @Schema(example = "jcarberry", description = "Only contains lowercase characters")
     private String username;
 

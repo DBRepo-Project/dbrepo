@@ -12,8 +12,8 @@
       <v-card-title v-if="hasDatabase(container)">
         <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>
       </v-card-title>
-      <v-card-subtitle v-if="!hasIdentifier(container)" class="db-subtitle" v-text="formatCreator(container.creator)" />
-      <v-card-subtitle v-if="hasIdentifier(container)" class="db-subtitle" v-text="formatCreatorz(container)" />
+      <v-card-subtitle v-if="!hasIdentifier(container)" class="db-subtitle" v-text="formatOwner(container)" />
+      <v-card-subtitle v-if="hasIdentifier(container)" class="db-subtitle" v-text="formatCreators(container)" />
       <v-card-text v-if="hasDatabase(container)" class="db-description">
         <div class="db-tags">
           <v-chip v-if="hasDatabase(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
@@ -97,10 +97,13 @@ export default {
     this.loadContainers()
   },
   methods: {
-    formatCreator (creator) {
-      return formatUser(creator)
+    formatOwner (container) {
+      if (!('database' in container)) {
+        return formatUser(container.creator)
+      }
+      return formatUser(container.database?.owner)
     },
-    formatCreatorz (container) {
+    formatCreators (container) {
       const creators = formatCreators(container)
       return creators || this.formatCreator(container.creator)
     },
@@ -108,7 +111,7 @@ export default {
       if (!this.user) {
         return false
       }
-      if (container.creator.sub !== this.user.id) {
+      if (container.creator.sub !== this.user.sub) {
         return false
       }
       return !container.database

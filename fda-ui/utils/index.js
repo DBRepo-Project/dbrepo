@@ -55,10 +55,7 @@ function formatUser (user) {
     return null
   }
   if (!('firstname' in user) || !('lastname' in user) || user.firstname === null || user.lastname === null) {
-    if (!('preferred_username' in user)) {
-      return null
-    }
-    return user.preferred_username
+    return user?.username
   }
   return user.firstname + ' ' + user.lastname
 }

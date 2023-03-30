@@ -30,6 +30,7 @@ public class ContainerBriefDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    @NotNull
     private UserBriefDto creator;
 
     @NotBlank

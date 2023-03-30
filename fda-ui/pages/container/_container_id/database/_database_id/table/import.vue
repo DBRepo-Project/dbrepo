@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isResearcher">
+  <div v-if="canInsertTableData">
     <v-toolbar flat>
       <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
     </v-toolbar>
@@ -186,7 +186,8 @@
 </template>
 <script>
 import TableSchema from '@/components/TableSchema'
-const { notEmpty, isNonNegativeInteger, isResearcher } = require('@/utils')
+import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
+import { listTables } from '@/api/table'
 
 export default {
   name: 'TableFromCSV',
@@ -284,6 +285,12 @@ export default {
         .replace(/\s+/g, '-')
         .replace(/[^\w-]+/g, '')
         .replace(/--+/g, '_'))
+    },
+    canInsertTableData () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('insert-table-data')
     }
   },
   mounted () {
@@ -351,15 +358,13 @@ export default {
     async listTables () {
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
+        const res = await listTables(this.token, this.$route.params.container_id, this.$route.params.database_id)
         console.debug('tables', res.data)
         this.tableNames = res.data.map(t => t.internal_name)
-      } catch (err) {
+      } catch (error) {
         this.error = true
-        console.error('could not list tables', err)
-        this.$toast.error('Could not list tables')
+        console.error('Failed to list tables', error)
+        this.$toast.error('Failed to list tables')
       }
       this.loading = false
     },

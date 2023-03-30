@@ -1,9 +1,12 @@
 <template>
-  <div v-if="isResearcher">
+  <div v-if="canCreateTable">
     <v-toolbar flat>
       <v-toolbar-title>
-        <span>Create Table</span>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
       </v-toolbar-title>
+      <v-toolbar-title>Create Table</v-toolbar-title>
     </v-toolbar>
     <v-stepper v-model="step" vertical flat tile>
       <v-stepper-step :complete="step > 1" step="1">
@@ -57,7 +60,9 @@
 
 <script>
 import TableSchema from '@/components/TableSchema'
-const { notEmpty, isResearcher } = require('@/utils')
+import { notEmpty } from '@/utils'
+import { createTable } from '@/api/table'
+import { findDatabase } from '@/api/database'
 
 export default {
   components: {
@@ -104,8 +109,11 @@ export default {
     database () {
       return this.$store.state.database
     },
-    isResearcher () {
-      return isResearcher(this.user)
+    canCreateTable () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('create-table')
     },
     config () {
       if (this.token === null) {
@@ -144,7 +152,7 @@ export default {
     async createTable () {
       try {
         this.loading = true
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table`, this.tableCreate, this.config)
+        const res = await createTable(this.token, this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
         if (res.status === 201) {
           this.error = false
           this.$toast.success('Table created')
@@ -174,11 +182,11 @@ export default {
       }
       try {
         this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+        const res = await findDatabase(this.token, this.$route.params.container_id, this.$route.params.database_id)
         this.$store.commit('SET_DATABASE', res.data)
         console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
+      } catch (error) {
+        console.error('Could not load database', error)
         this.$toast.error('Could not load database')
       }
       this.loading = false

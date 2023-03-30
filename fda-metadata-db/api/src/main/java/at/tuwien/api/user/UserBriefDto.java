@@ -23,7 +23,6 @@ public class UserBriefDto {
     private String id;
 
     @NotNull
-    @JsonProperty("preferred_username")
     @Schema(example = "jcarberry", description = "Only contains lowercase characters")
     private String username;
 

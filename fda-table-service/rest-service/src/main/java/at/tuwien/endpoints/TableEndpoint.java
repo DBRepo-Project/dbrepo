@@ -45,7 +45,6 @@ public class TableEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Timed(value = "table.list", description = "Time needed to list the tables")
-    @PreAuthorize("hasAuthority('find-tables')")
     @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
@@ -87,7 +86,6 @@ public class TableEndpoint {
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
     @Timed(value = "table.find", description = "Time needed to find a table")
-    @PreAuthorize("hasAuthority('find-table')")
     @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,

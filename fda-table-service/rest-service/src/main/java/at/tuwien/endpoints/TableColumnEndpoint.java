@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class TableColumnEndpoint {
 
     @PutMapping
     @Transactional
+    @PreAuthorize("hasAuthority('modify-table-column-semantics')")
     @Timed(value = "semantics.column_update", description = "Time needed to update a table column semantic mapping")
     @Operation(summary = "Update a table column semantic mapping", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("id") Long containerId,

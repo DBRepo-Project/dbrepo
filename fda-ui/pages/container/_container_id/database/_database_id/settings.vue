@@ -4,19 +4,18 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="isCreator" flat tile>
+        <v-card v-if="isOwner" flat tile>
           <v-card-title>Modify database access</v-card-title>
           <v-card-subtitle>This is a dangerous operation</v-card-subtitle>
           <v-data-table
             :headers="headers"
             :items="database.accesses"
             :items-per-page="10">
-            <template v-if="isCreator" v-slot:item.user="{ item }">
+            <template v-slot:item.user="{ item }">
               {{ item.user.username }}
             </template>
-            <template v-if="isCreator" v-slot:item.action="{ item }">
+            <template v-slot:item.action="{ item }">
               <v-btn
-                :disabled="isCreator && item.user.username === user.username"
                 x-small
                 @click="modifyAccess(item)">
                 Modify
@@ -34,7 +33,7 @@
           </v-card-text>
         </v-card>
         <v-divider />
-        <v-card v-if="isCreator" flat tile>
+        <v-card v-if="canModifyVisibility" flat tile>
           <v-card-title>Modify database visibility</v-card-title>
           <v-card-subtitle>This is a dangerous operation</v-card-subtitle>
           <v-card-text>
@@ -78,6 +77,7 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditAccess from '@/components/dialogs/EditAccess'
+import { modifyVisibility } from '@/api/database'
 
 export default {
   components: {
@@ -139,14 +139,20 @@ export default {
     user () {
       return this.$store.state.user
     },
-    isCreator () {
+    isOwner () {
       if (!this.database || !this.user) {
         return false
       }
-      if (this.database.creator.username === null || this.user.username === null) {
+      if (this.database.owner.username === null || this.user.username === null) {
         return false
       }
-      return this.database.creator.username === this.user.username
+      return this.database.owner.username === this.user.username
+    },
+    canModifyVisibility () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.user.roles.includes('modify-database-visibility')
     }
   },
   watch: {
@@ -174,11 +180,12 @@ export default {
     async updateDatabaseVisibility () {
       try {
         this.loading = true
-        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/visibility`, this.modifyVisibility, this.config)
-        this.$toast.success('Successfully updated the database')
+        await modifyVisibility(this.token, this.$route.params.container_id, this.$route.params.database_id, this.modifyVisibility.is_public)
+        this.$toast.success('Successfully updated the database visibility')
         location.reload()
-      } catch (err) {
-        this.$toast.error('Failed to update database')
+      } catch (error) {
+        console.error('Failed to update database visibility', error)
+        this.$toast.error('Failed to update database visibility')
       }
       this.loading = false
     },

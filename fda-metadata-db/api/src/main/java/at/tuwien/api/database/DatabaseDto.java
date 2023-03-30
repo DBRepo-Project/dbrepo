@@ -40,9 +40,6 @@ public class DatabaseDto {
     @Schema(example = "dbrepo/air_quality")
     private String exchangeName;
 
-    @NotNull
-    private UserBriefDto creator;
-
     private IdentifierDto identifier;
 
     @NotBlank
@@ -69,6 +66,10 @@ public class DatabaseDto {
 
     private List<DatabaseAccessDto> accesses;
 
+    @NotNull
+    private UserBriefDto creator;
+
+    @NotNull
     private UserBriefDto owner;
 
     @Schema(example = "2020-08-04 11:12:00")

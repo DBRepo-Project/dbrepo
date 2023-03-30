@@ -1,13 +1,11 @@
 <template>
-  <div v-if="isResearcher">
+  <div v-if="canExecuteQuery">
     <QueryBuilder />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import { isResearcher } from '@/utils'
-
 export default {
   data () {
     return {
@@ -30,8 +28,11 @@ export default {
     user () {
       return this.$store.state.user
     },
-    isResearcher () {
-      return isResearcher(this.user)
+    canExecuteQuery () {
+      if (!this.user) {
+        return false
+      }
+      return this.user.roles.includes('execute-query')
     }
   }
 }

@@ -40,6 +40,9 @@ public class DatabaseBriefDto {
     @Schema(example = "mariadb:10.5")
     private String engine;
 
+    @NotNull
+    private UserBriefDto owner;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     private ContainerBriefDto container;
