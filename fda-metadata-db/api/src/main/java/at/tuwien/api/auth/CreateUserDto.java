@@ -3,6 +3,8 @@ package at.tuwien.api.auth;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -12,22 +14,26 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class JwtResponseDto {
+public class CreateUserDto {
 
     @NotNull
-    @ToString.Exclude
-    private String token;
+    @Schema(example = "true")
+    private Boolean enabled;
 
-    private String type;
-
-    private Long id;
-
+    @NotBlank
     @Schema(example = "user")
     private String username;
 
+    @NotBlank
+    @Email
     @Schema(example = "user@example.com")
     private String email;
 
-    private List<String> roles;
+    private String firstName;
+
+    private String lastName;
+
+    @NotNull
+    private List<CredentialDto> credentials;
 
 }

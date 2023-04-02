@@ -9,7 +9,8 @@ EUREKA_URI="http://$EUREKA_HOST:$EUREKA_PORT"
 SERVICE_NAME="$1"
 SERVICE_PROTOCOL="http"
 SERVICE_HOST="$1"
-SERVICE_PORT="${2:-9000}"
+SECURE_PORT="${2:-9000}"
+SERVICE_PORT="${3:-9000}"
 
 SERVICE_URI="$SERVICE_PROTOCOL://$SERVICE_HOST:$SERVICE_PORT"
 HOME_URI="$SERVICE_URI/realms/dbrepo"
@@ -72,8 +73,8 @@ cat <<EOF > /tmp/json.json
       "@enabled": "true"
     },
     "securePort": {
-      "\$": "$SERVICE_PORT",
-      "@enabled": "false"
+      "\$": "$SECURE_PORT",
+      "@enabled": "true"
     },
     "vipAddress": "$SERVICE_HOST",
     "secureVipAddress": "$SERVICE_HOST",

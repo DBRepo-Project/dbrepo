@@ -12,6 +12,14 @@
     <version>1.1.0-alpha</version>
     <name>fda-gateway-service</name>
     <description>Demo project for Spring Boot</description>
+    <url>https://dbrepo-docs.ossdip.at</url>
+    <developers>
+        <developer>
+            <name>Martin Weise</name>
+            <email>martin.weise@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+    </developers>
 
     <packaging>pom</packaging>
     <modules>

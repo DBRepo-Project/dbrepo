@@ -118,29 +118,6 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-elasticsearch</artifactId>
         </dependency>
-        <!-- AMPQ -->
-        <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>${rabbit-amqp-client.version}</version>
-        </dependency>
-        <!-- Docker -->
-        <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java</artifactId>
-            <version>${docker.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.github.docker-java</groupId>
-            <artifactId>docker-java-transport-httpclient5</artifactId>
-            <version>${docker.version}</version>
-        </dependency>
         <!-- IDE -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -237,9 +214,7 @@
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>**/RabbitMqServiceImpl.class</exclude>
-                        <exclude>**/ServiceSeeder.class</exclude>
-                        <exclude>**/FdaQueryServiceApplication.class</exclude>
+                        <exclude>**/FdaUserServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -267,9 +242,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
                 <version>3.0.0</version>
-<!--                <configuration>-->
-<!--                    <outputDirectory>docs</outputDirectory>-->
-<!--                </configuration>-->
             </plugin>
             <plugin>
                 <groupId>com.soebes.maven.plugins</groupId>

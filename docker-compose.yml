@@ -235,8 +235,10 @@ services:
     ports:
       - "9099:9099"
     depends_on:
+      fda-authentication-service:
+        condition: service_healthy
       fda-metadata-db:
-        condition: service_started
+        condition: service_healthy
     logging:
       driver: json-file
 

@@ -1,0 +1,29 @@
+package at.tuwien.api.auth;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+@Getter
+@Setter
+@ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class CredentialDto {
+
+    @NotBlank
+    @Schema(example = "password")
+    private String type;
+
+    @NotBlank
+    @Schema(example = "abc123")
+    private String value;
+
+    @NotNull
+    @Schema(example = "false")
+    private Boolean temporary;
+
+}

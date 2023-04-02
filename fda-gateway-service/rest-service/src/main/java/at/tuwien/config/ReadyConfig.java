@@ -18,9 +18,7 @@ public class ReadyConfig {
     private String readyPath;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void init() throws IOException, InterruptedException {
-        log.info("Wait more for gateway start");
-        Thread.sleep(20 * 1000L);
+    public void init() throws IOException {
         Files.touch(new File(readyPath));
     }
 

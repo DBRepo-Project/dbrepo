@@ -21,6 +21,12 @@ ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
 ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV LOG_LEVEL=debug
+ENV KEY_ALIAS=server
+ENV KEY_PASS=password
+ENV KEY_STORE=/server.keystore
+ENV KEY_STORE_PASS=password
+
+COPY ./server.keystore /server.keystore
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

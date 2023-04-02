@@ -162,7 +162,6 @@ public class ImageServiceImpl implements ImageService {
     public boolean exists(String repository, String tag) {
         final List<Image> images = dockerClient.listImagesCmd()
                 .exec();
-        log.trace("found images {}", images);
         return images.stream()
                 .filter(i -> Objects.nonNull(i.getRepoTags()))
                 .filter(i -> i.getRepoTags().length > 0)

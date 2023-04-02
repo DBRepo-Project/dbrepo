@@ -1,8 +1,13 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.auth.TokenDto;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.RealmNotFoundException;
+import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.gateway.AuthenticationServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.UserService;
@@ -12,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Log4j2
 @Service
@@ -20,11 +24,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final AuthenticationServiceGateway authenticationServiceGateway;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository) {
+    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
+                           AuthenticationServiceGateway authenticationServiceGateway) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
+        this.authenticationServiceGateway = authenticationServiceGateway;
     }
 
     @Override
@@ -43,14 +50,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(SignupRequestDto data) {
-        final User user = userMapper.signupRequestDtoToUser(data);
-        user.setRealmId("82c39861-d877-4667-a0f3-4daa2ee230e0");
-        user.setEmailVerified(false);
-        user.setId(UUID.randomUUID().toString());
-        final User entity = userRepository.save(user);
-        log.info("Created user with id {}", entity.getId());
-        return entity;
+    public User create(SignupRequestDto data) throws RealmNotFoundException, RemoteUnavailableException,
+            UserNotFoundException {
+        final TokenDto dto = authenticationServiceGateway.getToken();
+        log.debug("obtained authentication token");
+        final CreateUserDto userDto = userMapper.signupRequestDtoToCreateUserDto(data);
+        authenticationServiceGateway.createUser(dto.getAccessToken(), userDto);
+        final Optional<User> optional = userRepository.findByUsername(data.getUsername());
+        if (optional.isEmpty()) {
+            /* should never occur */
+            throw new UserNotFoundException("User not found with username '" + data.getUsername() + "'");
+        }
+        final User user = optional.get();
+        log.info("Created user with id {}", user.getId());
+        return user;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
@@ -21,7 +22,7 @@ public interface UserMapper {
 
     UserBriefDto userToUserBriefDto(User data);
 
-    User signupRequestDtoToUser(SignupRequestDto data);
+    CreateUserDto signupRequestDtoToCreateUserDto(SignupRequestDto data);
 
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());

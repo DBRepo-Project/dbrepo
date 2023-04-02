@@ -22,8 +22,20 @@ spring:
     name: gateway-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9095
+server:
+  port: 9095
+  ssl:
+    enabled: true
+    key-alias: server
+    key-store: "./server.keystore"
+    key-store-type: jks
+    key-store-password: password
+    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:

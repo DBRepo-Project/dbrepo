@@ -35,6 +35,11 @@ eureka:
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: /ready
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
+  keycloak:
+    endpoint: https://authentication-service:8443/
+    username: "${KEYCLOAK_ADMIN}"
+    password: "${KEYCLOAK_ADMIN_PASSWORD}"
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
