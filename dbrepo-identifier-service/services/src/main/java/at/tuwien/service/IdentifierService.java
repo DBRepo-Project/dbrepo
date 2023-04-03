@@ -1,12 +1,12 @@
 package at.tuwien.service;
 
-import at.tuwien.api.identifier.*;
-import at.tuwien.ExportResource;
+import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -58,7 +58,7 @@ public interface IdentifierService {
     Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
-            DatabaseNotFoundException;
+            DatabaseNotFoundException, IdentifierRequestException;
 
     /**
      * Finds an identifier by given id in the metadata database.
@@ -109,28 +109,15 @@ public interface IdentifierService {
      * @param data         The metadata.
      * @return The updated identifier if successful.
      * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
-     * @throws IdentifierPublishingNotAllowedException The identifier contained a visibility change which is not allowed here.
      */
-    Identifier update(Long identifierId, IdentifierDto data) throws IdentifierNotFoundException,
-            IdentifierPublishingNotAllowedException;
-
-    /**
-     * Publishes the identifier for a given identifier id in the metadata database.
-     *
-     * @param identifierId The identifier id.
-     * @param visibility   The new visibility.
-     * @return The updated identifier from the metadata database.
-     * @throws IdentifierNotFoundException         The identifier was not found in the metadata database or was deleted.
-     * @throws IdentifierAlreadyPublishedException The identifier is already published (=EVERYONE) and cannot be un-published.
-     */
-    Identifier publish(Long identifierId, VisibilityTypeDto visibility) throws IdentifierNotFoundException,
-            IdentifierAlreadyPublishedException;
+    Identifier update(Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the database, but sets it as deleted.
      *
      * @param identifierId The identifier id.
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
+     * @throws NotAllowedException Identifiers with a valid DOI cannot be deleted.
      */
-    void delete(Long identifierId) throws IdentifierNotFoundException;
+    void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException;
 }

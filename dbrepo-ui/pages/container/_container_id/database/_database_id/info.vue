@@ -15,7 +15,7 @@
                   </v-list-item-title>
                   <v-list-item-content v-if="publisher">
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="!loading" :href="pid">{{ pid }}</a>
+                    <Banner v-if="!loading" :identifier="database.identifier" />
                   </v-list-item-content>
                   <v-list-item-title v-if="publisher" class="mt-2">
                     Database Publisher
@@ -222,6 +222,7 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
+import Banner from '@/components/identifier/Banner'
 import { formatTimestampUTCLabel, formatUser, isDataSteward, isResearcher } from '@/utils'
 
 export default {
@@ -229,7 +230,8 @@ export default {
     DBToolbar,
     Persist,
     OrcidIcon,
-    Citation
+    Citation,
+    Banner
   },
   data () {
     return {
@@ -299,9 +301,6 @@ export default {
     },
     isDataSteward () {
       return isDataSteward(this.user)
-    },
-    pid () {
-      return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
