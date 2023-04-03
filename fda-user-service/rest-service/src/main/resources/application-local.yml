@@ -22,8 +22,20 @@ spring:
     name: user-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9098
+server:
+  port: 9098
+  ssl:
+    enabled: true
+    key-alias: server
+    key-store: "./server.keystore"
+    key-store-type: jks
+    key-store-password: password
+    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -31,13 +43,16 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: user-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance:
+    hostname: user-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9098
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: https://localhost:9095
   keycloak:
-    endpoint: https://localhost:8443/
     username: fda
     password: fda
   jwt:

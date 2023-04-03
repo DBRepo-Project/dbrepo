@@ -1,10 +1,7 @@
 package at.tuwien.config;
 
-import at.tuwien.exception.RealmNotFoundException;
-import at.tuwien.service.RealmService;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -20,16 +17,8 @@ public class ReadyConfig {
     @Value("${fda.ready.path}")
     private String readyPath;
 
-    private final RealmService realmService;
-
-    @Autowired
-    public ReadyConfig(RealmService realmService) {
-        this.realmService = realmService;
-    }
-
     @EventListener(ApplicationReadyEvent.class)
-    public void init() throws IOException, RealmNotFoundException {
-        realmService.update("master");
+    public void init() throws IOException {
         Files.touch(new File(readyPath));
     }
 

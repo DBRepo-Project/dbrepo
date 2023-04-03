@@ -27,7 +27,15 @@ spring:
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9094
+server:
+  port: 9094
+  ssl:
+    enabled: true
+    key-alias: "${KEY_ALIAS}"
+    key-store: "${KEY_STORE}"
+    key-store-type: jks
+    key-store-password: "${KEY_STORE_PASS}"
+    key-password: "${KEY_PASS}"
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -35,7 +43,11 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: table-service
+  instance:
+    hostname: table-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9094
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready

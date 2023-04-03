@@ -2,13 +2,13 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:h2:mem:mydb
-    username: sa
-    password: password
-    driverClassName: org.h2.Driver
+    url: jdbc:mariadb://metadata-db:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: validate
       use-new-id-generator-mappings: false
@@ -19,7 +19,11 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: gateway-service
+    name: query-service
+  rabbitmq:
+    host: broker-service
+    username: fda
+    password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
     gateway:
@@ -28,7 +32,7 @@ spring:
           useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
-  port: 9095
+  port: 9093
   ssl:
     enabled: true
     key-alias: "${KEY_ALIAS}"
@@ -43,7 +47,23 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: discovery-service
+  instance:
+    hostname: query-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9093
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"
   ready.path: /ready
+  jwt:
+    issuer: "${JWT_ISSUER}"
+    public_key: "${JWT_PUBKEY}"
+  client_secret: "${DBREPO_CLIENT_SECRET}"
+  client_id: "${CLIENT_ID}"
+  consumers: 2
+  unsupported: "${NOT_SUPPORTED_KEYWORDS}"
+  elastic:
+    endpoint: search-service:9200
+    username: elastic
+    password: "${ELASTIC_PASSWORD}"

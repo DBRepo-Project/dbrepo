@@ -19,11 +19,16 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: metadata-service
+    name: discovery-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9099
+server:
+  port: 9090
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -31,16 +36,14 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: metadata-service
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl.defaultZone: http://discovery-service:9090/eureka/
+  instance:
+    hostname: discovery-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9090
 fda:
-  ready.path: ./ready
-  pid.base: "${PID_BASE}"
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
-dbrepo:
-  repository-name: "${REPOSITORY_NAME}"
-  base-url: "${BASE_URL}"
-  admin-email: "${ADMIN_MAIL}"
-  earliest-datestamp: "${EARLIEST_DATESTAMP}"
-  deleted-record: "${DELETED_RECORD}"
-  granularity: "${GRANULARITY}"
+  ready.path: /ready

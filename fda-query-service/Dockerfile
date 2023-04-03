@@ -36,6 +36,15 @@ ENV CLIENT_ID=dbrepo-client
 ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 ENV NOT_SUPPORTED_KEYWORDS=\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
+ENV KEY_ALIAS=query-service
+ENV KEY_PASS=password
+ENV KEY_STORE=./server.keystore
+ENV KEY_STORE_PASS=password
+
+COPY ./server.keystore ./server.keystore
+COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+
+RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

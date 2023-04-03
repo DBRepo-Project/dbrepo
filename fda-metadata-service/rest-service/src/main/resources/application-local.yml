@@ -2,7 +2,7 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:mariadb://metadata-db:3306/fda
+    url: jdbc:mariadb://localhost:3306/fda
     driver-class-name: org.mariadb.jdbc.Driver
     username: root
     password: dbrepo
@@ -22,8 +22,20 @@ spring:
     name: metadata-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9099
+server:
+  port: 9099
+  ssl:
+    enabled: true
+    key-alias: metadata-service
+    key-store: ./server.keystore
+    key-store-type: jks
+    key-store-password: password
+    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -31,7 +43,11 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: metadata-service
+  instance:
+    hostname: metadata-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9099
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready

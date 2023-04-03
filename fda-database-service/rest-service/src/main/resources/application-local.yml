@@ -22,12 +22,24 @@ spring:
     name: database-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
   rabbitmq:
     host: localhost
     username: fda
     password: fda
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9092
+server:
+  port: 9092
+  ssl:
+    enabled: true
+    key-alias: database-service
+    key-store: ./server.keystore
+    key-store-type: jks
+    key-store-password: password
+    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -35,7 +47,11 @@ logging:
     at.tuwien.: info
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: database-service
+  instance:
+    hostname: database-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9092
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   elastic:

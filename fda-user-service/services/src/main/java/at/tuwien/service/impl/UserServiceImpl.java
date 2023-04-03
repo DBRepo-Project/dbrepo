@@ -4,10 +4,9 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RealmNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.gateway.AuthenticationServiceGateway;
+import at.tuwien.gateway.GatewayServiceGateway;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.UserService;
@@ -24,11 +23,11 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private final AuthenticationServiceGateway authenticationServiceGateway;
+    private final GatewayServiceGateway authenticationServiceGateway;
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           AuthenticationServiceGateway authenticationServiceGateway) {
+                           GatewayServiceGateway authenticationServiceGateway) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.authenticationServiceGateway = authenticationServiceGateway;
@@ -50,8 +49,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(SignupRequestDto data) throws RealmNotFoundException, RemoteUnavailableException,
-            UserNotFoundException {
+    public User create(SignupRequestDto data) throws RemoteUnavailableException, UserNotFoundException {
         final TokenDto dto = authenticationServiceGateway.getToken();
         log.debug("obtained authentication token");
         final CreateUserDto userDto = userMapper.signupRequestDtoToCreateUserDto(data);

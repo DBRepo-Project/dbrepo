@@ -4,10 +4,9 @@ import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.TokenDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.gateway.AuthenticationServiceGateway;
+import at.tuwien.gateway.GatewayServiceGateway;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -18,14 +17,14 @@ import org.springframework.web.client.RestTemplate;
 
 @Log4j2
 @Service
-public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGateway {
+public class GatewayServiceGatewayImpl implements GatewayServiceGateway {
 
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public AuthenticationServiceGatewayImpl(@Qualifier("keycloakRestTemplate") RestTemplate restTemplate,
-                                            GatewayConfig gatewayConfig) {
+    public GatewayServiceGatewayImpl(RestTemplate restTemplate,
+                                     GatewayConfig gatewayConfig) {
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
     }
@@ -39,7 +38,7 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
         payload.add("password", gatewayConfig.getKeycloakPassword());
         payload.add("grant_type", "password");
         payload.add("client_id", "admin-cli");
-        final String url = "/realms/master/protocol/openid-connect/token";
+        final String url = "/api/auth/realms/master/protocol/openid-connect/token";
         log.debug("call authentication service {}", url);
         final ResponseEntity<TokenDto> response;
         try {
@@ -63,7 +62,7 @@ public class AuthenticationServiceGatewayImpl implements AuthenticationServiceGa
         headers.add("Authorization", "Bearer: " + token);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/admin/realms/dbrepo/users", HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
+            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users", HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new RemoteUnavailableException("Failed to create user", e);

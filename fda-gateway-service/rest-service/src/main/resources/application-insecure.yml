@@ -2,13 +2,13 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:mariadb://metadata-db:3306/fda
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: "${METADATA_USERNAME}"
-    password: "${METADATA_PASSWORD}"
+    url: jdbc:h2:mem:mydb
+    username: sa
+    password: password
+    driverClassName: org.h2.Driver
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.MariaDBDialect
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
       use-new-id-generator-mappings: false
@@ -19,11 +19,23 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: user-service
+    name: gateway-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
-server.port: 9098
+server:
+  port: 9095
+  ssl:
+    enabled: true
+    key-alias: "${KEY_ALIAS}"
+    key-store: "${KEY_STORE}"
+    key-store-type: jks
+    key-store-password: "${KEY_STORE_PASS}"
+    key-password: "${KEY_PASS}"
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -31,15 +43,11 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: user-service
+  instance:
+    hostname: discovery-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9095
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: /ready
-  gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  keycloak:
-    endpoint: https://authentication-service:8443/
-    username: "${KEYCLOAK_ADMIN}"
-    password: "${KEYCLOAK_ADMIN_PASSWORD}"
-  jwt:
-    issuer: "${JWT_ISSUER}"
-    public_key: "${JWT_PUBKEY}"

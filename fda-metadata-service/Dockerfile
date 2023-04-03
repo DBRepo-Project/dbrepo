@@ -33,6 +33,15 @@ ENV EARLIEST_DATESTAMP="2022-09-17T18:23:00Z"
 ENV DELETED_RECORD=persistent
 ENV GRANULARITY="YYYY-MM-DDThh:mm:ssZ"
 ENV LOG_LEVEL=debug
+ENV KEY_ALIAS=metadata-service
+ENV KEY_PASS=password
+ENV KEY_STORE=./server.keystore
+ENV KEY_STORE_PASS=password
+
+COPY ./server.keystore ./server.keystore
+COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+
+RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

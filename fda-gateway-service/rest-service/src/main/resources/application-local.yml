@@ -43,7 +43,11 @@ logging:
     at.tuwien.: info
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: gateway-service
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+  instance:
+    hostname: gateway-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9095
+  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready

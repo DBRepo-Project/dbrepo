@@ -22,9 +22,21 @@ spring:
     name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
+    gateway:
+      httpclient:
+        ssl:
+          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
-server.port: 9091
+server:
+  port: 9091
+  ssl:
+    enabled: true
+    key-alias: container-service
+    key-store: ./server.keystore
+    key-store-type: jks
+    key-store-password: password
+    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -32,7 +44,11 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
-  instance.hostname: container-service
+  instance:
+    hostname: container-service
+    non-secure-port-enabled: false
+    secure-port-enabled: true
+    secure-port: 9091
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   network: userdb

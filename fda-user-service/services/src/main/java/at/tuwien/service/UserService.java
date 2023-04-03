@@ -1,13 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.RealmNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserNotFoundException;
 
-import java.security.Principal;
 import java.util.List;
 
 public interface UserService {
@@ -28,7 +25,15 @@ public interface UserService {
      */
     User findByUsername(String username) throws UserNotFoundException;
 
-    User create(SignupRequestDto data) throws RealmNotFoundException, RemoteUnavailableException, UserNotFoundException;
+    /**
+     * Create a user in the authentication service.
+     *
+     * @param data The user data.
+     * @return The user, if successful.
+     * @throws RemoteUnavailableException
+     * @throws UserNotFoundException
+     */
+    User create(SignupRequestDto data) throws RemoteUnavailableException, UserNotFoundException;
 
     /**
      * Finds a user by id.

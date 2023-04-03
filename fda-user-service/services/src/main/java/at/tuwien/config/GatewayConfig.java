@@ -14,9 +14,6 @@ public class GatewayConfig {
     @Value("${fda.gateway.endpoint}")
     private String gatewayEndpoint;
 
-    @Value("${fda.keycloak.endpoint}")
-    private String keycloakEndpoint;
-
     @Value("${fda.keycloak.username}")
     private String keycloakUsername;
 
@@ -24,17 +21,9 @@ public class GatewayConfig {
     private String keycloakPassword;
 
     @Bean
-    public RestTemplate gatewayRestTemplate() {
+    public RestTemplate restTemplate() {
         final RestTemplate restTemplate =  new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
         return restTemplate;
     }
-
-    @Bean
-    public RestTemplate keycloakRestTemplate() {
-        final RestTemplate restTemplate =  new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(keycloakEndpoint));
-        return restTemplate;
-    }
-
 }
