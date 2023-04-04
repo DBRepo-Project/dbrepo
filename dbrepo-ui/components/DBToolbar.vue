@@ -31,6 +31,13 @@
         <v-btn v-if="!loading && canModify && isResearcher" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import CSV
         </v-btn>
+        <DownloadButton
+          v-if="database?.identifier"
+          :pid="database.identifier.id"
+          color="secondary"
+          class="mr-2 mb-1 white--text">
+          <v-icon left>mdi-code-tags</v-icon> Identifier .xml
+        </DownloadButton>
         <v-btn v-if="!loading && canRead && isResearcher" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
@@ -66,8 +73,10 @@
 
 <script>
 import { isResearcher } from '@/utils'
+import DownloadButton from '@/components/identifier/DownloadButton.vue'
 
 export default {
+  components: { DownloadButton },
   data () {
     return {
       tab: null,

@@ -11,71 +11,25 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save">
+        <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 ml-2" color="primary" :disabled="error || !executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility && !query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
+        <v-btn v-if="result_visibility && query.result_number" class="mb-1 ml-2" :loading="downloadLoading" @click.stop="downloadData">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
-        <v-btn v-if="result_visibility && query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
-          <v-icon left>mdi-download</v-icon> Data .csv
-        </v-btn>
-        <v-btn
-          v-if="query.identifier"
-          color="secondary"
-          class="ml-2"
-          :loading="metadataLoading"
-          @click.stop="download('text/xml')">
-          <v-icon left>mdi-code-tags</v-icon> Metadata .xml
-        </v-btn>
+        <DownloadButton v-if="query.identifier" :pid="query.identifier.id" color="secondary" class="mb-1 ml-2">
+          <v-icon left>mdi-code-tags</v-icon> Identifier .xml
+        </DownloadButton>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card flat tile>
-      <v-card-title>
-        Subset Information
-      </v-card-title>
+    <v-card v-if="query && query.identifier" flat tile>
+      <v-card-title>Identifier</v-card-title>
       <v-card-text>
-        <v-alert
-          v-if="!loadingQuery && !query.is_persisted && canWrite"
-          border="left"
-          color="info">
-          Query is not yet saved in the query store, <a @click="save">save</a> it to view it later.
-        </v-alert>
         <v-list dense>
           <v-list-item>
-            <v-list-item-icon>
-              <v-icon v-if="!database">mdi-database-outline</v-icon>
-              <v-icon v-if="database" :color="database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                Database Visibility
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
-                <span v-if="database">{{ database.is_public ? 'Public' : 'Private' }}</span>
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Database Name
-              </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
-                <span v-if="database">{{ database.name }}</span>
-              </v-list-item-content>
-              <div v-if="database && database.identifier">
-                <v-list-item-title class="mt-2">
-                  Database License
-                </v-list-item-title>
-                <v-list-item-content>
-                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
-                </v-list-item-content>
-              </div>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item v-if="query && query.identifier">
             <v-list-item-icon>
               <v-icon>mdi-lock-clock</v-icon>
             </v-list-item-icon>
@@ -140,6 +94,52 @@
               <Citation :pid="pid" />
             </v-list-item-content>
           </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+    <v-divider v-if="query && query.identifier" />
+    <v-card flat tile>
+      <v-card-title>
+        Subset Information
+      </v-card-title>
+      <v-card-text>
+        <v-alert
+          v-if="!loadingQuery && !query.is_persisted && canWrite"
+          border="left"
+          color="info">
+          Query is not yet saved in the query store, <a @click="save">save</a> it to view it later.
+        </v-alert>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon v-if="!database">mdi-database-outline</v-icon>
+              <v-icon v-if="database" :color="database.is_public ? 'success' : 'error'">mdi-database-outline</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                Database Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database">{{ database.is_public ? 'Public' : 'Private' }}</span>
+              </v-list-item-content>
+              <v-list-item-title class="mt-2">
+                Database Name
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database">{{ database.name }}</span>
+              </v-list-item-content>
+              <div v-if="database && database.identifier">
+                <v-list-item-title class="mt-2">
+                  Database License
+                </v-list-item-title>
+                <v-list-item-content>
+                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                </v-list-item-content>
+              </div>
+            </v-list-item-content>
+          </v-list-item>
           <v-list-item>
             <v-list-item-icon>
               <v-icon>mdi-text-short</v-icon>
@@ -202,6 +202,7 @@
         </v-list>
       </v-card-text>
     </v-card>
+    <v-divider />
     <QueryResults
       id="query-results"
       ref="queryResults"
@@ -221,6 +222,7 @@
 import Persist from '@/components/dialogs/Persist'
 import Citation from '@/components/identifier/Citation'
 import Banner from '@/components/identifier/Banner'
+import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 
 export default {
@@ -228,7 +230,8 @@ export default {
   components: {
     Persist,
     Citation,
-    Banner
+    Banner,
+    DownloadButton
   },
   data () {
     return {
@@ -261,7 +264,6 @@ export default {
       loadingDatabase: false,
       loadingIdentifier: false,
       loadingQuery: true,
-      metadataLoading: false,
       downloadLoading: false,
       error: false,
       promises: []
@@ -373,35 +375,6 @@ export default {
     loadResult () {
       this.$refs.queryResults.reExecute(this.query.id)
       this.$refs.queryResults.reExecuteCount(this.query.id)
-    },
-    async download (mime) {
-      if (mime === 'text/csv') {
-        this.downloadLoading = true
-      } else if (mime === 'text/xml') {
-        this.metadataLoading = true
-      }
-      try {
-        const config = this.config
-        config.headers.Accept = mime
-        const res = await this.$axios.get(`/api/pid/${this.query.identifier.id}`, config)
-        console.debug('export identifier', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        if (mime === 'text/csv') {
-          link.setAttribute('download', 'subset.csv')
-        } else if (mime === 'text/xml') {
-          link.setAttribute('download', 'identifier.xml')
-        }
-        document.body.appendChild(link)
-        link.click()
-      } catch (err) {
-        console.error('Could not export identifier', err)
-        this.$toast.error('Could not export identifier')
-        this.error = true
-      }
-      this.downloadLoading = false
-      this.metadataLoading = false
     },
     async downloadData () {
       this.downloadLoading = true
