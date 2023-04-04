@@ -58,8 +58,15 @@
           v-if="!token"
           class="mr-2"
           color="secondary"
-          @click="login">
+          to="/login">
           <v-icon left>mdi-login</v-icon> Login
+        </v-btn>
+        <v-btn
+          v-if="!token"
+          class="mr-2"
+          color="primary"
+          to="/signup">
+          <v-icon left>mdi-account-plus</v-icon> Signup
         </v-btn>
         <v-btn v-if="user" to="/user" plain>
           {{ user.username }} <sup v-if="isDeveloper">
@@ -287,8 +294,9 @@ export default {
       }
       const exp = tokenToExp(this.token)
       if (exp > new Date()) {
-        console.debug('token will be refreshed', exp, 'timeout is', exp - new Date())
-        setTimeout(() => this.refreshTokenIfNecessary(), exp - new Date())
+        const timeout = (exp - new Date()) > 0 ? exp - new Date() : 0
+        console.debug('token will be refreshed', exp, 'timeout is', timeout)
+        setTimeout(() => this.refreshTokenIfNecessary(), timeout)
         return
       }
       const refreshExp = tokenToExp(this.refreshToken)

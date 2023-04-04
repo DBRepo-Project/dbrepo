@@ -48,7 +48,7 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance:
-    hostname: container-service
+    hostname: database-service
     non-secure-port-enabled: false
     secure-port-enabled: true
     secure-port: 9092

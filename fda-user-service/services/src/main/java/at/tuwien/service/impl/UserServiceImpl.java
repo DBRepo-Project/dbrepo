@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.CreateUserDto;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.auth.AdminToken;
+import at.tuwien.api.auth.TokenDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserNotFoundException;
@@ -21,7 +21,6 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final AdminToken adminToken;
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final GatewayServiceGateway authenticationServiceGateway;
@@ -29,7 +28,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
                            GatewayServiceGateway authenticationServiceGateway) {
-        this.adminToken = AdminToken.getInstance();
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.authenticationServiceGateway = authenticationServiceGateway;
@@ -52,8 +50,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(SignupRequestDto data) throws RemoteUnavailableException, UserNotFoundException {
+        final TokenDto tokenDto = authenticationServiceGateway.getToken();
         final CreateUserDto userDto = userMapper.signupRequestDtoToCreateUserDto(data);
-        authenticationServiceGateway.createUser(adminToken.getToken(), userDto);
+        authenticationServiceGateway.createUser(tokenDto.getAccessToken(), userDto);
         final Optional<User> optional = userRepository.findByUsername(data.getUsername());
         if (optional.isEmpty()) {
             /* should never occur */

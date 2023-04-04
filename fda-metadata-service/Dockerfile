@@ -24,7 +24,7 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=https://gateway-service:9095
 ENV PID_BASE="https://example.com/pid/"
 ENV REPOSITORY_NAME="Example Repository"
 ENV BASE_URL="https://example.com"
@@ -38,10 +38,12 @@ ENV KEY_PASS=password
 ENV KEY_STORE=./server.keystore
 ENV KEY_STORE_PASS=password
 
-COPY ./server.keystore ./server.keystore
-COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+WORKDIR /app
 
-RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
+COPY ./server.keystore ./server.keystore
+COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
+
+RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -52,4 +54,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./metadata-service.ja
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./metadata-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./metadata-service.jar"]

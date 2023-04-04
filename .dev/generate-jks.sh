@@ -17,17 +17,27 @@ services[9098]=user
 services[9099]=metadata
 
 function generate () {
-  echo "... generate $1-service certificate"
+  if [ -z "$2" ]; then
+    CN="$1"
+  else
+    CN="$1-$2"
+  fi
+  echo "... generate $CN certificate"
   keytool -genkeypair -storepass ${STORE_PASS} -keypass ${KEY_PASS} -storetype PKCS12 -keyalg RSA -keysize 2048 \
-    -dname "CN=$1-service, OU=DS-IFS, O=TU Wien, C=AT" -alias "$1-service" -ext "SAN:c=DNS:localhost,IP:127.0.0.1" \
+    -dname "CN=$CN, OU=DS-IFS, O=TU Wien, C=AT" -alias "$CN" -ext "SAN:c=DNS:localhost,IP:127.0.0.1" \
     -keystore ./server.keystore
 }
 
 function sign () {
-  echo "... sign $1-service certificate"
-  keytool -alias "$1-service" -certreq -storepass ${STORE_PASS} -keyalg RSA \
+  if [ -z "$2" ]; then
+    CN="$1"
+  else
+    CN="$1-$2"
+  fi
+  echo "... sign $CN certificate"
+  keytool -alias "$CN" -certreq -storepass ${STORE_PASS} -keyalg RSA \
     -keystore ./server.keystore | keytool -alias intermediate -gencert -storepass ${STORE_PASS} \
-    -keyalg RSA | keytool -alias "$1-service" -importcert -storepass ${STORE_PASS} -keyalg RSA \
+    -keyalg RSA | keytool -alias "$CN" -importcert -storepass ${STORE_PASS} -keyalg RSA \
     -keystore ./server.keystore -noprompt -trustcacerts
 }
 
@@ -37,9 +47,14 @@ function crt () {
 }
 
 function move () {
-  echo "... move jks to the $1-service"
-  cp ./server.keystore "../fda-$1-service/server.keystore"
-  rm -f "../fda-$1-service/intermediate.crt" && cp ./intermediate.crt "../fda-$1-service/intermediate.crt"
+  if [ -z "$2" ]; then
+    CN="$1"
+  else
+    CN="$1-$2"
+  fi
+  echo "... move jks to the $CN"
+  cp ./server.keystore "../fda-$CN/server.keystore"
+  rm -f "../fda-$CN/root.crt" && cp ./root.crt "../fda-$CN/root.crt"
 }
 
 echo "Remove old JKS(s)"
@@ -69,13 +84,15 @@ keytool -export -alias intermediate -storepass ${STORE_PASS} | keytool -import -
 
 echo "Generating the certificate key pairs"
 for key in "${!services[@]}"; do
-  generate "${services[$key]}"
+  generate "${services[$key]}" "service"
 done
+generate "ui"
 
 echo "Sign the certificates with intermediate certificate"
 for key in "${!services[@]}"; do
-  sign "${services[$key]}"
+  sign "${services[$key]}" "service"
 done
+sign "ui"
 
 echo "Export the trusted keystore"
 keytool -export -alias intermediate -storepass ${STORE_PASS} | keytool -import -alias intermediate \
@@ -89,8 +106,9 @@ crt intermediate ./chain.jks
 
 echo "Copy the JKS(s)"
 for key in "${!services[@]}"; do
-  move "${services[$key]}"
+  move "${services[$key]}" "service"
 done
+move "ui"
 
 echo "Create the authentication service JKS"
 echo "... import private key into the key store"

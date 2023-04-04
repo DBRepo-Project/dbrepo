@@ -19,7 +19,7 @@ spring:
     name: gateway-service
   cloud:
     loadbalancer.ribbon.enabled: false
-management.endpoints.web.exposure.include: health,info,prometheus
+management.endpoints.web.exposure.include: health,info,prometheus,gateway
 server:
   port: 9095
   ssl:

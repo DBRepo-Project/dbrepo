@@ -1,1 +1,3 @@
 server.keystore
+root.crt
+intermediate.crt

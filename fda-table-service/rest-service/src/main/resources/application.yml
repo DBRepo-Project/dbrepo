@@ -50,13 +50,13 @@ eureka:
     secure-port: 9094
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  ready.path: ./ready
+  ready.path: /ready
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
-  gateway.endpoint: http://gateway-service:9095
+  gateway.endpoint: https://gateway-service:9095
   elastic:
     endpoint: search-service:9200
     username: elastic

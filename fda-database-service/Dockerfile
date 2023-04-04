@@ -29,7 +29,7 @@ ENV BROKER_PASSWORD=fda
 ENV SEARCH_ENDPOINT=search-service
 ENV SEARCH_USERNAME=elastic
 ENV SEARCH_PASSWORD=elastic
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=https://gateway-service:9095
 ENV LOG_LEVEL=debug
 ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
@@ -40,10 +40,12 @@ ENV KEY_PASS=password
 ENV KEY_STORE=./server.keystore
 ENV KEY_STORE_PASS=password
 
-COPY ./server.keystore ./server.keystore
-COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+WORKDIR /app
 
-RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
+COPY ./server.keystore ./server.keystore
+COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
+
+RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -54,4 +56,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./database-service.ja
 
 EXPOSE 9092
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./database-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./database-service.jar"]

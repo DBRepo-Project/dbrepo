@@ -40,8 +40,6 @@ public class GatewayServiceGatewayImpl implements GatewayServiceGateway {
         data.set("client_id", "admin-cli");
         final String url = "/api/auth/realms/master/protocol/openid-connect/token";
         log.debug("call authentication service {}", url);
-        log.trace("headers: {}", headers);
-        log.trace("data: {}", data);
         final ResponseEntity<TokenDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), TokenDto.class);
@@ -61,11 +59,10 @@ public class GatewayServiceGatewayImpl implements GatewayServiceGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(token);
-        log.trace("headers: {}", headers);
-        log.trace("data: {}", data);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users", HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
+            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users", HttpMethod.POST,
+                    new HttpEntity<>(data, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new RemoteUnavailableException("Failed to create user", e);

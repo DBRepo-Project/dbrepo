@@ -40,9 +40,9 @@ ENV KEY_STORE_PASS=password
 WORKDIR /app
 
 COPY ./server.keystore ./server.keystore
-COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
 
-RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
+RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready

@@ -27,7 +27,7 @@ ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=https://gateway-service:9095
 ENV SHARED_FILESYSTEM=/tmp
 ENV BROKER_CONSUMERS=2
 ENV LOG_LEVEL=debug
@@ -41,10 +41,12 @@ ENV KEY_PASS=password
 ENV KEY_STORE=./server.keystore
 ENV KEY_STORE_PASS=password
 
-COPY ./server.keystore ./server.keystore
-COPY ./intermediate.crt /etc/ssl/certs/DBRepo_Intermediate_CA.crt
+WORKDIR /app
 
-RUN cat /etc/ssl/certs/DBRepo_Intermediate_CA.crt >> /etc/ssl/certs/ca-certificates.crt
+COPY ./server.keystore ./server.keystore
+COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
+
+RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -55,4 +57,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./query-service.jar
 
 EXPOSE 9093
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./query-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./query-service.jar"]
