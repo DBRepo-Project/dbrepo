@@ -10,6 +10,7 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -57,7 +58,8 @@ public class UserEndpoint {
         log.debug("endpoint create a user, data={}", data);
         final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data));
         log.trace("create user resulted in dto {}", dto);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto);
     }
 
 }

@@ -32,17 +32,19 @@ public class GatewayServiceGatewayImpl implements GatewayServiceGateway {
     @Override
     public TokenDto getToken() throws RemoteUnavailableException {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", MediaType.APPLICATION_FORM_URLENCODED.toString());
-        final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
-        payload.add("username", gatewayConfig.getKeycloakUsername());
-        payload.add("password", gatewayConfig.getKeycloakPassword());
-        payload.add("grant_type", "password");
-        payload.add("client_id", "admin-cli");
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        final MultiValueMap<String, String> data = new LinkedMultiValueMap<>();
+        data.set("username", gatewayConfig.getKeycloakUsername());
+        data.set("password", gatewayConfig.getKeycloakPassword());
+        data.set("grant_type", "password");
+        data.set("client_id", "admin-cli");
         final String url = "/api/auth/realms/master/protocol/openid-connect/token";
         log.debug("call authentication service {}", url);
+        log.trace("headers: {}", headers);
+        log.trace("data: {}", data);
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), TokenDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
             throw new RemoteUnavailableException("Failed to obtain admin token", e);
@@ -57,9 +59,10 @@ public class GatewayServiceGatewayImpl implements GatewayServiceGateway {
     @Override
     public void createUser(String token, CreateUserDto data) throws RemoteUnavailableException {
         final HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", MediaType.APPLICATION_JSON.toString());
-        headers.add("Accept", MediaType.APPLICATION_JSON.toString());
-        headers.add("Authorization", "Bearer: " + token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(token);
+        log.trace("headers: {}", headers);
+        log.trace("data: {}", data);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users", HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);

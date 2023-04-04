@@ -31,7 +31,7 @@ server:
   port: 9098
   ssl:
     enabled: true
-    key-alias: server
+    key-alias: user-service
     key-store: "./server.keystore"
     key-store-type: jks
     key-store-password: password
@@ -51,7 +51,7 @@ eureka:
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   ready.path: ./ready
-  gateway.endpoint: https://localhost:9095
+  gateway.endpoint: https://gateway-service:9095
   keycloak:
     username: fda
     password: fda
