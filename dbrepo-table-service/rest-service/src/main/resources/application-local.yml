@@ -1,0 +1,46 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: jdbc:mariadb://localhost:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    password: dbrepo
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    hibernate:
+      ddl-auto: validate
+      use-new-id-generator-mappings: false
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: fda
+        jdbc:
+          time_zone: UTC
+  application:
+    name: table-service
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
+  cloud:
+    loadbalancer.ribbon.enabled: false
+management.endpoints.web.exposure.include: health,info,prometheus
+server.port: 9094
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+eureka:
+  instance.hostname: table-service
+  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
+fda:
+  ready.path: ./ready
+  gateway.endpoint: http://localhost:9095
+  elastic:
+    endpoint: localhost:9200
+    username: elastic
+    password: elastic

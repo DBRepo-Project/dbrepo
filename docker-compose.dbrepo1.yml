@@ -48,7 +48,7 @@ services:
     logging:
       driver: json-file
 
-  discovery-service:
+  dbrepo-discovery-service:
     restart: on-failure
     container_name: dbrepo-discovery-service
     hostname: discovery-service
@@ -187,6 +187,8 @@ services:
       core:
     env_file:
       - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=doi
     depends_on:
       dbrepo-query-service:
         condition: service_healthy
