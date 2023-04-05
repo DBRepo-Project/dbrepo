@@ -59,6 +59,11 @@ public class User {
     private String databasePassword;
 
     @Column(nullable = false)
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Role> roles;
+
+    @Column(nullable = false)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
 

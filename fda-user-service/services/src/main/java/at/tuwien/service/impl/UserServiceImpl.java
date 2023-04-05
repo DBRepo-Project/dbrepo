@@ -3,12 +3,15 @@ package at.tuwien.service.impl;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Credential;
+import at.tuwien.entities.user.Role;
+import at.tuwien.entities.user.RoleMapping;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.CredentialRepository;
+import at.tuwien.repository.jpa.RoleMappingRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -41,13 +44,15 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final CredentialRepository credentialRepository;
+    private final RoleMappingRepository roleMappingRepository;
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           CredentialRepository credentialRepository) {
+                           CredentialRepository credentialRepository, RoleMappingRepository roleMappingRepository) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.credentialRepository = credentialRepository;
+        this.roleMappingRepository = roleMappingRepository;
     }
 
     @Override
@@ -66,7 +71,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(SignupRequestDto data, Realm realm) throws RemoteUnavailableException, UserNotFoundException,
+    public User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException,
             UserAlreadyExistsException {
         /* check */
         final Optional<User> optional = userRepository.findByUsername(data.getUsername());
@@ -75,13 +80,6 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException("User with username " + data.getUsername() + " already exists");
         }
         /* create secret */
-
-        /* save */
-        final User tmp = userMapper.signupRequestDtoToUser(data);
-        tmp.setEmailVerified(false);
-        tmp.setEnabled(true);
-        tmp.setRealmId(realm.getId());
-        tmp.setCreatedTimestamp(Instant.now().toEpochMilli());
         final byte[] salt = getSalt();
         final StringBuilder secretData = new StringBuilder("{\"value\":\"")
                 .append(encodedCredential(data.getPassword(), DEFAULT_ITERATIONS, salt, DERIVED_KEY_SIZE))
@@ -95,10 +93,22 @@ public class UserServiceImpl implements UserService {
                 .priority(10)
                 .credentialData("{\"hashIterations\":" + DEFAULT_ITERATIONS + ",\"algorithm\":\"" + ID + "\",\"additionalParameters\":{}}")
                 .build();
+        /* save */
+        final User tmp = userMapper.signupRequestDtoToUser(data);
+        tmp.setEmailVerified(false);
+        tmp.setEnabled(true);
+        tmp.setRealmId(realm.getId());
+        tmp.setCreatedTimestamp(Instant.now().toEpochMilli());
         final User user = userRepository.save(tmp);
         entity.setUserId(user.getId());
         final Credential credential = credentialRepository.save(entity);
         user.setCredentials(List.of(credential));
+        final RoleMapping tmp2 = RoleMapping.builder()
+                .userId(user.getId())
+                .roleId(role.getId())
+                .build();
+        roleMappingRepository.save(tmp2);
+        user.setRoles(List.of(role));
         log.info("Created user with id {}", user.getId());
         log.debug("created user {}", user);
         return user;
@@ -116,7 +126,6 @@ public class UserServiceImpl implements UserService {
 
     private String encodedCredential(String rawPassword, int iterations, byte[] salt, int derivedKeySize) {
         final String rawPasswordWithPadding = PaddingUtils.padding(rawPassword, MAX_PADDING_LENGTH);
-        log.trace("padding: {}", rawPasswordWithPadding);
         final KeySpec spec = new PBEKeySpec(rawPasswordWithPadding.toCharArray(), salt, iterations, derivedKeySize);
         try {
             byte[] key = getSecretKeyFactory().generateSecret(spec).getEncoded();

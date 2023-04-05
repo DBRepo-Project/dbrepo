@@ -10,7 +10,7 @@ export function authenticate (clientSecret, username, password) {
     password,
     grant_type: 'password',
     client_secret: clientSecret,
-    scope: 'openid roles'
+    scope: 'openid profile roles'
   }
   return axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
     headers: { ContentType: 'application/form-data' }

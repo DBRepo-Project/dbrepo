@@ -3,12 +3,11 @@ package at.tuwien.endpoint;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.entities.auth.Realm;
-import at.tuwien.exception.RealmNotFoundException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.entities.user.Role;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.RealmService;
+import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,12 +32,15 @@ public class UserEndpoint {
     private final UserMapper userMapper;
     private final UserService userService;
     private final RealmService realmService;
+    private final RoleService roleService;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService,
+                        RoleService roleService) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.realmService = realmService;
+        this.roleService = roleService;
     }
 
     @GetMapping
@@ -61,10 +63,11 @@ public class UserEndpoint {
     @Operation(summary = "Create a user")
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserNotFoundException, RemoteUnavailableException, RealmNotFoundException,
-            UserAlreadyExistsException {
+            UserAlreadyExistsException, RoleNotFoundException {
         log.debug("endpoint create a user, data={}", data);
         final Realm realm = realmService.find("dbrepo");
-        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data, realm));
+        final Role role = roleService.find("default-researcher-roles");
+        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data, realm, role));
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
