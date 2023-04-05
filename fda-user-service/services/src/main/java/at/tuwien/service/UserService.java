@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
@@ -8,6 +9,7 @@ import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface UserService {
@@ -28,7 +30,10 @@ public interface UserService {
      */
     User findByUsername(String username) throws UserNotFoundException;
 
-    User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException, UserAlreadyExistsException;
+    User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException,
+            UserAlreadyExistsException;
+
+    User modify(UserUpdateDto data, Principal principal) throws UserNotFoundException;
 
     User find(String id) throws UserNotFoundException;
 }

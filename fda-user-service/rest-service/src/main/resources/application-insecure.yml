@@ -52,9 +52,7 @@ eureka:
 fda:
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  keycloak:
-    username: "${KEYCLOAK_ADMIN}"
-    password: "${KEYCLOAK_ADMIN_PASSWORD}"
+  default_role: "${DEFAULT_ROLE}"
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"

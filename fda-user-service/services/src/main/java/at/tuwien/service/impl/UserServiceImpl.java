@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Credential;
 import at.tuwien.entities.user.Role;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -79,6 +81,11 @@ public class UserServiceImpl implements UserService {
             log.error("User with username {} already exists", data.getUsername());
             throw new UserAlreadyExistsException("User with username " + data.getUsername() + " already exists");
         }
+        final Optional<User> optional2 = userRepository.findByEmail(data.getEmail());
+        if (optional2.isPresent()) {
+            log.error("User with email {} already exists", data.getUsername());
+            throw new UserAlreadyExistsException("User with email " + data.getUsername() + " already exists");
+        }
         /* create secret */
         final byte[] salt = getSalt();
         final StringBuilder secretData = new StringBuilder("{\"value\":\"")
@@ -111,6 +118,18 @@ public class UserServiceImpl implements UserService {
         user.setRoles(List.of(role));
         log.info("Created user with id {}", user.getId());
         log.debug("created user {}", user);
+        return user;
+    }
+
+    @Override
+    public User modify(UserUpdateDto data, Principal principal) throws UserNotFoundException {
+        /* check */
+        final User entity = findByUsername(principal.getName());
+        entity.setFirstname(data.getFirstname());
+        entity.setLastname(data.getLastname());
+        /* save */
+        final User user = userRepository.save(entity);
+        log.info("Modified user with id {}", user.getId());
         return user;
     }
 

@@ -2,6 +2,9 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
+import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.exception.*;
@@ -15,11 +18,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,17 +35,19 @@ import java.util.stream.Collectors;
 public class UserEndpoint {
 
     private final UserMapper userMapper;
+    private final RoleService roleService;
     private final UserService userService;
     private final RealmService realmService;
-    private final RoleService roleService;
+    private final AuthenticationConfig authenticationConfig;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService,
-                        RoleService roleService) {
+    public UserEndpoint(UserMapper userMapper, RoleService roleService, UserService userService,
+                        RealmService realmService, AuthenticationConfig authenticationConfig) {
         this.userMapper = userMapper;
+        this.roleService = roleService;
         this.userService = userService;
         this.realmService = realmService;
-        this.roleService = roleService;
+        this.authenticationConfig = authenticationConfig;
     }
 
     @GetMapping
@@ -66,10 +73,25 @@ public class UserEndpoint {
             UserAlreadyExistsException, RoleNotFoundException {
         log.debug("endpoint create a user, data={}", data);
         final Realm realm = realmService.find("dbrepo");
-        final Role role = roleService.find("default-researcher-roles");
+        final Role role = roleService.find(authenticationConfig.getDefaultRole());
         final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data, realm, role));
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
+                .body(dto);
+    }
+
+    @PutMapping
+    @Transactional
+    @PreAuthorize("hasAuthority('modify-user-information')")
+    @Timed(value = "user.modify", description = "Time needed to modify a user in the metadata database")
+    @Operation(summary = "Modify a user")
+    public ResponseEntity<UserDto> modify(@NotNull @Valid @RequestBody UserUpdateDto data,
+                                          @NotNull Principal principal)
+            throws UserNotFoundException {
+        log.debug("endpoint modify a user, data={}", data);
+        final UserDto dto = userMapper.userToUserDto(userService.modify(data, principal));
+        log.trace("modify user resulted in dto {}", dto);
+        return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
     }
 

@@ -16,12 +16,6 @@ public class GatewayConfig {
     @Value("${fda.gateway.endpoint}")
     private String gatewayEndpoint;
 
-    @Value("${fda.keycloak.username}")
-    private String keycloakUsername;
-
-    @Value("${fda.keycloak.password}")
-    private String keycloakPassword;
-
     private final AuthenticationMapper authenticationMapper;
 
     @Autowired

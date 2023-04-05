@@ -4,7 +4,7 @@ TAG ?= latest
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service build-user-service
 
 build-metadata-db:
 	mvn -f ./fda-metadata-db/pom.xml clean install
@@ -32,6 +32,9 @@ build-query-service: build-metadata-db
 
 build-metadata-service: build-metadata-db
 	mvn -f ./fda-metadata-service/pom.xml clean package -DskipTests
+
+build-user-service: build-metadata-db
+	mvn -f ./fda-user-service/pom.xml clean package -DskipTests
 
 build-semantics-service:
 	bash ./fda-semantics-service/build.sh
@@ -85,6 +88,9 @@ tag-gateway:
 tag-query:
 	docker tag fda-query-service:latest "dbrepo/query-service:${TAG}"
 
+tag-user:
+	docker tag fda-user-service:latest "dbrepo/user-service:${TAG}"
+
 tag-table:
 	docker tag fda-table-service:latest "dbrepo/table-service:${TAG}"
 
@@ -129,6 +135,9 @@ release-gateway:
 release-query:
 	docker push "dbrepo/query-service:${TAG}"
 
+release-user:
+	docker push "dbrepo/user-service:${TAG}"
+
 release-table:
 	docker push "dbrepo/table-service:${TAG}"
 
@@ -144,7 +153,7 @@ release-search:
 release-metadata:
 	docker push "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service
+test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
 
 test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./fda-identifier-service/pom.xml clean test verify
@@ -170,6 +179,9 @@ test-table-service: clean build-metadata-db build-table-service
 
 test-metadata-service: clean build-metadata-db build-metadata-service
 	mvn -f ./fda-metadata-service/pom.xml clean test verify
+
+test-user-service: clean build-metadata-db build-user-service
+	mvn -f ./fda-user-service/pom.xml clean test verify
 
 test-semantics-service: build-semantics-service
 	bash ./fda-semantics-service/test.sh
