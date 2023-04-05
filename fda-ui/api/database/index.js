@@ -23,6 +23,17 @@ export function modifyVisibility (token, containerId, databaseId, isPublic) {
   })
 }
 
+export function modifyOwnership (token, containerId, databaseId, username) {
+  const payload = {
+    username
+  }
+  return axios.put(`/api/container/${containerId}/database/${databaseId}/transfer`, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
 export function findDatabase (token, containerId, databaseId) {
   return axios.get(`/api/container/${containerId}/database/${databaseId}`, {
     headers: {

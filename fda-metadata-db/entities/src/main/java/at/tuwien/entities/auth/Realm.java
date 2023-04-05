@@ -1,6 +1,7 @@
 package at.tuwien.entities.auth;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
@@ -16,7 +17,9 @@ public class Realm {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(nullable = false)
+    @GeneratedValue(generator = "realm-uuid")
+    @GenericGenerator(name = "realm-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private String id;
 
     @Column(nullable = false)
@@ -24,8 +27,5 @@ public class Realm {
 
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
-    private String sslRequired;
 
 }

@@ -51,10 +51,16 @@ export function tokenToUser (token) {
 
 export function tokenToExp (token) {
   const data = jwt_decode(token)
+  if (!data) {
+    return new Date()
+  }
   return new Date(data.exp * 1000)
 }
 
 export function tokenToRoles (token) {
   const data = jwt_decode(token)
-  return data.realm_access.roles
+  if (!data) {
+    return []
+  }
+  return data.realm_access.roles || []
 }

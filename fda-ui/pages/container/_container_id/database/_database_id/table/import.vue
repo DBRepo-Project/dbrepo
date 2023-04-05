@@ -187,7 +187,9 @@
 <script>
 import TableSchema from '@/components/TableSchema'
 import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
-import { listTables } from '@/api/table'
+import { findContainer } from '@/api/container'
+import { listTables, createTable, dataImport } from '@/api/table'
+import { determineDataTypes } from '@/api/analyse'
 
 export default {
   name: 'TableFromCSV',
@@ -317,7 +319,6 @@ export default {
         this.file = res.data
       } catch (err) {
         console.error('Failed to upload .csv data', err)
-        console.debug('failed to upload .csv data, does the .csv contain a header line?')
         this.$toast.error('Could not upload data')
       }
       this.loading = false
@@ -325,8 +326,7 @@ export default {
     async analyse () {
       this.loading = true
       try {
-        const payload = { filepath: `/tmp/${this.file.filename}` }
-        const res = await this.$axios.post('/api/analyse/determinedt', payload, this.config)
+        const res = await determineDataTypes(this.token, `/tmp/${this.file.filename}`)
         const { columns } = res.data
         console.log('data analyse result', columns)
         this.tableCreate.columns = Object.entries(columns)
@@ -334,12 +334,8 @@ export default {
             return {
               name: key,
               type: val,
-              check_expression: null,
-              foreign_key: null,
-              references: null,
               null_allowed: true,
               primary_key: false,
-              unique: false,
               enum_values: []
             }
           })
@@ -382,11 +378,10 @@ export default {
       column.unique = true
     },
     async loadDateFormats () {
-      const getUrl = `/api/container/${this.$route.params.container_id}`
       let getResult
       try {
         this.loading = true
-        getResult = await this.$axios.get(getUrl, this.config)
+        getResult = await findContainer(this.$route.params.container_id)
         this.dateFormats = getResult.data.image.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
         this.loading = false
@@ -415,11 +410,10 @@ export default {
       // bail out if there is a problem with one of the columns
       if (!validColumns.every(Boolean)) { return }
 
-      const createUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`
       let createResult
       try {
         this.loading = true
-        createResult = await this.$axios.post(createUrl, this.tableCreate, this.config)
+        createResult = await createTable(this.token, this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
         this.newTableId = createResult.data.id
         console.debug('created table', createResult.data)
       } catch (err) {
@@ -433,10 +427,9 @@ export default {
         console.error('create table failed', err)
         return
       }
-      const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${createResult.data.id}/data/import`
       let insertResult
       try {
-        insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)
+        insertResult = await dataImport(this.token, this.$route.params.container_id, this.$route.params.database_id, createResult.data.id, this.tableImport)
         console.debug('inserted table', insertResult.data)
       } catch (err) {
         this.loading = false

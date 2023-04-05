@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt --port 3001",
+    "dev": "NODE_OPTIONS=--use-openssl-ca NODE_EXTRA_CA_CERTS=./root.crt nuxt --port 3001",
     "docker": "nuxt > /dev/null",
     "build": "nuxt build",
     "start": "nuxt start",

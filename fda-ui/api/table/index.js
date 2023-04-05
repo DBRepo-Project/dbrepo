@@ -15,3 +15,11 @@ export function createTable (token, containerId, databaseId, payload) {
     }
   })
 }
+
+export function dataImport (token, containerId, databaseId, tableId, payload) {
+  return axios.post(`/api/container/${containerId}/database/${databaseId}/table/${tableId}/data/import`, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}

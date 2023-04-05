@@ -252,7 +252,7 @@ export default {
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
     logout (message) {
-      if (message) {
+      if (typeof message === 'string') {
         this.$toast.warning(message)
       }
       this.$store.commit('SET_TOKEN', null)

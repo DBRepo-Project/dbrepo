@@ -2,9 +2,13 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.entities.auth.Realm;
+import at.tuwien.exception.RealmNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
+import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
+import at.tuwien.service.RealmService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,11 +32,13 @@ public class UserEndpoint {
 
     private final UserMapper userMapper;
     private final UserService userService;
+    private final RealmService realmService;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService) {
         this.userMapper = userMapper;
         this.userService = userService;
+        this.realmService = realmService;
     }
 
     @GetMapping
@@ -54,9 +60,11 @@ public class UserEndpoint {
     @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
     @Operation(summary = "Create a user")
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws UserNotFoundException, RemoteUnavailableException {
+            throws UserNotFoundException, RemoteUnavailableException, RealmNotFoundException,
+            UserAlreadyExistsException {
         log.debug("endpoint create a user, data={}", data);
-        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data));
+        final Realm realm = realmService.find("dbrepo");
+        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data, realm));
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);

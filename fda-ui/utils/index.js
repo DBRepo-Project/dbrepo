@@ -54,10 +54,10 @@ function formatUser (user) {
   if (!user) {
     return null
   }
-  if (!('firstname' in user) || !('lastname' in user) || user.firstname === null || user.lastname === null) {
+  if (!('given_name' in user) || !('family_name' in user) || user.given_name === null || user.family_name === null) {
     return user?.username
   }
-  return user.firstname + ' ' + user.lastname
+  return user.given_name + ' ' + user.family_name
 }
 
 function formatDateUTC (str) {

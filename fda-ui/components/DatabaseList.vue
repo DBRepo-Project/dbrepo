@@ -98,20 +98,20 @@ export default {
   },
   methods: {
     formatOwner (container) {
-      if (!('database' in container)) {
+      if (!('database' in container) || !container.database) {
         return formatUser(container.creator)
       }
       return formatUser(container.database?.owner)
     },
     formatCreators (container) {
       const creators = formatCreators(container)
-      return creators || this.formatCreator(container.creator)
+      return creators || this.formatUser(container.creator)
     },
     canInit (container) {
       if (!this.user) {
         return false
       }
-      if (container.creator.sub !== this.user.sub) {
+      if (container.creator.username !== this.user.username) {
         return false
       }
       return !container.database

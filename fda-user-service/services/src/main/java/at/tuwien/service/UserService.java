@@ -1,8 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.RemoteUnavailableException;
+import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 
 import java.util.List;
@@ -25,22 +27,7 @@ public interface UserService {
      */
     User findByUsername(String username) throws UserNotFoundException;
 
-    /**
-     * Create a user in the authentication service.
-     *
-     * @param data The user data.
-     * @return The user, if successful.
-     * @throws RemoteUnavailableException
-     * @throws UserNotFoundException
-     */
-    User create(SignupRequestDto data) throws RemoteUnavailableException, UserNotFoundException;
+    User create(SignupRequestDto data, Realm realm) throws RemoteUnavailableException, UserNotFoundException, UserAlreadyExistsException;
 
-    /**
-     * Finds a user by id.
-     *
-     * @param id The id.
-     * @return The user.
-     * @throws UserNotFoundException The user was not found in the metadata database.
-     */
     User find(String id) throws UserNotFoundException;
 }

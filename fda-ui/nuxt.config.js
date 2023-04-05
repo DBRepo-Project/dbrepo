@@ -84,7 +84,7 @@ export default {
   proxy: {
     '/api': api,
     '/pid': {
-      target: process.env.API + '/api' || 'https://localhost:9095/api',
+      target: api + '/api',
       changeOrigin: true,
       pathRewrite: {
         '^/pid': '/pid'

@@ -64,6 +64,8 @@
                   id="owner"
                   v-model="modifyOwner.username"
                   :items="users"
+                  item-text="username"
+                  item-value="username"
                   label="Owner"
                   name="owner" />
               </v-col>
@@ -72,8 +74,8 @@
               small
               color="warning"
               class="black--text"
-              @click="updateDatabaseVisibility">
-              Modify Visibility
+              @click="updateDatabaseOwner">
+              Modify Ownership
             </v-btn>
           </v-card-text>
         </v-card>
@@ -91,7 +93,7 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditAccess from '@/components/dialogs/EditAccess'
-import { modifyVisibility } from '@/api/database'
+import { modifyVisibility, modifyOwnership } from '@/api/database'
 
 export default {
   components: {
@@ -186,6 +188,7 @@ export default {
         return
       }
       this.modifyVisibility.is_public = this.database.is_public
+      this.modifyOwner.username = this.database.owner.username
     }
   },
   mounted () {
@@ -194,6 +197,7 @@ export default {
       return
     }
     this.modifyVisibility.is_public = this.database.is_public
+    this.modifyOwner.username = this.database.owner.username
   },
   methods: {
     closeDialog (event) {
@@ -212,6 +216,17 @@ export default {
       } catch (error) {
         console.error('Failed to update database visibility', error)
         this.$toast.error('Failed to update database visibility')
+      }
+      this.loading = false
+    },
+    async updateDatabaseOwner () {
+      try {
+        this.loading = true
+        await modifyOwnership(this.token, this.$route.params.container_id, this.$route.params.database_id, this.modifyOwner.username)
+        this.$toast.success('Successfully updated the database owner')
+      } catch (error) {
+        console.error('Failed to update database owner', error)
+        this.$toast.error('Failed to update database owner')
       }
       this.loading = false
     },

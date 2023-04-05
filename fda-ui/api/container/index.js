@@ -4,6 +4,10 @@ export function listContainers (limit) {
   return axios.get(`/api/container?limit=${limit}`)
 }
 
+export function findContainer (containerId) {
+  return axios.get(`/api/container${containerId}`)
+}
+
 export function createContainer (token, payload) {
   return axios.post('/api/container/', payload, {
     headers: {

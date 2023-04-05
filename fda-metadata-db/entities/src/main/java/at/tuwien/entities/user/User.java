@@ -4,6 +4,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Immutable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -16,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Immutable
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "user_entity")
@@ -24,7 +24,9 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(nullable = false)
+    @GeneratedValue(generator = "user-uuid")
+    @GenericGenerator(name = "user-uuid", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private String id;
 
     @Column(unique = true, nullable = false)
@@ -45,10 +47,20 @@ public class User {
     @Column(nullable = false)
     private Boolean emailVerified;
 
+    @Column(nullable = false)
+    private Boolean enabled;
+
+    @Column
+    private Long createdTimestamp;
+
     @Transient
     @ToString.Exclude
     @Column(nullable = false)
     private String databasePassword;
+
+    @Column(nullable = false)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<Credential> credentials;
 
     @Transient
     @ToString.Exclude
