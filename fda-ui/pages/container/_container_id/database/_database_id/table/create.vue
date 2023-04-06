@@ -103,6 +103,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    roles () {
+      return this.$store.state.roles
+    },
     user () {
       return this.$store.state.user
     },
@@ -110,10 +113,10 @@ export default {
       return this.$store.state.database
     },
     canCreateTable () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('create-table')
+      return this.roles.includes('create-table')
     },
     config () {
       if (this.token === null) {

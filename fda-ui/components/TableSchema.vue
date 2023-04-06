@@ -90,7 +90,7 @@
         <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
           Back
         </v-btn>
-        <v-btn color="primary" :loading="finished && !error" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
+        <v-btn color="primary" :loading="loading" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
           Continue
         </v-btn>
       </div>
@@ -219,11 +219,7 @@ export default {
         name,
         type,
         null_allowed,
-        primary_key,
-        check_expression: null,
-        foreign_key: null,
-        references: null,
-        unique
+        primary_key
       })
     }
   }

@@ -18,7 +18,7 @@ import java.util.List;
 public class UserDto {
 
     @NotNull
-    @JsonProperty("sub")
+    @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private String id;
 
     @NotNull
@@ -35,6 +35,10 @@ public class UserDto {
     @JsonProperty("family_name")
     @Schema(example = "Carberry")
     private String lastname;
+
+    @EqualsAndHashCode.Exclude
+    @org.springframework.data.annotation.Transient
+    private List<UserAttributeDto> attributes;
 
     @EqualsAndHashCode.Exclude
     @org.springframework.data.annotation.Transient

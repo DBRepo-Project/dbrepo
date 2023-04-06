@@ -22,20 +22,9 @@ spring:
     name: user-service
   cloud:
     loadbalancer.ribbon.enabled: false
-    gateway:
-      httpclient:
-        ssl:
-          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9098
-  ssl:
-    enabled: true
-    key-alias: user-service
-    key-store: "./server.keystore"
-    key-store-type: jks
-    key-store-password: password
-    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -45,13 +34,15 @@ logging:
 eureka:
   instance:
     hostname: user-service
-    non-secure-port-enabled: false
-    secure-port-enabled: true
-    secure-port: 9098
+    non-secure-port: 9098
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
+  elastic:
+    endpoint: localhost:9200
+    username: elastic
+    password: elastic
   ready.path: ./ready
-  gateway.endpoint: https://gateway-service:9095
+  gateway.endpoint: http://gateway-service:9095
   default_role: default-researcher-roles
   jwt:
     issuer: https://localhost:8443/realms/dbrepo

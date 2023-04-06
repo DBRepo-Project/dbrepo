@@ -24,8 +24,6 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV BROKER_USERNAME=fda
-ENV BROKER_PASSWORD=fda
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
 ENV LOG_LEVEL=debug
@@ -33,17 +31,8 @@ ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
 ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
 ENV JWT_PUBKEY=public-key
-ENV KEY_ALIAS=container-service
-ENV KEY_PASS=password
-ENV KEY_STORE=./server.keystore
-ENV KEY_STORE_PASS=password
 
 WORKDIR /app
-
-COPY ./server.keystore ./server.keystore
-COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
-
-RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -54,4 +43,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./container-service.j
 
 EXPOSE 9091
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./container-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./container-service.jar"]

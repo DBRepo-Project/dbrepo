@@ -4,43 +4,13 @@
     <v-tabs-items v-model="tab">
       <v-tab-item>
         <v-card flat tile>
-          <v-card-title>Verify E-Mail-Address</v-card-title>
-          <v-card-text>
-            <v-form v-model="valid1" @submit.prevent="submit">
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="email"
-                    :disabled="user.email_verified || error"
-                    :rules="[v => !!v || $t('Required')]"
-                    required
-                    label="E-Mail Address *" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-btn
-                    v-model="user.email"
-                    small
-                    :disabled="user.email_verified || error"
-                    color="secondary"
-                    type="submit"
-                    @click="resend">
-                    Resend E-Mail
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-card-text>
-          <v-divider />
           <v-card-title>Password Change</v-card-title>
           <v-card-text>
             <v-form v-model="valid2" @submit.prevent="submit">
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
-                    v-model="reset.password"
-                    :disabled="error"
+                    v-model="password"
                     type="password"
                     :rules="[v => !!v || $t('Required')]"
                     required
@@ -49,10 +19,21 @@
               </v-row>
               <v-row dense>
                 <v-col md="6">
+                  <v-text-field
+                    v-model="password2"
+                    type="password"
+                    :rules="[v => !!v || $t('Required'), v => (!!v && v) === password || $t('Not matching!')]"
+                    required
+                    label="Repeat Password *" />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col md="6">
                   <v-btn
                     small
                     color="primary"
-                    :disabled="!valid2 || error"
+                    :loading="loadingUpdate"
+                    :disabled="!valid2"
                     type="submit"
                     @click="changePassword">
                     Change
@@ -70,6 +51,7 @@
 
 <script>
 import UserToolbar from '@/components/UserToolbar'
+import { updateUserPassword } from '@/api/user'
 
 export default {
   components: {
@@ -80,30 +62,18 @@ export default {
       tab: 0,
       valid1: false,
       valid2: false,
-      error: false,
+      loadingUpdate: false,
       email: null,
-      user: {
-        id: null,
-        email: null,
-        username: null,
-        lastname: null,
-        firstname: null,
-        titles_after: null,
-        titles_before: null,
-        email_verified: false,
-        affiliation: null,
-        orcid: null,
-        theme_dark: null
-      },
-      reset: {
-        password: null
-      },
+      password: null,
       password2: null
     }
   },
   computed: {
     token () {
       return this.$store.state.token
+    },
+    user () {
+      return this.$store.state.user
     },
     config () {
       if (this.token === null) {
@@ -119,33 +89,17 @@ export default {
   methods: {
     submit () {
     },
-    async resend () {
-      try {
-        this.loading = true
-        const res = await this.$axios.post('/api/user/token/resend', {
-          email: this.email
-        }, this.config)
-        console.debug('resend', res.data)
-        this.error = false
-        this.$toast.success('Successfully sent a verification e-mail')
-      } catch (err) {
-        console.error('resend', err)
-        this.error = true
-      }
-      this.loading = false
-    },
     async changePassword () {
       try {
-        this.loading = true
-        const res = await this.$axios.put(`/api/user/${this.user.id}/password`, this.reset, this.config)
+        this.loadingUpdate = true
+        const res = await updateUserPassword(this.token, this.user.id, this.password)
         console.debug('password', res.data)
-        this.error = false
         this.$toast.success('Successfully changed the password')
-      } catch (err) {
-        console.error('password', err)
-        this.error = true
+      } catch (error) {
+        console.error('Failed to update password', error)
+        this.$toast.error('Failed to update password')
       }
-      this.loading = false
+      this.loadingUpdate = false
     }
   }
 }

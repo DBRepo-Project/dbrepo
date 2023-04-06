@@ -149,8 +149,8 @@ export default {
       } catch (error) {
         this.error = true
         console.error('Failed to retrieve containers', error)
-        const { message } = error.response.data
-        this.$toast.error(`Failed to retrieve containers: ${message}`)
+        const { statusText } = error.response
+        this.$toast.error(`Failed to retrieve containers: ${statusText}`)
       }
       this.loadingContainers = false
     },

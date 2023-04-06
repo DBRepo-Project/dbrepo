@@ -363,7 +363,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throw new TableMalformedException("Failed to parse number: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Database failed to accept tuple: {}", e.getMessage());
-            log.throwing(e);
             throw new TableMalformedException("Database failed to accept tuple: " + e.getMessage(), e);
         } finally {
             dataSource.close();

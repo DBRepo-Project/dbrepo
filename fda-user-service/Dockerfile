@@ -24,22 +24,14 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV GATEWAY_ENDPOINT=https://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 ENV LOG_LEVEL=debug
-ENV KEY_ALIAS=user-service
-ENV KEY_PASS=password
-ENV KEY_STORE=./server.keystore
-ENV KEY_STORE_PASS=password
 ENV DEFAULT_ROLE=default-researcher-roles
+ENV ELASTIC_PASSWORD=elastic
 
 WORKDIR /app
-
-COPY ./server.keystore ./server.keystore
-COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
-
-RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -50,4 +42,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./user-service.jar
 
 EXPOSE 9093
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./user-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./user-service.jar"]

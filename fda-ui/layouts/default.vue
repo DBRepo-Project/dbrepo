@@ -130,7 +130,7 @@
 
 <script>
 import { isDeveloper } from '@/utils'
-import { tokenToUser, tokenToExp, refresh } from '@/api/user'
+import { findUser, getThemeDark, tokenToRoles } from '@/api/user'
 export default {
   name: 'DefaultLayout',
   data () {
@@ -241,7 +241,6 @@ export default {
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
-    this.refreshTokenIfNecessary()
   },
   methods: {
     submit () {
@@ -256,68 +255,40 @@ export default {
         this.$toast.warning(message)
       }
       this.$store.commit('SET_TOKEN', null)
-      this.$store.commit('SET_REFRESH_TOKEN', null)
+      this.$store.commit('SET_ROLES', [])
       this.$store.commit('SET_USER', null)
       this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
-    loadUser () {
+    async loadUser () {
       if (!this.token) {
         return
       }
       try {
         this.loadingUser = true
-        const user = tokenToUser(this.token)
+        const res = await findUser(this.token)
+        const user = res.data
         console.debug('user', user)
         this.$store.commit('SET_USER', user)
-        this.$vuetify.theme.dark = user.theme_dark
+        const roles = tokenToRoles(this.token)
+        this.$store.commit('SET_ROLES', roles)
+        this.$vuetify.theme.dark = getThemeDark(user)
         this.loading = false
-      } catch (err) {
-        console.error('Failed to load user', err)
-        const { status } = err.response
+      } catch (error) {
+        console.error('Failed to load user', error)
+        const { status } = error.response
         if (status === 401) {
-          console.error('Token expired', err)
+          console.error('Token expired', error)
           this.$toast.warning('Login has expired')
           this.logout()
         } else {
-          console.error('user data', err)
+          console.error('user data', error)
           this.$toast.error('Failed to load user')
           this.error = true
         }
       }
       this.loadingUser = false
-    },
-    async refreshTokenIfNecessary () {
-      if (!this.token) {
-        return
-      }
-      const exp = tokenToExp(this.token)
-      if (exp > new Date()) {
-        const timeout = (exp - new Date()) > 0 ? exp - new Date() : 0
-        console.debug('token will be refreshed', exp, 'timeout is', timeout)
-        setTimeout(() => this.refreshTokenIfNecessary(), timeout)
-        return
-      }
-      const refreshExp = tokenToExp(this.refreshToken)
-      if (refreshExp > new Date()) {
-        try {
-          const res = await refresh(this.clientSecret, this.refreshToken)
-          // eslint-disable-next-line camelcase
-          const { access_token, refresh_token } = res.data
-          this.$store.commit('SET_TOKEN', access_token)
-          this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
-          console.info('refreshed tokens')
-          const user = tokenToUser(this.token)
-          console.debug('user', user)
-          this.$store.commit('SET_USER', user)
-          return
-        } catch (error) {
-          console.error('Failed to login', error)
-          this.$toast.error('Failed to refresh tokens')
-        }
-      }
-      this.logout('Your session has expired')
     },
     async loadDatabase () {
       if (!this.$route.params.container_id || !this.$route.params.database_id) {

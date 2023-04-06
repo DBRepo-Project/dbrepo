@@ -17,11 +17,41 @@ export function authenticate (clientSecret, username, password) {
   })
 }
 
-export function userinfo (clientSecret, token) {
-  return axios.get('/api/auth/realms/dbrepo/protocol/openid-connect/userinfo', {
+export function updateUser (token, userId, data) {
+  return axios.put(`/api/user/${userId}`, data, {
     headers: {
-      Authorization: `Bearer ${token}`,
-      ContentType: 'application/form-data'
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
+export function updateUserPassword (token, userId, password) {
+  const payload = {
+    password
+  }
+  return axios.put(`/api/user/${userId}/password`, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
+export function toggleUserTheme (token, userId, themeDark) {
+  const payload = {
+    theme_dark: themeDark
+  }
+  return axios.put(`/api/user/${userId}/theme`, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+}
+
+export function findUser (token) {
+  const user = tokenToUser(token)
+  return axios.get(`/api/user/${user.id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
     }
   })
 }
@@ -63,4 +93,11 @@ export function tokenToRoles (token) {
     return []
   }
   return data.realm_access.roles || []
+}
+
+export function getThemeDark (user) {
+  if (!user || !user.attributes || user.attributes.filter(a => a.name === 'theme_dark').length === 0) {
+    return false
+  }
+  return user.attributes.filter(a => a.name === 'theme_dark')[0].value === 'true'
 }

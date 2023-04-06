@@ -25,25 +25,16 @@ ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV GATEWAY_ENDPOINT=https://gateway-service:9095
-ENV PID_BASE="https://example.com/pid/"
+ENV PID_BASE="http://example.com/pid/"
 ENV REPOSITORY_NAME="Example Repository"
-ENV BASE_URL="https://example.com"
+ENV BASE_URL="http://example.com"
 ENV ADMIN_MAIL="noreply@example.com"
 ENV EARLIEST_DATESTAMP="2022-09-17T18:23:00Z"
 ENV DELETED_RECORD=persistent
 ENV GRANULARITY="YYYY-MM-DDThh:mm:ssZ"
 ENV LOG_LEVEL=debug
-ENV KEY_ALIAS=metadata-service
-ENV KEY_PASS=password
-ENV KEY_STORE=./server.keystore
-ENV KEY_STORE_PASS=password
 
 WORKDIR /app
-
-COPY ./server.keystore ./server.keystore
-COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
-
-RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
@@ -54,4 +45,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./metadata-service.ja
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./metadata-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./metadata-service.jar"]

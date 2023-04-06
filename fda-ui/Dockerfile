@@ -43,7 +43,6 @@ EXPOSE 3000
 EXPOSE 9100
 
 ENV API=https://gateway-service:9095
-ENV KEYCLOAK=https://authentication-service:8443
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false
@@ -58,13 +57,6 @@ ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_SECRET=client-secret
 
 WORKDIR /app
-
-COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
-
-RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
-
-ENV NODE_OPTIONS=--use-openssl-ca
-ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/DBRepo_Root_CA.crt
 
 COPY --from=build /usr/local/bin/node_exporter/ /usr/local/bin/node_exporter/
 COPY --from=build /app /app

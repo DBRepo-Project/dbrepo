@@ -33,25 +33,16 @@ ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
 ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
 ENV JWT_PUBKEY=public-key
-ENV KEY_ALIAS=table-service
-ENV KEY_PASS=password
-ENV KEY_STORE=./server.keystore
-ENV KEY_STORE_PASS=password
 
 WORKDIR /app
-
-COPY ./server.keystore ./server.keystore
-COPY ./root.crt /etc/ssl/certs/DBRepo_Root_CA.crt
-
-RUN cat /etc/ssl/certs/DBRepo_Root_CA.crt >> /etc/ssl/certs/ca-certificates.crt
 
 COPY ./service_ready /usr/bin
 RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./container-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./table-service.jar
 
 EXPOSE 9091
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./container-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./table-service.jar"]

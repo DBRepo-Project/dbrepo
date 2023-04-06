@@ -24,7 +24,8 @@ spring:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
-server.port: 9091
+server:
+  port: 9091
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -34,9 +35,7 @@ logging:
 eureka:
   instance:
     hostname: container-service
-    non-secure-port-enabled: false
-    secure-port-enabled: true
-    secure-port: 9091
+    non-secure-port: 9091
   client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   network: "${USER_NETWORK}"
@@ -47,4 +46,4 @@ fda:
     public_key: "${JWT_PUBKEY}"
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
-  gateway.endpoint: https://gateway-service:9095
+  gateway.endpoint: http://gateway-service:9095

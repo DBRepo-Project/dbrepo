@@ -1,18 +1,19 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserPasswordDto;
+import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.auth.Realm;
-import at.tuwien.entities.user.Credential;
-import at.tuwien.entities.user.Role;
-import at.tuwien.entities.user.RoleMapping;
-import at.tuwien.entities.user.User;
+import at.tuwien.entities.user.*;
+import at.tuwien.exception.ForeignUserException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.CredentialRepository;
 import at.tuwien.repository.jpa.RoleMappingRepository;
+import at.tuwien.repository.jpa.UserAttributeRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -47,14 +48,17 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final CredentialRepository credentialRepository;
     private final RoleMappingRepository roleMappingRepository;
+    private final UserAttributeRepository userAttributeRepository;
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           CredentialRepository credentialRepository, RoleMappingRepository roleMappingRepository) {
+                           CredentialRepository credentialRepository, RoleMappingRepository roleMappingRepository,
+                           UserAttributeRepository userAttributeRepository) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.credentialRepository = credentialRepository;
         this.roleMappingRepository = roleMappingRepository;
+        this.userAttributeRepository = userAttributeRepository;
     }
 
     @Override
@@ -67,6 +71,16 @@ public class UserServiceImpl implements UserService {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve user with username {}", username);
+            throw new UserNotFoundException("Failed to retrieve user");
+        }
+        return optional.get();
+    }
+
+    @Override
+    public User findById(String id) throws UserNotFoundException {
+        final Optional<User> optional = userRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to retrieve user with id {}", id);
             throw new UserNotFoundException("Failed to retrieve user");
         }
         return optional.get();
@@ -93,7 +107,7 @@ public class UserServiceImpl implements UserService {
                 .append("\",\"salt\":\"")
                 .append(Base64.encodeBytes(salt))
                 .append("\",\"additionalParameters\":{}}");
-        final Credential entity = Credential.builder()
+        Credential credential = Credential.builder()
                 .createdDate(Instant.now().toEpochMilli())
                 .secretData(secretData.toString())
                 .type("password")
@@ -101,15 +115,22 @@ public class UserServiceImpl implements UserService {
                 .credentialData("{\"hashIterations\":" + DEFAULT_ITERATIONS + ",\"algorithm\":\"" + ID + "\",\"additionalParameters\":{}}")
                 .build();
         /* save */
-        final User tmp = userMapper.signupRequestDtoToUser(data);
-        tmp.setEmailVerified(false);
-        tmp.setEnabled(true);
-        tmp.setRealmId(realm.getId());
-        tmp.setCreatedTimestamp(Instant.now().toEpochMilli());
-        final User user = userRepository.save(tmp);
-        entity.setUserId(user.getId());
-        final Credential credential = credentialRepository.save(entity);
+        User user = userMapper.signupRequestDtoToUser(data);
+        user.setEmailVerified(false);
+        user.setEnabled(true);
+        user.setRealmId(realm.getId());
+        user.setCreatedTimestamp(Instant.now().toEpochMilli());
+        user = userRepository.save(user);
+        UserAttribute userAttribute = UserAttribute.builder()
+                .userId(user.getId())
+                .name("theme_dark")
+                .value("false")
+                .build();
+        userAttribute = userAttributeRepository.save(userAttribute);
+        credential.setUserId(user.getId());
+        credential = credentialRepository.save(credential);
         user.setCredentials(List.of(credential));
+        user.setAttributes(List.of(userAttribute));
         final RoleMapping tmp2 = RoleMapping.builder()
                 .userId(user.getId())
                 .roleId(role.getId())
@@ -122,14 +143,76 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User modify(UserUpdateDto data, Principal principal) throws UserNotFoundException {
+    public User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException,
+            ForeignUserException {
         /* check */
-        final User entity = findByUsername(principal.getName());
-        entity.setFirstname(data.getFirstname());
-        entity.setLastname(data.getLastname());
+        User user = findById(id);
+        if (!user.getUsername().equals(principal.getName())) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        user.setFirstname(data.getFirstname());
+        user.setLastname(data.getLastname());
         /* save */
-        final User user = userRepository.save(entity);
+        user = userRepository.save(user);
         log.info("Modified user with id {}", user.getId());
+        return user;
+    }
+
+    @Override
+    public User updatePassword(String id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
+            ForeignUserException {
+        /* check */
+        final User user = findById(id);
+        if (!user.getUsername().equals(principal.getName())) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        /* create secret */
+        final byte[] salt = getSalt();
+        final StringBuilder secretData = new StringBuilder("{\"value\":\"")
+                .append(encodedCredential(data.getPassword(), DEFAULT_ITERATIONS, salt, DERIVED_KEY_SIZE))
+                .append("\",\"salt\":\"")
+                .append(Base64.encodeBytes(salt))
+                .append("\",\"additionalParameters\":{}}");
+        Credential credential = Credential.builder()
+                .createdDate(Instant.now().toEpochMilli())
+                .secretData(secretData.toString())
+                .type("password")
+                .priority(10)
+                .credentialData("{\"hashIterations\":" + DEFAULT_ITERATIONS + ",\"algorithm\":\"" + ID + "\",\"additionalParameters\":{}}")
+                .build();
+        /* save */
+        credential = credentialRepository.save(credential);
+        user.setCredentials(List.of(credential));
+        log.info("Updated user password with id {}", user.getId());
+        return user;
+    }
+
+    @Override
+    public User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
+            ForeignUserException {
+        /* check */
+        final User user = findById(id);
+        if (!user.getUsername().equals(principal.getName())) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        final Optional<UserAttribute> optional = userAttributeRepository.findByUserIdAndName(user.getId(), "theme_dark");
+        if (optional.isEmpty()) {
+            final UserAttribute theme = UserAttribute.builder()
+                    .user(user)
+                    .value(data.getThemeDark().toString())
+                    .build();
+            final UserAttribute attribute = userAttributeRepository.save(theme);
+            log.info("Updated theme by creating attribute with id {}", attribute);
+            return user;
+        }
+        final UserAttribute theme = optional.get();
+        theme.setValue(data.getThemeDark().toString());
+        final UserAttribute attribute = userAttributeRepository.save(theme);
+        user.setAttributes(List.of(attribute));
+        log.info("Updated theme by updating attribute with id {}", attribute);
         return user;
     }
 

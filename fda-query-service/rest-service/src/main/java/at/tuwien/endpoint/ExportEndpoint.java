@@ -35,7 +35,6 @@ public class ExportEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('export-table')")
     @Timed(value = "table.export", description = "Time needed to export table data")
     @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<InputStreamResource> export(@NotNull @PathVariable("id") Long containerId,
@@ -46,6 +45,7 @@ public class ExportEndpoint {
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
             FileStorageException, QueryMalformedException, UserNotFoundException {
+        // TODO: check if authority 'export-table'
         log.debug("endpoint export table, id={}, databaseId={}, tableId={}, timestamp={}, principal={}", containerId, databaseId,
                 tableId, timestamp, principal);
         final HttpHeaders headers = new HttpHeaders();

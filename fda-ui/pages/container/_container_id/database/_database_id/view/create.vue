@@ -28,11 +28,14 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     canCreateView () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('create-database-view')
+      return this.roles.includes('create-database-view')
     }
   }
 }

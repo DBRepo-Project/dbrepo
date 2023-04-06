@@ -217,6 +217,36 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void insert_date_succeeds() throws InterruptedException, UserNotFoundException, TableNotFoundException,
+            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, SQLException {
+        final TableCsvDto request = TableCsvDto.builder()
+                .data(new HashMap<>() {{
+                    put("id", 4L);
+                    put("date", "2022-10-30");
+                    put("location", "Sydney");
+                    put("mintemp", 10L);
+                    put("rainfall", 23.1);
+                }}).build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(Optional.of(TABLE_1));
+
+        /* test */
+        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        final List<Map<String, String>> response = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, "SELECT `id`, `date`, `location` FROM `weather_aus` WHERE `id` = 4", "id", "date", "location");
+        final Map<String, String> row1 = response.get(0);
+        assertEquals("4", row1.get("id"));
+        assertEquals("2022-10-30", row1.get("date"));
+        assertEquals("Sydney", row1.get("location"));
+    }
+
+    @Test
     public void insert_timestamp_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
             DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, InterruptedException {

@@ -19,7 +19,7 @@ import java.util.List;
 public class UserBriefDto {
 
     @NotNull
-    @JsonProperty("sub")
+    @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private String id;
 
     @NotNull
@@ -37,7 +37,6 @@ public class UserBriefDto {
     @Schema(example = "Carberry")
     private String lastname;
 
-    @JsonIgnore
     @JsonProperty("email_verified")
     @Schema(example = "true")
     @org.springframework.data.annotation.Transient

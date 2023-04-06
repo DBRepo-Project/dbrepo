@@ -32,13 +32,13 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "first_name")
+    @Column(name = "FIRST_NAME")
     private String firstname;
 
-    @Column(name = "last_name")
+    @Column(name = "LAST_NAME")
     private String lastname;
 
-    @Column(name = "realm_id")
+    @Column(name = "REALM_ID")
     private String realmId;
 
     @Column(unique = true, nullable = false)
@@ -60,8 +60,13 @@ public class User {
 
     @Column(nullable = false)
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Role> roles;
+
+    @Column(nullable = false)
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    private List<UserAttribute> attributes;
 
     @Column(nullable = false)
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")

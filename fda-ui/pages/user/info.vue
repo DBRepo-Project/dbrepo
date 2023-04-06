@@ -3,76 +3,95 @@
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card flat>
-          <v-card-title>User Information</v-card-title>
-          <v-card-subtitle>Your identity is externally managed</v-card-subtitle>
-          <v-card-text>
-            <v-form v-model="valid1" @submit.prevent="submit">
-              <v-row dense>
-                <v-col md="3">
-                  <v-text-field
-                    v-model="model.id"
-                    disabled
-                    label="ID" />
-                </v-col>
-                <v-col md="3">
-                  <v-text-field
-                    v-model="model.username"
-                    disabled
-                    label="Username" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="model.firstname"
-                    disabled
-                    :rules="[v => !!v || $t('Required')]"
-                    required
-                    label="Firstname *" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="model.lastname"
-                    disabled
-                    :rules="[v => !!v || $t('Required')]"
-                    required
-                    label="Lastname *" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="model.affiliation"
-                    disabled
-                    hint="e.g. University of xyz"
-                    label="Affiliation" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col md="6">
-                  <v-text-field
-                    v-model="model.orcid"
-                    disabled
-                    maxlength="19"
-                    hint="e.g. 0000-0002-1825-0097"
-                    label="ORCID" />
-                </v-col>
-              </v-row>
-            </v-form>
-          </v-card-text>
+        <div v-if="canModifyInformation">
+          <v-card flat>
+            <v-card-title>User Information</v-card-title>
+            <v-card-text>
+              <v-form v-model="valid1" @submit.prevent="submit">
+                <v-row dense>
+                  <v-col md="3">
+                    <v-text-field
+                      v-model="model.id"
+                      disabled
+                      label="ID" />
+                  </v-col>
+                  <v-col md="3">
+                    <v-text-field
+                      v-model="model.username"
+                      disabled
+                      label="Username" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col md="6">
+                    <v-text-field
+                      v-model="model.firstname"
+                      :rules="[v => !!v || $t('Required')]"
+                      required
+                      label="Firstname *" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col md="6">
+                    <v-text-field
+                      v-model="model.lastname"
+                      :rules="[v => !!v || $t('Required')]"
+                      required
+                      label="Lastname *" />
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-btn
+                      small
+                      color="primary"
+                      :loading="loading"
+                      @click="updateInfo">
+                      Update
+                    </v-btn>
+                  </v-col>
+                </v-row>
+                <!--              <v-row dense>-->
+                <!--                <v-col md="6">-->
+                <!--                  <v-text-field-->
+                <!--                    v-model="model.affiliation"-->
+                <!--                    disabled-->
+                <!--                    hint="e.g. University of xyz"-->
+                <!--                    label="Affiliation" />-->
+                <!--                </v-col>-->
+                <!--              </v-row>-->
+                <!--              <v-row dense>-->
+                <!--                <v-col md="6">-->
+                <!--                  <v-text-field-->
+                <!--                    v-model="model.orcid"-->
+                <!--                    disabled-->
+                <!--                    maxlength="19"-->
+                <!--                    hint="e.g. 0000-0002-1825-0097"-->
+                <!--                    label="ORCID" />-->
+                <!--                </v-col>-->
+                <!--              </v-row>-->
+              </v-form>
+            </v-card-text>
+          </v-card>
+        </div>
+        <div v-if="canModifyTheme">
           <v-divider />
-          <v-card-title>Roles</v-card-title>
-          <v-card-text>
-            <v-row dense>
-              <v-col>
-                <pre>{{ roles.join(', ') }}</pre>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
+          <v-card flat>
+            <v-card-title>Theme</v-card-title>
+            <v-card-text>
+              <v-row dense>
+                <v-col>
+                  <v-switch
+                    v-model="theme_dark"
+                    :loading="loadingUpdate"
+                    inset
+                    :label="themeLabel"
+                    @click="toggleTheme" />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+        </div>
       </v-tab-item>
     </v-tabs-items>
   </div>
@@ -80,7 +99,7 @@
 
 <script>
 import UserToolbar from '@/components/UserToolbar'
-import { tokenToRoles } from '@/api/user'
+import { tokenToRoles, updateUser, toggleUserTheme, getThemeDark } from '@/api/user'
 
 export default {
   components: {
@@ -93,17 +112,14 @@ export default {
       valid2: false,
       error: false,
       loading: false,
+      loadingUpdate: false,
       model: {
         id: null,
         username: null,
         firstname: null,
-        lastname: null,
-        titles_before: null,
-        titles_after: null,
-        affiliation: null,
-        orcid: null,
-        theme_dark: null
-      }
+        lastname: null
+      },
+      theme_dark: null
     }
   },
   computed: {
@@ -125,49 +141,69 @@ export default {
       return {
         headers: { Authorization: `Bearer ${this.token}` }
       }
+    },
+    themeLabel () {
+      return `${this.theme_dark ? 'Dark' : 'Light'} Theme`
+    },
+    canModifyTheme () {
+      return this.roles.includes('modify-user-theme')
+    },
+    canModifyInformation () {
+      return this.roles.includes('modify-user-information')
+    }
+  },
+  watch: {
+    user () {
+      this.init()
     }
   },
   mounted () {
-    this.model = Object.assign({}, this.user)
+    this.init()
   },
   methods: {
     submit () {
     },
     async updateInfo () {
       try {
-        this.loading = true
-        const res = await this.$axios.put(`/api/user/${this.user.id}`, {
-          titles_before: this.model.titles_before,
-          titles_after: this.model.titles_after,
+        this.loadingUpdate = true
+        const payload = {
           firstname: this.model.firstname,
-          lastname: this.model.lastname,
-          affiliation: this.model.affiliation,
-          orcid: this.model.orcid
-        }, this.config)
+          lastname: this.model.lastname
+        }
+        const res = await updateUser(this.token, this.user.id, payload)
         console.info('Updated user information')
-        console.debug('user information', res.data)
+        const user = res.data
+        console.debug('user', user)
+        this.$store.commit('SET_USER', user)
         this.error = false
         this.$toast.success('Successfully updated user information')
-      } catch (err) {
-        console.error('update', err)
+      } catch (error) {
+        console.error('update', error)
         this.$toast.error('Failed to update user info')
         this.error = true
       }
-      this.loading = false
+      this.loadingUpdate = false
     },
     async toggleTheme () {
       try {
-        await this.$axios.put(`/api/user/${this.user.id}/theme`, {
-          theme_dark: this.model.theme_dark
-        }, this.config)
-        this.$vuetify.theme.dark = this.model.theme_dark
-        console.info('Set theme to', this.model.theme_dark ? 'dark' : 'light')
+        await toggleUserTheme(this.token, this.user.id, this.theme_dark)
+        this.$vuetify.theme.dark = this.theme_dark
       } catch (error) {
         const { message } = error.response
         console.error('Failed to update theme', error)
         this.$toast.error('Failed to update theme: ' + message)
         this.error = true
       }
+    },
+    init () {
+      if (!this.user) {
+        return
+      }
+      this.theme_dark = getThemeDark(this.user)
+      this.model.id = this.user.id
+      this.model.username = this.user.username
+      this.model.firstname = this.user.given_name
+      this.model.lastname = this.user.family_name
     }
   }
 }

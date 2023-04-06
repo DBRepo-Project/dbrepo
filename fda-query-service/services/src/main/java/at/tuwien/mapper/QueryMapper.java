@@ -440,7 +440,7 @@ public interface QueryMapper {
                         .findFirst();
                 if (tuple.isEmpty()) {
                     log.error("Failed to map column name {}, known names: {}", column.getInternalName(), data.getData().keySet());
-                    throw new TableMalformedException("Failed to map column names");
+                    throw new TableMalformedException("Failed to map column names: not all columns are present in the tuple!");
                 }
                 prepareStatementWithColumnTypeObject(pstmt, column.getColumnType(), idx[0]++, tuple.get().getValue());
             }

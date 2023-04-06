@@ -22,20 +22,9 @@ spring:
     name: metadata-service
   cloud:
     loadbalancer.ribbon.enabled: false
-    gateway:
-      httpclient:
-        ssl:
-          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9099
-  ssl:
-    enabled: true
-    key-alias: metadata-service
-    key-store: ./server.keystore
-    key-store-type: jks
-    key-store-password: password
-    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -51,11 +40,11 @@ eureka:
   client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   ready.path: ./ready
-  pid.base: https://example.com/pid/
+  pid.base: http://example.com/pid/
   gateway.endpoint: http://localhost:9095
 dbrepo:
   repository-name: TU Wien Database Repository
-  base-url: https://dbrepo.ossdip.at/api/oai
+  base-url: http://dbrepo.ossdip.at/api/oai
   admin-email: noreply@example.com
   earliest-datestamp: 2022-09-17T16:09:00Z
   deleted-record: persistent

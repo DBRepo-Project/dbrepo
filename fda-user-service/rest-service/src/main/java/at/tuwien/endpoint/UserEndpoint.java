@@ -1,12 +1,11 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
-import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.api.user.*;
 import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Role;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.RealmService;
@@ -14,7 +13,9 @@ import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
+import org.elasticsearch.client.security.ChangePasswordRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,7 +68,7 @@ public class UserEndpoint {
     @PostMapping
     @Transactional
     @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
-    @Operation(summary = "Create a user")
+    @Operation(summary = "Create user")
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserNotFoundException, RemoteUnavailableException, RealmNotFoundException,
             UserAlreadyExistsException, RoleNotFoundException {
@@ -80,18 +81,68 @@ public class UserEndpoint {
                 .body(dto);
     }
 
-    @PutMapping
+    @GetMapping("/{id}")
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    @Timed(value = "user.info", description = "Time needed to get information of a user in the metadata database")
+    @Operation(summary = "Get a user info", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") String id,
+                                        @NotNull Principal principal)
+            throws UserNotFoundException {
+        log.debug("endpoint find a user, id={}, principal={}", id, principal);
+        final UserDto dto = userMapper.userToUserDto(userService.find(id));
+        log.trace("find user resulted in dto {}", dto);
+        return ResponseEntity.ok()
+                .body(dto);
+    }
+
+    @PutMapping("/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
     @Timed(value = "user.modify", description = "Time needed to modify a user in the metadata database")
-    @Operation(summary = "Modify a user")
-    public ResponseEntity<UserDto> modify(@NotNull @Valid @RequestBody UserUpdateDto data,
+    @Operation(summary = "Modify user information", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") String id,
+                                          @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal)
-            throws UserNotFoundException {
-        log.debug("endpoint modify a user, data={}", data);
-        final UserDto dto = userMapper.userToUserDto(userService.modify(data, principal));
+            throws UserNotFoundException, ForeignUserException {
+        log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
+        final UserDto dto = userMapper.userToUserDto(userService.modify(id, data, principal));
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
+                .body(dto);
+    }
+
+    @PutMapping("/{id}/theme")
+    @Transactional
+    @PreAuthorize("hasAuthority('modify-user-theme')")
+    @Timed(value = "user.theme", description = "Time needed to modify a user theme in the metadata database")
+    @Operation(summary = "Modify user theme", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") String id,
+                                         @NotNull @Valid @RequestBody UserThemeSetDto data,
+                                         @NotNull Principal principal)
+            throws UserNotFoundException, ForeignUserException {
+        log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
+        final User user = userService.toggleTheme(id, data, principal);
+        final UserDto dto = userMapper.userToUserDto(user);
+        log.trace("modify user theme resulted in dto {}", dto);
+        return ResponseEntity.accepted()
+                .body(dto);
+    }
+
+    @PutMapping("/{id}/password")
+    @Transactional
+    @PreAuthorize("isAuthenticated()")
+    @Timed(value = "user.password", description = "Time needed to modify a user password in the metadata database")
+    @Operation(summary = "Modify user password", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<UserDto> password(@NotNull @PathVariable("id") String id,
+                                            @NotNull @Valid @RequestBody UserPasswordDto data,
+                                            @NotNull Principal principal)
+            throws UserNotFoundException, ForeignUserException {
+        log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
+        final User user = userService.updatePassword(id, data, principal);
+        final UserDto dto = userMapper.userToUserDto(user);
+        log.trace("updated user password resulted in dto {}", dto);
+        return ResponseEntity.accepted()
                 .body(dto);
     }
 

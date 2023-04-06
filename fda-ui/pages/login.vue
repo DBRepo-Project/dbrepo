@@ -1,15 +1,17 @@
 <template>
   <div>
+    <v-toolbar flat>
+      <v-toolbar-title>
+        Login
+      </v-toolbar-title>
+    </v-toolbar>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card v-if="!token" flat tile>
-        <v-card-title>
-          Login
-        </v-card-title>
         <v-card-text>
           <v-alert
             border="left"
             color="info">
-            If you need an account, <a @click="signup">create one</a> or if you cannot login, <a @click="forgot">reset</a> your information.
+            If you need an account, <a @click="signup">create one</a>.
           </v-alert>
           <v-row dense>
             <v-col sm="6">
@@ -56,7 +58,7 @@
 </template>
 
 <script>
-import { authenticate, refresh, tokenToExp, tokenToUser } from '@/api/user'
+import { authenticate, getThemeDark, findUser, tokenToRoles } from '@/api/user'
 export default {
   data () {
     return {
@@ -109,62 +111,30 @@ export default {
       try {
         this.loading = true
         const res = await authenticate(this.clientSecret, this.username, this.password)
-        console.debug('login user', res.data)
         // eslint-disable-next-line camelcase
-        const { access_token, refresh_token } = res.data
+        const { access_token } = res.data
         this.$store.commit('SET_TOKEN', access_token)
-        this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
-        const user = tokenToUser(this.token)
-        console.debug('user', user)
-        this.$store.commit('SET_USER', user)
-        this.$vuetify.theme.dark = user?.theme_dark || false
-        await this.refreshTokenIfNecessary()
+        const roles = tokenToRoles(access_token)
+        this.$store.commit('SET_ROLES', roles)
+        await this.setTheme()
         await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
       } catch (error) {
         console.error('Failed to login', error)
-        const { status } = error.response
-        if (status === 418) {
-          this.$toast.error('Check your inbox and confirm your e-mail address')
-          console.error('user has not confirmed e-mail', error)
-        } else if (status === 404) {
-          this.$toast.error('Username not found')
-          console.error('user has not confirmed e-mail', error)
-        } else {
-          this.$toast.error('Login not successful')
-          console.error('login user failed', error)
-        }
+        const { statusText } = error.response
+        this.$toast.error(`Failed to login: ${statusText}`)
         this.loading = false
       }
     },
-    async refreshTokenIfNecessary () {
-      if (!this.token) {
-        return
+    async setTheme () {
+      try {
+        const res = await findUser(this.token)
+        const user = res.data
+        console.debug('user', user)
+        this.$store.commit('SET_USER', user)
+        this.$vuetify.theme.dark = getThemeDark(user)
+      } catch (error) {
+        console.error('Failed to set theme', error)
       }
-      const exp = tokenToExp(this.token)
-      if (exp > new Date()) {
-        console.debug('token will be refreshed', exp, 'timeout is', exp - new Date())
-        setTimeout(() => this.refreshTokenIfNecessary(), exp - new Date())
-        return
-      }
-      const refreshExp = tokenToExp(this.refreshToken)
-      if (refreshExp > new Date()) {
-        try {
-          const res = await refresh(this.clientSecret, this.refreshToken)
-          // eslint-disable-next-line camelcase
-          const { access_token, refresh_token } = res.data
-          this.$store.commit('SET_TOKEN', access_token)
-          this.$store.commit('SET_REFRESH_TOKEN', refresh_token)
-          console.info('refreshed tokens')
-          const user = tokenToUser(this.token)
-          console.debug('user', user)
-          this.$store.commit('SET_USER', user)
-          return
-        } catch (error) {
-          console.error('Failed to login', error)
-          this.$toast.error('Failed to refresh tokens')
-        }
-      }
-      this.logout('Your session has expired')
     },
     signup () {
       this.$router.push('/signup')

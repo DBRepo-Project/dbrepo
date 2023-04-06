@@ -149,6 +149,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    roles () {
+      return this.$store.state.roles
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -173,13 +176,13 @@ export default {
       if (!this.isOwner) {
         return false
       }
-      return this.user.roles.includes('modify-database-visibility')
+      return this.roles.includes('modify-database-visibility')
     },
     canModifyOwnership () {
       if (!this.isOwner) {
         return false
       }
-      return this.user.roles.includes('modify-database-owner')
+      return this.roles.includes('modify-database-owner')
     }
   },
   watch: {

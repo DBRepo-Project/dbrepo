@@ -109,9 +109,9 @@ public class QueryEndpoint {
     @Timed(value = "query.reexecute.count", description = "Time needed to re-execute a query")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("id") Long containerId,
-                                                    @NotNull @PathVariable("databaseId") Long databaseId,
-                                                    @NotNull @PathVariable("queryId") Long queryId,
-                                                    Principal principal)
+                                               @NotNull @PathVariable("databaseId") Long databaseId,
+                                               @NotNull @PathVariable("queryId") Long queryId,
+                                               Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
             DatabaseConnectionException, UserNotFoundException {
@@ -127,7 +127,6 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('export-query')")
     @Timed(value = "query.export", description = "Time needed to export query data")
     @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> export(@NotNull @PathVariable("id") Long containerId,
@@ -136,11 +135,11 @@ public class QueryEndpoint {
                                     @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, TableMalformedException, FileStorageException, NotAllowedException,
-            QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
+            ContainerNotFoundException, TableMalformedException, FileStorageException, QueryMalformedException,
+            DatabaseConnectionException, UserNotFoundException {
+        // TODO: check if authority 'export-query-data'
         log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, accept={}, principal={}",
                 containerId, databaseId, queryId, accept, principal);
-        log.trace("checking if query exists in the query store");
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         log.trace("querystore returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);

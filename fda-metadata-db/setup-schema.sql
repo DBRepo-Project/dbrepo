@@ -469,6 +469,7 @@ VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
 
 INSERT INTO `fda`.`mdb_images_date` (iid, database_format, unix_format, example, has_time)
 VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
-       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true);
+       (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
+       (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
 COMMIT;

@@ -42,7 +42,7 @@
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="canModify">
+          <v-list-item v-if="canWriteQueues">
             <v-list-item-icon>
               <v-icon>mdi-rabbit</v-icon>
             </v-list-item-icon>
@@ -81,14 +81,12 @@
               <v-list-item-title v-if="canRead" class="mt-2">
                 Consumer Count
               </v-list-item-title>
-              <v-list-item-content v-if="canRead" class="amqp-consumer">
-                <span v-if="attemptedLoadingConsumers" v-text="`${consumersUp}/${consumersTotal}`" />
+              <v-list-item-content v-if="canWriteQueues" class="amqp-consumer">
+                <span v-text="`${consumersUp}/${consumersTotal}`" />
                 <v-badge
-                  v-if="attemptedLoadingConsumers"
                   class="ml-1"
                   :color="consumersState.color"
                   :content="consumersState.text" />
-                <v-skeleton-loader v-else type="text" class="skeleton-xsmall" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -108,8 +106,6 @@ export default {
   },
   data () {
     return {
-      loadingConsumers: false,
-      attemptedLoadingConsumers: false,
       selection: [],
       consumers: [],
       items: [
@@ -146,6 +142,9 @@ export default {
     table () {
       return this.$store.state.table
     },
+    roles () {
+      return this.$store.state.roles
+    },
     canRead () {
       if (this.database?.is_public) {
         return true
@@ -174,23 +173,16 @@ export default {
       return { color: 'success', text: 'up' }
     },
     consumersTotal () {
-      if (this.loadingConsumers) {
-        return 0
-      }
       return this.consumers.length
     },
     consumersUp () {
-      if (this.loadingConsumers) {
-        return 0
-      }
       return this.consumers.filter(c => c.active).length
     },
-    canModify () {
-      if (!this.token || !this.user.username || !this.table || !('creator' in this.table) || !this.table.creator || !('username' in this.table.creator) || !this.table.creator.username) {
-        /* not yet loaded */
+    canWriteQueues () {
+      if (!this.roles) {
         return false
       }
-      return this.table.creator.username === this.user.username
+      return this.roles.includes('insert-table-data')
     },
     versionColor () {
       if (this.version === null) {
@@ -218,10 +210,12 @@ export default {
     }
   },
   watch: {
-    table (val) {
-      this.pollConsumerStatus(true)
-      setInterval(() => this.pollConsumerStatus(false), 5 * 1000)
+    table () {
+      this.pollConsumerStatus()
     }
+  },
+  mounted () {
+    this.pollConsumerStatus()
   },
   methods: {
     formatCreator (creator) {
@@ -233,12 +227,11 @@ export default {
       }
       return table.creator.username === this.user.username
     },
-    async pollConsumerStatus (first) {
+    async pollConsumerStatus () {
       if (this.table === null || this.table.queue_name === null) {
         return
       }
       try {
-        this.loadingConsumers = first
         const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
         const consumers = res.data.filter(c => c.queue.name === this.table.queue_name)
         console.debug('filtered', consumers)
@@ -248,8 +241,6 @@ export default {
         console.error('Failed to find consumers', error)
         this.$toast.error(`Failed to find consumers: ${message}`)
       }
-      this.loadingConsumers = false
-      this.attemptedLoadingConsumers = true
     }
   }
 }

@@ -1,10 +1,12 @@
 <template>
   <div>
+    <v-toolbar flat>
+      <v-toolbar-title>
+        Signup
+      </v-toolbar-title>
+    </v-toolbar>
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card flat tile>
-        <v-card-title>
-          Create Account
-        </v-card-title>
         <v-card-text>
           <v-alert
             v-if="mailVerify"
@@ -139,7 +141,7 @@ export default {
         this.loading = true
         const res = await this.$axios.post(url, this.createAccount)
         console.debug('create user', res.data)
-        this.$toast.success('Success. Check your inbox!')
+        this.$toast.success(`Success! ${this.mailVerify ? 'Check your inbox!' : ''}`)
         this.$router.push('/login')
       } catch (err) {
         if (err.response !== undefined && err.response.status !== undefined) {

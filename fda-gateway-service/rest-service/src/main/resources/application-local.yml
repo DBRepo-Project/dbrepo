@@ -29,13 +29,6 @@ spring:
 management.endpoints.web.exposure.include: health,info,prometheus,gateway
 server:
   port: 9095
-  ssl:
-    enabled: true
-    key-alias: server
-    key-store: "./server.keystore"
-    key-store-type: jks
-    key-store-password: password
-    key-password: password
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:

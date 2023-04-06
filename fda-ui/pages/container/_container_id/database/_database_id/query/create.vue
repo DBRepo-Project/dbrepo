@@ -28,11 +28,14 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     canExecuteQuery () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('execute-query')
+      return this.roles.includes('execute-query')
     }
   }
 }

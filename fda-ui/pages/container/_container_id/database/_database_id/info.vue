@@ -266,6 +266,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     identifier () {
       if (!this.database) {
         return null
@@ -313,22 +316,22 @@ export default {
       if (!this.user) {
         return false
       }
-      return this.canCreateIdentifier || this.canDeleteIdentifier || this.user.roles.includes('modify-identifier-metadata')
+      return this.canCreateIdentifier || this.canDeleteIdentifier || this.roles.includes('modify-identifier-metadata')
     },
     canCreateIdentifier () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
       if (this.hasIdentifier) {
         return false
       }
-      return this.user.roles.includes('create-identifier')
+      return this.roles.includes('create-identifier')
     },
     canDeleteIdentifier () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('delete-identifier')
+      return this.roles.includes('delete-identifier')
     },
     contact () {
       if (this.database.contact === null || this.database.contact === undefined) {

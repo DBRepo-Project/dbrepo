@@ -5,7 +5,6 @@
       <v-tab-item>
         <v-card flat tile>
           <v-card-title>Personal Access Tokens</v-card-title>
-          <v-card-subtitle>Authentication tokens to access the HTTP API</v-card-subtitle>
           <v-card-text>
             <v-list-item v-for="(item, i) in tokens" :key="i" three-line>
               <v-list-item-content>

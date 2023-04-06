@@ -85,29 +85,32 @@ export default {
     token () {
       return this.$store.state.token
     },
+    roles () {
+      return this.$store.state.roles
+    },
     canImportCsv () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('insert-table-data')
+      return this.roles.includes('insert-table-data')
     },
     canCreateSubset () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('execute-query')
+      return this.roles.includes('execute-query')
     },
     canCreateView () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('create-database-view')
+      return this.roles.includes('create-database-view')
     },
     canCreateTable () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('create-table')
+      return this.roles.includes('create-table')
     },
     isOwner () {
       if (!this.database || !this.user) {

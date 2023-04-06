@@ -14,7 +14,7 @@
         <v-btn v-if="!query.is_persisted && canWrite" :loading="loadingSave" class="mb-1 mr-2" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="error || !executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="!executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && !query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
@@ -221,6 +221,7 @@
 import Persist from '@/components/dialogs/Persist'
 import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
+import { findQuery, persistQuery } from '@/api/query'
 
 export default {
   name: 'QueryShow',
@@ -424,7 +425,7 @@ export default {
     async loadQuery () {
       this.loadingQuery = true
       try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, this.config)
+        const res = await findQuery(this.token, this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
         console.info('load query', res.data)
         this.query = res.data
       } catch (err) {
@@ -440,12 +441,12 @@ export default {
     async save () {
       this.loadingSave = true
       try {
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, {}, this.config)
-        console.info('save query', res.data)
+        const res = await persistQuery(this.token, this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+        console.info('persisted query', res.data)
         this.query = res.data
-      } catch (err) {
-        console.error('Failed to save query', err)
-        this.$toast.error('Failed to save query')
+      } catch (error) {
+        console.error('Failed to persisted query', error)
+        this.$toast.error('Failed to persisted query')
         this.error = true
       }
       this.loadingSave = false

@@ -93,50 +93,71 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     token () {
       return this.$store.state.token
     },
     canAddTuple () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('insert-table-data')
+      if (!this.isDataTab) {
+        return false
+      }
+      return this.roles.includes('insert-table-data')
     },
     canEditTuple () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('insert-table-data')
+      if (!this.isDataTab) {
+        return false
+      }
+      return this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('delete-table-data')
+      if (!this.isDataTab) {
+        return false
+      }
+      return this.roles.includes('delete-table-data')
     },
     canExecuteQuery () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('execute-query')
+      return this.roles.includes('execute-query')
     },
     canCreateView () {
       if (!this.user) {
         return false
       }
-      return this.user.roles.includes('create-database-view')
+      return this.roles.includes('create-database-view')
     },
     canReadData () {
-      if (!this.user) {
+      if (!this.database) {
         return false
       }
-      return this.user.roles.includes('view-table-data')
+      if (this.database.is_public) {
+        return true
+      }
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('view-table-data')
     },
     canImportCsv () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('insert-table-data')
+      return this.roles.includes('insert-table-data')
+    },
+    isDataTab () {
+      return String(this.tab).endsWith('data')
     },
     tuple () {
       return this.edit ? this.selection[0] : {}

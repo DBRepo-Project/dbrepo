@@ -21,10 +21,6 @@ ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
 ENV GATEWAY_ENDPOINT=https://gateway-service:9095
 ENV LOG_LEVEL=debug
-ENV KEY_ALIAS=gateway-service
-ENV KEY_PASS=password
-ENV KEY_STORE=./server.keystore
-ENV KEY_STORE_PASS=password
 
 WORKDIR /app
 

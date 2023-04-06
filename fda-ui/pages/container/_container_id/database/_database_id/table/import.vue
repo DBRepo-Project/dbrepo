@@ -267,6 +267,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     isResearcher () {
       return isResearcher(this.user)
     },
@@ -289,10 +292,10 @@ export default {
         .replace(/--+/g, '_'))
     },
     canInsertTableData () {
-      if (!this.user) {
+      if (!this.roles) {
         return false
       }
-      return this.user.roles.includes('insert-table-data')
+      return this.roles.includes('insert-table-data')
     }
   },
   mounted () {
