@@ -19,7 +19,7 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=postgres
 ENV METADATA_PASSWORD=postgres
-ENV GATEWAY_ENDPOINT=https://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service:9095
 ENV LOG_LEVEL=debug
 
 WORKDIR /app

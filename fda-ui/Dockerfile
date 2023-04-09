@@ -8,7 +8,7 @@ ARG TAG=1.2
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV API=https://gateway-service:9095
+ENV API=http://gateway-service:9095
 
 WORKDIR /app
 
@@ -42,7 +42,6 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 EXPOSE 3000
 EXPOSE 9100
 
-ENV API=https://gateway-service:9095
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
 ENV SANDBOX=false

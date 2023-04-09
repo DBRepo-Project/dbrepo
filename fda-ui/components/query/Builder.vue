@@ -325,9 +325,10 @@ export default {
         this.resultId = res.data.id
         console.debug('view', res.data)
         await this.loadDatabase()
-      } catch (err) {
-        console.error('Failed to create view', err)
-        this.$toast.error(err.response.data.message)
+      } catch (error) {
+        console.error('Failed to create view', error)
+        const { statusText } = error.response
+        this.$toast.error(`Failed to create view: ${statusText}`)
       }
       this.loadingQuery = false
       await Promise.all([this.$refs.queryResults.reExecute(this.resultId), this.$refs.queryResults.reExecuteCount(this.resultId)])

@@ -46,6 +46,6 @@ fda:
   gateway.endpoint: http://localhost:9095
   website: http://localhost:3000
   elastic:
-    endpoint: search-service:9200
+    endpoint: localhost:9200
     username: elastic
     password: elastic

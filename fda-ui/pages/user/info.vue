@@ -99,7 +99,7 @@
 
 <script>
 import UserToolbar from '@/components/UserToolbar'
-import { tokenToRoles, updateUser, toggleUserTheme, getThemeDark } from '@/api/user'
+import { tokenToRoles, updateUser, toggleUserTheme, getThemeDark, findUser } from '@/api/user'
 
 export default {
   components: {
@@ -130,9 +130,7 @@ export default {
       return this.$store.state.user
     },
     roles () {
-      const roles = tokenToRoles(this.token)
-      console.debug('roles', roles)
-      return roles
+      return tokenToRoles(this.token)
     },
     config () {
       if (this.token === null) {
@@ -187,12 +185,40 @@ export default {
     async toggleTheme () {
       try {
         await toggleUserTheme(this.token, this.user.id, this.theme_dark)
+        await this.loadUser()
         this.$vuetify.theme.dark = this.theme_dark
       } catch (error) {
         const { message } = error.response
         console.error('Failed to update theme', error)
         this.$toast.error('Failed to update theme: ' + message)
         this.error = true
+      }
+    },
+    async loadUser () {
+      if (!this.token) {
+        return
+      }
+      try {
+        const res = await findUser(this.token)
+        const user = res.data
+        console.debug('user', user)
+        this.$store.commit('SET_USER', user)
+        const roles = tokenToRoles(this.token)
+        this.$store.commit('SET_ROLES', roles)
+        this.$vuetify.theme.dark = getThemeDark(user)
+        this.loading = false
+      } catch (error) {
+        console.error('Failed to load user', error)
+        const { status } = error.response
+        if (status === 401) {
+          console.error('Token expired', error)
+          this.$toast.warning('Login has expired')
+          this.logout()
+        } else {
+          console.error('user data', error)
+          this.$toast.error('Failed to load user')
+          this.error = true
+        }
       }
     },
     init () {
