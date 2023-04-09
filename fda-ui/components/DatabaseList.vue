@@ -51,7 +51,7 @@
 
 <script>
 import { formatCreators, formatUser, formatYearUTC, isResearcher } from '@/utils'
-import { listContainers, startContainer } from '@/api/container'
+import { startContainer } from '@/api/container'
 import { createDatabase } from '@/api/database'
 
 export default {
@@ -142,7 +142,7 @@ export default {
       this.createDbDialog = false
       try {
         this.loadingContainers = true
-        const res = await listContainers(this.limit)
+        const res = await this.$axios.get(`/api/container?limit=${this.limit}`)
         this.containers = res.data
         console.debug('containers', this.containers)
         this.error = false

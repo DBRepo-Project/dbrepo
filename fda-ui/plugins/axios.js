@@ -1,12 +1,21 @@
-export default function ({ $axios, redirect }) {
-  // TODO show a toast error when something goes wrong
-  // TODO console.log('axios intercepter args', arguments)
-}
+import Vue from 'vue'
+import axios from 'axios'
+import api from '../config'
+import updateToken from '../server-middleware/update-token'
 
-// export default function (item) {
-//   $axios.onError(error => {
-//     if(error.response.status === 500) {
-//       redirect('/sorry')
-//     }
-//   })
-// }
+const instance = axios.create({
+  baseURL: api,
+  timeout: 10000,
+  params: {}
+})
+
+instance.interceptors.request.use(async (config) => {
+  const token = await updateToken()
+  config.headers.common.Authorization = `Bearer ${token}`
+  return config
+}, function (error) {
+  // Do something with request error
+  return Promise.reject(error)
+})
+
+Vue.use(instance)

@@ -35,6 +35,8 @@ export default {
   ],
 
   plugins: [
+    { src: '@/plugins/axios', ssr: false },
+    { src: '@/plugins/keycloak', ssr: false },
     { src: '@/plugins/toast', ssr: false },
     { src: '@/plugins/vendors', ssr: false },
     { src: '@/plugins/axios', ssr: false },
