@@ -1,24 +1,10 @@
 // eslint-disable-next-line camelcase
 import jwt_decode from 'jwt-decode'
-const axios = require('axios/dist/browser/axios.cjs')
+import api from '../api'
 const qs = require('qs')
 
-export function authenticate (clientSecret, username, password) {
-  const payload = {
-    client_id: 'dbrepo-client',
-    username,
-    password,
-    grant_type: 'password',
-    client_secret: clientSecret,
-    scope: 'openid profile roles'
-  }
-  return axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
-    headers: { ContentType: 'application/form-data' }
-  })
-}
-
 export function updateUser (token, userId, data) {
-  return axios.put(`/api/user/${userId}`, data, {
+  return api.put(`/api/user/${userId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -29,7 +15,7 @@ export function updateUserPassword (token, userId, password) {
   const payload = {
     password
   }
-  return axios.put(`/api/user/${userId}/password`, payload, {
+  return api.put(`/api/user/${userId}/password`, payload, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -40,7 +26,7 @@ export function toggleUserTheme (token, userId, themeDark) {
   const payload = {
     theme_dark: themeDark
   }
-  return axios.put(`/api/user/${userId}/theme`, payload, {
+  return api.put(`/api/user/${userId}/theme`, payload, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -49,7 +35,7 @@ export function toggleUserTheme (token, userId, themeDark) {
 
 export function findUser (token) {
   const user = tokenToUser(token)
-  return axios.get(`/api/user/${user.id}`, {
+  return api.get(`/api/user/${user.id}`, {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -63,7 +49,7 @@ export function refresh (clientSecret, token) {
     client_secret: clientSecret,
     refresh_token: token
   }
-  return axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
+  return api.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
     headers: { ContentType: 'application/form-data' }
   })
 }

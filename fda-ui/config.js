@@ -1,6 +1,6 @@
 const config = {}
 
-config.api = process.env.API || 'http://gateway-service:9095'
+config.api = process.env.API || 'http://localhost:9095'
 config.search = process.env.SEARCH || 'http://localhost:9200'
 config.sandbox = process.env.SANDBOX || false
 config.title = process.env.TITLE || 'Database Repository'

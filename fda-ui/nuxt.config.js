@@ -2,10 +2,6 @@ import path from 'path'
 import colors from 'vuetify/es5/util/colors'
 import { sandbox, title, icon, brokerUsername, brokerPassword, sharedFilesystem, version, logo, mailVerify, tokenMax, elasticPassword, clientSecret, api, search, defaultPublisher } from './config'
 
-if (sandbox) {
-  console.info('[FDA] Running in sandbox environment')
-}
-
 export default {
   target: 'server',
   ssr: false,

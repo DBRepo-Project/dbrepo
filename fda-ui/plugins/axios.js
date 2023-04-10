@@ -1,21 +1,20 @@
 import Vue from 'vue'
-import axios from 'axios'
-import api from '../config'
-import updateToken from '../server-middleware/update-token'
+import api from '@/api/api'
 
-const instance = axios.create({
-  baseURL: api,
-  timeout: 10000,
-  params: {}
-})
-
-instance.interceptors.request.use(async (config) => {
-  const token = await updateToken()
-  config.headers.common.Authorization = `Bearer ${token}`
-  return config
+api.interceptors.request.use((config) => {
+  console.debug('loading token', Vue.$keycloak.token, Vue.$keycloak.refreshToken)
+  Vue.$keycloak.updateToken(70)
+    .then(() => {
+      const token = String(Vue.$keycloak.token)
+      config.headers.common.Authorization = `Bearer ${token}`
+      return config
+    })
+    .catch((error) => {
+      console.error('Failed to update token', error)
+    })
 }, function (error) {
   // Do something with request error
   return Promise.reject(error)
 })
 
-Vue.use(instance)
+Vue.use(api)
