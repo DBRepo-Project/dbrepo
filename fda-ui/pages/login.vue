@@ -59,7 +59,7 @@
 
 <script>
 import { getThemeDark, findUser } from '@/api/user'
-import authenticationService from '@/api/authentication.service'
+import AuthenticationService from '@/api/authentication.service'
 export default {
   data () {
     return {
@@ -108,21 +108,11 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    login () {
+    async login () {
       this.loading = true
-      authenticationService.authenticate(this.username, this.password)
-      //   // eslint-disable-next-line camelcase
-      //   const { access_token } = res.data
-      //   this.$store.commit('SET_TOKEN', access_token)
-      //   const roles = tokenToRoles(access_token)
-      //   this.$store.commit('SET_ROLES', roles)
-      //   await this.setTheme()
-      //   await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
-      // } catch (error) {
-      //   console.error('Failed to login', error)
-      //   const { statusText } = error.response
-      //   this.$toast.error(`Failed to login: ${statusText}`)
-      //   this.loading = false
+      AuthenticationService.authenticatePlain(this.username, this.password)
+      await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
+      this.loading = false
     },
     async setTheme () {
       try {

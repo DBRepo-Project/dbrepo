@@ -1,26 +1,66 @@
 import Vue from 'vue'
 import qs from 'qs'
-import api from '@/api/api'
-import { api as endpoint, clientSecret } from '@/config'
+import { setRefreshToken, setToken } from '@/server-middleware/store'
+import axios from 'axios'
+import { clientSecret } from '@/config'
 
+/**
+ * Service class for interaction with Authentication Service in the back end.
+ *
+ * @author Martin Weise
+ * @description This service needs **important** its own axios instance for calls to the back end, otherwise it creates
+ * an infinite loop with the interceptors.
+ */
 class AuthenticationService {
-  authenticate (username, password) {
+  /**
+   * Authenticates a user in the back end with their username and password credential.
+   * @param username The username.
+   * @param password The password credential.
+   */
+  authenticatePlain (username, password) {
     const payload = {
       client_id: 'dbrepo-client',
       username,
       password,
       grant_type: 'password',
       client_secret: clientSecret,
-      scope: 'openid profile roles'
+      scope: 'openid profile roles attributes'
     }
-    api.post(`${endpoint.replace('http:', 'https:')}/api/auth/realms/dbrepo/protocol/openid-connect/token`, qs.stringify(payload), {
-      headers: { ContentType: 'application/form-data' }
+    return this._authenticate(payload)
+  }
+
+  authenticateToken (refreshToken) {
+    const payload = {
+      client_id: 'dbrepo-client',
+      grant_type: 'refresh_token',
+      client_secret: clientSecret,
+      refresh_token: refreshToken
+    }
+    return this._authenticate(payload)
+  }
+
+  _authenticate (payload) {
+    axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
     }).then((response) => {
-      console.info('====>', response)
+      const authentication = response.data
+      // eslint-disable-next-line camelcase
+      const { access_token, refresh_token } = authentication
+      console.debug('response authenticate', authentication)
+      setToken(access_token)
+      setRefreshToken(refresh_token)
+      return authentication
     }).catch((error) => {
       console.error('Failed to authenticate', error)
-      const { code, message } = error
-      Vue.$toast.error(`[${code}] Failed to authenticate: ${message}`)
+      const { code, message, response } = error
+      const { status } = response
+      if (status === 401) {
+        Vue.$toast.error('Invalid username-password combination.')
+      } else {
+        Vue.$toast.error(`[${code}] Failed to authenticate: ${message}`)
+      }
     })
   }
 }

@@ -54,9 +54,9 @@
 </template>
 
 <script>
-const { notEmpty } = require('@/utils')
-const { createContainer, startContainer } = require('@/api/container')
-const { createDatabase } = require('@/api/database')
+import { notEmpty } from '@/utils'
+import ContainerService from '@/api/container.service'
+import { createDatabase } from '@/api/database'
 
 export default {
   data () {
@@ -142,32 +142,14 @@ export default {
     async createContainer () {
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
-      try {
-        this.loading = true
-        const res = await createContainer(this.token, this.createContainerDto)
-        this.container = res.data
-        console.debug('created container', this.container)
-        this.error = false
-      } catch (error) {
-        console.error('create container', error)
-        this.error = true
-        this.$toast.error('Failed to create container')
-      }
+      this.loading = true
+      this.container = await ContainerService.create(this.createContainerDto)
+      this.error = false
       this.loading = false
     },
     async startContainer (container) {
-      try {
-        this.loading = true
-        const res = await startContainer(this.token, container.id)
-        console.debug('started container', res.data)
-        this.error = false
-      } catch (error) {
-        const { status } = error.response
-        if (status !== 409) {
-          this.error = true
-          this.$toast.error('Failed to start container')
-        }
-      }
+      this.loading = true
+      await ContainerService.modify(container.id, 'start')
       this.loading = false
     },
     async createDatabase (container) {

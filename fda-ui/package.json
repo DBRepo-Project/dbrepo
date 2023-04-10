@@ -37,7 +37,6 @@
     "is-docker": "^2.2.1",
     "jose": "^4.9.2",
     "jwt-decode": "^3.1.2",
-    "keycloak-js": "^21.0.2",
     "knex": "^0.95.6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",

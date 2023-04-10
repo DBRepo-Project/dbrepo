@@ -51,8 +51,8 @@
 
 <script>
 import { formatCreators, formatUser, formatYearUTC, isResearcher } from '@/utils'
-import { startContainer } from '@/api/container'
 import { createDatabase } from '@/api/database'
+import ContainerService from '@/api/container.service'
 
 export default {
   data () {
@@ -138,36 +138,19 @@ export default {
       }
       return container.database.identifier.description
     },
-    async loadContainers () {
+    loadContainers () {
       this.createDbDialog = false
-      try {
-        this.loadingContainers = true
-        const res = await this.$axios.get(`/api/container?limit=${this.limit}`)
-        this.containers = res.data
-        console.debug('containers', this.containers)
-        this.error = false
-      } catch (error) {
-        this.error = true
-        console.error('Failed to retrieve containers', error)
-        const { statusText } = error.response
-        this.$toast.error(`Failed to retrieve containers: ${statusText}`)
-      }
+      this.loadingContainers = true
+      ContainerService.findAll(this.limit)
+        .then((containers) => {
+          this.containers = containers
+          console.info('Found', this.containers.length, 'container(s)')
+        })
       this.loadingContainers = false
     },
     async startContainer (container) {
-      try {
-        container.loading = true
-        const res = await startContainer(this.token, container.id)
-        console.debug('started container', res.data)
-        this.error = false
-      } catch (error) {
-        console.error('start container', error)
-        const { status } = error.response
-        if (status !== 409) {
-          this.error = true
-          this.$toast.error('Failed to start container')
-        }
-      }
+      container.loading = true
+      await ContainerService.modify(container.id, 'start')
       container.loading = false
     },
     async createDatabase (container) {

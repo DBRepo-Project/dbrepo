@@ -187,7 +187,7 @@
 <script>
 import TableSchema from '@/components/TableSchema'
 import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
-import { findContainer } from '@/api/container'
+import ContainerService from '@/api/container.service'
 import { listTables, createTable, dataImport } from '@/api/table'
 import { determineDataTypes } from '@/api/analyse'
 
@@ -381,17 +381,9 @@ export default {
       column.unique = true
     },
     async loadDateFormats () {
-      let getResult
-      try {
-        this.loading = true
-        getResult = await findContainer(this.$route.params.container_id)
-        this.dateFormats = getResult.data.image.date_formats
-        console.debug('retrieve image date formats', this.dateFormats)
-        this.loading = false
-      } catch (err) {
-        this.loading = false
-        console.error('retrieve image date formats failed', err)
-      }
+      this.loading = true
+      this.dateFormats = await ContainerService.findOne(this.$route.params.container_id).image.date_formats
+      this.loading = true
     },
     async createTable () {
       /* make enum values to array */

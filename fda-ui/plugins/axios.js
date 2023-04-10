@@ -1,20 +1,30 @@
 import Vue from 'vue'
-import api from '@/api/api'
+import api from '@/api'
+import AuthenticationService from '@/api/authentication.service'
+import { getRefreshToken, getToken, setRefreshToken, setToken } from '@/server-middleware/store'
+import jwtDecode from 'jwt-decode'
 
 api.interceptors.request.use((config) => {
-  console.debug('loading token', Vue.$keycloak.token, Vue.$keycloak.refreshToken)
-  Vue.$keycloak.updateToken(70)
-    .then(() => {
-      const token = String(Vue.$keycloak.token)
-      config.headers.common.Authorization = `Bearer ${token}`
-      return config
-    })
-    .catch((error) => {
-      console.error('Failed to update token', error)
-    })
-}, function (error) {
-  // Do something with request error
-  return Promise.reject(error)
+  const token = getToken()
+  if (!token) {
+    return config
+  }
+  const { exp } = jwtDecode(token)
+  if (new Date(exp) <= new Date()) {
+    /* token expired */
+    const refreshToken = getRefreshToken()
+    const { exp2 } = jwtDecode(refreshToken)
+    if (new Date(exp2) <= new Date()) {
+      /* refresh token expired */
+      setToken(null)
+      setRefreshToken(null)
+    }
+    AuthenticationService.authenticateToken(refreshToken)
+    return config
+  }
+  console.debug('interceptor inject authorization header', exp)
+  config.headers.Authorization = `Bearer ${token}`
+  return config
 })
 
 Vue.use(api)

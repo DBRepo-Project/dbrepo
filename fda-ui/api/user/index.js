@@ -1,6 +1,6 @@
 // eslint-disable-next-line camelcase
 import jwt_decode from 'jwt-decode'
-import api from '../api'
+import api from '../index'
 const qs = require('qs')
 
 export function updateUser (token, userId, data) {

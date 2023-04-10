@@ -1,6 +1,6 @@
 const config = {}
 
-config.api = process.env.API || 'http://localhost:9095'
+config.api = process.env.API || 'http://localhost:3000/api'
 config.search = process.env.SEARCH || 'http://localhost:9200'
 config.sandbox = process.env.SANDBOX || false
 config.title = process.env.TITLE || 'Database Repository'
@@ -14,7 +14,7 @@ config.mailVerify = process.env.MAIL_VERIFY || false
 config.tokenMax = process.env.TOKEN_MAX || 5
 config.elasticPassword = process.env.ELASTIC_PASSWORD || 'elastic'
 config.elasticPassword = process.env.ELASTIC_PASSWORD || 'elastic'
-config.clientSecret = process.env.DBREPO_CLIENT_SECRET
+config.clientSecret = process.env.DBREPO_CLIENT_SECRET || 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
 config.defaultPublisher = process.env.DEFAULT_PID_PUBLISHER
 
 module.exports = config
