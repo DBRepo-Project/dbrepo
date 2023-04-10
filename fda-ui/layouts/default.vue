@@ -130,7 +130,6 @@
 
 <script>
 import { isDeveloper } from '@/utils'
-import { findUser, getThemeDark, tokenToRoles } from '@/api/user'
 export default {
   name: 'DefaultLayout',
   data () {
@@ -230,14 +229,14 @@ export default {
     }
   },
   mounted () {
-    this.loadUser()
-    this.setTheme()
-    this.loadDatabase()
-      .then(() => {
-        this.loadIdentifier()
-        this.loadTable()
-      })
-    this.loadAccess()
+    // this.loadUser()
+    // this.setTheme()
+    // this.loadDatabase()
+    //   .then(() => {
+    // this.loadIdentifier()
+    // this.loadTable()
+    // })
+    // this.loadAccess()
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
@@ -261,111 +260,111 @@ export default {
       this.$vuetify.theme.dark = false
       this.$router.push('/container')
     },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      try {
-        this.loadingUser = true
-        const res = await findUser(this.token)
-        const user = res.data
-        console.debug('user', user)
-        this.$store.commit('SET_USER', user)
-        const roles = tokenToRoles(this.token)
-        this.$store.commit('SET_ROLES', roles)
-        this.$vuetify.theme.dark = getThemeDark(user)
-        this.loading = false
-      } catch (error) {
-        console.error('Failed to load user', error)
-        const { status } = error.response
-        if (status === 401) {
-          console.error('Token expired', error)
-          this.$toast.warning('Login has expired')
-          this.logout()
-        } else {
-          console.error('user data', error)
-          this.$toast.error('Failed to load user')
-          this.error = true
-        }
-      }
-      this.loadingUser = false
-    },
-    async loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
-    },
-    async loadTable () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
-        this.$store.commit('SET_TABLE', res.data)
-        console.debug('table', this.table)
-      } catch (error) {
-        const { status } = error.response
-        if (status === 405) {
-          const table = this.database.tables.filter(t => t.id === Number(this.$route.params.table_id))[0]
-          this.$store.commit('SET_TABLE', table)
-        } else {
-          const { message } = error.response.data
-          console.error('Failed to load table', error)
-          this.$toast.error(`Failed to load table: ${message}`)
-        }
-      }
-      this.loading = false
-    },
-    async loadAccess () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      if (!this.token) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
-        this.access = res.data
-        this.$store.commit('SET_ACCESS', res.data)
-        console.debug('access', this.access)
-      } catch (err) {
-        this.$store.commit('SET_ACCESS', null)
-        const { status } = err.response
-        if (status !== 401 && status !== 403) {
-          console.error('Failed to check access', err)
-          this.$toast.error('Failed to check access')
-        }
-      }
-      this.loading = false
-    },
-    async loadIdentifier () {
-      if (!this.database || 'identifier' in this.database) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
-        const db = this.database
-        db.identifier = res.data
-        this.$store.commit('SET_DATABASE', db)
-      } catch (err) {
-        console.error('Failed to load identifier', err)
-        this.$toast.error('Failed to load identifier')
-      }
-      this.loading = false
-    },
+    // async loadUser () {
+    //   if (!this.token) {
+    //     return
+    //   }
+    //   try {
+    //     this.loadingUser = true
+    //     const res = await findUser(this.token)
+    //     const user = res.data
+    //     console.debug('user', user)
+    //     this.$store.commit('SET_USER', user)
+    //     const roles = tokenToRoles(this.token)
+    //     this.$store.commit('SET_ROLES', roles)
+    //     this.$vuetify.theme.dark = getThemeDark(user)
+    //     this.loading = false
+    //   } catch (error) {
+    //     console.error('Failed to load user', error)
+    //     const { status } = error.response
+    //     if (status === 401) {
+    //       console.error('Token expired', error)
+    //       this.$toast.warning('Login has expired')
+    //       this.logout()
+    //     } else {
+    //       console.error('user data', error)
+    //       this.$toast.error('Failed to load user')
+    //       this.error = true
+    //     }
+    //   }
+    //   this.loadingUser = false
+    // },
+    // async loadDatabase () {
+    //   if (!this.$route.params.container_id || !this.$route.params.database_id) {
+    //     return
+    //   }
+    //   try {
+    //     this.loading = true
+    //     const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
+    //     this.$store.commit('SET_DATABASE', res.data)
+    //     console.debug('database', this.database)
+    //   } catch (err) {
+    //     console.error('Could not load database', err)
+    //     this.$toast.error('Could not load database')
+    //   }
+    //   this.loading = false
+    // },
+    // async loadTable () {
+    //   if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+    //     return
+    //   }
+    //   try {
+    //     this.loading = true
+    //     const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
+    //     this.$store.commit('SET_TABLE', res.data)
+    //     console.debug('table', this.table)
+    //   } catch (error) {
+    //     const { status } = error.response
+    //     if (status === 405) {
+    //       const table = this.database.tables.filter(t => t.id === Number(this.$route.params.table_id))[0]
+    //       this.$store.commit('SET_TABLE', table)
+    //     } else {
+    //       const { message } = error.response.data
+    //       console.error('Failed to load table', error)
+    //       this.$toast.error(`Failed to load table: ${message}`)
+    //     }
+    //   }
+    //   this.loading = false
+    // },
+    // async loadAccess () {
+    //   if (!this.$route.params.container_id || !this.$route.params.database_id) {
+    //     return
+    //   }
+    //   if (!this.token) {
+    //     return
+    //   }
+    //   try {
+    //     this.loading = true
+    //     const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.config)
+    //     this.access = res.data
+    //     this.$store.commit('SET_ACCESS', res.data)
+    //     console.debug('access', this.access)
+    //   } catch (err) {
+    //     this.$store.commit('SET_ACCESS', null)
+    //     const { status } = err.response
+    //     if (status !== 401 && status !== 403) {
+    //       console.error('Failed to check access', err)
+    //       this.$toast.error('Failed to check access')
+    //     }
+    //   }
+    //   this.loading = false
+    // },
+    // async loadIdentifier () {
+    //   if (!this.database || 'identifier' in this.database) {
+    //     return
+    //   }
+    //   try {
+    //     this.loading = true
+    //     const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, this.config)
+    //     const db = this.database
+    //     db.identifier = res.data
+    //     this.$store.commit('SET_DATABASE', db)
+    //   } catch (err) {
+    //     console.error('Failed to load identifier', err)
+    //     this.$toast.error('Failed to load identifier')
+    //   }
+    //   this.loading = false
+    // },
     retrieve () {
       this.$router.push({ path: '/search', query: { q: this.search } })
     },

@@ -58,7 +58,6 @@
 </template>
 
 <script>
-import { getThemeDark, findUser } from '@/api/user'
 import AuthenticationService from '@/api/authentication.service'
 export default {
   data () {
@@ -108,23 +107,23 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    async login () {
+    login () {
       this.loading = true
       AuthenticationService.authenticatePlain(this.username, this.password)
-      await this.$router.push({ path: this.$route.query.redirect ? this.$route.query.redirect : '/container' })
+        .then(() => this.$router.push({ path: '/container' }))
       this.loading = false
     },
-    async setTheme () {
-      try {
-        const res = await findUser(this.token)
-        const user = res.data
-        console.debug('user', user)
-        this.$store.commit('SET_USER', user)
-        this.$vuetify.theme.dark = getThemeDark(user)
-      } catch (error) {
-        console.error('Failed to set theme', error)
-      }
-    },
+    // async setTheme () {
+    //   try {
+    //     const res = await findUser(this.token)
+    //     const user = res.data
+    //     console.debug('user', user)
+    //     this.$store.commit('SET_USER', user)
+    //     this.$vuetify.theme.dark = getThemeDark(user)
+    //   } catch (error) {
+    //     console.error('Failed to set theme', error)
+    //   }
+    // },
     signup () {
       this.$router.push('/signup')
     },

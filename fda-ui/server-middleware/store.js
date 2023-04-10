@@ -1,23 +1,57 @@
 export function setToken (value) {
-  localStorage.setItem('token', JSON.stringify(value))
+  const state = _getState()
+  state.token = value
+  _setState(state)
 }
 
 export function getToken () {
-  return JSON.parse(localStorage.getItem('token'))
+  const state = _getState()
+  return state.token
 }
 
 export function setRefreshToken (value) {
-  localStorage.setItem('refresh_token', JSON.stringify(value))
+  const state = _getState()
+  state.refresh_token = value
+  _setState(state)
 }
 
 export function getRefreshToken () {
-  return JSON.parse(localStorage.getItem('refresh_token'))
+  const state = _getState()
+  return state.refresh_token
 }
 
-export function setUser (user) {
-  localStorage.setItem('user', JSON.stringify(user))
+export function setUser (value) {
+  const state = _getState()
+  state.user = value
+  _setState(state)
 }
 
 export function getUser () {
-  return JSON.parse(localStorage.getItem('user'))
+  const state = _getState()
+  return state.user
+}
+
+export function _getState () {
+  if (!JSON.parse(localStorage.getItem('vuex'))) {
+    init()
+  }
+  return JSON.parse(localStorage.getItem('vuex'))
+}
+
+function _setState (state) {
+  const json = JSON.stringify(state)
+  localStorage.setItem('vuex', json)
+}
+
+function init () {
+  const state = {
+    token: null,
+    roles: [],
+    user: null,
+    database: null,
+    table: null,
+    access: null
+  }
+  localStorage.setItem('vuex', JSON.stringify(state))
+  console.debug('initialized vuex state')
 }

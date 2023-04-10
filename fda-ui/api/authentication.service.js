@@ -40,27 +40,30 @@ class AuthenticationService {
   }
 
   _authenticate (payload) {
-    axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    }).then((response) => {
-      const authentication = response.data
-      // eslint-disable-next-line camelcase
-      const { access_token, refresh_token } = authentication
-      console.debug('response authenticate', authentication)
-      setToken(access_token)
-      setRefreshToken(refresh_token)
-      return authentication
-    }).catch((error) => {
-      console.error('Failed to authenticate', error)
-      const { code, message, response } = error
-      const { status } = response
-      if (status === 401) {
-        Vue.$toast.error('Invalid username-password combination.')
-      } else {
-        Vue.$toast.error(`[${code}] Failed to authenticate: ${message}`)
-      }
+    return new Promise((resolve, reject) => {
+      axios.post('/api/auth/realms/dbrepo/protocol/openid-connect/token', qs.stringify(payload), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }).then((response) => {
+        const authentication = response.data
+        // eslint-disable-next-line camelcase
+        const { access_token, refresh_token } = authentication
+        console.debug('response authenticate', authentication)
+        setToken(access_token)
+        setRefreshToken(refresh_token)
+        resolve(authentication)
+      }).catch((error) => {
+        console.error('Failed to authenticate', error)
+        const { code, message, response } = error
+        const { status } = response
+        if (status === 401) {
+          Vue.$toast.error('Invalid username-password combination.')
+        } else {
+          Vue.$toast.error(`[${code}] Failed to authenticate: ${message}`)
+        }
+        reject(error)
+      })
     })
   }
 }

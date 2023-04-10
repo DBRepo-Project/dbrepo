@@ -18,6 +18,7 @@ api.interceptors.request.use((config) => {
       /* refresh token expired */
       setToken(null)
       setRefreshToken(null)
+      console.warn('Refresh token expired')
     }
     AuthenticationService.authenticateToken(refreshToken)
     return config
