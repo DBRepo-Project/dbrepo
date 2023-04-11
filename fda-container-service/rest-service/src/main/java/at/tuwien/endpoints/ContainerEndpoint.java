@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -52,10 +53,23 @@ public class ContainerEndpoint {
                                                            @RequestParam(required = false) Integer limit) {
         log.debug("endpoint find all containers, principal={}, limit={}", principal, limit);
         final List<Container> containers = containerService.getAll(limit);
+        final List<com.github.dockerjava.api.model.Container> list = containerService.list();
+        final List<ContainerBriefDto> dtos = containers.stream()
+                .map(containerMapper::containerToDatabaseContainerBriefDto)
+                .peek(container -> {
+                    final Optional<com.github.dockerjava.api.model.Container> optional = list.stream()
+                            .filter(c -> c.getId().equals(container.getHash()))
+                            .findFirst();
+                    optional.ifPresent(value -> {
+                        final String state = value.getState();
+                        log.trace("container {} has status {}", container.getId(), state);
+                        container.setRunning(state.equals("running"));
+                    });
+                })
+                .collect(Collectors.toList());
+        log.trace("find all containers resulted in containers {}", dtos);
         return ResponseEntity.ok()
-                .body(containers.stream()
-                        .map(containerMapper::containerToDatabaseContainerBriefDto)
-                        .collect(Collectors.toList()));
+                .body(dtos);
     }
 
     @PostMapping

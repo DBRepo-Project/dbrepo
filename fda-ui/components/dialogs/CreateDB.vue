@@ -56,7 +56,7 @@
 <script>
 import { notEmpty } from '@/utils'
 import ContainerService from '@/api/container.service'
-import { createDatabase } from '@/api/database'
+import DatabaseService from '@/api/database.service'
 
 export default {
   data () {
@@ -139,35 +139,41 @@ export default {
         .then(() => this.startContainer(this.container)
           .then(() => this.createDatabase(this.container)))
     },
-    async createContainer () {
+    createContainer () {
       this.createContainerDto.repository = this.engine.repository
       this.createContainerDto.tag = this.engine.tag
       this.loading = true
-      this.container = await ContainerService.create(this.createContainerDto)
-      this.error = false
-      this.loading = false
+      return new Promise((resolve, reject) => {
+        ContainerService.create(this.createContainerDto)
+          .then((container) => {
+            this.container = container
+            this.loading = false
+            resolve(container)
+          })
+          .catch(error => reject(error))
+      })
     },
-    async startContainer (container) {
+    startContainer (container) {
       this.loading = true
-      await ContainerService.modify(container.id, 'start')
-      this.loading = false
+      return new Promise((resolve, reject) => {
+        ContainerService.modify(container.id, 'start')
+          .then(() => {
+            this.loading = false
+            resolve()
+          })
+          .catch(error => reject(error))
+      })
     },
-    async createDatabase (container) {
-      try {
-        this.loading = true
-        this.createDatabaseDto.id = container.id
-        this.createDatabaseDto.name = container.name
-        const res = await createDatabase(this.token, this.createDatabaseDto)
-        container.database = res.data
-        console.debug('created database', container.database)
-        this.error = false
-        this.$emit('close', { success: true })
-      } catch (error) {
-        console.error('create database', error)
-        this.error = true
-        this.$toast.error('Failed to create database')
-      }
-      this.loading = false
+    createDatabase (container) {
+      this.loading = true
+      DatabaseService.create(container.id, { name: container.name, is_public: true })
+        .then((database) => {
+          container.database = database
+          this.$emit('close', { success: true })
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     notEmpty
   }

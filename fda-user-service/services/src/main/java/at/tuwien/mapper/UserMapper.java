@@ -6,6 +6,7 @@ import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.user.User;
+import at.tuwien.entities.user.UserAttribute;
 import org.mapstruct.Mapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,5 +29,13 @@ public interface UserMapper {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
         log.trace("mapped granted authority {} to granted authority {}", data, authority);
         return authority;
+    }
+
+    default UserAttribute tripleToUserAttribute(String userId, String name, String value) {
+        return UserAttribute.builder()
+                .userId(userId)
+                .name(name)
+                .value(value)
+                .build();
     }
 }

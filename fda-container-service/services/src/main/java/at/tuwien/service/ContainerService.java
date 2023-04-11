@@ -63,6 +63,8 @@ public interface ContainerService {
      */
     List<Container> getAll(Integer limit);
 
+    List<com.github.dockerjava.api.model.Container> list();
+
     /**
      * @param containerId
      * @return

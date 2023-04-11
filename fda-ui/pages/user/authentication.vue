@@ -51,7 +51,7 @@
 
 <script>
 import UserToolbar from '@/components/UserToolbar'
-import { updateUserPassword } from '@/api/user'
+import UserService from '@/api/user.service'
 
 export default {
   components: {
@@ -89,17 +89,16 @@ export default {
   methods: {
     submit () {
     },
-    async changePassword () {
-      try {
-        this.loadingUpdate = true
-        const res = await updateUserPassword(this.token, this.user.id, this.password)
-        console.debug('password', res.data)
-        this.$toast.success('Successfully changed the password')
-      } catch (error) {
-        console.error('Failed to update password', error)
-        this.$toast.error('Failed to update password')
-      }
-      this.loadingUpdate = false
+    changePassword () {
+      this.loadingUpdate = true
+      UserService.updatePassword(this.user.id, this.password)
+        .then(() => {
+          this.$toast.success('Successfully changed the password')
+          this.loadingUpdate = false
+        })
+        .catch(() => {
+          this.loadingUpdate = false
+        })
     }
   }
 }

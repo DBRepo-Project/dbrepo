@@ -104,7 +104,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") String id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException {
+            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
         final UserDto dto = userMapper.userToUserDto(userService.modify(id, data, principal));
         log.trace("modify user resulted in dto {}", dto);
@@ -120,7 +120,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") String id,
                                          @NotNull @Valid @RequestBody UserThemeSetDto data,
                                          @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException {
+            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
         final User user = userService.toggleTheme(id, data, principal);
         final UserDto dto = userMapper.userToUserDto(user);

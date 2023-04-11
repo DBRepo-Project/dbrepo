@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import api from '@/api'
+import UserMapper from '@/api/user.mapper'
 
 class UserService {
   findAll () {
@@ -23,13 +24,29 @@ class UserService {
     return new Promise((resolve, reject) => {
       api.get(`/api/user/${id}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const user = response.data
-          console.debug('response user', user)
+          const user = UserMapper.userInfoToUser(response.data)
+          console.debug('response user', response.data, 'mapped user', user)
           resolve(user)
         }).catch((error) => {
           const { code, message } = error
           console.error('Failed to load user', error)
           Vue.$toast.error(`[${code}] Failed to load user: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  updateInformation (id, data) {
+    return new Promise((resolve, reject) => {
+      api.put(`/api/user/${id}`, data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const user = UserMapper.userInfoToUser(response.data)
+          console.debug('response user', response.data, 'mapped user', user)
+          resolve(user)
+        }).catch((error) => {
+          const { code, message } = error
+          console.error('Failed to update user information', error)
+          Vue.$toast.error(`[${code}] Failed to update user information: ${message}`)
           reject(error)
         })
     })
@@ -63,7 +80,7 @@ class UserService {
 
   updatePassword (id, password) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/user/${id}/password`, { password }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/user/${id}/password`, { password }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -76,7 +93,7 @@ class UserService {
 
   updateTheme (id, themeDark) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/user/${id}/theme`, { theme_dark: themeDark }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/user/${id}/theme`, { theme_dark: themeDark }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error

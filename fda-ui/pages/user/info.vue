@@ -3,7 +3,7 @@
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <div v-if="canModifyInformation">
+        <div>
           <v-card flat>
             <v-card-title>User Information</v-card-title>
             <v-card-text>
@@ -26,24 +26,42 @@
                   <v-col md="6">
                     <v-text-field
                       v-model="model.firstname"
-                      :rules="[v => !!v || $t('Required')]"
-                      required
-                      label="Firstname *" />
+                      :disabled="!canModifyInformation"
+                      label="Firstname" />
                   </v-col>
                 </v-row>
                 <v-row dense>
                   <v-col md="6">
                     <v-text-field
                       v-model="model.lastname"
-                      :rules="[v => !!v || $t('Required')]"
-                      required
-                      label="Lastname *" />
+                      :disabled="!canModifyInformation"
+                      label="Lastname" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col md="6">
+                    <v-text-field
+                      v-model="model.affiliation"
+                      :disabled="!canModifyInformation"
+                      hint="e.g. University of xyz"
+                      label="Affiliation" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col md="6">
+                    <v-text-field
+                      v-model="model.orcid"
+                      :disabled="!canModifyInformation"
+                      maxlength="19"
+                      hint="e.g. 0000-0002-1825-0097"
+                      label="ORCID" />
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col>
                     <v-btn
                       small
+                      :disabled="!canModifyInformation"
                       color="primary"
                       :loading="loading"
                       @click="updateInfo">
@@ -51,25 +69,6 @@
                     </v-btn>
                   </v-col>
                 </v-row>
-                <!--              <v-row dense>-->
-                <!--                <v-col md="6">-->
-                <!--                  <v-text-field-->
-                <!--                    v-model="model.affiliation"-->
-                <!--                    disabled-->
-                <!--                    hint="e.g. University of xyz"-->
-                <!--                    label="Affiliation" />-->
-                <!--                </v-col>-->
-                <!--              </v-row>-->
-                <!--              <v-row dense>-->
-                <!--                <v-col md="6">-->
-                <!--                  <v-text-field-->
-                <!--                    v-model="model.orcid"-->
-                <!--                    disabled-->
-                <!--                    maxlength="19"-->
-                <!--                    hint="e.g. 0000-0002-1825-0097"-->
-                <!--                    label="ORCID" />-->
-                <!--                </v-col>-->
-                <!--              </v-row>-->
               </v-form>
             </v-card-text>
           </v-card>
@@ -99,7 +98,7 @@
 
 <script>
 import UserToolbar from '@/components/UserToolbar'
-import { tokenToRoles, updateUser, toggleUserTheme, getThemeDark, findUser } from '@/api/user'
+import UserService from '@/api/user.service'
 
 export default {
   components: {
@@ -130,7 +129,7 @@ export default {
       return this.$store.state.user
     },
     roles () {
-      return tokenToRoles(this.token)
+      return this.$store.state.roles
     },
     config () {
       if (this.token === null) {
@@ -150,86 +149,55 @@ export default {
       return this.roles.includes('modify-user-information')
     }
   },
-  watch: {
-    user () {
-      this.init()
-    }
-  },
   mounted () {
     this.init()
   },
   methods: {
     submit () {
     },
-    async updateInfo () {
-      try {
-        this.loadingUpdate = true
-        const payload = {
-          firstname: this.model.firstname,
-          lastname: this.model.lastname
-        }
-        const res = await updateUser(this.token, this.user.id, payload)
-        console.info('Updated user information')
-        const user = res.data
-        console.debug('user', user)
-        this.$store.commit('SET_USER', user)
-        this.error = false
-        this.$toast.success('Successfully updated user information')
-      } catch (error) {
-        console.error('update', error)
-        this.$toast.error('Failed to update user info')
-        this.error = true
+    updateInfo () {
+      this.loadingUpdate = true
+      const payload = {
+        firstname: this.model.firstname,
+        lastname: this.model.lastname,
+        orcid: this.model.orcid,
+        affiliation: this.model.affiliation
       }
-      this.loadingUpdate = false
+      UserService.updateInformation(this.user.id, payload)
+        .then(() => {
+          console.info('Updated user information')
+          this.$toast.success('Successfully updated user information')
+          this.reloadUser()
+        })
+        .finally(() => {
+          this.loadingUpdate = false
+        })
     },
-    async toggleTheme () {
-      try {
-        await toggleUserTheme(this.token, this.user.id, this.theme_dark)
-        await this.loadUser()
-        this.$vuetify.theme.dark = this.theme_dark
-      } catch (error) {
-        const { message } = error.response
-        console.error('Failed to update theme', error)
-        this.$toast.error('Failed to update theme: ' + message)
-        this.error = true
-      }
+    reloadUser () {
+      this.$store.dispatch('reloadUser')
     },
-    async loadUser () {
-      if (!this.token) {
-        return
-      }
-      try {
-        const res = await findUser(this.token)
-        const user = res.data
-        console.debug('user', user)
-        this.$store.commit('SET_USER', user)
-        const roles = tokenToRoles(this.token)
-        this.$store.commit('SET_ROLES', roles)
-        this.$vuetify.theme.dark = getThemeDark(user)
-        this.loading = false
-      } catch (error) {
-        console.error('Failed to load user', error)
-        const { status } = error.response
-        if (status === 401) {
-          console.error('Token expired', error)
-          this.$toast.warning('Login has expired')
-          this.logout()
-        } else {
-          console.error('user data', error)
-          this.$toast.error('Failed to load user')
-          this.error = true
-        }
-      }
+    toggleTheme () {
+      UserService.updateTheme(this.user.id, this.theme_dark)
+        .then(() => {
+          this.reloadUser()
+          this.$vuetify.theme.dark = this.theme_dark
+        })
     },
     init () {
       if (!this.user) {
+        console.warn('Object user is not yet available')
         return
       }
-      this.theme_dark = getThemeDark(this.user)
-      this.model.id = this.user.id
-      this.model.username = this.user.username
-      this.model.firstname = this.user.given_name
-      this.model.lastname = this.user.family_name
+      this.reloadUser()
+      this.theme_dark = this.user.attributes.theme_dark
+      this.model = {
+        id: this.user.id,
+        username: this.user.username,
+        firstname: this.user.given_name,
+        lastname: this.user.family_name,
+        orcid: this.user.attributes.orcid,
+        affiliation: this.user.attributes.affiliation
+      }
     }
   }
 }

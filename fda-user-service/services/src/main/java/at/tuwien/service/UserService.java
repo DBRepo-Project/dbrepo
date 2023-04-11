@@ -7,10 +7,7 @@ import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.ForeignUserException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -38,12 +35,12 @@ public interface UserService {
     User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException,
             UserAlreadyExistsException;
 
-    User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException, ForeignUserException;
+    User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
 
     User updatePassword(String id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
             ForeignUserException;
 
-    User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException, ForeignUserException;
+    User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
 
     User find(String id) throws UserNotFoundException;
 }

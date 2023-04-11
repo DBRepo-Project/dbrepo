@@ -61,8 +61,7 @@
 <script>
 import TableSchema from '@/components/TableSchema'
 import { notEmpty } from '@/utils'
-import { createTable } from '@/api/table'
-import { findDatabase } from '@/api/database'
+import TableService from '@/api/table.service'
 
 export default {
   components: {
@@ -152,24 +151,14 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    async createTable () {
-      try {
-        this.loading = true
-        const res = await createTable(this.token, this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
-        if (res.status === 201) {
-          this.error = false
+    createTable () {
+      this.loading = true
+      TableService.create(this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
+        .then(async (table) => {
           this.$toast.success('Table created')
-          await this.loadDatabase()
-          await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${res.data.id}`)
-        } else {
-          this.error = true
-          this.$toast.error(`Could not create table: status ${res.status}`)
-        }
-      } catch (err) {
-        this.error = true
-        console.error('could not create table', err)
-        this.$toast.error('Could not create table')
-      }
+          await this.$store.dispatch('reloadDatabase')
+          await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${table.id}`)
+        })
     },
     schemaClose (event) {
       console.debug('schema closed', event)
@@ -178,21 +167,6 @@ export default {
         return
       }
       this.createTable()
-    },
-    async loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await findDatabase(this.token, this.$route.params.container_id, this.$route.params.database_id)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (error) {
-        console.error('Could not load database', error)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
     }
   }
 }

@@ -221,7 +221,7 @@
 import Persist from '@/components/dialogs/Persist'
 import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
-import { findQuery, persistQuery } from '@/api/query'
+import QueryService from '@/api/query.service'
 
 export default {
   name: 'QueryShow',
@@ -402,54 +402,40 @@ export default {
       this.downloadLoading = false
       this.metadataLoading = false
     },
-    async downloadData () {
+    downloadData () {
       this.downloadLoading = true
-      try {
-        const config = this.config
-        config.headers.Accept = 'text/csv'
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}/export`, config)
-        console.debug('export query data', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'subset.csv')
-        document.body.appendChild(link)
-        link.click()
-      } catch (err) {
-        console.error('Could not export query data', err)
-        this.$toast.error('Could not export query data')
-        this.error = true
-      }
-      this.downloadLoading = false
+      QueryService.export(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+        .then((data) => {
+          const url = window.URL.createObjectURL(new Blob([data]))
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', 'subset.csv')
+          document.body.appendChild(link)
+          link.click()
+        })
+        .finally(() => {
+          this.downloadLoading = false
+        })
     },
-    async loadQuery () {
+    loadQuery () {
       this.loadingQuery = true
-      try {
-        const res = await findQuery(this.token, this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
-        console.info('load query', res.data)
-        this.query = res.data
-      } catch (err) {
-        const { statusText, status } = err.response
-        if (status !== 401 && status !== 405) {
-          console.error('Failed to load query with status', status, 'and message', statusText)
-          this.$toast.error('Failed to load query: ' + statusText)
-        }
-        this.error = true
-      }
-      this.loadingQuery = false
+      QueryService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+        .then((query) => {
+          this.query = query
+        })
+        .finally(() => {
+          this.loadingQuery = false
+        })
     },
-    async save () {
+    save () {
       this.loadingSave = true
-      try {
-        const res = await persistQuery(this.token, this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
-        console.info('persisted query', res.data)
-        this.query = res.data
-      } catch (error) {
-        console.error('Failed to persisted query', error)
-        this.$toast.error('Failed to persisted query')
-        this.error = true
-      }
-      this.loadingSave = false
+      QueryService.persist(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+        .then((query) => {
+          this.query = query
+        })
+        .finally(() => {
+          this.loadingSave = false
+        })
     },
     openDialog () {
       this.persistQueryDialog = true

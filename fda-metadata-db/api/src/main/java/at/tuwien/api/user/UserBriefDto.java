@@ -29,6 +29,9 @@ public class UserBriefDto {
     @Schema(example = "Josiah Carberry")
     private String name;
 
+    @Schema(example = "0000-0002-1825-0097")
+    private String orcid;
+
     @JsonProperty("given_name")
     @Schema(example = "Josiah")
     private String firstname;

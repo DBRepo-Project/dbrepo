@@ -72,6 +72,7 @@
 </template>
 <script>
 import TableToolbar from '@/components/TableToolbar'
+import TableService from '@/api/table.service'
 
 export default {
   components: {
@@ -196,24 +197,22 @@ export default {
       const { success } = event
       console.debug('closed dialog', event)
       if (success) {
-        this.loadTable()
+        this.$store.dispatch('reloadTable')
       }
       this.dialogSemantic = false
     },
-    async loadTable () {
+    loadTable () {
       if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
         return
       }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, this.config)
-        this.$store.commit('SET_TABLE', res.data)
-        console.debug('table', this.table)
-      } catch (err) {
-        console.error('Could not load table', err)
-        this.$toast.error('Could not load table')
-      }
-      this.loading = false
+      this.loading = true
+      TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+        .then((table) => {
+          this.$store.commit('SET_TABLE', table)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

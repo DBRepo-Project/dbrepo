@@ -25,7 +25,7 @@ api.interceptors.request.use((config) => {
         return config
       })
   }
-  console.debug('interceptor inject authorization header', exp)
+  console.debug('interceptor inject authorization header')
   config.headers.Authorization = `Bearer ${token}`
   return config
 })

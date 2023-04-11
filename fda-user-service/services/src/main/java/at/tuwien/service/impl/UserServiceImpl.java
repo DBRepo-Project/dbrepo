@@ -6,15 +6,13 @@ import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.*;
-import at.tuwien.exception.ForeignUserException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.CredentialRepository;
 import at.tuwien.repository.jpa.RoleMappingRepository;
 import at.tuwien.repository.jpa.UserAttributeRepository;
 import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.service.UserAttributeService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.keycloak.common.util.Base64;
@@ -46,19 +44,19 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final UserAttributeService userAttributeService;
     private final CredentialRepository credentialRepository;
     private final RoleMappingRepository roleMappingRepository;
-    private final UserAttributeRepository userAttributeRepository;
 
     @Autowired
     public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           CredentialRepository credentialRepository, RoleMappingRepository roleMappingRepository,
-                           UserAttributeRepository userAttributeRepository) {
+                           UserAttributeService userAttributeService, CredentialRepository credentialRepository,
+                           RoleMappingRepository roleMappingRepository) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
+        this.userAttributeService = userAttributeService;
         this.credentialRepository = credentialRepository;
         this.roleMappingRepository = roleMappingRepository;
-        this.userAttributeRepository = userAttributeRepository;
     }
 
     @Override
@@ -121,16 +119,16 @@ public class UserServiceImpl implements UserService {
         user.setRealmId(realm.getId());
         user.setCreatedTimestamp(Instant.now().toEpochMilli());
         user = userRepository.save(user);
-        UserAttribute userAttribute = UserAttribute.builder()
-                .userId(user.getId())
-                .name("theme_dark")
-                .value("false")
-                .build();
-        userAttribute = userAttributeRepository.save(userAttribute);
+        final UserAttribute userAttribute1 = userAttributeService.create(userMapper.tripleToUserAttribute(user.getId(),
+                "theme_dark", "false"));
+        final UserAttribute userAttribute2 = userAttributeService.create(userMapper.tripleToUserAttribute(user.getId(),
+                "orcid", ""));
+        final UserAttribute userAttribute3 = userAttributeService.create(userMapper.tripleToUserAttribute(user.getId(),
+                "affiliation", ""));
         credential.setUserId(user.getId());
         credential = credentialRepository.save(credential);
         user.setCredentials(List.of(credential));
-        user.setAttributes(List.of(userAttribute));
+        user.setAttributes(List.of(userAttribute1, userAttribute2, userAttribute3));
         final RoleMapping tmp2 = RoleMapping.builder()
                 .userId(user.getId())
                 .roleId(role.getId())
@@ -144,7 +142,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException,
-            ForeignUserException {
+            ForeignUserException, UserAttributeNotFoundException {
         /* check */
         User user = findById(id);
         if (!user.getUsername().equals(principal.getName())) {
@@ -153,9 +151,12 @@ public class UserServiceImpl implements UserService {
         }
         user.setFirstname(data.getFirstname());
         user.setLastname(data.getLastname());
-        /* save */
+        /* save in metadata database */
         user = userRepository.save(user);
         log.info("Modified user with id {}", user.getId());
+        /* modify attributes */
+        userAttributeService.update(user.getId(), "orcid", data.getOrcid());
+        userAttributeService.update(user.getId(), "affiliation", data.getAffiliation());
         return user;
     }
 
@@ -191,28 +192,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
-            ForeignUserException {
+            ForeignUserException, UserAttributeNotFoundException {
         /* check */
         final User user = findById(id);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
-        final Optional<UserAttribute> optional = userAttributeRepository.findByUserIdAndName(user.getId(), "theme_dark");
-        if (optional.isEmpty()) {
-            final UserAttribute theme = UserAttribute.builder()
-                    .user(user)
-                    .value(data.getThemeDark().toString())
-                    .build();
-            final UserAttribute attribute = userAttributeRepository.save(theme);
-            log.info("Updated theme by creating attribute with id {}", attribute);
-            return user;
-        }
-        final UserAttribute theme = optional.get();
-        theme.setValue(data.getThemeDark().toString());
-        final UserAttribute attribute = userAttributeRepository.save(theme);
-        user.setAttributes(List.of(attribute));
-        log.info("Updated theme by updating attribute with id {}", attribute);
+        final UserAttribute entity = userAttributeService.update(user.getId(), "theme_dark", data.getThemeDark().toString());
+        log.info("Updated theme by updating attribute with id {}", entity.getId());
         return user;
     }
 

@@ -38,6 +38,10 @@ public class ContainerBriefDto {
     @Schema(example = "air-quality")
     private String internalName;
 
+    @NotNull
+    @Schema(example = "true")
+    private Boolean running;
+
     @org.springframework.data.annotation.Transient
     private DatabaseBriefDto database;
 

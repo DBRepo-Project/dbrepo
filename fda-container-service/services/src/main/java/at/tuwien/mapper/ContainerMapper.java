@@ -6,6 +6,7 @@ import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.ContainerStateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.user.User;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.mapstruct.*;
 
@@ -14,7 +15,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ImageMapper.class, DatabaseMapper.class})
+@Mapper(componentModel = "spring", uses = {ImageMapper.class, DatabaseMapper.class, UserMapper.class})
 public interface ContainerMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContainerMapper.class);
@@ -22,6 +23,7 @@ public interface ContainerMapper {
     default String containerCreateRequestDtoToDockerImage(ContainerCreateRequestDto data) {
         final String image = data.getRepository() + ":" + data.getTag();
         log.trace("mapped container request {} to image {}", data, image);
+        final User user;
         return image;
     }
 

@@ -15,7 +15,9 @@
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
+                v-if="item.user.username !== user.username"
                 x-small
+                :disabled="!canModifyAccess"
                 @click="modifyAccess(item)">
                 Modify
               </v-btn>
@@ -24,6 +26,7 @@
           <v-card-text>
             <v-btn
               small
+              :disabled="!canCreateAccess"
               color="warning"
               class="black--text"
               @click="giveAccess">
@@ -85,7 +88,7 @@
     <v-dialog
       v-model="editAccessDialog"
       max-width="640">
-      <EditAccess :username="username" @close-dialog="closeDialog" />
+      <EditAccess :username="username" :access-type="accessType" @close-dialog="closeDialog" />
     </v-dialog>
   </div>
 </template>
@@ -93,7 +96,8 @@
 <script>
 import DBToolbar from '@/components/DBToolbar'
 import EditAccess from '@/components/dialogs/EditAccess'
-import { modifyVisibility, modifyOwnership } from '@/api/database'
+import DatabaseService from '@/api/database.service'
+import UserService from '@/api/user.service'
 
 export default {
   components: {
@@ -105,6 +109,7 @@ export default {
       dialogDelete: false,
       confirm: null,
       username: null,
+      accessType: null,
       users: [],
       loading: false,
       loadingUsers: false,
@@ -183,6 +188,18 @@ export default {
         return false
       }
       return this.roles.includes('modify-database-owner')
+    },
+    canModifyAccess () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.roles.includes('update-database-access')
+    },
+    canCreateAccess () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.roles.includes('create-database-access')
     }
   },
   watch: {
@@ -204,70 +221,53 @@ export default {
   },
   methods: {
     closeDialog (event) {
-      if (event.success) {
-        this.loadDatabase()
-      }
-      this.loadDatabase()
+      this.reloadDatabase()
       this.editAccessDialog = false
     },
-    async updateDatabaseVisibility () {
-      try {
-        this.loading = true
-        await modifyVisibility(this.token, this.$route.params.container_id, this.$route.params.database_id, this.modifyVisibility.is_public)
-        this.$toast.success('Successfully updated the database visibility')
-        location.reload()
-      } catch (error) {
-        console.error('Failed to update database visibility', error)
-        this.$toast.error('Failed to update database visibility')
-      }
-      this.loading = false
+    updateDatabaseVisibility () {
+      this.loading = true
+      DatabaseService.modifyVisibility(this.$route.params.container_id, this.$route.params.database_id, this.modifyVisibility.is_public)
+        .then(() => {
+          this.$toast.success('Successfully updated the database visibility')
+          location.reload()
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    async updateDatabaseOwner () {
-      try {
-        this.loading = true
-        await modifyOwnership(this.token, this.$route.params.container_id, this.$route.params.database_id, this.modifyOwner.username)
-        this.$toast.success('Successfully updated the database owner')
-      } catch (error) {
-        console.error('Failed to update database owner', error)
-        this.$toast.error('Failed to update database owner')
-      }
-      this.loading = false
+    updateDatabaseOwner () {
+      this.loading = true
+      DatabaseService.modifyOwner(this.$route.params.container_id, this.$route.params.database_id, this.modifyOwner.username)
+        .then(() => {
+          this.$toast.success('Successfully updated the database owner')
+          location.reload()
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     giveAccess () {
       this.username = null
+      this.accessType = null
       this.editAccessDialog = true
     },
     modifyAccess (item) {
       this.username = item.user.username
+      this.accessType = item.type
       this.editAccessDialog = true
     },
-    async loadUsers () {
+    loadUsers () {
       this.loadingUsers = true
-      try {
-        const res = await this.$axios.get('/api/user', this.config)
-        this.users = res.data
-        console.debug('users', this.users)
-      } catch (error) {
-        console.error('Failed to load users', error)
-        const { message } = error.response.data
-        this.$toast.error(`Failed to load users: ${message}`)
-      }
-      this.loadingUsers = false
+      UserService.findAll()
+        .then((users) => {
+          this.users = users
+        })
+        .finally(() => {
+          this.loadingUsers = false
+        })
     },
-    async loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
+    reloadDatabase () {
+      this.$store.dispatch('reloadDatabase')
     }
   }
 }

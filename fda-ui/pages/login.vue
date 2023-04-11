@@ -59,6 +59,7 @@
 
 <script>
 import AuthenticationService from '@/api/authentication.service'
+import UserService from '@/api/user.service'
 import UserMapper from '@/api/user.mapper'
 export default {
   data () {
@@ -103,10 +104,13 @@ export default {
       this.loading = true
       AuthenticationService.authenticatePlain(this.username, this.password)
         .then(() => {
-          const themeDark = UserMapper.getThemeDark(this.user)
-          console.debug('theme_dark', themeDark)
-          this.$vuetify.theme.dark = themeDark
-          this.$router.push('/container')
+          const userId = UserMapper.tokenToUserId(this.token)
+          UserService.findOne(userId)
+            .then((user) => {
+              this.$store.commit('SET_USER', user)
+              this.$vuetify.theme.dark = UserMapper.getThemeDark(this.user)
+              this.$router.push('/container')
+            })
         })
         .catch(() => {
           this.loading = false

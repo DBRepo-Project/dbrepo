@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -225,6 +224,13 @@ public class ContainerServiceImpl implements ContainerService {
         }
         log.info("Found {} containers", containers.size());
         return containers;
+    }
+
+    @Override
+    public List<com.github.dockerjava.api.model.Container> list() {
+        return dockerClient.listContainersCmd()
+                .withShowAll(true)
+                .exec();
     }
 
     @Override

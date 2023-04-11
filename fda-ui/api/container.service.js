@@ -26,7 +26,8 @@ class ContainerService {
           const container = response.data
           console.debug('response container', container)
           resolve(container)
-        }).catch((error) => {
+        })
+        .catch((error) => {
           const { code, message } = error
           console.error('Failed to load container', error)
           Vue.$toast.error(`[${code}] Failed to load container: ${message}`)
@@ -42,7 +43,8 @@ class ContainerService {
           const container = response.data
           console.debug('response container', container)
           resolve(container)
-        }).catch((error) => {
+        })
+        .catch((error) => {
           const { code, message } = error
           console.error('Failed to create container', error)
           Vue.$toast.error(`[${code}] Failed to create container: ${message}`)
@@ -58,11 +60,18 @@ class ContainerService {
           const container = response.data
           console.debug('response container', container)
           resolve(container)
-        }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to modify container', error)
-          Vue.$toast.error(`[${code}] Failed to modify container: ${message}`)
-          reject(error)
+        })
+        .catch((error) => {
+          const { code, message, response } = error
+          const { status } = response
+          if (status === 409) {
+            console.warn('Failed to modify container', error)
+            reject(error)
+          } else {
+            console.error('Failed to modify container', error)
+            Vue.$toast.error(`[${code}] Failed to modify container: ${message}`)
+            reject(error)
+          }
         })
     })
   }

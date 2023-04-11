@@ -65,11 +65,9 @@ class AuthenticationService {
         const authentication = response.data
         // eslint-disable-next-line camelcase
         const { access_token, refresh_token } = authentication
-        console.debug('response authenticate', authentication)
         store().commit('SET_TOKEN', access_token)
         store().commit('SET_REFRESH_TOKEN', refresh_token)
-        const user = UserMapper.tokenToUser(access_token)
-        store().commit('SET_USER', user)
+        store().commit('SET_ROLES', UserMapper.tokenToRoles(access_token))
         resolve(authentication)
       }).catch((error) => {
         console.error('Failed to authenticate', error)

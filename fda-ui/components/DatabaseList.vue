@@ -27,13 +27,22 @@
         </div>
         <div v-text="identifierDescription(container)" />
       </v-card-text>
-      <v-card-text v-if="canInit(container)" class="db-buttons">
+      <v-card-text v-if="needsStart(container) || needsDatabase(container)" class="db-buttons">
         <v-btn
+          v-if="needsStart(container)"
           small
           secondary
           :loading="container?.loading"
-          @click.stop="initDatabase(container)">
+          @click.stop="startContainer(container).then(() => createDatabase(container))">
           Start
+        </v-btn>
+        <v-btn
+          v-else-if="needsDatabase(container)"
+          small
+          secondary
+          :loading="container?.loading"
+          @click.stop="createDatabase(container)">
+          Create Database
         </v-btn>
       </v-card-text>
     </v-card>
@@ -51,7 +60,7 @@
 
 <script>
 import { formatCreators, formatUser, formatYearUTC, isResearcher } from '@/utils'
-import { createDatabase } from '@/api/database'
+import DatabaseService from '@/api/database.service'
 import ContainerService from '@/api/container.service'
 
 export default {
@@ -107,7 +116,16 @@ export default {
       const creators = formatCreators(container)
       return creators || this.formatUser(container.creator)
     },
-    canInit (container) {
+    needsStart (container) {
+      if (!this.user) {
+        return false
+      }
+      if (container.creator.username !== this.user.username) {
+        return false
+      }
+      return container.running === false
+    },
+    needsDatabase (container) {
       if (!this.user) {
         return false
       }
@@ -121,10 +139,6 @@ export default {
     },
     hasIdentifier (container) {
       return container.database && container.database.identifier
-    },
-    async initDatabase (container) {
-      await this.startContainer(container)
-        .then(() => this.createDatabase(container))
     },
     identifierCreated (container) {
       if (!container || !container.database || !container.database.identifier) {
@@ -148,26 +162,23 @@ export default {
         })
       this.loadingContainers = false
     },
-    async startContainer (container) {
+    startContainer (container) {
       container.loading = true
-      await ContainerService.modify(container.id, 'start')
-      container.loading = false
+      return new Promise((resolve, reject) => {
+        ContainerService.modify(container.id, 'start')
+          .then(() => resolve())
+          .finally(() => {
+            container.loading = false
+          })
+      })
     },
-    async createDatabase (container) {
-      try {
-        container.loading = true
-        const res = await createDatabase(this.token, container)
-        container.database = res.data
-        console.debug('created database', container.database)
-        this.error = false
-      } catch (error) {
-        console.error('create database', error)
-        const { message } = error.response
-        this.error = true
-        console.error('Failed to create database', error)
-        this.$toast.error(`${message}`)
-      }
-      container.loading = false
+    createDatabase (container) {
+      container.loading = true
+      DatabaseService.create(container.id, { name: container.name, is_public: true })
+        .then((database) => {
+          container.loading = false
+          this.$router.push(`/container/${container.id}/database/${database.id}`)
+        })
     },
     link (container) {
       if (!container.database || !container.database.id) {

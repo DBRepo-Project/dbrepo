@@ -1,5 +1,8 @@
 import Vue from 'vue'
 import Vuex, { Store } from 'vuex'
+import UserService from '@/api/user.service'
+import DatabaseService from '@/api/database.service'
+import TableService from '@/api/table.service'
 
 Vue.use(Vuex)
 
@@ -25,28 +28,53 @@ const store = new Store({
   },
   mutations: {
     SET_TOKEN (state, token) {
+      console.debug('set state token', token)
       state.token = token
     },
     SET_REFRESH_TOKEN (state, refreshToken) {
+      console.debug('set state refreshToken', refreshToken)
       state.refreshToken = refreshToken
     },
     SET_ROLES (state, roles) {
+      console.debug('set state roles', roles)
       state.roles = roles
     },
     SET_USER (state, user) {
+      console.debug('set state user', user)
       state.user = user
     },
     SET_DATABASE (state, database) {
+      console.debug('set state database', database)
       state.database = database
     },
     SET_TABLE (state, table) {
+      console.debug('set state table', table)
       state.table = table
     },
     SET_ACCESS (state, access) {
+      console.debug('set state access', access)
       state.access = access
     }
   },
   actions: {
+    reloadUser ({ state, commit }) {
+      UserService.findOne(state.user.id)
+        .then((user) => {
+          commit('SET_USER', user)
+        })
+    },
+    reloadDatabase ({ state, commit }) {
+      DatabaseService.findOne(state.database.container.id, state.database.id)
+        .then((database) => {
+          commit('SET_DATABASE', database)
+        })
+    },
+    reloadTable ({ state, commit }) {
+      TableService.findOne(state.database.container.id, state.database.id, state.table.id)
+        .then((table) => {
+          commit('SET_TABLE', table)
+        })
+    }
   }
 })
 export default () => store

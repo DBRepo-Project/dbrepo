@@ -21,7 +21,7 @@
             <v-col>
               <v-autocomplete
                 v-model="modify.username"
-                :items="eligableUsers"
+                :items="eligibleUsers"
                 :loading="loadingUsers"
                 :rules="[v => !!v || $t('Required')]"
                 required
@@ -66,6 +66,8 @@
         </v-card-actions>
       </v-card>
     </v-form>
+    <pre>{{ eligibleUsers }}</pre>
+    <pre>{{ modify.username }}</pre>
   </div>
 </template>
 
@@ -73,6 +75,12 @@
 export default {
   props: {
     username: {
+      type: String,
+      default () {
+        return null
+      }
+    },
+    accessType: {
       type: String,
       default () {
         return null
@@ -126,7 +134,11 @@ export default {
       }
       return this.types
     },
-    eligableUsers () {
+    eligibleUsers () {
+      if (this.accessType) {
+        /* this is a modification, list only the edited user as eligible */
+        return [{ username: this.username, id: '00000' }]
+      }
       return this.users.filter(u => !this.database.accesses.map(a => a.user.id).includes(u.id))
     },
     buttonColor () {
@@ -155,16 +167,15 @@ export default {
     }
   },
   watch: {
-    username (val) {
-      if (!val || this.users.length === 0) {
-        this.modify.username = null
-      }
-      this.selectUser()
+    username () {
+      this.init()
+    },
+    accessType () {
+      this.init()
     }
   },
   mounted () {
-    this.loadUsers()
-      .then(() => this.selectUser())
+    this.init()
   },
   methods: {
     submit () {
@@ -248,11 +259,20 @@ export default {
       }
       this.loadingUsers = false
     },
-    selectUser () {
-      const optional = this.users.filter(u => u.username === this.username)
-      if (optional.length > 0) {
-        this.modify.username = optional[0]
+    init () {
+      if (!this.username) {
+        this.modify.username = null
+        this.loadUsers()
+      } else {
+        this.modify.username = this.username
+        /* eligible users are computed separately */
       }
+      if (!this.accessType) {
+        this.modify.type = null
+      } else {
+        this.modify.type = this.accessType
+      }
+      this.$refs.form.reset()
     }
   }
 }

@@ -25,7 +25,6 @@
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
 import CreateDB from '@/components/dialogs/CreateDB'
 import DatabaseList from '@/components/DatabaseList'
-import { tokenToRoles } from '@/api/user'
 
 export default {
   components: {
@@ -56,6 +55,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     config () {
       if (this.token === null) {
         return {}
@@ -68,8 +70,7 @@ export default {
       if (!this.token) {
         return false
       }
-      const roles = tokenToRoles(this.token)
-      return roles.includes('create-container') && roles.includes('create-database')
+      return this.roles.includes('create-container') && this.roles.includes('create-database')
     }
   },
   methods: {

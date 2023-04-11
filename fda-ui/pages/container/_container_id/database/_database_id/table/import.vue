@@ -188,7 +188,7 @@
 import TableSchema from '@/components/TableSchema'
 import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
 import ContainerService from '@/api/container.service'
-import { listTables, createTable, dataImport } from '@/api/table'
+import TableService from '@/api/table.service'
 import { determineDataTypes } from '@/api/analyse'
 
 export default {
@@ -354,18 +354,15 @@ export default {
       }
       this.loading = false
     },
-    async listTables () {
-      try {
-        this.loading = true
-        const res = await listTables(this.token, this.$route.params.container_id, this.$route.params.database_id)
-        console.debug('tables', res.data)
-        this.tableNames = res.data.map(t => t.internal_name)
-      } catch (error) {
-        this.error = true
-        console.error('Failed to list tables', error)
-        this.$toast.error('Failed to list tables')
-      }
-      this.loading = false
+    listTables () {
+      this.loading = true
+      TableService.findAll(this.$route.params.container_id, this.$route.params.database_id)
+        .then((tables) => {
+          this.tableNames = tables.map(t => t.internal_name)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     schemaClose (event) {
       console.debug('schema closed', event)
@@ -385,7 +382,7 @@ export default {
       this.dateFormats = await ContainerService.findOne(this.$route.params.container_id).image.date_formats
       this.loading = true
     },
-    async createTable () {
+    createTable () {
       /* make enum values to array */
       const validColumns = this.tableCreate.columns.map((column) => {
         // validate `id` column: must be a PK
@@ -405,36 +402,21 @@ export default {
       // bail out if there is a problem with one of the columns
       if (!validColumns.every(Boolean)) { return }
 
-      let createResult
-      try {
-        this.loading = true
-        createResult = await createTable(this.token, this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
-        this.newTableId = createResult.data.id
-        console.debug('created table', createResult.data)
-      } catch (err) {
-        this.loading = false
-        this.error = true
-        if (err.response.status === 409) {
-          this.$toast.error('Table name already exists')
-        } else {
-          this.$toast.error('Could not create table')
-        }
-        console.error('create table failed', err)
-        return
-      }
-      let insertResult
-      try {
-        insertResult = await dataImport(this.token, this.$route.params.container_id, this.$route.params.database_id, createResult.data.id, this.tableImport)
-        console.debug('inserted table', insertResult.data)
-      } catch (err) {
-        this.loading = false
-        this.error = true
-        console.error('insert table failed', err)
-        this.$toast.error('Could not insert csv into table')
-        return
-      }
-      this.loading = false
-      this.step = 5
+      TableService.create(this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
+        .then((table) => {
+          this.newTableId = table.id
+          TableService.importCsv(this.$route.params.container_id, this.$route.params.database_id, table.id, this.tableImport)
+            .then(() => {
+              this.$toast.success('Successfully created table from import!')
+              this.step = 5
+            })
+            .finally(() => {
+              this.loading = false
+            })
+        })
+        .catch(() => {
+          this.loading = false
+        })
     }
   }
 }

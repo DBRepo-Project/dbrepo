@@ -46,6 +46,10 @@ public class ContainerDto {
     @JsonProperty("ip_address")
     private String ipAddress;
 
+    @NotNull
+    @Schema(example = "true")
+    private Boolean running;
+
     private ImageBriefDto image;
 
     private Integer port;

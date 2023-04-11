@@ -4,7 +4,12 @@ import at.tuwien.api.auth.TokenIntrospectDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.user.User;
+import at.tuwien.entities.user.UserAttribute;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -15,6 +20,18 @@ import java.util.stream.Collectors;
 public interface UserMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserMapper.class);
+
+    /* keep */
+    @Mappings({
+            @Mapping(target = "orcid", expression = "java(data.getAttributes().stream().filter(a -> a.getName().equals(\"orcid\")).findFirst().get().getValue())")
+    })
+    UserBriefDto userToUserBriefDto(User data);
+
+    /* keep */
+    @Mappings({
+            @Mapping(target = "orcid", expression = "java(data.getAttributes().stream().filter(a -> a.getName().equals(\"orcid\")).findFirst().get().getValue())")
+    })
+    UserDto userToUserDto(User data);
 
     UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
 
