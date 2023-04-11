@@ -104,6 +104,7 @@
 </template>
 
 <script>
+import UserService from '@/api/user.service'
 export default {
   data () {
     return {
@@ -135,39 +136,17 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    async register () {
-      const url = '/api/user'
-      try {
-        this.loading = true
-        const res = await this.$axios.post(url, this.createAccount)
-        console.debug('create user', res.data)
-        this.$toast.success(`Success! ${this.mailVerify ? 'Check your inbox!' : ''}`)
-        this.$router.push('/login')
-      } catch (err) {
-        if (err.response !== undefined && err.response.status !== undefined) {
-          if (err.response.status === 417) {
-            this.$toast.error('This e-mail address is taken')
-            console.error('email taken', err)
-            this.loading = false
-            return
-          }
-          if (err.response.status === 409) {
-            this.$toast.error('This username is taken')
-            console.error('username taken', err)
-            this.loading = false
-            return
-          }
-          if (err.response.status === 428) {
-            this.$toast.warning('Account was created but the server failed to send a mail')
-            console.warn('email sending failed', err)
-            this.loading = false
-            return
-          }
-        }
-        console.error('create user failed', err)
-        this.$toast.error('Failed to create user')
-      }
-      this.loading = false
+    register () {
+      this.loading = true
+      UserService.create(this.createAccount)
+        .then(() => {
+          this.$toast.success(`Success! ${this.mailVerify ? 'Check your inbox!' : ''}`)
+          this.$router.push('/login')
+          this.loading = false
+        })
+        .catch(() => {
+          this.loading = false
+        })
     }
   }
 }

@@ -68,20 +68,6 @@
           to="/signup">
           <v-icon left>mdi-account-plus</v-icon> Signup
         </v-btn>
-        <v-btn v-if="user" to="/user" plain>
-          {{ user.username }} <sup v-if="isDeveloper">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon
-                  color="primary"
-                  small
-                  v-bind="attrs"
-                  v-on="on">mdi-check-decagram</v-icon>
-              </template>
-              <span>Developer</span>
-            </v-tooltip>
-          </sup>
-        </v-btn>
         <v-menu v-if="user" bottom offset-y left>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -125,11 +111,14 @@
         </v-card-text>
       </v-card>
     </v-footer>
+    <pre>{{ $store.state }}</pre>
   </v-app>
 </template>
 
 <script>
 import { isDeveloper } from '@/utils'
+import AuthenticationService from '@/api/authentication.service'
+
 export default {
   name: 'DefaultLayout',
   data () {
@@ -205,6 +194,13 @@ export default {
     }
   },
   watch: {
+    $route: {
+      handler () {
+        if (this.refreshToken) {
+          AuthenticationService.authenticateToken(this.refreshToken)
+        }
+      }
+    },
     '$route.params.database_id': {
       handler (id, oldId) {
         if (this.user) {
@@ -212,7 +208,7 @@ export default {
         }
         if (id !== oldId) {
           this.loadDatabase()
-          this.loadAccess()
+          // this.loadAccess()
         }
       },
       deep: true,
@@ -254,6 +250,7 @@ export default {
         this.$toast.warning(message)
       }
       this.$store.commit('SET_TOKEN', null)
+      this.$store.commit('SET_REFRESH_TOKEN', null)
       this.$store.commit('SET_ROLES', [])
       this.$store.commit('SET_USER', null)
       this.$store.commit('SET_ACCESS', null)

@@ -1,32 +1,52 @@
-export const state = () => ({
-  token: null,
-  roles: [],
-  user: null,
-  database: null,
-  table: null,
-  access: null
-})
+import Vue from 'vue'
+import Vuex, { Store } from 'vuex'
 
-export const mutations = {
-  SET_DATABASE (state, database) {
-    state.database = database
+Vue.use(Vuex)
+
+// https://github.com/hua1995116/webchat/blob/7c6544d3defd41cb7cf68306accea97800858bc3/client/src/store/index.js#L293
+const store = new Store({
+  state: {
+    token: null,
+    refreshToken: null,
+    roles: [],
+    user: null,
+    database: null,
+    table: null,
+    access: null
   },
-  SET_TOKEN (state, token) {
-    state.token = token
+  getters: {
+    getToken: state => state.token,
+    getRefreshToken: state => state.refreshToken,
+    getRoles: state => state.roles,
+    getUser: state => state.user,
+    getDatabase: state => state.database,
+    getTable: state => state.table,
+    getAccess: state => state.access
   },
-  SET_USER (state, user) {
-    if (user != null && user.token) {
-      delete user.token
+  mutations: {
+    SET_TOKEN (state, token) {
+      state.token = token
+    },
+    SET_REFRESH_TOKEN (state, refreshToken) {
+      state.refreshToken = refreshToken
+    },
+    SET_ROLES (state, roles) {
+      state.roles = roles
+    },
+    SET_USER (state, user) {
+      state.user = user
+    },
+    SET_DATABASE (state, database) {
+      state.database = database
+    },
+    SET_TABLE (state, table) {
+      state.table = table
+    },
+    SET_ACCESS (state, access) {
+      state.access = access
     }
-    state.user = user
   },
-  SET_ROLES (state, roles) {
-    state.roles = roles
-  },
-  SET_ACCESS (state, access) {
-    state.access = access
-  },
-  SET_TABLE (state, table) {
-    state.table = table
+  actions: {
   }
-}
+})
+export default () => store

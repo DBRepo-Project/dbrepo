@@ -59,6 +59,7 @@
 
 <script>
 import AuthenticationService from '@/api/authentication.service'
+import UserMapper from '@/api/user.mapper'
 export default {
   data () {
     return {
@@ -94,15 +95,6 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.$route.query.email_verified !== undefined) {
-      console.info('Successfully verified your E-Mail Address')
-      this.$toast.success('Successfully verified your E-Mail Address!')
-    } else if (this.$route.query.password_reset !== undefined) {
-      console.info('Successfully reset password')
-      this.$toast.success('Successfully reset password!')
-    }
-  },
   methods: {
     submit () {
       this.$refs.form.validate()
@@ -110,20 +102,16 @@ export default {
     login () {
       this.loading = true
       AuthenticationService.authenticatePlain(this.username, this.password)
-        .then(() => this.$router.push({ path: '/container' }))
-      this.loading = false
+        .then(() => {
+          const themeDark = UserMapper.getThemeDark(this.user)
+          console.debug('theme_dark', themeDark)
+          this.$vuetify.theme.dark = themeDark
+          this.$router.push('/container')
+        })
+        .catch(() => {
+          this.loading = false
+        })
     },
-    // async setTheme () {
-    //   try {
-    //     const res = await findUser(this.token)
-    //     const user = res.data
-    //     console.debug('user', user)
-    //     this.$store.commit('SET_USER', user)
-    //     this.$vuetify.theme.dark = getThemeDark(user)
-    //   } catch (error) {
-    //     console.error('Failed to set theme', error)
-    //   }
-    // },
     signup () {
       this.$router.push('/signup')
     },

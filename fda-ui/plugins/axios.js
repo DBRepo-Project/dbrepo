@@ -1,27 +1,29 @@
 import Vue from 'vue'
+import store from '@/store'
 import api from '@/api'
 import AuthenticationService from '@/api/authentication.service'
-import { getRefreshToken, getToken, setRefreshToken, setToken } from '@/server-middleware/store'
 import jwtDecode from 'jwt-decode'
 
 api.interceptors.request.use((config) => {
-  const token = getToken()
+  const token = store().state.token
   if (!token) {
     return config
   }
   const { exp } = jwtDecode(token)
   if (new Date(exp) <= new Date()) {
     /* token expired */
-    const refreshToken = getRefreshToken()
+    const refreshToken = store().state.refreshToken
     const { exp2 } = jwtDecode(refreshToken)
     if (new Date(exp2) <= new Date()) {
       /* refresh token expired */
-      setToken(null)
-      setRefreshToken(null)
+      store().commit('SET_TOKEN', null)
+      store().commit('SET_REFRESH_TOKEN', null)
       console.warn('Refresh token expired')
     }
     AuthenticationService.authenticateToken(refreshToken)
-    return config
+      .then(() => {
+        return config
+      })
   }
   console.debug('interceptor inject authorization header', exp)
   config.headers.Authorization = `Bearer ${token}`

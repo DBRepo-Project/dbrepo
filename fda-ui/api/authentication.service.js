@@ -1,6 +1,7 @@
 import Vue from 'vue'
+import store from '@/store'
 import qs from 'qs'
-import { setRefreshToken, setToken } from '@/server-middleware/store'
+import UserMapper from '@/api/user.mapper'
 import axios from 'axios'
 import { clientSecret } from '@/config'
 
@@ -26,6 +27,15 @@ class AuthenticationService {
       client_secret: clientSecret,
       scope: 'openid profile roles attributes'
     }
+    if (!username) {
+      throw new Error('parameter username is empty')
+    }
+    if (!password) {
+      throw new Error('parameter password is empty')
+    }
+    if (!clientSecret) {
+      throw new Error('parameter clientSecret is empty')
+    }
     return this._authenticate(payload)
   }
 
@@ -35,6 +45,12 @@ class AuthenticationService {
       grant_type: 'refresh_token',
       client_secret: clientSecret,
       refresh_token: refreshToken
+    }
+    if (!refreshToken) {
+      throw new Error('parameter refreshToken is empty')
+    }
+    if (!clientSecret) {
+      throw new Error('parameter clientSecret is empty')
     }
     return this._authenticate(payload)
   }
@@ -50,8 +66,10 @@ class AuthenticationService {
         // eslint-disable-next-line camelcase
         const { access_token, refresh_token } = authentication
         console.debug('response authenticate', authentication)
-        setToken(access_token)
-        setRefreshToken(refresh_token)
+        store().commit('SET_TOKEN', access_token)
+        store().commit('SET_REFRESH_TOKEN', refresh_token)
+        const user = UserMapper.tokenToUser(access_token)
+        store().commit('SET_USER', user)
         resolve(authentication)
       }).catch((error) => {
         console.error('Failed to authenticate', error)
