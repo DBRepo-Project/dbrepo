@@ -83,6 +83,8 @@
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
+                hint="max. 100 GB file size"
+                persistent-hint
                 show-size
                 label="CSV/TSV File" />
             </v-col>
@@ -96,7 +98,6 @@
       </v-stepper-content>
     </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
-    <pre>loading={{ loading }}</pre>
   </div>
 </template>
 <script>
