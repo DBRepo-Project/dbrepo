@@ -4,22 +4,26 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
+        <v-card-subtitle v-if="subtitle" v-text="subtitle" />
         <v-card-text>
-          <v-alert
-            v-if="modify.type && modify.type !== 'revoke'"
-            border="left"
-            color="warning">
-            <strong>Dangerous operation:</strong> you are giving this user access to <strong>{{ explanation }}</strong> in your database
-          </v-alert>
-          <v-alert
-            v-if="modify.type && modify.type === 'revoke'"
-            border="left"
-            color="error">
-            <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
-          </v-alert>
+          <div v-if="!isModification">
+            <v-alert
+              v-if="modify.type && modify.type !== 'revoke'"
+              border="left"
+              color="warning">
+              <strong>Dangerous operation:</strong> you are giving this user access to <strong>{{ explanation }}</strong> in your database
+            </v-alert>
+            <v-alert
+              v-if="modify.type && modify.type === 'revoke'"
+              border="left"
+              color="error">
+              <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
+            </v-alert>
+          </div>
           <v-row>
             <v-col>
               <v-autocomplete
+                v-if="!isModification"
                 v-model="modify.username"
                 :items="eligibleUsers"
                 :loading="loadingUsers"
@@ -30,7 +34,6 @@
                 hide-details
                 item-text="username"
                 item-value="username"
-                :disabled="isModification"
                 single-line
                 label="Username" />
             </v-col>
@@ -66,8 +69,6 @@
         </v-card-actions>
       </v-card>
     </v-form>
-    <pre>{{ eligibleUsers }}</pre>
-    <pre>{{ modify.username }}</pre>
   </div>
 </template>
 
@@ -125,7 +126,10 @@ export default {
       return this.$store.state.database
     },
     title () {
-      return (!this.isModification ? 'Give' : 'Modify') + ' database access' + (!this.isModification ? '' : ` of ${this.username}`)
+      return (!this.isModification ? 'Give' : 'Modify') + ' database access'
+    },
+    subtitle () {
+      return (this.isModification ? `User with username ${this.username}` : false)
     },
     accessTypes () {
       if (!this.isModification) {
@@ -135,10 +139,6 @@ export default {
       return this.types
     },
     eligibleUsers () {
-      if (this.accessType) {
-        /* this is a modification, list only the edited user as eligible */
-        return [{ username: this.username, id: '00000' }]
-      }
       return this.users.filter(u => !this.database.accesses.map(a => a.user.id).includes(u.id))
     },
     buttonColor () {
@@ -272,7 +272,6 @@ export default {
       } else {
         this.modify.type = this.accessType
       }
-      this.$refs.form.reset()
     }
   }
 }

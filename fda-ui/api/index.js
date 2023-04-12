@@ -1,12 +1,13 @@
-import https from 'https'
 import axios from 'axios'
-
-const httpsAgent = new https.Agent({ rejectUnauthorized: false })
+import { api as endpoint } from '@/config'
 
 const instance = axios.create({
   timeout: 10000,
   params: {},
-  httpsAgent
+  baseURL: endpoint,
+  headers: {
+    'Access-Control-Allow-Origin': '*'
+  }
 })
 
 export default instance

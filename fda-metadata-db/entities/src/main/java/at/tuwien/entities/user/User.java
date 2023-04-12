@@ -69,6 +69,7 @@ public class User {
     private List<UserAttribute> attributes;
 
     @Column(nullable = false)
+    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
 

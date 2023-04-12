@@ -12,9 +12,6 @@
       <v-tab to="/user/authentication">
         Authentication
       </v-tab>
-      <v-tab v-if="false" to="/user/developer">
-        Developer
-      </v-tab>
     </v-tabs>
   </div>
 </template>

@@ -1,9 +1,16 @@
 <template>
   <div v-if="canInsertTableData">
     <v-toolbar flat>
-      <v-toolbar-title>Create Table Schema (and Import Data) from .csv/.tsv</v-toolbar-title>
+      <v-toolbar-title>
+        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
+        Create Table Schema (and Import Data) from .csv/.tsv
+      </v-toolbar-title>
     </v-toolbar>
-    <v-stepper v-model="step" vertical flat>
+    <v-stepper v-model="step" vertical flat tile>
       <v-stepper-step :complete="step > 1" step="1">
         Table Information
       </v-stepper-step>
@@ -166,7 +173,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="4">
-        <TableSchema :back="true" :error="error" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :error="error" :loading="loading" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
       <v-stepper-step
         :complete="step > 5"
@@ -189,7 +196,8 @@ import TableSchema from '@/components/TableSchema'
 import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
 import ContainerService from '@/api/container.service'
 import TableService from '@/api/table.service'
-import { determineDataTypes } from '@/api/analyse'
+import MiddlewareService from '@/api/middleware.service'
+import AnalyseService from '@/api/analyse.service'
 
 export default {
   name: 'TableFromCSV',
@@ -312,47 +320,44 @@ export default {
     submit () {
       this.$refs.form.validate()
     },
-    async upload () {
+    upload () {
       this.loading = true
-      const data = new FormData()
-      data.append('file', this.fileModel)
-      try {
-        const res = await this.$axios.post('/server-middleware/upload', data, this.fileConfig)
-        console.debug('file upload', res.data)
-        this.file = res.data
-      } catch (err) {
-        console.error('Failed to upload .csv data', err)
-        this.$toast.error('Could not upload data')
-      }
-      this.loading = false
-    },
-    async analyse () {
-      this.loading = true
-      try {
-        const res = await determineDataTypes(this.token, `/tmp/${this.file.filename}`)
-        const { columns } = res.data
-        console.log('data analyse result', columns)
-        this.tableCreate.columns = Object.entries(columns)
-          .map(([key, val]) => {
-            return {
-              name: key,
-              type: val,
-              null_allowed: true,
-              primary_key: false,
-              enum_values: []
-            }
+      return new Promise((resolve, reject) => {
+        MiddlewareService.upload(this.fileModel)
+          .then((file) => {
+            this.file = file
+            resolve(file)
           })
-        this.tableImport.location = `/tmp/${this.file.filename}`
-        this.step = 4
-        this.loading = false
-        console.debug('upload csv', res.data)
-        return
-      } catch (err) {
-        console.error('Failed to upload .csv data', err)
-        console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data')
-      }
-      this.loading = false
+          .catch((error) => {
+            reject(error)
+          })
+          .finally(() => {
+            this.loading = false
+          })
+      })
+    },
+    analyse () {
+      this.loading = true
+      AnalyseService.determineDataTypes(`/tmp/${this.file.filename}`)
+        .then((analysis) => {
+          const { columns } = analysis
+          this.tableCreate.columns = Object.entries(columns)
+            .map(([key, val]) => {
+              return {
+                name: key,
+                type: val,
+                null_allowed: true,
+                primary_key: false,
+                enum_values: []
+              }
+            })
+          this.tableImport.location = `/tmp/${this.file.filename}`
+          this.step = 4
+          this.loading = false
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     listTables () {
       this.loading = true
@@ -371,6 +376,7 @@ export default {
         return
       }
       this.validStep4 = true
+      this.step = 5
       this.createTable()
     },
     setOthers (column) {
@@ -423,4 +429,13 @@ export default {
 </script>
 
 <style scoped>
+#back-btn {
+  min-width: auto;
+  padding: 0 0 0 12px;
+  background: none !important;
+  box-shadow: none;
+}
+#back-btn::before {
+  opacity: 0;
+}
 </style>

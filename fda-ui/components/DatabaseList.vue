@@ -7,7 +7,7 @@
       :to="link(container)"
       flat
       tile>
-      <v-divider class="mx-4" />
+      <v-divider v-if="!$vuetify.theme.dark" class="mx-4" />
       <v-card-title v-if="!hasDatabase(container)" v-text="container.name" />
       <v-card-title v-if="hasDatabase(container)">
         <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>

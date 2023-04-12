@@ -29,16 +29,16 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canImportCsv" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> Import CSV
+          Import .csv
         </v-btn>
         <v-btn v-if="canCreateSubset" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create`">
-          <v-icon left>mdi-wrench</v-icon> Create Subset
+          Create Subset
         </v-btn>
         <v-btn v-if="canCreateView" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create`">
-          <v-icon left>mdi-view-carousel-outline</v-icon> Create View
+          Create View
         </v-btn>
         <v-btn v-if="canCreateTable" color="primary" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/create`">
-          <v-icon left>mdi-table-large-plus</v-icon> Create Table
+          Create Table
         </v-btn>
       </v-toolbar-title>
       <template v-slot:extension>

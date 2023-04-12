@@ -47,6 +47,7 @@
     "qs": "^6.11.1",
     "sql-formatter": "^6.1.1",
     "vue": "^2.6.12",
+    "vue-axios": "^3.5.2",
     "vue-chartjs": "^4.1.1",
     "vue-jwt-decode": "^0.1.0",
     "vue-toast-notification": "^0.5.4",

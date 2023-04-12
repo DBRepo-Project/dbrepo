@@ -12,22 +12,22 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canAddTuple" class="mr-2 mb-1" @click="addTuple">
-          <v-icon left>mdi-plus</v-icon> Add
+          Add
         </v-btn>
         <v-btn v-if="canEditTuple" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
-          <v-icon left>mdi-pencil</v-icon> Edit
+          Edit
         </v-btn>
         <v-btn v-if="canDeleteTuple" color="error" class="mr-2 mb-1" :loading="loadingDelete" @click="deleteItems">
-          <v-icon left>mdi-delete</v-icon> Delete<span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
+          Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-wrench</v-icon> Create Subset
+          Create Subset
         </v-btn>
         <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-view-carousel</v-icon> Create View
+          Create View
         </v-btn>
         <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> Import csv
+          Import csv
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
@@ -35,7 +35,7 @@
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/info`">
         Info
       </v-tab>
-      <v-tab v-if="canReadData" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
+      <v-tab v-if="canViewTableData" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
         Data
       </v-tab>
       <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`">
@@ -138,17 +138,18 @@ export default {
       }
       return this.roles.includes('create-database-view')
     },
-    canReadData () {
+    canViewTableData () {
+      /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
       if (!this.database) {
         return false
       }
       if (this.database.is_public) {
         return true
       }
-      if (!this.roles) {
+      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
         return false
       }
-      return this.roles.includes('view-table-data')
+      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canImportCsv () {
       if (!this.roles) {

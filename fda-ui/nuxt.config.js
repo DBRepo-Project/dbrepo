@@ -78,24 +78,6 @@ export default {
     defaultPublisher
   },
 
-  proxy: {
-    '/api': api,
-    '/pid': {
-      target: api + '/api',
-      changeOrigin: true,
-      pathRewrite: {
-        '^/pid': '/pid'
-      }
-    },
-    '/retrieve': {
-      target: search,
-      changeOrigin: true,
-      pathRewrite: {
-        '^/retrieve': ''
-      }
-    }
-  },
-
   serverMiddleware: [
     { path: '/server-middleware', handler: path.resolve(__dirname, 'server-middleware/index.js') }
   ],

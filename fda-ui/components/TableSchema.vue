@@ -3,7 +3,7 @@
     <v-alert
       v-if="needsSequence"
       border="left"
-      color="amber lighten-4 black--text">
+      color="info">
       We create a column named <code>id</code> with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior.
     </v-alert>
     <v-form ref="form" v-model="valid">
@@ -82,7 +82,7 @@
         </v-row>
       </div>
       <div>
-        <v-btn x-small :loading="loading" @click="addColumn()">
+        <v-btn x-small @click="addColumn()">
           Add Column
         </v-btn>
       </div>
@@ -90,7 +90,7 @@
         <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
           Back
         </v-btn>
-        <v-btn color="primary" :loading="loading" :disabled="!valid" class="mt-10 mb-1" @click="submit()">
+        <v-btn color="primary" :loading="localLoading" :disabled="!valid" class="mt-10 mb-1" @click="submit">
           Continue
         </v-btn>
       </div>
@@ -118,11 +118,17 @@ export default {
       default () {
         return false
       }
+    },
+    loading: {
+      type: Boolean,
+      default () {
+        return false
+      }
     }
   },
   data () {
     return {
-      loading: false,
+      localLoading: false,
       dateFormats: [],
       valid: true,
       finished: false,
@@ -151,7 +157,13 @@ export default {
       return this.columns.filter(c => c.primary_key).length === 0
     }
   },
+  watch: {
+    loading () {
+      this.localLoading = this.loading
+    }
+  },
   mounted () {
+    this.localLoading = this.loading
     this.loadContainer()
       .then(() => this.loadImage())
   },
@@ -165,7 +177,7 @@ export default {
     async loadContainer () {
       const getUrl = `/api/container/${this.$route.params.container_id}`
       try {
-        this.loading = true
+        this.localLoading = true
         const res = await this.$axios.get(getUrl)
         this.container = res.data
         console.debug('retrieve container', this.container)
@@ -173,12 +185,12 @@ export default {
         this.error = true
         console.error('retrieve image date formats failed', err)
       }
-      this.loading = false
+      this.localLoading = false
     },
     async loadImage () {
       const getUrl = `/api/image/${this.container.image.id}`
       try {
-        this.loading = true
+        this.localLoading = true
         const res = await this.$axios.get(getUrl)
         this.dateFormats = res.data.date_formats
         console.debug('retrieve image date formats', this.dateFormats)
@@ -186,10 +198,11 @@ export default {
         this.error = true
         console.error('retrieve image date formats failed', err)
       }
-      this.loading = false
+      this.localLoading = false
     },
     submit () {
       this.finished = true
+      this.localLoading = true
       this.$emit('close', { success: true })
     },
     setOthers (column) {

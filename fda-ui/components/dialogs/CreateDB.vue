@@ -2,33 +2,35 @@
   <div>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
-        <v-card-title>
-          Create Database
-        </v-card-title>
+        <v-card-title>Create Database</v-card-title>
+        <v-card-subtitle>Choose an expressive database name and select a database engine.</v-card-subtitle>
         <v-card-text>
-          <v-alert
-            border="left"
-            color="info">
-            Choose an expressive database name and select a database engine.
-          </v-alert>
-          <v-text-field
-            id="database"
-            v-model="createContainerDto.name"
-            name="database"
-            label="Name *"
-            autofocus
-            :rules="[v => notEmpty(v) || $t('Required')]"
-            required />
-          <v-select
-            id="engine"
-            v-model="engine"
-            name="engine"
-            label="Engine *"
-            :items="engines"
-            :item-text="item => `${item.repository}:${item.tag}`"
-            :rules="[v => !!v || $t('Required')]"
-            return-object
-            required />
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="database"
+                v-model="createContainerDto.name"
+                name="database"
+                label="Name *"
+                autofocus
+                :rules="[v => notEmpty(v) || $t('Required')]"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                id="engine"
+                v-model="engine"
+                name="engine"
+                label="Engine *"
+                :items="engines"
+                :item-text="item => `${item.repository}:${item.tag}`"
+                :rules="[v => !!v || $t('Required')]"
+                return-object
+                required />
+            </v-col>
+          </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />

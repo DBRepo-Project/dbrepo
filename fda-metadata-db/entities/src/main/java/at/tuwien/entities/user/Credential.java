@@ -42,6 +42,7 @@ public class Credential {
     @Column(nullable = false)
     private Integer priority;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)

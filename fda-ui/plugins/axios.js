@@ -3,6 +3,7 @@ import store from '@/store'
 import api from '@/api'
 import AuthenticationService from '@/api/authentication.service'
 import jwtDecode from 'jwt-decode'
+import VueAxios from 'vue-axios'
 
 api.interceptors.request.use((config) => {
   const token = store().state.token
@@ -30,4 +31,4 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-Vue.use(api)
+Vue.use(VueAxios, api)

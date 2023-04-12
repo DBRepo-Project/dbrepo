@@ -214,7 +214,7 @@ export default {
       handler (id, oldId) {
         if (id !== oldId) {
           this.loadDatabase()
-          // this.loadAccess()
+          this.loadAccess()
         }
       },
       deep: true,

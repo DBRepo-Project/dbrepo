@@ -69,16 +69,11 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         for (Table table : tables) {
             final long consumerCount = consumers.stream().filter(c -> c.getQueue().getName().equals(table.getQueueName())).count();
             if (consumerCount >= amqpConfig.getAmqpConsumers()) {
-                log.trace("listener table with name {} already has {} consumers (max. {})", table.getName(),
-                        consumerCount, amqpConfig.getAmqpConsumers());
                 continue;
             }
-            log.debug("table with id {} has {} consumers, but needs {} in total", table.getId(), consumerCount,
-                    amqpConfig.getAmqpConsumers());
             for (long i = consumerCount; i < amqpConfig.getAmqpConsumers(); i++) {
                 createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
                         table.getDatabase().getId(), table.getId());
-                log.trace("creating consumer #{}", i);
             }
         }
     }

@@ -1,7 +1,7 @@
 const config = {}
 
-config.api = process.env.API || 'http://localhost:3000/api'
-config.search = process.env.SEARCH || 'http://localhost:9200'
+config.api = process.env.API || 'http://localhost'
+config.search = process.env.SEARCH || 'http://localhost/retrieve'
 config.sandbox = process.env.SANDBOX || false
 config.title = process.env.TITLE || 'Database Repository'
 config.icon = process.env.ICON || '/favicon.ico'

@@ -57,23 +57,6 @@ class TableService {
         })
     })
   }
-
-  importCsv (id, databaseId, tableId, data) {
-    return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/import`, data, { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const table = response.data
-          console.debug('response table', table)
-          resolve(table)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to import csv to table', error)
-          Vue.$toast.error(`[${code}] Failed to import csv to table: ${message}`)
-          reject(error)
-        })
-    })
-  }
 }
 
 export default new TableService()

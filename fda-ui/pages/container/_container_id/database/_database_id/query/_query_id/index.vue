@@ -17,10 +17,10 @@
         <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 mr-2" color="primary" :disabled="!executionUTC" @click.stop="openDialog()">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
-        <v-btn v-if="result_visibility && !query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadData">
+        <v-btn v-if="result_visibility && !query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadSubset">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
-        <v-btn v-if="result_visibility && query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="download('text/csv')">
+        <v-btn v-if="result_visibility && query.identifier && query.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadMetadata('text/csv')">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
         <v-btn
@@ -28,7 +28,7 @@
           color="secondary"
           class="ml-2"
           :loading="metadataLoading"
-          @click.stop="download('text/xml')">
+          @click.stop="downloadMetadata('text/xml')">
           <v-icon left>mdi-code-tags</v-icon> Metadata .xml
         </v-btn>
       </v-toolbar-title>
@@ -373,38 +373,33 @@ export default {
       this.$refs.queryResults.reExecute(this.query.id)
       this.$refs.queryResults.reExecuteCount(this.query.id)
     },
-    async download (mime) {
+    downloadMetadata (mime) {
       if (mime === 'text/csv') {
         this.downloadLoading = true
       } else if (mime === 'text/xml') {
         this.metadataLoading = true
       }
-      try {
-        const config = this.config
-        config.headers.Accept = mime
-        const res = await this.$axios.get(`/api/pid/${this.query.identifier.id}`, config)
-        console.debug('export identifier', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        if (mime === 'text/csv') {
-          link.setAttribute('download', 'subset.csv')
-        } else if (mime === 'text/xml') {
-          link.setAttribute('download', 'identifier.xml')
-        }
-        document.body.appendChild(link)
-        link.click()
-      } catch (err) {
-        console.error('Could not export identifier', err)
-        this.$toast.error('Could not export identifier')
-        this.error = true
-      }
-      this.downloadLoading = false
-      this.metadataLoading = false
+      QueryService.exportMetadata(this.query.identifier.id, mime)
+        .then((metadata) => {
+          const url = window.URL.createObjectURL(new Blob([metadata]))
+          const link = document.createElement('a')
+          link.href = url
+          if (mime === 'text/csv') {
+            link.setAttribute('download', 'subset.csv')
+          } else if (mime === 'text/xml') {
+            link.setAttribute('download', 'identifier.xml')
+          }
+          document.body.appendChild(link)
+          link.click()
+        })
+        .finally(() => {
+          this.downloadLoading = false
+          this.metadataLoading = false
+        })
     },
-    downloadData () {
+    downloadSubset () {
       this.downloadLoading = true
-      QueryService.export(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+      QueryService.exportSubset(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
         .then((data) => {
           const url = window.URL.createObjectURL(new Blob([data]))
           const link = document.createElement('a')
@@ -419,13 +414,17 @@ export default {
     },
     loadQuery () {
       this.loadingQuery = true
-      QueryService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
-        .then((query) => {
-          this.query = query
-        })
-        .finally(() => {
-          this.loadingQuery = false
-        })
+      return new Promise((resolve, reject) => {
+        QueryService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+          .then((query) => {
+            this.query = query
+            resolve(query)
+          })
+          .catch(error => reject(error))
+          .finally(() => {
+            this.loadingQuery = false
+          })
+      })
     },
     save () {
       this.loadingSave = true

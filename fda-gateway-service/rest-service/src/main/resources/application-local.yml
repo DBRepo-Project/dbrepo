@@ -22,10 +22,6 @@ spring:
     name: gateway-service
   cloud:
     loadbalancer.ribbon.enabled: false
-    gateway:
-      httpclient:
-        ssl:
-          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus,gateway
 server:
   port: 9095

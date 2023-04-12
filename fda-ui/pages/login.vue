@@ -108,7 +108,7 @@ export default {
           UserService.findOne(userId)
             .then((user) => {
               this.$store.commit('SET_USER', user)
-              this.$vuetify.theme.dark = UserMapper.getThemeDark(this.user)
+              this.$vuetify.theme.dark = user.attributes.theme_dark
               this.$router.push('/container')
             })
         })

@@ -136,9 +136,8 @@ services:
     networks:
       core:
     ports:
-      - "9097:9097"
       - "8443:8443"
-      - "8080:8080"
+      - "8081:8080"
     env_file:
       - .env
     volumes:
@@ -362,8 +361,6 @@ services:
     networks:
       core:
       public:
-    ports:
-      - "3000:3000"
     env_file:
       - .env
     volumes:
@@ -373,5 +370,31 @@ services:
         condition: service_healthy
       fda-database-service:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  fda-proxy:
+    restart: no
+    container_name: dbrepo-proxy
+    hostname: proxy
+    build: ./fda-proxy
+    image: fda-proxy
+    networks:
+      core:
+      public:
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "3000:3000"
+      - "443:443"
+    env_file:
+      - .env
+    depends_on:
+      fda-search-service:
+        condition: service_started
+      fda-gateway-service:
+        condition: service_healthy
+      fda-ui:
+        condition: service_started
     logging:
       driver: json-file

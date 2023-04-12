@@ -1,5 +1,5 @@
 <template>
-  <div v-if="canRead">
+  <div v-if="canViewTableData">
     <TableToolbar :selection="selection" @modified="modified" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
@@ -89,6 +89,9 @@ export default {
     token () {
       return this.$store.state.token
     },
+    roles () {
+      return this.$store.state.roles
+    },
     database () {
       return this.$store.state.database
     },
@@ -156,11 +159,15 @@ export default {
       }
       return this.access.type === 'write_all'
     },
-    canRead () {
-      if (this.database?.is_public) {
+    canViewTableData () {
+      /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
+      if (!this.database) {
+        return false
+      }
+      if (this.database.is_public) {
         return true
       }
-      if (!this.user || !this.access) {
+      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'

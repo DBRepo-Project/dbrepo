@@ -8,7 +8,7 @@ ARG TAG=1.2
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV API=http://gateway-service:9095
+ENV API=http://:8080
 
 WORKDIR /app
 

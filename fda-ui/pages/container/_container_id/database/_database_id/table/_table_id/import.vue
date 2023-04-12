@@ -1,5 +1,5 @@
 <template>
-  <div v-if="isResearcher">
+  <div v-if="canInsertTableData">
     <v-toolbar flat>
       <v-toolbar-title>
         <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
@@ -10,7 +10,7 @@
         {{ table.name }}
       </v-toolbar-title>
     </v-toolbar>
-    <v-stepper v-model="step" vertical flat>
+    <v-stepper v-model="step" vertical flat tile>
       <v-stepper-step :complete="step > 1" step="1">
         Import Data
       </v-stepper-step>
@@ -96,10 +96,14 @@
       </v-stepper-content>
     </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
+    <pre>loading={{ loading }}</pre>
   </div>
 </template>
 <script>
-const { isNonNegativeInteger, isResearcher } = require('@/utils')
+import TableService from '@/api/table.service'
+import MiddlewareService from '@/api/middleware.service'
+import QueryService from '@/api/query.service'
+const { isNonNegativeInteger } = require('@/utils')
 
 export default {
   name: 'TableImportCSV',
@@ -149,12 +153,6 @@ export default {
     }
   },
   computed: {
-    tableId () {
-      return this.$route.params.table_id
-    },
-    databaseId () {
-      return this.$route.params.database_id
-    },
     token () {
       return this.$store.state.token
     },
@@ -169,14 +167,14 @@ export default {
     user () {
       return this.$store.state.user
     },
-    isResearcher () {
-      return isResearcher(this.user)
+    roles () {
+      return this.$store.state.roles
     },
-    fileConfig () {
-      return { headers: { 'Content-Type': 'multipart/form-data' } }
-    },
-    sharedFilesystem () {
-      return this.$config.sharedFilesystem
+    canInsertTableData () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('insert-table-data')
     }
   },
   mounted () {
@@ -185,54 +183,36 @@ export default {
   methods: {
     isNonNegativeInteger,
     uploadAndImport () {
-      this.upload()
-        .then(() => this.import())
+      this.loading = true
+      MiddlewareService.upload(this.fileModel)
+        .then((file) => {
+          this.file = file
+          this.tableImport.location = `/tmp/${this.file.filename}`
+          QueryService.importCsv(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, this.tableImport)
+            .then(() => {
+              this.$toast.success('Successfully imported data')
+              this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
+            })
+            .finally(() => {
+              this.loading = false
+            })
+        })
+        .catch(() => {
+          this.loading = false
+        })
     },
     submit () {
       this.$refs.form.validate()
     },
-    async loadTableMetadata () {
+    loadTableMetadata () {
       this.loading = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}`, this.config)
-        console.debug('got table', res.data)
-        this.table = res.data
-      } catch (err) {
-        console.error('Could not insert data.', err)
-      }
-      this.loading = false
-    },
-    async upload () {
-      this.loading = true
-      const data = new FormData()
-      data.append('file', this.fileModel)
-      try {
-        const res = await this.$axios.post('/server-middleware/upload', data, this.fileConfig)
-        console.debug('file upload', res.data)
-        this.file = res.data
-      } catch (err) {
-        console.error('Failed to upload .csv data', err)
-        console.debug('failed to upload .csv data, does the .csv contain a header line?')
-        this.$toast.error('Could not upload data')
-      }
-      this.loading = false
-    },
-    async import () {
-      this.loading = true
-      const insertUrl = `/api/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${this.tableId}/data/import`
-      this.tableImport.location = `/tmp/${this.file.filename}`
-      let insertResult
-      try {
-        insertResult = await this.$axios.post(insertUrl, this.tableImport, this.config)
-        console.debug('imported data', insertResult.data)
-      } catch (err) {
-        console.error('Could not import data.', err)
-        this.loading = false
-        return
-      }
-      this.$toast.success('Successfully imported data')
-      this.loading = false
-      this.$router.push(`/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
+      TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+        .then((table) => {
+          this.table = table
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

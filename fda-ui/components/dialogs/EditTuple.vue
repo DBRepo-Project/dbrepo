@@ -98,7 +98,7 @@
           <v-btn
             v-if="edit"
             id="updateTuple"
-            class="mb-2"
+            class="mb-2 ml-3 mr-2"
             :disabled="!valid"
             color="primary"
             type="submit"
@@ -112,6 +112,8 @@
 </template>
 
 <script>
+import QueryService from '@/api/query.service'
+
 export default {
   props: {
     tuple: {
@@ -145,7 +147,7 @@ export default {
       return this.$store.state.token
     },
     title () {
-      return (this.edit ? 'Edit' : 'Add') + ' tuple'
+      return (this.edit ? 'Edit' : 'Add') + ' Tuple'
     }
   },
   watch: {
@@ -185,7 +187,7 @@ export default {
     validateTimestamp (val) {
       return /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(val)
     },
-    async updateTuple () {
+    updateTuple () {
       const constraints = {}
       this.columns
         .filter(c => c.is_primary_key)
@@ -196,46 +198,29 @@ export default {
         data: this.localTuple,
         keys: constraints
       }
-      try {
-        await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, data, {
-          headers: { Authorization: `Bearer ${this.token}` }
+      QueryService.updateTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, data)
+        .then(() => {
+          this.$toast.success('Successfully updated tuple!')
+          this.$emit('close', { success: true })
         })
-        console.info('update result')
-        this.$toast.success('Successfully updated tuple!')
-        this.$emit('close', { success: true })
-      } catch (error) {
-        console.error('Failed to update tuple', error)
-        const { message } = error.response.data
-        this.$toast.error('Failed to update tuple: ' + message)
-      }
     },
-    async addTuple () {
+    addTuple () {
       const constraints = {}
       this.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
           constraints[c.internal_name] = this.localTuple[c.internal_name]
         })
-      try {
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-          data: this.tuple
-        }, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        })
-        console.info('add result', res.data)
-        this.$toast.success('Successfully added tuple!')
-        this.$emit('close', { success: true })
-      } catch (error) {
-        console.error('Failed to add tuple', error)
-        const { message, status } = error.response.data
-        if (status === 423) {
-          console.error('Database failed to accept tuple', message)
-          this.$toast.error(`Database failed to accept tuple: ${message}`)
-        } else {
-          console.error('Failed to add tuple', message)
-          this.$toast.error(`${message}`)
+      this.columns.forEach((column) => {
+        if (!(column.internal_name in this.localTuple)) {
+          this.localTuple[column.internal_name] = null
         }
-      }
+      })
+      QueryService.insertTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
+        .then(() => {
+          this.$toast.success('Successfully added tuple!')
+          this.$emit('close', { success: true })
+        })
     }
   }
 }

@@ -7,6 +7,7 @@
     <v-card
       v-for="(result, idx) in results"
       :key="idx"
+      :to="link(result)"
       flat
       tile>
       <v-divider class="mx-4" />

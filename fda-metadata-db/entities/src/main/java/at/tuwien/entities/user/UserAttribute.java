@@ -19,14 +19,13 @@ import javax.persistence.*;
 public class UserAttribute {
 
     @Id
-    @JsonIgnore
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "attribute-uuid")
     @GenericGenerator(name = "attribute-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private String id;
 
-    @JsonIgnore
+    @ToString.Exclude
     @Column(name = "USER_ID", nullable = false)
     private String userId;
 
