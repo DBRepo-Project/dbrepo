@@ -10,11 +10,13 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AccessMapper;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,57 +66,51 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, null);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, null);
         });
     }
 
     @Test
-    public void create_readRead_fails() {
+    @Disabled("Requires integration")
+    public void create_privateResearcherNoAccessOwner_succeeds() throws UserNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
+
+        /* test */
+        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void create_privateResearcherNoAccess_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_READ_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3, USER_2_PRINCIPAL);
         });
     }
 
     @Test
-    public void create_readWriteOwn_fails() {
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void create_readWriteAll_fails() {
+    public void create_privateResearcherRead_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void create_readOwner_succeeds() {
+    public void create_privateResearcherWriteOwn_fails() {
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    public void create_privateResearcherWriteAll_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_OWNER_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void create_noAccessGiveAccess_fails() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_1_PRINCIPAL);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
         });
     }
 
@@ -132,36 +128,29 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
+            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void find_read_succeeds() throws AccessDeniedException, NotAllowedException {
+    public void find_privateResearcherRead_succeeds() throws AccessDeniedException, NotAllowedException {
 
         /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_READ_ACCESS, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
+        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void find_writeOwn_succeeds() throws AccessDeniedException, NotAllowedException {
+    public void find_privateResearcherWriteOwn_succeeds() throws AccessDeniedException, NotAllowedException {
 
         /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
+        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void find_writeAll_succeeds() throws AccessDeniedException, NotAllowedException {
+    public void find_privateResearcherWriteAll_succeeds() throws AccessDeniedException, NotAllowedException {
 
         /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    public void find_owner_succeeds() throws AccessDeniedException, NotAllowedException {
-
-        /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_OWNER_ACCESS, USER_1_USERNAME, USER_1_ID, USER_1_PRINCIPAL);
+        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -173,12 +162,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_READ_ACCESS, USER_3_USERNAME, null);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, null);
         });
     }
 
     @Test
-    public void update_readRead_fails() {
+    public void update_privateResearcherRead_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -186,12 +175,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_READ_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void update_readWriteOwn_fails() {
+    public void update_privateResearcherWriteOwn_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -199,12 +188,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_OWN_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void update_readWriteAll_fails() {
+    public void update_privateResearcherWriteAll_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -212,22 +201,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_WRITE_ALL_ACCESS, USER_3_USERNAME, USER_2_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void update_readOwnerUserNotFound_fails() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(UserNotFoundException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_OWNER_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
@@ -236,15 +210,18 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected void generic_create(Long containerId, Long databaseId, Database database, DatabaseAccess access,
-                                  String username, Principal principal) throws UserNotFoundException,
+                                  String username, User user, Principal principal) throws UserNotFoundException,
             NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .username(username)
+                .type(AccessTypeDto.READ)
                 .build();
 
         /* mock */
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
+        when(userRepository.findByUsername(username))
+                .thenReturn(Optional.of(user));
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.empty());
@@ -256,7 +233,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* test */
         final ResponseEntity<?> response = accessEndpoint.create(containerId, databaseId, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody());
+        assertNull(response.getBody());
     }
 
     protected void generic_find(Long containerId, Long databaseId, Database database, DatabaseAccess access,
@@ -266,12 +243,18 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
-        if (access == null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
-                    .thenReturn(Optional.empty());
-        } else {
+        if (access != null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.of(access));
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, principal.getName()))
+                    .thenReturn(Optional.of(DatabaseAccess.builder()
+                            .type(access.getType())
+                            .hdbid(databaseId)
+                            .huserid(username.equals(USER_1_USERNAME) ? USER_1_ID : USER_2_ID)
+                            .build()));
+        } else {
+            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+                    .thenReturn(Optional.empty());
         }
 
         /* test */
@@ -305,7 +288,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* test */
         final ResponseEntity<?> response = accessEndpoint.update(containerId, databaseId, username, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody());
+        assertNull(response.getBody());
     }
 
 }

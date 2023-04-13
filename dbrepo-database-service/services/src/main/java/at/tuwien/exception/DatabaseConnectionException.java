@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-@ResponseStatus(code = HttpStatus.METHOD_NOT_ALLOWED)
+@ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
 public class DatabaseConnectionException extends IOException {
 
     public DatabaseConnectionException(String msg) {

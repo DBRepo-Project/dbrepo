@@ -153,7 +153,40 @@ export default {
     },
     createTable () {
       this.loading = true
-      TableService.create(this.$route.params.container_id, this.$route.params.database_id, this.tableCreate)
+      const table = this.tableCreate.columns.reduce((table, column) => {
+        // eslint-disable-next-line camelcase
+        const { name, type, null_allowed, primary_key } = column
+        table.columns.push({
+          name,
+          type,
+          null_allowed,
+          primary_key
+        })
+        if (column.unique) {
+          table.constraints.uniques.push([column.name])
+        }
+        if (column.check_expression) {
+          table.checks.push(column.check_expression)
+        }
+        if (column.foreign_key && column.references) {
+          table.foreign_keys.push({
+            columns: [column.name],
+            referenced_table: column.foreign_key,
+            referenced_columns: [column.references]
+          })
+        }
+        return table
+      }, {
+        name: this.tableCreate.name,
+        description: this.tableCreate.description,
+        columns: [],
+        constraints: {
+          foreign_keys: [],
+          uniques: [],
+          checks: []
+        }
+      })
+      TableService.create(this.$route.params.container_id, this.$route.params.database_id, table)
         .then(async (table) => {
           this.$toast.success('Table created')
           await this.$store.dispatch('reloadDatabase')

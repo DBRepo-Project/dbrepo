@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.EndpointConfig;
@@ -12,6 +13,10 @@ import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -48,6 +53,35 @@ public class PersistenceEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "pid.find", description = "Time needed to find a persisted identifier")
     @Operation(summary = "Find some identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found identifier successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto.class)),
+                            @Content(mediaType = "text/csv"),
+                            @Content(mediaType = "text/xml"),
+                            @Content(mediaType = "text/bibliography"),
+                            @Content(mediaType = "text/bibliography; style=apa"),
+                            @Content(mediaType = "text/bibliography; style=ieee"),
+                            @Content(mediaType = "text/bibliography; style=bibtex"),
+                    }),
+            @ApiResponse(responseCode = "400",
+                    description = "Identifier could not be exported, the requested style is not known",
+                    content = {@Content(
+                            mediaType = "text/bibliography",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Identifier could not be exported from database as the resource was not found",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Identifier could not exported from database as it is not reachable",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
             QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {

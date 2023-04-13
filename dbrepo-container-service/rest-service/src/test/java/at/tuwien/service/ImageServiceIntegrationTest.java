@@ -48,19 +48,19 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
-        final ContainerImage tmp = ContainerImage.builder()
+        imageRepository.save(ContainerImage.builder()
+                .id(IMAGE_1_ID)
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
                 .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
                 .compiled(IMAGE_1_BUILT)
+                .dialect(IMAGE_1_DIALECT)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .driverClass(IMAGE_1_DRIVER)
                 .size(IMAGE_1_SIZE)
                 .environment(IMAGE_1_ENV)
                 .defaultPort(IMAGE_1_PORT)
-                .build();
-        imageRepository.save(tmp);
+                .build()) /* keep */;
     }
 
     @Test

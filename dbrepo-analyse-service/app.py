@@ -34,7 +34,7 @@ dictConfig({
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
-metrics.info('app_info', 'Application info', version='1.0.3')
+metrics.info('app_info', 'Application info', version='1.2.0')
 app.config["SWAGGER"] = {"openapi": "3.0.1", "title": "Swagger UI", "uiversion": 3}
 
 swagger_config = {
@@ -63,7 +63,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "1.1.0-alpha",
+        "version": "1.2.0",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"
@@ -71,7 +71,11 @@ template = {
         "license": {
             "name": "Apache 2.0",
             "url": "https://www.apache.org/licenses/LICENSE-2.0"
-        }
+        },
+    },
+    "externalDocs": {
+        "description": "Sourcecode Documentation",
+        "url": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"
     },
     "servers": [
         {
@@ -79,8 +83,8 @@ template = {
             "description": "Generated server url"
         },
         {
-            "url": "https://dbrepo2.tuwien.ac.at:5000",
-            "description": "DBRepo Sandbox"
+            "url": "https://dbrepo2.tuwien.ac.at",
+            "description": "Sandbox"
         }
     ]
 }

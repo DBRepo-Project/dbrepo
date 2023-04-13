@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.tuwien</groupId>
-        <artifactId>fda-metadata-db</artifactId>
-        <version>1.1.0-alpha</version>
+        <artifactId>dbrepo-metadata-db</artifactId>
+        <version>1.2.0</version>
     </parent>
 
-    <artifactId>fda-metadata-db-entites</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-metadata-db-entity</name>
+    <artifactId>dbrepo-metadata-db-entites</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-metadata-db-entity</name>
 
     <dependencies/>
 

@@ -3,7 +3,6 @@ package at.tuwien.repository;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -13,7 +12,9 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.ViewService;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.AfterAll;
@@ -29,7 +30,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,7 +76,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    static final String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    static final String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -82,10 +84,10 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
         /* create network */
         DockerConfig.createAllNetworks();
         /* create elastic search */
-        DockerConfig.createContainer(null, CONTAINER_ELASTIC, IMAGE_ELASTIC_ENV);
+        DockerConfig.createContainer(null, CONTAINER_ELASTIC, CONTAINER_ELASTIC_ENV);
         DockerConfig.startContainer(CONTAINER_ELASTIC);
         /* create container */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
     }
 

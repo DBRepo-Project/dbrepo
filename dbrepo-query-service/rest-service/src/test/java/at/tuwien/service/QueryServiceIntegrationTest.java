@@ -5,7 +5,6 @@ import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
@@ -16,6 +15,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
+import at.tuwien.config.DockerConfig;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
@@ -81,9 +81,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
-    private final static String BIND_WEATHER = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
-    private final static String BIND_ZOO = new File("./src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_ZOO = new File("../../dbrepo-metadata-db/test/src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() {
@@ -106,6 +106,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         TABLE_1.setDatabase(DATABASE_1);
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setDatabase(DATABASE_1);
         TABLE_3.setDatabase(DATABASE_1);
         TABLE_7.setDatabase(DATABASE_1);
@@ -251,8 +252,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("timestamp", "2023-02-10 12:15:20"))
-                .build();
+                .data(new HashMap<>() {{
+                    put("timestamp", "2023-02-10 12:15:20");
+                    put("value", 12.3);
+                }}).build();
 
         /* mock */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
@@ -271,8 +274,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, InterruptedException {
         final TableCsvDto request = TableCsvDto.builder()
-                .data(Map.of("timestamp", "2023-02-10 12:15:20.613405"))
-                .build();
+                .data(new HashMap<>() {{
+                    put("timestamp", "2023-02-10 12:15:20.613405");
+                    put("value", null);
+                }}).build();
 
         /* mock */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
@@ -293,7 +298,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
-                        "location", "Melbourne",
+                        "location", "Albury" /* the constraint -> weather_location (location) */,
                         "mintemp", 5,
                         "rainfall", 0))
                 .build();
@@ -480,7 +485,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        assertEquals("Melbourne", result.get(0).get("location"));
+        assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
     }
@@ -507,7 +512,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        assertEquals("Melbourne", result.get(0).get("location"));
+        assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
     }

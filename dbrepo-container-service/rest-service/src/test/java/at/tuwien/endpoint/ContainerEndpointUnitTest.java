@@ -2,7 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.*;
-import at.tuwien.config.DockerConfig;
+import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.entities.container.Container;
@@ -48,7 +48,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     private ContainerEndpoint containerEndpoint;
 
     @Autowired
-    private DockerConfig dockerUtil;
+    private DockerDaemonConfig dockerUtil;
 
     @Test
     public void findById_anonymous_succeeds() throws DockerClientException, ContainerNotFoundException,

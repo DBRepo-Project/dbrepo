@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.CONFLICT)
+@ResponseStatus(code = HttpStatus.GONE)
 public class ContainerAlreadyRemovedException extends Exception {
 
     public ContainerAlreadyRemovedException(String message) {

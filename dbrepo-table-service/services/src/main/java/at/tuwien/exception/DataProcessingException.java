@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-@ResponseStatus(code = HttpStatus.BAD_REQUEST)
+@ResponseStatus(code = HttpStatus.LOCKED)
 public class DataProcessingException extends Exception {
 
     public DataProcessingException(String msg) {

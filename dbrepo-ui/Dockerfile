@@ -8,7 +8,8 @@ ARG TAG=1.2
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV API=http://:8080
+ENV API=http://:80
+ENV BASE_URL=http://:80
 
 WORKDIR /app
 
@@ -42,18 +43,19 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 EXPOSE 3000
 EXPOSE 9100
 
-ENV BROKER_USERNAME=fda
-ENV BROKER_PASSWORD=fda
+ENV BROKER_USERNAME="fda"
+ENV BROKER_PASSWORD="fda"
 ENV SANDBOX=false
-ENV SEARCH=http://search-service:9200
-ENV SHARED_FILESYSTEM=/tmp
+ENV SEARCH="http://search-service:9200"
+ENV SHARED_FILESYSTEM="/tmp"
 ENV LOGO="/logo.png"
 ENV MAIL_VERIFY=false
-ENV ELASTIC_PASSWORD=elastic
+ENV ELASTIC_USERNAME="elastic"
+ENV ELASTIC_PASSWORD="elastic"
 ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
-ENV DBREPO_CLIENT_SECRET=client-secret
+ENV DBREPO_CLIENT_SECRET="client-secret"
 
 WORKDIR /app
 

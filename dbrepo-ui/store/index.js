@@ -28,31 +28,24 @@ const store = new Store({
   },
   mutations: {
     SET_TOKEN (state, token) {
-      console.debug('set state token', token)
       state.token = token
     },
     SET_REFRESH_TOKEN (state, refreshToken) {
-      console.debug('set state refreshToken', refreshToken)
       state.refreshToken = refreshToken
     },
     SET_ROLES (state, roles) {
-      console.debug('set state roles', roles)
       state.roles = roles
     },
     SET_USER (state, user) {
-      console.debug('set state user', user)
       state.user = user
     },
     SET_DATABASE (state, database) {
-      console.debug('set state database', database)
       state.database = database
     },
     SET_TABLE (state, table) {
-      console.debug('set state table', table)
       state.table = table
     },
     SET_ACCESS (state, access) {
-      console.debug('set state access', access)
       state.access = access
     }
   },

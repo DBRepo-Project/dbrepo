@@ -59,18 +59,15 @@ public class TableServiceUnitTest extends BaseUnitTest {
     public void findAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+        when(tableRepository.find(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(Optional.of(TABLE_8));
 
         /* test */
-        final List<TableColumn> response = tableService.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID)
+        final List<TableColumn> response = tableService.find(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID)
                 .getColumns();
-        assertEquals(5, response.size());
+        assertEquals(2, response.size());
         assertEquals("id", response.get(0).getInternalName());
-        assertEquals("date", response.get(1).getInternalName());
-        assertEquals("location", response.get(2).getInternalName());
-        assertEquals("mintemp", response.get(3).getInternalName());
-        assertEquals("rainfall", response.get(4).getInternalName());
+        assertEquals("value", response.get(1).getInternalName());
     }
 
 }

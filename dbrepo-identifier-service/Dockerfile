@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM fda-metadata-db:latest as dependency
+FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######

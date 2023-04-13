@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -11,6 +12,10 @@ import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +62,13 @@ public class DatabaseEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "database.list", description = "Time needed to list the databases")
     @Operation(summary = "List databases")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List of databases",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto[].class))}),
+    })
     public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull Principal principal) {
         log.debug("endpoint list databases, containerId={}, principal={}", containerId, principal);
@@ -73,6 +85,53 @@ public class DatabaseEndpoint {
     @PreAuthorize("hasAuthority('create-database')")
     @Timed(value = "database.create", description = "Time needed to create a database")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created a new database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Database create query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container, user or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Database create permission is missing or grant permissions at broker service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to create user at broker service or virtual host could not be reached at broker service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Database name already exist or query store could not be created",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Container image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to the container failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Connection to the database failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<DatabaseBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                    @Valid @RequestBody DatabaseCreateDto createDto,
                                                    @NotNull Principal principal)
@@ -101,6 +160,23 @@ public class DatabaseEndpoint {
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Timed(value = "database.visibility", description = "Time needed to modify a database visibility")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Visibility modified successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Visibility modification is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable Long databaseId,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
@@ -111,7 +187,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.visibility(containerId, databaseId, data);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         log.trace("update database resulted in database {}", dto);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .body(dto);
     }
 
@@ -120,6 +196,23 @@ public class DatabaseEndpoint {
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
     @Operation(summary = "Transfer database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Transfer of ownership was successful",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Transfer of ownership is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
@@ -130,7 +223,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.transfer(containerId, databaseId, transferDto);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         log.trace("update database resulted in database {}", dto);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .body(dto);
     }
 
@@ -138,6 +231,23 @@ public class DatabaseEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Database found successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Database information is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable Long databaseId,
                                                 Principal principal)
@@ -146,7 +256,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         if (principal != null && database.getOwner().getUsername().equals(principal.getName())) {
-            /* only owner sees the access rights */
+            /* only owner sees the access rights */ // TODO improve this by proper mapping
             final List<DatabaseAccess> accesses = accessService.list(databaseId);
             dto.setAccesses(accesses.stream()
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
@@ -161,19 +271,61 @@ public class DatabaseEndpoint {
     @PreAuthorize("hasAuthority('delete-database')")
     @Timed(value = "database.delete", description = "Time needed to delete a database")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Deleted a database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Database delete query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Database delete permission is missing or revoke permissions at broker service failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Failed to delete user at broker service or virtual host could not be reached at broker service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Container image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to the container failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Connection to the database failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull @PathVariable Long databaseId,
                                     Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
             QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException,
-            DatabaseConnectionException, BrokerVirtualHostGrantException {
+            BrokerVirtualHostGrantException, DatabaseConnectionException {
         log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);
         messageQueueService.updatePermissions(principal);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .build();
     }
 

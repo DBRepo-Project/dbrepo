@@ -15,7 +15,7 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="!loading" :href="pid">{{ pid }}</a>
+                    <Banner v-if="!loading" :identifier="database.identifier" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Title
@@ -228,14 +228,17 @@ import DBToolbar from '@/components/DBToolbar'
 import Persist from '@/components/dialogs/Persist'
 import OrcidIcon from '@/components/icons/OrcidIcon'
 import Citation from '@/components/identifier/Citation'
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
+import Banner from '@/components/identifier/Banner'
+import DatabaseMapper from '@/api/database.mapper'
 
 export default {
   components: {
     DBToolbar,
     Persist,
     OrcidIcon,
-    Citation
+    Citation,
+    Banner
   },
   data () {
     return {
@@ -260,6 +263,18 @@ export default {
     baseUrl () {
       return location.protocol + '//' + location.host
     },
+    description () {
+      if (!this.hasIdentifier) {
+        return ''
+      }
+      return this.database.identifier.description
+    },
+    publisher () {
+      if (!this.hasIdentifier) {
+        return ''
+      }
+      return this.database.identifier.publisher
+    },
     token () {
       return this.$store.state.token
     },
@@ -280,16 +295,6 @@ export default {
     },
     database () {
       return this.$store.state.database
-    },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: { Accept: 'application/json' }
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
-      }
     },
     pid () {
       return `${this.baseUrl}/pid/${this.database.identifier.id}`
@@ -334,10 +339,7 @@ export default {
       return this.roles.includes('delete-identifier')
     },
     contact () {
-      if (this.database.contact === null || this.database.contact === undefined) {
-        return null
-      }
-      return formatUser(this.database.contact)
+      return DatabaseMapper.databaseToContact(this.database)
     },
     publication () {
       if (this.database.identifier.publication_year === null) {
@@ -349,7 +351,7 @@ export default {
       }
     },
     creator () {
-      return formatUser(this.database.creator)
+      return DatabaseMapper.databaseToOwner(this.database)
     },
     creatorVerified () {
       return this.database.creator.email_verified

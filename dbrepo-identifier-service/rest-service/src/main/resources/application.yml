@@ -22,6 +22,10 @@ spring:
     name: identifier-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9096
@@ -30,6 +34,7 @@ logging:
   level:
     root: warn
     at.tuwien.: "${LOG_LEVEL}"
+    at.tuwien.auth.UserPermissionEvaluator: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 eureka:
   instance:

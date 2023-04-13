@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
@@ -9,6 +10,10 @@ import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.IdentifierService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,12 +49,23 @@ public class IdentifierEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
     @Operation(summary = "Find identifiers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List identifiers",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto[].class))}),
+    })
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                     @RequestParam(required = false) Long qid,
-                                                    @RequestParam(required = false) IdentifierTypeDto type)
-            throws IdentifierNotFoundException {
+                                                    @RequestParam(required = false) IdentifierTypeDto type) {
         log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
-        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
+        List<Identifier> identifiers = new LinkedList<>();
+        try {
+            identifiers = identifierService.findAll(dbid, qid);
+        } catch (IdentifierNotFoundException e) {
+            /* ignore */
+        }
         final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .filter(i -> {
@@ -59,7 +76,6 @@ public class IdentifierEndpoint {
                 })
                 .collect(Collectors.toList());
         log.info("Find identifiers resulted in {} identifiers", identifiers.size());
-        log.trace("endpoint find identifiers, list={}", dto);
         return ResponseEntity.ok(dto);
     }
 
@@ -68,6 +84,43 @@ public class IdentifierEndpoint {
     @Timed(value = "identifier.create", description = "Time needed to create an identifier")
     @PreAuthorize("hasAuthority('create-identifier')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created identifier",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Identifier form contains invalid request data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Query, database or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Creating identifier not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Creating identifier not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Identifier for this resource already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Query information could not be retrieved",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
@@ -91,12 +144,29 @@ public class IdentifierEndpoint {
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
     @PreAuthorize("hasAuthority('update-identifier')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated identifier",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Identifier could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "406",
+                    description = "Updating identifier not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
-            throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
+            throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.update(id, data);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
@@ -105,11 +175,21 @@ public class IdentifierEndpoint {
     @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
     @PreAuthorize("hasAuthority('delete-identifier')")
     @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted identifier",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "404",
+                    description = "Identifier could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
-            throws IdentifierNotFoundException {
+            throws IdentifierNotFoundException, NotAllowedException {
         log.debug("endpoint delete identifier, id={}", id);
         identifierService.delete(id);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .build();
     }
 }

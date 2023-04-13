@@ -166,6 +166,8 @@ services:
     volumes:
       - "/tmp:/tmp"
     depends_on:
+      dbrepo-broker-service:
+        condition: service_healthy
       dbrepo-table-service:
         condition: service_healthy
       dbrepo-authentication-service:

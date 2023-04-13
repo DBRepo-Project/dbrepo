@@ -1,5 +1,4 @@
 const { format } = require('date-fns')
-const VueJwtDecode = require('vue-jwt-decode')
 
 function notEmpty (str) {
   return typeof str === 'string' && str.trim().length > 0
@@ -50,16 +49,6 @@ function isDataSteward (user) {
   return user.roles.filter(a => a === 'ROLE_DATA_STEWARD').length === 1
 }
 
-function formatUser (user) {
-  if (!user) {
-    return null
-  }
-  if (!('given_name' in user) || !('family_name' in user) || user.given_name === null || user.family_name === null) {
-    return user?.username
-  }
-  return user.given_name + ' ' + user.family_name
-}
-
 function formatDateUTC (str) {
   if (str === null) {
     return null
@@ -99,33 +88,6 @@ function formatTimestamp (str) {
   return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
-function formatCreators (container) {
-  if (!container || !('database' in container) || !('identifier' in container.database) || !container.database.identifier || !('creators' in container.database.identifier) || !container.database.identifier.creators) {
-    return null
-  }
-  const creators = container.database.identifier.creators
-  if (creators.length === 0) {
-    return formatUser(container.database.creator)
-  }
-  let str = ''
-  for (let i = 0; i < creators.length; i++) {
-    /* separator */
-    if (creators.length > 1 && i === creators.length - 1) {
-      str += ', & '
-    } else if (i > 0 && creators.length !== 2) {
-      str += ', '
-    }
-    /* name */
-    if (creators[i].firstname) {
-      str += (creators[i].firstname.toUpperCase().substring(0, 1) + '., ')
-    }
-    if (creators[i].lastname) {
-      str += creators[i].lastname
-    }
-  }
-  return str
-}
-
 function formatTimestampUTCLabel (str) {
   if (str === null) {
     return null
@@ -142,29 +104,6 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
-function jwtToUser (jwt) {
-  // eslint-disable-next-line camelcase
-  const { access_token } = jwt
-  const data = VueJwtDecode.decode(access_token)
-  return {
-    id: data.sub,
-    firstname: data.given_name,
-    lastname: data.family_name,
-    username: data.preferred_username,
-    theme_dark: data?.theme_dark,
-    orcid: data?.orcid,
-    titles_before: data?.titles_before,
-    titles_after: data?.titles_after,
-    email_verified: data.email_verified
-  }
-}
-
-function isTokenExpired (accessToken) {
-  const data = VueJwtDecode.decode(accessToken)
-  const exp = new Date(data.exp)
-  return exp <= new Date()
-}
-
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -172,14 +111,10 @@ module.exports = {
   formatTimestampUTCLabel,
   formatDateUTC,
   isNonNegativeInteger,
-  formatUser,
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  formatCreators,
   isDeveloper,
   isResearcher,
-  isDataSteward,
-  jwtToUser,
-  isTokenExpired
+  isDataSteward
 }

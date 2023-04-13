@@ -4,10 +4,12 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.test.BaseTest;
 import at.tuwien.utils.AmqpUtils;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
@@ -27,10 +29,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Arrays;
 import java.util.List;
 
-import static at.tuwien.config.DockerConfig.dockerClient;
-import static at.tuwien.config.DockerConfig.hostConfig;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -63,61 +62,17 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public static void beforeAll() throws InterruptedException {
         afterAll();
         /* create network */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.30.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.31.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        /* create amqp */
-        final CreateContainerResponse request = dockerClient.createContainerCmd(BROKER_IMAGE + ":" + BROKER_TAG)
-                .withHostConfig(
-                        hostConfig
-                                .withNetworkMode("fda-public")
-                                .withPortBindings(PortBinding.parse("15672:15672"), PortBinding.parse("5672:5672"))
-                )
-                .withName(BROKER_NAME)
-                .withIpv4Address(BROKER_IP)
-                .withHostName(BROKER_HOSTNAME)
-                .withEnv("RABBITMQ_DEFAULT_USER=fda", "RABBITMQ_DEFAULT_PASS=fda")
-                .exec();
-        dockerClient.startContainerCmd(request.getId())
-                .exec();
-        Thread.sleep(12 * 1000);
+        DockerConfig.createAllNetworks();
+        /* create container */
+        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
+        DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
     @AfterAll
     public static void afterAll() {
         /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", Arrays.asList(container.getNames()));
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.createAllNetworks();
     }
 
     @BeforeEach

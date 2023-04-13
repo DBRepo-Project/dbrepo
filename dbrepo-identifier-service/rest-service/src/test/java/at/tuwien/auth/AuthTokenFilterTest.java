@@ -12,18 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -48,49 +40,6 @@ public class AuthTokenFilterTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         h2Utils.runScript("view.sql");
-    }
-
-    @Test
-    public void doFilterInternal_notFound_fails() throws ServletException {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
-        final MockHttpServletResponse response = new MockHttpServletResponse();
-        final FilterChain chain = new MockFilterChain();
-
-        /* mock */
-        when(userRepository.findByUsername("mweise"))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(ServletException.class, () -> {
-            authTokenFilter.doFilterInternal(request, response, chain);
-        });
-    }
-
-    @Test
-    public void doFilterInternal_succeeds() throws ServletException, IOException {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
-        final MockHttpServletResponse response = new MockHttpServletResponse();
-        final FilterChain chain = new MockFilterChain();
-
-        /* mock */
-        when(userRepository.findByUsername("mweise"))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        authTokenFilter.doFilterInternal(request, response, chain);
-        assertEquals(200, response.getStatus());
-    }
-
-    @Test
-    public void parseJwt_succeeds() {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
-
-        /* test */
-        final String response = authTokenFilter.parseJwt(request);
-        assertEquals(JWT_1, response);
     }
 
     @Test

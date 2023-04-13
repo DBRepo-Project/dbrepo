@@ -24,19 +24,18 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
+import TableService from '@/api/table.service'
 
 export default {
   data () {
     return {
       loading: false,
       loadingDetails: false,
-      loadingConsumers: false,
       error: false,
       panel: null,
       column: null,
       dialogSemantic: false,
       mode: 'unit',
-      consumers: [],
       access: {
         type: null
       },
@@ -103,12 +102,6 @@ export default {
       }
       return this.database.tables
     },
-    brokerConfig () {
-      return {
-        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
-        progress: false
-      }
-    },
     createdUTC () {
       if (this.tableDetails.created === undefined || this.tableDetails.created === null) {
         return null
@@ -132,9 +125,6 @@ export default {
       return this.database.creator.username === this.user.username
     }
   },
-  mounted () {
-    this.pollConsumerStatus()
-  },
   methods: {
     pick (item, mode) {
       this.column = item
@@ -154,25 +144,22 @@ export default {
       }
       return column.column_type
     },
-    async details (table) {
+    details (table) {
       /* use cache */
       this.tableDetails = table
       /* load remaining info */
       if (this.canRead) {
-        try {
-          this.loadingDetails = true
-          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)
-          this.tableDetails = res.data
-          console.debug('table details', this.tableDetails)
-          if (table.id) {
-            this.openPanelByTableId(table.id)
-            await this.consumerDetails(this.tableDetails.queue_name)
-          }
-        } catch (err) {
-          this.$toast.error('Failed to load table details')
-          console.error('Failed to load table details', err)
-        }
-        this.loadingDetails = false
+        this.loadingDetails = true
+        TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, table.id)
+          .then((table) => {
+            this.tableDetails = table
+            if (table.id) {
+              this.openPanelByTableId(table.id)
+            }
+          })
+          .finally(() => {
+            this.loadingDetails = false
+          })
       }
     },
     is_owner (table) {
@@ -199,28 +186,6 @@ export default {
       }
       this.dialogDelete = false
     },
-    async consumerDetails (queueName) {
-      try {
-        this.loadingConsumers = true
-        const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
-        const consumers = res.data.filter(c => c.queue.name === queueName)
-        console.debug('consumers', consumers)
-        this.consumers = consumers
-      } catch (err) {
-        console.error('Could not find consumers', err)
-      }
-      this.loadingConsumers = false
-    },
-    pollConsumerStatus () {
-      if (this.tableDetails === undefined || this.tableDetails.queue_name === undefined) {
-        return
-      }
-      this.consumerDetails(this.tableDetails.queue_name)
-    },
-    showDeleteTableDialog (id) {
-      this.deleteTableId = id
-      this.dialogDelete = true
-    },
     /**
      * open up the accordion with the table that has been updated (by the ColumnUnit dialog)
      */
@@ -243,8 +208,5 @@ export default {
 }
 .full-width {
   width: 100%;
-}
-.amqp-consumer {
-  display: inline;
 }
 </style>

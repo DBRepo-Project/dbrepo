@@ -13,6 +13,7 @@ import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -147,7 +148,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
     }
 
     @Test
@@ -158,7 +159,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
     }
 
     @Test
@@ -168,7 +169,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertFalse(DATABASE_1_PUBLIC);
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
+        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
     }
 
     @Test
@@ -179,7 +180,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertFalse(DATABASE_1_PUBLIC);
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
+        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
     }
 
     @Test
@@ -194,7 +195,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -207,11 +208,11 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
-        when(identifierRepository.findByContainerId(CONTAINER_1_ID))
+        when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -226,7 +227,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -241,7 +242,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -256,7 +257,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
+        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
     }
 
     @Test
@@ -271,7 +272,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
     }
 
     @Test
@@ -286,7 +287,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_2_PRINCIPAL);
+        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_2_PRINCIPAL);
     }
 
     @Test
@@ -301,7 +302,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
     }
 
     @Test
@@ -316,7 +317,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_2));
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_2_PRINCIPAL);
+        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_2_PRINCIPAL);
     }
 
     @Test
@@ -331,7 +332,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
     }
 
     @Test
@@ -346,7 +347,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_3_PRINCIPAL);
     }
 
     @Test
@@ -361,7 +362,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
     }
 
     @Test
@@ -376,7 +377,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        list_generic(CONTAINER_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_3_PRINCIPAL);
+        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_3_PRINCIPAL);
     }
 
     @Test
@@ -711,14 +712,14 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void list_generic(Long containerId, Container container, List<Database> databases, Principal principal) {
+    public void list_generic(Long containerId, Long databaseId, Container container, List<Database> databases, Principal principal) {
 
         /* mock */
         when(containerRepository.findById(containerId))
                 .thenReturn(Optional.of(container));
         when(databaseRepository.findAll(containerId))
                 .thenReturn(databases);
-        when(identifierRepository.findByContainerId(containerId))
+        when(identifierRepository.findByDatabaseId(databaseId))
                 .thenReturn(List.of());
 
         /* test */
@@ -757,7 +758,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .when(messageQueueService)
                 .updatePermissions(principal);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
-                .thenReturn(DATABASE_1_WRITE_ALL_ACCESS);
+                .thenReturn(DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
 
         /* test */
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(containerId, data, principal);

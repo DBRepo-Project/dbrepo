@@ -59,7 +59,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        final QueryDto response = queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, JWT_1);
+        final QueryDto response = queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         assertNotNull(response);
         assertEquals(QUERY_1_ID, response.getId());
     }
@@ -75,7 +75,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, JWT_1);
+            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 
@@ -91,7 +91,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, JWT_1);
+            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 
@@ -106,7 +106,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, JWT_1);
+            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 

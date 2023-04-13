@@ -2,21 +2,18 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
-import at.tuwien.config.DockerUtil;
+import at.tuwien.config.DockerConfig;
+import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.exception.NotModifiedException;
-import com.github.dockerjava.api.model.Network;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -51,61 +48,45 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ContainerService containerService;
 
-    @Autowired
-    private DockerUtil dockerUtil;
-
-    @Autowired
-    private DockerClient dockerClient;
+    @BeforeAll
+    public static void beforeAll() {
+        afterAll();
+        /* create networks */
+        DockerConfig.createAllNetworks();
+    }
 
     @BeforeEach
     public void beforeEach() {
         afterEach();
         /* create networks */
-        dockerClient.createNetworkCmd()
-                .withName("fda-userdb")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.30.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-        dockerClient.createNetworkCmd()
-                .withName("fda-public")
-                .withIpam(new Network.Ipam()
-                        .withConfig(new Network.Ipam.Config()
-                                .withSubnet("172.31.0.0/16")))
-                .withEnableIpv6(false)
-                .exec();
-
+        DockerConfig.createAllNetworks();
         /* mock data */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(ContainerImage.builder()
+                .id(IMAGE_1_ID)
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .hash(IMAGE_1_HASH)
+                .compiled(IMAGE_1_BUILT)
+                .dialect(IMAGE_1_DIALECT)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .driverClass(IMAGE_1_DRIVER)
+                .size(IMAGE_1_SIZE)
+                .environment(IMAGE_1_ENV)
+                .defaultPort(IMAGE_1_PORT)
+                .build()) /* keep */;
     }
 
     @AfterEach
     public void afterEach() {
-        /* stop containers and remove them */
-        dockerClient.listContainersCmd()
-                .withShowAll(true)
-                .exec()
-                .forEach(container -> {
-                    log.info("Delete container {}", container.getNames()[0]);
-                    try {
-                        dockerClient.stopContainerCmd(container.getId()).exec();
-                    } catch (NotModifiedException e) {
-                        // ignore
-                    }
-                    dockerClient.removeContainerCmd(container.getId()).exec();
-                });
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
+    }
 
-        /* remove networks */
-        dockerClient.listNetworksCmd()
-                .exec()
-                .stream()
-                .filter(n -> n.getName().startsWith("fda"))
-                .forEach(network -> {
-                    log.info("Delete network {}", network.getName());
-                    dockerClient.removeNetworkCmd(network.getId()).exec();
-                });
+    @AfterAll
+    public static void afterAll() {
+        DockerConfig.removeAllContainers();
+        DockerConfig.removeAllNetworks();
     }
 
     @Test
@@ -183,7 +164,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerAlreadyRunningException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -191,12 +172,12 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void change_stop_succeeds() throws DockerClientException, InterruptedException, ContainerNotFoundException,
-            ContainerAlreadyStoppedException {
+    public void change_stop_succeeds() throws DockerClientException, ContainerNotFoundException,
+            ContainerAlreadyStoppedException, InterruptedException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -253,11 +234,12 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void remove_succeeds() throws DockerClientException, ContainerStillRunningException,
-            ContainerNotFoundException, ContainerAlreadyRemovedException {
+            ContainerNotFoundException, ContainerAlreadyRemovedException, InterruptedException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.stopContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.stopContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -277,8 +259,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_stillRunning_fails() throws InterruptedException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -291,8 +273,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyRunning_fails() throws InterruptedException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -305,7 +287,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startNotFound_fails() {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -317,9 +299,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyStopped_fails() throws InterruptedException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
-        dockerUtil.stopContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.stopContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -332,7 +314,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopNeverStarted_fails() {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -358,8 +340,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
-        dockerUtil.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
         containerRepository.save(CONTAINER_1);
 
         /* test */
@@ -383,7 +365,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void inspect_notRunning_fails() {
 
         /* mock */
-        dockerUtil.createContainer(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
         containerRepository.save(CONTAINER_1);
 
         /* test */

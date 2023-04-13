@@ -173,23 +173,6 @@ export default {
     version () {
       return this.$config.version
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
-    clientSecret () {
-      return this.$config.clientSecret
-    },
-    silentConfig () {
-      return {
-        headers: this.config.headers,
-        progress: false
-      }
-    },
     sandbox () {
       if (this.$config.sandbox === undefined) {
         console.debug('env sandbox not found, default to', false)

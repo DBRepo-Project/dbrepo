@@ -187,6 +187,8 @@ services:
       core:
     env_file:
       - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=doi
     depends_on:
       dbrepo-query-service:
         condition: service_healthy
@@ -281,6 +283,8 @@ services:
     depends_on:
       dbrepo-discovery-service:
         condition: service_healthy
+    ports:
+      - 9200:9200
     env_file:
       - .env
     volumes:

@@ -82,18 +82,18 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                         TABLE_1_ID, TABLE_1, null, null, null),
                 Arguments.arguments("public read", NotAllowedException.class, CONTAINER_1_ID, DATABASE_1_ID,
                         DATABASE_1, TABLE_1_ID,
-                        TABLE_1, USER_2_USERNAME, DATABASE_1_READ_ACCESS, USER_2_PRINCIPAL),
+                        TABLE_1, USER_2_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_PRINCIPAL),
                 Arguments.arguments("public write-own", NotAllowedException.class, CONTAINER_1_ID, DATABASE_1_ID,
                         DATABASE_1, TABLE_1_ID,
-                        TABLE_1, USER_2_USERNAME, DATABASE_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL),
+                        TABLE_1, USER_2_USERNAME, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL),
                 Arguments.arguments("private anonymous", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         DATABASE_2, TABLE_1_ID, TABLE_1, null, null, null),
                 Arguments.arguments("private read", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL),
+                        DATABASE_2_RESEARCHER_READ_ACCESS, USER_2_PRINCIPAL),
                 Arguments.arguments("private write-own", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_OWN_ACCESS, USER_2_PRINCIPAL)
+                        DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL)
         );
     }
 
@@ -111,16 +111,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public static Stream<Arguments> import_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public write-all", CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
-                        USER_2_USERNAME, DATABASE_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL),
-                Arguments.arguments("public owner", CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1,
-                        USER_1_USERNAME, DATABASE_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL),
-                Arguments.arguments("private write-all", CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_2_PRINCIPAL),
-                Arguments.arguments("private owner", CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1,
-                        USER_1_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_1_PRINCIPAL)
+                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8,
+                        USER_1_USERNAME, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL),
+                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID,
+                        TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL)
         );
     }
 
@@ -140,19 +135,19 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                         DATABASE_1, TABLE_1, USER_2_USERNAME, null, TABLE_1_CSV_DTO, null),
                 Arguments.arguments("public read", NotAllowedException.class, CONTAINER_1_ID, DATABASE_1_ID,
                         TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME, DATABASE_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
+                        TABLE_1, USER_2_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
                 Arguments.arguments("public write-own", NotAllowedException.class, CONTAINER_1_ID, DATABASE_1_ID,
                         TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME, DATABASE_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
+                        TABLE_1, USER_2_USERNAME, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
                 Arguments.arguments("private anonymous", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME, null,
                         TABLE_1_CSV_DTO, null),
                 Arguments.arguments("private read", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
+                        DATABASE_2_RESEARCHER_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
                 Arguments.arguments("private write-own", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
                         TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL)
+                        DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL)
         );
     }
 
@@ -171,24 +166,18 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public static Stream<Arguments> insert_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
-                Arguments.arguments("public owner", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
-                        USER_1_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL),
-                Arguments.arguments("public owner, data null", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, USER_1_USERNAME,
+                        DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_1_PRINCIPAL),
+                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
                         TABLE_1, USER_1_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL),
-                Arguments.arguments("private write-all", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL),
-                Arguments.arguments("private owner", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
+                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL),
+                Arguments.arguments("private owner", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
                         USER_1_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL),
-                Arguments.arguments("private owner, data null", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2
-                        , TABLE_1, USER_1_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL)
+                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL),
+                Arguments.arguments("private owner, data null", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID,
+                        DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL)
         );
     }
 
@@ -206,39 +195,39 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public static Stream<Arguments> getAll_fails_parameters() {
         return Stream.of(
-                Arguments.arguments("public anonymous page null", PaginationException.class, CONTAINER_1_ID,
-                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null, null, 1L, null, null),
-                Arguments.arguments("public anonymous size null", PaginationException.class, CONTAINER_1_ID,
-                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null, 1L, null, null, null),
-                Arguments.arguments("public anonymous page negative", PaginationException.class, CONTAINER_1_ID,
-                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null, -1L, 1L, null, null),
-                Arguments.arguments("public anonymous size zero", PaginationException.class, CONTAINER_1_ID,
-                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null, 0L, 0L, null, null),
-                Arguments.arguments("public anonymous size negative", PaginationException.class, CONTAINER_1_ID,
-                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null, 0L, -1L, null, null),
-                Arguments.arguments("private anonymous", NotAllowedException.class, CONTAINER_2_ID, DATABASE_2_ID,
-                        TABLE_1_ID, DATABASE_2, TABLE_1, null, null, null, null,
+                Arguments.arguments("public anonymous page null", PaginationException.class, CONTAINER_3_ID,
+                        DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null, null, 3L, null, null),
+                Arguments.arguments("public anonymous size null", PaginationException.class, CONTAINER_3_ID,
+                        DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null, 3L, null, null, null),
+                Arguments.arguments("public anonymous page negative", PaginationException.class, CONTAINER_3_ID,
+                        DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null, -3L, 3L, null, null),
+                Arguments.arguments("public anonymous size zero", PaginationException.class, CONTAINER_3_ID,
+                        DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null, 0L, 0L, null, null),
+                Arguments.arguments("public anonymous size negative", PaginationException.class, CONTAINER_3_ID,
+                        DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null, 0L, -3L, null, null),
+                Arguments.arguments("private anonymous", NotAllowedException.class, CONTAINER_1_ID, DATABASE_1_ID,
+                        TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null,
                         null, null, null, null),
-                Arguments.arguments("private read, page null", PaginationException.class, CONTAINER_2_ID,
-                        DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, null, 1L, null, null),
-                Arguments.arguments("private read, size null", PaginationException.class, CONTAINER_2_ID,
-                        DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, 1L, null, null, null),
-                Arguments.arguments("private read, page negative", PaginationException.class, CONTAINER_2_ID,
-                        DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, -1L, 1L, null, null),
-                Arguments.arguments("private read, size zero", PaginationException.class, CONTAINER_2_ID,
-                        DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, 0L, 0L, null, null),
-                Arguments.arguments("private read, size negative", PaginationException.class, CONTAINER_2_ID,
-                        DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, 0L, -1L, null, null)
+                Arguments.arguments("private read, page null", PaginationException.class, CONTAINER_1_ID,
+                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, null, 1L, null, null),
+                Arguments.arguments("private read, size null", PaginationException.class, CONTAINER_1_ID,
+                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, 1L, null, null, null),
+                Arguments.arguments("private read, page negative", PaginationException.class, CONTAINER_1_ID,
+                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, -1L, 1L, null, null),
+                Arguments.arguments("private read, size zero", PaginationException.class, CONTAINER_1_ID,
+                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, 0L, 0L, null, null),
+                Arguments.arguments("private read, size negative", PaginationException.class, CONTAINER_1_ID,
+                        DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, 0L, -1L, null, null)
         );
     }
 
@@ -259,33 +248,27 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public static Stream<Arguments> getAll_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public anonymous", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null,
+                Arguments.arguments("public anonymous", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null,
                         null, null, null, null, null),
-                Arguments.arguments("public read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
-                        USER_2_USERNAME,
-                        DATABASE_1_READ_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("public write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("public write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("public owner", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
+                Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private read", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
-                        USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private write-own", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private write-all", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private owner", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
+                        DATABASE_3_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, USER_1_USERNAME,
+                        DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, USER_1_USERNAME,
+                        DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
                         USER_1_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
+                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                        TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                        TABLE_1, USER_1_USERNAME,
+                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
         );
     }
 
@@ -302,40 +285,34 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public static Stream<Arguments> getCount_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public anonymous", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, null, null, null, null),
-                Arguments.arguments("public read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
-                        USER_2_USERNAME,
-                        DATABASE_1_READ_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("public write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("public write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("public owner", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
+                Arguments.arguments("public anonymous", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, null, null, null, null),
+                Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
-                Arguments.arguments("private read", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
-                        USER_2_USERNAME,
-                        DATABASE_2_READ_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("private write-own", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("private write-all", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2,
-                        TABLE_1, USER_2_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("private owner", CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1,
+                        DATABASE_3_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null),
+                Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, USER_1_USERNAME,
+                        DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null),
+                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                        TABLE_8, USER_1_USERNAME,
+                        DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
+                Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_2_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null)
+                        DATABASE_2_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null),
+                Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
+                        TABLE_8, USER_2_USERNAME,
+                        DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
+                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
+                        TABLE_8, USER_2_USERNAME,
+                        DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null)
         );
     }
 
     @ParameterizedTest
     @MethodSource("getAll_succeeds_parameters")
     public void getCount_succeeds(String test, Long containerId, Long databaseId, Long tableId, Database database,
-                                Table table, String username, DatabaseAccess access, Principal principal,
-                                Instant timestamp) throws UserNotFoundException, TableNotFoundException, QueryStoreException, SortException, TableMalformedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
+                                  Table table, String username, DatabaseAccess access, Principal principal,
+                                  Instant timestamp) throws UserNotFoundException, TableNotFoundException, QueryStoreException, SortException, TableMalformedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
 
         /* test */
         generic_getCount(containerId, databaseId, tableId, database, table, username, access, principal, timestamp);
@@ -396,7 +373,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     }
 
     public void generic_getCount(Long containerId, Long databaseId, Long tableId, Database database, Table table,
-                               String username, DatabaseAccess access, Principal principal, Instant timestamp) throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
+                                 String username, DatabaseAccess access, Principal principal, Instant timestamp) throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
 
         /* mock */
         when(databaseService.find(containerId, databaseId)).thenReturn(database);

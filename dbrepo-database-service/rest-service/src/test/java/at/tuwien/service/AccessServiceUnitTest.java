@@ -5,19 +5,19 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.jpa.*;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -58,7 +58,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
-                .thenReturn(List.of(DATABASE_1_READ_ACCESS, DATABASE_2_READ_ACCESS));
+                .thenReturn(List.of(DATABASE_1_RESEARCHER_READ_ACCESS, DATABASE_2_RESEARCHER_READ_ACCESS));
 
         /* test */
         final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
@@ -82,11 +82,11 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(Optional.of(DATABASE_1_READ_ACCESS));
+                .thenReturn(Optional.of(DATABASE_1_RESEARCHER_READ_ACCESS));
 
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
-        assertEquals(DATABASE_1_READ_ACCESS_TYPE, response.getType());
+        assertEquals(AccessType.READ, response.getType());
     }
 
     @Test

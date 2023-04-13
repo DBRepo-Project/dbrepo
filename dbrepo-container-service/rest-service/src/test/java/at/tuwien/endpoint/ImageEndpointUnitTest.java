@@ -5,7 +5,7 @@ import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.config.DockerConfig;
+import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -52,7 +52,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     private ImageEndpoint imageEndpoint;
 
     @Autowired
-    private DockerConfig dockerUtil;
+    private DockerDaemonConfig dockerUtil;
 
     @Test
     public void findAll_anonymous_succeeds() {
@@ -231,7 +231,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findById_anonymous_succeeds() throws ImageNotFoundException {
 
         /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, null);
+        findById_generic(IMAGE_1_ID, IMAGE_1);
     }
 
     @Test
@@ -243,44 +243,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageEndpoint.findById(CONTAINER_1_ID, null);
+            imageEndpoint.findById(CONTAINER_1_ID);
         });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcher_succeeds() throws ImageNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developer_succeeds() throws ImageNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataSteward_succeeds() throws ImageNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        findById_generic(IMAGE_1_ID, IMAGE_1, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -484,14 +448,14 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void findById_generic(Long imageId, ContainerImage image, Principal principal) throws ImageNotFoundException {
+    public void findById_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
         when(imageRepository.findById(imageId))
                 .thenReturn(Optional.of(image));
 
         /* test */
-        final ResponseEntity<ImageDto> response = imageEndpoint.findById(imageId, principal);
+        final ResponseEntity<ImageDto> response = imageEndpoint.findById(imageId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }

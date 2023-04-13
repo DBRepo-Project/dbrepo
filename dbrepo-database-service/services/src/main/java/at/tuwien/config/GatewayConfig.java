@@ -21,7 +21,6 @@ public class GatewayConfig {
     @Value("${fda.client_id}")
     private String clientId;
 
-
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 

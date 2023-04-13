@@ -19,7 +19,7 @@ public interface DatabaseService {
     Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException;
 
     /**
-     * Finds all databases in the metadata database.
+     * Finds all databases stored in the metadata database.
      *
      * @return List of databases.
      */

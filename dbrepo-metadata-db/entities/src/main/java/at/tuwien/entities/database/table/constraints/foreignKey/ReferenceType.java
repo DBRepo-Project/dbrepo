@@ -7,7 +7,6 @@ import lombok.ToString;
 @Getter
 @ToString
 public enum ReferenceType {
-
     RESTRICT,
     CASCADE,
     SET_NULL,

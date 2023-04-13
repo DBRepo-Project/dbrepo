@@ -9,6 +9,11 @@ import java.security.Principal;
 
 public interface MessageQueueService {
 
+    /**
+     * Initializes the exchanges on the Broker Service for each database in the metadata database.
+     *
+     * @throws AmqpException The exchange could not be created.
+     */
     @PostConstruct
     void init() throws AmqpException;
 
@@ -30,10 +35,11 @@ public interface MessageQueueService {
     void createUser(User user) throws BrokerVirtualHostCreationException;
 
     /**
-     * Updates the virtual host permissions in the broker service.
+     * Updates the virtual host permissions in the Broker Service for a user with given principal.
      *
-     * @param principal Te user.
-     * @throws BrokerVirtualHostCreationException Could not update the permissions.
+     * @param principal The user principal.
+     * @throws BrokerVirtualHostCreationException The Broker Service refused the update of the permissions.
+     * @throws BrokerVirtualHostGrantException    The Broker Service refused to grant the permissions.
      */
     void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException, BrokerVirtualHostGrantException;
 

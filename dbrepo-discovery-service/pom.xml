@@ -9,9 +9,9 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-discovery-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-discovery-service</name>
+    <artifactId>dbrepo-discovery-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-discovery-service</name>
     <description>Demo project for Spring Boot</description>
 
     <packaging>pom</packaging>
@@ -41,6 +41,16 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
             <version>${spring-cloud.version}</version>
+        </dependency>
+        <!-- Data Source -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${mariadb.version}</version>
         </dependency>
         <!-- Monitoring -->
         <dependency>
@@ -75,6 +85,12 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-db-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -90,7 +106,7 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>**/DiscoveryServiceApplication.class</exclude>
+                        <exclude>**/DbrepoDiscoveryServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

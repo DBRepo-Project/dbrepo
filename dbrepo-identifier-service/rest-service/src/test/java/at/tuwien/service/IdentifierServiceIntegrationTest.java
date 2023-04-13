@@ -3,18 +3,15 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.RelatedIdentifier;
-import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +83,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_subsetRelatedIdentifiers_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
-            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
+            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
+            IdentifierRequestException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -139,7 +137,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void update_succeeds() throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException {
+    public void update_succeeds()
+            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException, IdentifierRequestException {
 
         /* mock */
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
@@ -155,45 +154,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void publish_everyone_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
-
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-        identifierRepository.save(IDENTIFIER_2);
-
-        /* mock */
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_2_DTO);
-
-        /* test */
-        final Identifier response = identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
-        assertEquals(IDENTIFIER_2_ID, response.getId());
-        assertEquals(IDENTIFIER_2_TITLE, response.getTitle());
-        assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
-        assertEquals(IDENTIFIER_2_DOI, response.getDoi());
-        assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
-        assertEquals(IDENTIFIER_2_CONTAINER_ID, response.getContainerId());
-        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabaseId());
-        assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
-        assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
-        assertEquals(IDENTIFIER_2_PUBLICATION_DAY, response.getPublicationDay());
-        assertEquals(VisibilityType.EVERYONE, response.getVisibility());
-    }
-
-    @Test
-    @Disabled("Constraint identifier")
-    public void publish_trusted_succeeds() throws IdentifierAlreadyPublishedException, IdentifierNotFoundException {
-
-        /* mock */
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_2_DTO);
-
-        /* test */
-        identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.TRUSTED);
-    }
-
-    @Test
-    public void delete_succeeds() throws IdentifierNotFoundException {
+    public void delete_succeeds() throws IdentifierNotFoundException, NotAllowedException {
 
         /* mock */
         doNothing()
@@ -209,7 +170,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.publish(IDENTIFIER_2_ID, VisibilityTypeDto.EVERYONE);
+            identifierService.delete(IDENTIFIER_2_ID);
         });
     }
 

@@ -49,7 +49,7 @@ public class AuthTokenFilterTest extends BaseUnitTest {
     @Test
     public void doFilterInternal_notFound_fails() throws ServletException {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
+        request.addHeader("Authorization", "Bearer " + null);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         final FilterChain chain = new MockFilterChain();
 
@@ -66,7 +66,7 @@ public class AuthTokenFilterTest extends BaseUnitTest {
     @Test
     public void doFilterInternal_succeeds() throws ServletException, IOException {
         final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
+        request.addHeader("Authorization", "Bearer " + null);
         final MockHttpServletResponse response = new MockHttpServletResponse();
         final FilterChain chain = new MockFilterChain();
 
@@ -77,16 +77,6 @@ public class AuthTokenFilterTest extends BaseUnitTest {
         /* test */
         authTokenFilter.doFilterInternal(request, response, chain);
         assertEquals(200, response.getStatus());
-    }
-
-    @Test
-    public void parseJwt_succeeds() {
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("Authorization", "Bearer " + JWT_1);
-
-        /* test */
-        final String response = authTokenFilter.parseJwt(request);
-        assertEquals(JWT_1, response);
     }
 
     @Test

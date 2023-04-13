@@ -1,6 +1,26 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { sandbox, title, icon, brokerUsername, brokerPassword, sharedFilesystem, version, logo, mailVerify, tokenMax, elasticPassword, clientSecret, api, search, defaultPublisher } from './config'
+import { api, icon, search, clientSecret, title, sandbox, logo, version, defaultPublisher } from './config'
+
+const proxy = {}
+
+if (process.env.NODE_ENV === 'development') {
+  proxy['/api'] = api
+  proxy['/pid'] = {
+    target: api + '/api',
+    changeOrigin: true,
+    pathRewrite: {
+      '^/pid': '/pid'
+    }
+  }
+  proxy['/retrieve'] = {
+    target: search,
+    changeOrigin: true,
+    pathRewrite: {
+      '^/retrieve': ''
+    }
+  }
+}
 
 export default {
   target: 'server',
@@ -42,6 +62,7 @@ export default {
   components: true,
 
   buildModules: [
+    '@nuxtjs/dotenv',
     '@nuxtjs/eslint-module',
     '@nuxtjs/vuetify'
   ],
@@ -61,19 +82,15 @@ export default {
   ],
 
   axios: {
-    proxy: true
+    proxy: proxy !== {}
   },
 
+  proxy,
+
   publicRuntimeConfig: {
-    brokerUsername,
-    brokerPassword,
     sandbox,
-    sharedFilesystem,
     version,
     logo,
-    mailVerify,
-    tokenMax,
-    elasticPassword,
     clientSecret,
     defaultPublisher
   },

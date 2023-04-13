@@ -5,10 +5,13 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
@@ -30,8 +33,14 @@ public class SwaggerConfig {
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
-                        .description("Wiki Documentation")
-                        .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis"));
+                        .description("Sourcecode Documentation")
+                        .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"))
+                .servers(List.of(new Server()
+                                .description("Generated server url")
+                                .url("http://localhost:9099"),
+                        new Server()
+                                .description("Sandbox")
+                                .url("https://dbrepo2.tuwien.ac.at")));
     }
 
     @Bean

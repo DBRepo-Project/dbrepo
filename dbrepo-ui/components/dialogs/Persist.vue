@@ -64,19 +64,6 @@
                 required />
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col>
-              <v-select
-                id="visibility"
-                v-model="visibility"
-                name="visibility"
-                label="Visibility *"
-                :items="['Public']"
-                disabled
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
           <v-row v-for="(creator, i) in identifier.creators" :key="`c-${i}`" dense>
             <v-col cols="3">
               <v-text-field
@@ -194,6 +181,8 @@
 
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
+import IdentifierService from '@/api/identifier.service'
+import DatabaseService from '@/api/database.service'
 export default {
   props: {
     type: {
@@ -213,7 +202,6 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
-      visibility: 'Public',
       identifier: {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
@@ -225,10 +213,15 @@ export default {
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),
         license: null,
-        visibility: 'everyone',
         type: this.type,
-        doi: null,
-        creators: [],
+        creators: [
+          {
+            firstname: null,
+            lastname: null,
+            affiliation: null,
+            orcid: null
+          }
+        ],
         related_identifiers: []
       },
       relatedTypes: [
@@ -299,16 +292,6 @@ export default {
     user () {
       return this.$store.state.user
     },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: { Accept: 'application/json' }
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' }
-      }
-    },
     isSubset () {
       return this.type === 'subset'
     },
@@ -334,7 +317,6 @@ export default {
   },
   mounted () {
     this.loadLicenses()
-    this.addCreator()
     this.identifier.publisher = this.$config.defaultPublisher
   },
   methods: {
@@ -366,55 +348,30 @@ export default {
     deleteRelatedIdentifier (index) {
       this.identifier.related_identifiers.splice(index, 1)
     },
-    async persist () {
+    persist () {
       this.loading = true
-      let res
-      try {
-        res = await this.$axios.post('/api/identifier', this.identifier, this.config)
-        console.debug('persist', res.data)
-        await this.loadDatabase()
-      } catch (err) {
-        this.error = true
-        this.loading = false
-        this.$toast.error('Failed to persist')
-        console.error('persist failed', err)
-        return
-      }
-      this.$toast.success(this.prefix + ' successfully persisted')
-      this.$emit('close', { action: 'persisted' })
-      this.loading = false
+      IdentifierService.create(this.identifier)
+        .then(() => {
+          this.$store.dispatch('reloadDatabase')
+          this.$toast.success(this.prefix + ' successfully persisted')
+          this.$emit('close', { action: 'persisted' })
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    async loadLicenses () {
+    loadLicenses () {
       if (!this.token) {
         return
       }
       this.loading = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/license`, this.config)
-        this.licenses = res.data
-        console.debug('license', this.licenses)
-      } catch (error) {
-        console.error('Failed load licenses', error)
-        const { data } = error.response
-        const { message } = data
-        this.$toast.error(`Failed load licenses: ${message}`)
-      }
-      this.loading = false
-    },
-    async loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
+      DatabaseService.findAllLicenses(this.$route.params.container_id)
+        .then((licenses) => {
+          this.licenses = licenses
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

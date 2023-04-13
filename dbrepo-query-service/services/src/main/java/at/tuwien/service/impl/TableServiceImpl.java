@@ -78,7 +78,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             return queryMapper.resultListToTableHistoryDto(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map table history: {}", e.getMessage());
-            throw new QueryStoreException("Failed to map table history", e);
+            throw new QueryStoreException("Failed to map table history: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

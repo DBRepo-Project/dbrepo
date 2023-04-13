@@ -9,10 +9,10 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-identifier-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-identifier-service</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>dbrepo-identifier-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-identifier-service</name>
+    <description>Service that manages the identifiers</description>
 
     <packaging>pom</packaging>
     <modules>
@@ -86,12 +86,12 @@
         <!-- Entities and API -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-db-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- DataSource -->
@@ -162,6 +162,11 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-db-test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Export -->
         <dependency>
             <groupId>commons-io</groupId>
@@ -211,7 +216,7 @@
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
-                        <exclude>**/IdentifierServiceApplication.class</exclude>
+                        <exclude>**/DbrepoIdentifierServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

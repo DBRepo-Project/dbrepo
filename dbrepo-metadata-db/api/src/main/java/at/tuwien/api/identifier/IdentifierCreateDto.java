@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @Data
@@ -37,13 +38,6 @@ public class IdentifierCreateDto {
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 
-    @NotNull
-    @Schema(example = "everyone")
-    private VisibilityTypeDto visibility;
-
-    @Schema(example = "10.1038/nphys1170")
-    private String doi;
-
     @JsonProperty("publication_day")
     @Schema(example = "15")
     private Integer publicationDay;
@@ -65,6 +59,7 @@ public class IdentifierCreateDto {
     private Integer publicationYear;
 
     @NotNull
+    @NotEmpty
     private List<CreatorCreateDto> creators;
 
     @JsonProperty("related_identifiers")

@@ -9,10 +9,10 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-table-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-table-service</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>dbrepo-table-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-table-service</name>
+    <description>Service that manages the tables</description>
 
     <packaging>pom</packaging>
     <modules>
@@ -83,17 +83,17 @@
         <!-- Entities and API -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-db-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-querystore</artifactId>
+            <artifactId>dbrepo-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -166,6 +166,11 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-db-test</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- DTO -->
         <dependency>
             <groupId>com.opencsv</groupId>
@@ -228,7 +233,7 @@
                         <exclude>at/tuwien/mapper/**/*</exclude>
                         <exclude>at/tuwien/exception/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
-                        <exclude>**/FdaContainerManagingApplication.class</exclude>
+                        <exclude>**/DbrepoContainerManagingApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

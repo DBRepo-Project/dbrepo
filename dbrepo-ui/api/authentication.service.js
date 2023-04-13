@@ -3,7 +3,7 @@ import store from '@/store'
 import qs from 'qs'
 import UserMapper from '@/api/user.mapper'
 import axios from 'axios'
-import { api as endpoint, clientSecret } from '@/config'
+import { baseURL, clientSecret } from '../config'
 
 /**
  * Service class for interaction with Authentication Service in the back end.
@@ -28,13 +28,22 @@ class AuthenticationService {
       scope: 'roles'
     }
     if (!username) {
-      throw new Error('parameter username is empty')
+      return new Promise((resolve, reject) => {
+        Vue.$toast.warning('[client-error] Parameter username is empty')
+        reject(new Error('parameter username is empty'))
+      })
     }
     if (!password) {
-      throw new Error('parameter password is empty')
+      return new Promise((resolve, reject) => {
+        Vue.$toast.warning('[client-error] Parameter password is empty')
+        reject(new Error('parameter password is empty'))
+      })
     }
-    if (!clientSecret) {
-      throw new Error('parameter clientSecret is empty')
+    if (!payload.client_secret) {
+      return new Promise((resolve, reject) => {
+        Vue.$toast.warning('[client-error] Parameter clientSecret is empty')
+        reject(new Error('parameter clientSecret is empty'))
+      })
     }
     return this._authenticate(payload)
   }
@@ -47,10 +56,16 @@ class AuthenticationService {
       refresh_token: refreshToken
     }
     if (!refreshToken) {
-      throw new Error('parameter refreshToken is empty')
+      return new Promise((resolve, reject) => {
+        Vue.$toast.warning('[client-error] Parameter refreshToken is empty')
+        reject(new Error('parameter refreshToken is empty'))
+      })
     }
-    if (!clientSecret) {
-      throw new Error('parameter clientSecret is empty')
+    if (!payload.client_secret) {
+      return new Promise((resolve, reject) => {
+        Vue.$toast.warning('[client-error] Parameter clientSecret is empty')
+        reject(new Error('parameter clientSecret is empty'))
+      })
     }
     return this._authenticate(payload)
   }
@@ -60,7 +75,7 @@ class AuthenticationService {
       const instance = axios.create({
         timeout: 10000,
         params: {},
-        baseURL: endpoint,
+        baseURL,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }

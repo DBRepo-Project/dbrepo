@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.tuwien</groupId>
-        <artifactId>fda-table-service</artifactId>
-        <version>1.1.0-alpha</version>
+        <artifactId>dbrepo-table-service</artifactId>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>rest-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-table-service-rest-service</name>
+    <version>1.2.0</version>
+    <name>dbrepo-table-service-rest-service</name>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>

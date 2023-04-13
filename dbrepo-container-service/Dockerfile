@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM fda-metadata-db:latest as dependency
+FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
@@ -24,6 +24,8 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
 ENV LOG_LEVEL=debug

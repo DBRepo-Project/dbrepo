@@ -1,6 +1,7 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.container.*;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -10,6 +11,10 @@ import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +41,7 @@ public class ContainerEndpoint {
 
     private final UserService userService;
     private final ContainerMapper containerMapper;
-    private final ContainerService containerService;
+    private final ContainerServiceImpl containerService;
 
     @Autowired
     public ContainerEndpoint(UserService userService, ContainerServiceImpl containerService,
@@ -49,6 +54,13 @@ public class ContainerEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Operation(summary = "Find all containers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List containers",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ContainerBriefDto[].class))}),
+    })
     public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal,
                                                            @RequestParam(required = false) Integer limit) {
         log.debug("endpoint find all containers, principal={}, limit={}", principal, limit);
@@ -76,6 +88,33 @@ public class ContainerEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('create-container')")
     @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created a new container",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ContainerBriefDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Docker client failed to connect",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container image or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container image or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Container name already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data,
                                                     @NotNull Principal principal)
             throws ImageNotFoundException, DockerClientException, ContainerAlreadyExistsException,
@@ -91,6 +130,28 @@ public class ContainerEndpoint {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Operation(summary = "Find some container")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found container",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ContainerDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Docker client failed to connect",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container image could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Connection to the container failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId) throws DockerClientException,
             ContainerNotFoundException, ContainerNotRunningException {
         log.debug("endpoint find container, id={}", containerId);
@@ -107,6 +168,28 @@ public class ContainerEndpoint {
     @Timed(value = "container.modify", description = "Time needed to modify the container state")
     @PreAuthorize("hasAuthority('modify-container-state')")
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Modified state of container successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ContainerBriefDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Container or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Modification of container state is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Container is already started/stopped",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<ContainerBriefDto> modify(@NotNull @PathVariable("id") Long containerId,
                                                     @Valid @RequestBody ContainerChangeDto changeDto,
                                                     @NotNull Principal principal)
@@ -138,12 +221,27 @@ public class ContainerEndpoint {
     @Timed(value = "container.delete", description = "Time needed to delete the container")
     @PreAuthorize("hasAuthority('delete-container')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted container successfully",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "409",
+                    description = "Container is still running",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "Container is already removed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull Principal principal) throws ContainerNotFoundException,
             ContainerStillRunningException, ContainerAlreadyRemovedException, DockerClientException {
         log.debug("endpoint delete container, containerId={}, principal={}", containerId, principal);
         containerService.remove(containerId);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
+        return ResponseEntity.accepted()
                 .build();
     }
 

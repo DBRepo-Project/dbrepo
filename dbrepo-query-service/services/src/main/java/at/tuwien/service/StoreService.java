@@ -59,11 +59,10 @@ public interface StoreService {
      * @throws ContainerNotFoundException  The container was not found in the metadata database.
      * @throws UserNotFoundException       The user was not found in the metadata database.
      * @throws DatabaseConnectionException The database connection to the remote container failed.
-     * @throws TableMalformedException     The table is malformed and the tuple could not be inserted.
      */
     Query insert(Long containerId, Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException,
-            DatabaseConnectionException, TableMalformedException;
+            DatabaseConnectionException;
 
     /**
      * Persists a query to be displayed in the frontend

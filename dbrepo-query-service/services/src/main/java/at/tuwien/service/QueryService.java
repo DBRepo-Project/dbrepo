@@ -272,12 +272,11 @@ public interface QueryService {
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
      * @throws TableNotFoundException     The table is not found in the metadata database.
-     * @throws TupleDeleteException       The tuple was not deleted.
      * @throws QueryMalformedException    The query is malformed.
      */
     void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, TupleDeleteException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
+            TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the

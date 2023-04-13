@@ -47,6 +47,8 @@ public class DatabaseBriefDto {
     @org.springframework.data.annotation.Transient
     private ContainerBriefDto container;
 
+    private UserBriefDto creator;
+
     @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

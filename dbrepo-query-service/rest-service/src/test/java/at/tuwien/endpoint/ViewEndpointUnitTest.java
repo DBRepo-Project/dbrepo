@@ -98,7 +98,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -125,7 +125,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
 
@@ -163,7 +163,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
         });
     }
 
@@ -173,7 +173,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
         });
     }
 
@@ -183,7 +183,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
         });
     }
 
@@ -193,7 +193,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
 
         /* test */
-        create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -219,7 +219,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -237,7 +237,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -246,7 +246,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -283,7 +283,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
         });
     }
 
@@ -293,7 +293,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
         });
     }
 
@@ -303,7 +303,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
         });
     }
 
@@ -314,7 +314,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             QueryMalformedException {
 
         /* test */
-        delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -346,7 +346,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_READ_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -357,7 +357,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_OWN_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -368,7 +368,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -379,7 +379,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_WRITE_ALL_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -410,7 +410,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_READ_ACCESS);
+        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -418,7 +418,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -426,7 +426,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -434,7 +434,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -451,7 +451,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_READ_ACCESS);
+            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
         });
     }
 
@@ -460,7 +460,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
         });
     }
 
@@ -469,7 +469,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_WRITE_ALL_ACCESS);
+            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS);
         });
     }
 
@@ -478,7 +478,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
 
         /* test */
-        create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -494,7 +494,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_READ_ACCESS);
+        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -502,7 +502,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -510,7 +510,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -518,7 +518,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -535,7 +535,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_READ_ACCESS);
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
         });
     }
 
@@ -544,7 +544,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
         });
     }
 
@@ -553,7 +553,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
         });
     }
 
@@ -563,7 +563,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             QueryMalformedException {
 
         /* test */
-        delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -583,7 +583,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_READ_ACCESS);
+        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
@@ -593,7 +593,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_OWN_ACCESS);
+        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -603,7 +603,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -613,7 +613,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_WRITE_ALL_ACCESS);
+        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */

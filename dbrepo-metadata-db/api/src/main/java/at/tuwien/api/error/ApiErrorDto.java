@@ -15,15 +15,15 @@ import javax.validation.constraints.NotNull;
 public class ApiErrorDto {
 
     @NotNull(message = "http status is required")
-    @Schema(example = "NOT_FOUND")
+    @Schema(example = "STATUS")
     private HttpStatus status;
 
     @NotNull(message = "message is required")
-    @Schema(example = "Could not find container")
+    @Schema(example = "Error message")
     private String message;
 
     @NotNull(message = "code is required")
-    @Schema(example = "error.container.notfound")
+    @Schema(example = "error.service.code")
     private String code;
 
 }

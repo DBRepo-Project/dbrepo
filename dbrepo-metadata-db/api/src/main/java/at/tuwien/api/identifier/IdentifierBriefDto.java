@@ -44,10 +44,6 @@ public class IdentifierBriefDto {
     @NotNull
     private IdentifierTypeDto type;
 
-    @NotNull
-    @Schema(example = "everyone")
-    private VisibilityTypeDto visibility;
-
     @Schema(example = "10.1038/nphys1170")
     private String doi;
 

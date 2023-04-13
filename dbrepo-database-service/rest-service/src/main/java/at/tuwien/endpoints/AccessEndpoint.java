@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
@@ -11,6 +12,10 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +48,26 @@ public class AccessEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Granting access succeeded",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "400",
+                    description = "Granting access query or database connection is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or user not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Granting access not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
                                     @Valid @RequestBody DatabaseGiveAccessDto accessDto,
@@ -67,6 +92,26 @@ public class AccessEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Modify access succeeded",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "400",
+                    description = "Modify access query or database connection is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Modify access not permitted when no access is granted in the first place",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or user not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
@@ -86,6 +131,23 @@ public class AccessEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('check-database-access')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found database access",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseAccessDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "No access to this database",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Check access is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
                                                   @NotBlank @PathVariable("databaseId") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
@@ -102,6 +164,31 @@ public class AccessEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Revoked access successfully",
+                    content = {@Content}),
+            @ApiResponse(responseCode = "400",
+                    description = "Modify access query or database connection is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User with access was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Revoke of access not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Revoke of access not permitted as no access was found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
                                     @NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,

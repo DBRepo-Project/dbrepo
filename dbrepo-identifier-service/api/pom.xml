@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>fda-identifier-service</artifactId>
+        <artifactId>dbrepo-identifier-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>1.1.0-alpha</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>api</artifactId>
-    <name>fda-identifier-service-api</name>
+    <name>dbrepo-identifier-service-api</name>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>

@@ -3,6 +3,7 @@ package at.tuwien.utils;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Disabled;
@@ -33,6 +34,7 @@ public class FileUtilTest extends BaseUnitTest {
 
     @Test
     @Disabled
+    @Deprecated
     public void loadResource_succeeds() throws IOException {
 
         /* test */

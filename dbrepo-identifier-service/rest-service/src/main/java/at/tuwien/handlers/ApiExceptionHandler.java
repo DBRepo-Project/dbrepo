@@ -2,6 +2,7 @@ package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(DatabaseNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
@@ -25,6 +27,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(IdentifierAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyExistsException e, WebRequest request) {
@@ -36,6 +39,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
     @ExceptionHandler(IdentifierAlreadyPublishedException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyPublishedException e, WebRequest request) {
@@ -47,6 +51,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(IdentifierNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
@@ -58,6 +63,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
     @ExceptionHandler(IdentifierPublishingNotAllowedException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierPublishingNotAllowedException e, WebRequest request) {
@@ -69,6 +75,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(IdentifierRequestException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierRequestException e, WebRequest request) {
@@ -80,6 +87,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(QueryNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(QueryNotFoundException e, WebRequest request) {
@@ -91,17 +99,19 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Hidden
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(RemoteUnavailableException.class)
     public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NO_CONTENT)
+                .status(HttpStatus.BAD_GATEWAY)
                 .message(e.getLocalizedMessage())
                 .code("error.identifier.remote")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {

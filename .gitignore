@@ -4,7 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Old Code
+# Notebooks
+.jupyter/
+.pytest_cache/
+__pycache__/
+
+# Previous directories
 fda-analyse-service/
 fda-authentication-service/
 fda-broker-service/
@@ -15,18 +20,11 @@ fda-gateway-service/
 fda-identifier-service/
 fda-metadata-db/
 fda-metadata-service/
-fda-proxy/
 fda-query-service/
 fda-search-service/
 fda-semantics-service/
 fda-table-service/
 fda-ui/
-fda-user-service/
-
-# Notebooks
-.jupyter/
-.pytest_cache/
-__pycache__/
 
 # demo
 .demo

@@ -24,13 +24,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    public List<Identifier> findAll(Long containerId) {
-        return identifierRepository.findByContainerId(containerId);
+    public List<Identifier> findAll(Long databaseId) {
+        return identifierRepository.findByDatabaseId(databaseId);
     }
 
     @Override
-    public Identifier find(Long containerId, Long databaseId, IdentifierType type) throws IdentifierNotFoundException {
-        final Optional<Identifier> optional = identifierRepository.findByContainerIdAndDatabaseIdAndType(containerId, databaseId, type);
+    public Identifier find(Long databaseId, IdentifierType type) throws IdentifierNotFoundException {
+        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndType(databaseId, type);
         if (optional.isEmpty()) {
             throw new IdentifierNotFoundException("Failed to find identifier");
         }

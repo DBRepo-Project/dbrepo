@@ -32,8 +32,8 @@ dictConfig({
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
-metrics.info('app_info', 'Application info', version='1.0.3')
-app.config['SWAGGER'] = {'openapi': '3.0.1', 'title': 'Swagger UI', 'uiversion': 3}
+metrics.info('app_info', 'Application info', version='1.2.0')
+app.config['SWAGGER'] = {'openapi': '3.0.0', 'title': 'Swagger UI', 'uiversion': 3}
 
 list = List(offline=False)
 
@@ -57,7 +57,7 @@ template = {
     'info': {
         'title': 'Database Repository Unit / Ontology Service API',
         'description': 'Service for assigning concepts to database tables and columns.',
-        'version': '1.1.0-alpha',
+        'version': '1.2.0',
         'contact': {
             'name': 'Prof. Andreas Rauber',
             'email': 'andreas.rauber@tuwien.ac.at'
@@ -67,14 +67,18 @@ template = {
             'url': 'https://www.apache.org/licenses/LICENSE-2.0'
         }
     },
+    "externalDocs": {
+        "description": "Sourcecode Documentation",
+        "url": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"
+    },
     'servers': [
         {
             'url': 'http://localhost:5010',
             'description': 'Generated server url'
         },
         {
-            'url': 'https://dbrepo1.ec.tuwien.ac.at/api/units',
-            'description': 'DBRepo Production Server'
+            'url': 'https://dbrepo2.ec.tuwien.ac.at',
+            'description': 'Sandbox'
         }
     ]
 }

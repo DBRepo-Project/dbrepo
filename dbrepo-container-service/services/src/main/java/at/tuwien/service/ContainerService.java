@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;

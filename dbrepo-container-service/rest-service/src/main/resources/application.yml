@@ -22,6 +22,10 @@ spring:
     name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

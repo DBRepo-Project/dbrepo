@@ -67,7 +67,7 @@ export default {
       }
     },
     canCreateDatabase () {
-      if (!this.token) {
+      if (!this.roles) {
         return false
       }
       return this.roles.includes('create-container') && this.roles.includes('create-database')

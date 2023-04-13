@@ -22,6 +22,10 @@ spring:
     name: container-service
   cloud:
     loadbalancer.ribbon.enabled: false
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

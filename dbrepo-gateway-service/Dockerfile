@@ -1,14 +1,18 @@
 ###### FIRST STAGE ######
-FROM maven:slim as build
+FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
+###### FIRST STAGE ######
+FROM maven:slim as build
 
 COPY ./pom.xml ./
 
 RUN mvn -fn -B dependency:go-offline > /dev/null
 
-COPY ./rest-service ./rest-service
-COPY ./services ./services
+COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
+
 COPY ./report ./report
+COPY ./rest-service ./rest-service
 
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests > /dev/null

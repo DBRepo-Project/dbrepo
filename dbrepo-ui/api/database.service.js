@@ -142,6 +142,23 @@ class DatabaseService {
         })
     })
   }
+
+  findAllLicenses (id) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/license`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const licenses = response.data
+          console.debug('response licenses', licenses)
+          resolve(licenses)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load licenses', error)
+          Vue.$toast.error(`[${code}] Failed to load licenses: ${message}`)
+          reject(error)
+        })
+    })
+  }
 }
 
 export default new DatabaseService()

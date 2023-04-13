@@ -188,14 +188,47 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void update_doiChange_fails() {
+
+        IdentifierDto identifierWithNewDoiDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            identifierService.update(IDENTIFIER_1_ID, identifierWithNewDoiDto);
+        });
+    }
+
+    @Test
+    public void update_notVisibleByEveryone_fails() {
+
+        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).build();
+        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.TRUSTED).build();
+        IDENTIFIER_1_DTO.setVisibility(VisibilityTypeDto.TRUSTED);
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            identifierService.update(IDENTIFIER_1_ID, identifierDto);
+        });
+    }
+
+    @Test
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
-            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException {
+            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
+            IdentifierRequestException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
                 .thenReturn(ResponseEntity.ok(QUERY_1_DTO));
@@ -212,47 +245,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_publicDatabaseTrustedDataset_fails()
-            throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        final String bearer = "Bearer abcxyz";
-
-        /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-
-
-        /* test */
-        assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_TRUSTED_REQUEST, principal, bearer);
-        });
-    }
-
-    @Test
-    public void create_publicDatabaseSelfDataset_fails()
-            throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        final String bearer = "Bearer abcxyz";
-
-        /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-
-
-        /* test */
-        assertThrows(IdentifierPublishingNotAllowedException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_SELF_REQUEST, principal, bearer);
-        });
-    }
-
-    @Test
     public void create_existsSubset_fails()
             throws DatabaseNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_2_ID, DATABASE_2_ID))
+        when(databaseService.find(DATABASE_2_ID))
                 .thenReturn(DATABASE_2);
         when(identifierRepository.existsByDatabaseIdAndQueryIdAndType(DATABASE_2_ID, QUERY_2_ID, IdentifierType.SUBSET))
                 .thenReturn(true);
@@ -271,7 +270,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(databaseService.find(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         when(identifierRepository.existsByDatabaseIdAndType(DATABASE_1_ID, IdentifierType.DATABASE))
                 .thenReturn(true);
@@ -284,7 +283,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws IdentifierNotFoundException {
+    public void delete_succeeds() throws IdentifierNotFoundException, NotAllowedException {
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -312,6 +311,22 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
+            identifierService.delete(IDENTIFIER_1_ID);
+        });
+    }
+
+    @Test
+    public void delete_withDoi_fails() {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+        doNothing()
+                .when(identifierRepository)
+                .delete(IDENTIFIER_1);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
             identifierService.delete(IDENTIFIER_1_ID);
         });
     }
@@ -351,32 +366,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
             identifierService.exportResource(IDENTIFIER_4_ID);
-        });
-    }
-
-    @Test
-    public void publish_alreadyEveryone_fails() {
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
-
-        /* test */
-        assertThrows(IdentifierAlreadyPublishedException.class, () -> {
-            identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.SELF);
-        });
-    }
-
-    @Test
-    public void publish_alreadyEveryone2_fails() {
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
-
-        /* test */
-        assertThrows(IdentifierAlreadyPublishedException.class, () -> {
-            identifierService.publish(IDENTIFIER_1_ID, VisibilityTypeDto.TRUSTED);
         });
     }
 

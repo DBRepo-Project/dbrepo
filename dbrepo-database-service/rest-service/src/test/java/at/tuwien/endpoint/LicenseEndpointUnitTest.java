@@ -6,6 +6,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.LicenseEndpoint;
 import at.tuwien.repository.jpa.LicenseRepository;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;

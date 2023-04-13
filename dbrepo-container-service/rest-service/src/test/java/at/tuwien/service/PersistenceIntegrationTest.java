@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
@@ -40,19 +39,7 @@ public class PersistenceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         userRepository.save(USER_1);
-        final ContainerImage tmp = ContainerImage.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .compiled(IMAGE_1_BUILT)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build();
-        imageRepository.save(tmp);
+        imageRepository.save(IMAGE_1);
     }
 
     @Test

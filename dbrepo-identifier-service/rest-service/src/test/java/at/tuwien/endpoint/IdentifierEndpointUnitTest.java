@@ -209,8 +209,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .dbid(IDENTIFIER_1_DATABASE_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
-                .doi(IDENTIFIER_1_DOI)
-                .visibility(IDENTIFIER_1_VISIBILITY_DTO)
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -234,8 +232,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .dbid(IDENTIFIER_1_DATABASE_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
-                .doi(IDENTIFIER_1_DOI)
-                .visibility(IDENTIFIER_1_VISIBILITY_DTO)
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
                 .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
                 .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
@@ -297,7 +293,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
     public void update_dataSteward_succeeds() throws IdentifierPublishingNotAllowedException,
-            IdentifierNotFoundException {
+            IdentifierNotFoundException, IdentifierRequestException {
 
         /* test */
         generic_update();
@@ -328,7 +324,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_dataSteward_succeeds() throws IdentifierNotFoundException {
+    public void delete_dataSteward_succeeds() throws IdentifierNotFoundException, NotAllowedException {
 
         /* test */
         generic_delete();
@@ -346,7 +342,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             IdentifierRequestException, NotAllowedException {
 
         /* mock */
-        when(databaseRepository.findByContainerAndDatabaseId(containerId, databaseId))
+        when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
         if (user == null) {
             when(userRepository.findByUsername(username))
@@ -397,29 +393,30 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         return persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
     }
 
-    protected void generic_update() throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException {
+    protected void generic_update()
+            throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
 
         /* mock */
-        when(identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO))
-                .thenReturn(IDENTIFIER_1);
-        when(identifierRepository.save(IDENTIFIER_1))
-                .thenReturn(IDENTIFIER_1);
+        when(identifierService.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO))
+                .thenReturn(IDENTIFIER_3);
+        when(identifierRepository.save(IDENTIFIER_3))
+                .thenReturn(IDENTIFIER_3);
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
-        assertEquals(IDENTIFIER_1_ID, body.getId());
-        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, body.getDescription());
-        assertEquals(IDENTIFIER_1_QUERY, body.getQuery());
-        assertEquals(IDENTIFIER_1_QUERY_HASH, body.getQueryHash());
-        assertEquals(IDENTIFIER_1_RESULT_NUMBER, body.getResultNumber());
-        assertEquals(IDENTIFIER_1_RESULT_HASH, body.getResultHash());
+        assertEquals(IDENTIFIER_3_ID, body.getId());
+        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
+        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
+        assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
+        assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
+        assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());
+        assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
     }
 
-    protected void generic_delete() throws IdentifierNotFoundException {
+    protected void generic_delete() throws IdentifierNotFoundException, NotAllowedException {
 
         /* mock */
         doNothing()

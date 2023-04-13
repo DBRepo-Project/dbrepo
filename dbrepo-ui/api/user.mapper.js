@@ -20,6 +20,16 @@ class UserMapper {
     }
     return obj
   }
+
+  userToFullName (user) {
+    if (!user) {
+      return null
+    }
+    if (!('given_name' in user) || !('family_name' in user) || user.given_name === null || user.family_name === null) {
+      return user?.username
+    }
+    return user.given_name + ' ' + user.family_name
+  }
 }
 
 export default new UserMapper()

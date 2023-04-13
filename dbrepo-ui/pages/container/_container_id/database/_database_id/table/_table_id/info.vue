@@ -98,7 +98,9 @@
 </template>
 <script>
 import TableToolbar from '@/components/TableToolbar'
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
+import BrokerService from '@/api/broker.service'
+import UserMapper from '@/api/user.mapper'
 
 export default {
   components: {
@@ -121,17 +123,6 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: {},
-          progress: false
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
     },
     user () {
       return this.$store.state.user
@@ -201,25 +192,19 @@ export default {
         return null
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
-    },
-    brokerConfig () {
-      return {
-        headers: { Authorization: 'Basic ' + btoa(`${this.$config.brokerUsername}:${this.$config.brokerPassword}`) },
-        progress: false
-      }
     }
   },
   watch: {
     table () {
-      this.pollConsumerStatus()
+      this.consumerDetails()
     }
   },
   mounted () {
-    this.pollConsumerStatus()
+    this.consumerDetails()
   },
   methods: {
     formatCreator (creator) {
-      return formatUser(creator)
+      return UserMapper.userToFullName(creator)
     },
     is_owner (table) {
       if (!this.user) {
@@ -227,20 +212,18 @@ export default {
       }
       return table.creator.username === this.user.username
     },
-    async pollConsumerStatus () {
-      if (this.table === null || this.table.queue_name === null) {
+    consumerDetails () {
+      if (!this.table) {
         return
       }
-      try {
-        const res = await this.$axios.get('/api/broker/consumers/%2F', this.brokerConfig)
-        const consumers = res.data.filter(c => c.queue.name === this.table.queue_name)
-        console.debug('filtered', consumers)
-        this.consumers = consumers
-      } catch (error) {
-        const { message } = error
-        console.error('Failed to find consumers', error)
-        this.$toast.error(`Failed to find consumers: ${message}`)
-      }
+      this.loadingConsumers = true
+      BrokerService.findConsumers()
+        .then((consumers) => {
+          this.consumers = consumers.filter(c => c.queue.name === this.table.queue_name)
+        })
+        .finally(() => {
+          this.loadingConsumers = false
+        })
     }
   }
 }

@@ -152,7 +152,7 @@ export default {
   },
   watch: {
     tuple (val) {
-      this.localTuple = val
+      this.localTuple = Object.assign({}, val)
     }
   },
   mounted () {

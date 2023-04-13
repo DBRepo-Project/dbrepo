@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.tuwien</groupId>
-        <artifactId>fda-gateway-service</artifactId>
-        <version>1.1.0-alpha</version>
+        <artifactId>dbrepo-gateway-service</artifactId>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>report</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-gateway-service-report</name>
+    <version>1.2.0</version>
+    <name>dbrepo-gateway-service-report</name>
     <description>
         This module is only intended for the pipeline coverage report. See the detailed report in the
         respective modules
@@ -25,11 +25,6 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>rest-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>services</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

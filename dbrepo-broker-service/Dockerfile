@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM fda-metadata-db:latest as dependency
+FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
@@ -9,18 +9,18 @@ ENV PYTHONUNBUFFERED=1
 ENV JWT_PUBKEY=public-key
 ENV JWT_CERT=cert
 
-COPY ./rabbitmq.conf /etc/rabbitmq/
+RUN apk --no-cache add curl
 
-RUN apk --no-cache add python3 py3-pip
-COPY ./requirements.txt ./requirements.txt
-RUN pip3 install -r ./requirements.txt
+COPY ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 
 WORKDIR /app
 
 COPY ./init.sh ./init.sh
-COPY ./register.py ./register.py
+COPY ./service-register.sh ./service-register.sh
 COPY ./service_ready /usr/bin/service_ready
 COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN chmod +x ./service-register.sh
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 

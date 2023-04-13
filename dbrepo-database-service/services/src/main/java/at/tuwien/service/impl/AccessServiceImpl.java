@@ -53,7 +53,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     public DatabaseAccess find(Long databaseId, String username) throws AccessDeniedException {
         final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
         if (optional.isEmpty()) {
-            throw new AccessDeniedException("Failed to retrieve access");
+            throw new AccessDeniedException("Failed to retrieve access to database with id " + databaseId + " for user with username '" + username + "'");
         }
         return optional.get();
     }
@@ -67,8 +67,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(accessDto.getUsername());
-        log.trace("access be given to user with username {}", user.getUsername());
-        log.trace("database owner has username {}", database.getOwner().getUsername());
+        log.trace("give access to user with username {}", user.getUsername());
         if (database.getOwner().getUsername().equals(user.getUsername())) {
             log.error("Failed to give access to user with username {}, is already database owner", user.getUsername());
             throw new NotAllowedException("Failed give access");
@@ -78,14 +77,19 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             throw new NotAllowedException("Failed to give access");
         }
         final User root = databaseMapper.containerToPrivilegedUser(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
         try {
             final Connection connection = dataSource.getConnection();
-            /* create user */
+            /* create user if not exists */
             final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
+            /* grant access */
             final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, accessDto);
             preparedStatement2.executeUpdate();
+            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantUserProcedure(connection, user);
+            preparedStatement3.executeUpdate();
+            final PreparedStatement preparedStatement4 = databaseMapper.rawFlushPrivileges(connection);
+            preparedStatement4.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to give database access {}, reason {}", accessDto, e.getMessage());
             throw new DatabaseMalformedException("Failed to execute query", e);
@@ -112,13 +116,20 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             throw new NotAllowedException("Failed modify access");
         }
         final User root = databaseMapper.containerToPrivilegedUser(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
+        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
         final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(username, accessDto);
         try {
             final Connection connection = dataSource.getConnection();
-            /* create user */
+            /* create user if not exists */
+            final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
+            preparedStatement1.executeUpdate();
+            /* grant access */
             final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, giveAccess);
             preparedStatement2.executeUpdate();
+            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantUserProcedure(connection, user);
+            preparedStatement3.executeUpdate();
+            final PreparedStatement preparedStatement4 = databaseMapper.rawFlushPrivileges(connection);
+            preparedStatement4.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to modify database access {}, reason {}", accessDto, e.getMessage());
             throw new DatabaseMalformedException("Failed to execute query", e);

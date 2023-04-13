@@ -79,15 +79,15 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private MessageQueueService messageQueueService;
 
-    private final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
         afterAll();
         DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_3, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(null, CONTAINER_BROKER, CONTAINER_BROKER_ENV);
         DockerConfig.startContainer(CONTAINER_BROKER);
     }
 
@@ -99,20 +99,20 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws IOException, TimeoutException {
-        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_8.setDatabase(DATABASE_3);
         /* rabbitmq */
         final Connection connection = amqpConfig.connectionFactory().newConnection();
         this.channel = connection.createChannel();
-        channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.FANOUT);
-        channel.queueDeclare(TABLE_1_QUEUE_NAME, true, false, false, null);
-        channel.queueBind(TABLE_1_QUEUE_NAME, DATABASE_1_EXCHANGE, TABLE_1_ROUTING_KEY);
+        channel.exchangeDeclare(DATABASE_3_EXCHANGE, BuiltinExchangeType.FANOUT);
+        channel.queueDeclare(TABLE_8_QUEUE_NAME, true, false, false, null);
+        channel.queueBind(TABLE_8_QUEUE_NAME, DATABASE_3_EXCHANGE, TABLE_8_ROUTING_KEY);
     }
 
     @Test
     public void createConsumer_succeeds() throws AmqpException {
 
         /* test */
-        messageQueueService.createConsumer(TABLE_1_QUEUE_NAME, CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        messageQueueService.createConsumer(TABLE_8_QUEUE_NAME, CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID);
     }
 
     @Test
@@ -122,13 +122,13 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
         channel.close();
 
         /* test */
-        messageQueueService.createConsumer(TABLE_1_QUEUE_NAME, CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        messageQueueService.createConsumer(TABLE_8_QUEUE_NAME, CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID);
     }
 
     @Test
     public void insert_succeeds() throws IOException, AmqpException {
         final AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
-                .userId(USER_1_USERNAME)
+                .userId(USER_BROKER_USERNAME)
                 .build();
         final TableCsvDto payload = TableCsvDto.builder()
                 .data(new HashMap<>() {{
@@ -140,18 +140,18 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_3_ID, DATABASE_3_ID))
+                .thenReturn(Optional.of(DATABASE_3));
+        when(tableRepository.find(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(Optional.of(TABLE_8));
         doThrow(IOException.class)
                 .when(rabbitMqConsumer)
                 .handleDelivery(anyString(), any(Envelope.class), any(AMQP.BasicProperties.class), any());
-        messageQueueService.createConsumer(TABLE_1_QUEUE_NAME, CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        messageQueueService.createConsumer(TABLE_8_QUEUE_NAME, CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        channel.basicPublish(DATABASE_1_EXCHANGE, TABLE_1_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(payload));
-        final GetResponse response = channel.basicGet(TABLE_1_QUEUE_NAME, false);
+        channel.basicPublish(DATABASE_3_EXCHANGE, TABLE_8_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(payload));
+        final GetResponse response = channel.basicGet(TABLE_8_QUEUE_NAME, false);
         assertNull(response) /* queue is empty */;
     }
 
@@ -162,17 +162,17 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_3_ID, DATABASE_3_ID))
+                .thenReturn(Optional.of(DATABASE_3));
+        when(tableRepository.find(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(Optional.of(TABLE_8));
         doThrow(IOException.class)
                 .when(rabbitMqConsumer)
                 .handleDelivery(anyString(), any(Envelope.class), any(AMQP.BasicProperties.class), any());
-        messageQueueService.createConsumer(TABLE_1_QUEUE_NAME, CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        messageQueueService.createConsumer(TABLE_8_QUEUE_NAME, CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        channel.basicPublish(DATABASE_1_EXCHANGE, TABLE_1_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(TABLE_1_CSV_DTO));
+        channel.basicPublish(DATABASE_3_EXCHANGE, TABLE_8_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(TABLE_8_CSV_DTO));
     }
 
     @Test
@@ -182,17 +182,17 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_3_ID, DATABASE_3_ID))
+                .thenReturn(Optional.of(DATABASE_3));
+        when(tableRepository.find(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(Optional.of(TABLE_8));
         doThrow(IOException.class)
                 .when(rabbitMqConsumer)
                 .handleDelivery(anyString(), any(Envelope.class), any(AMQP.BasicProperties.class), any());
-        messageQueueService.createConsumer(TABLE_1_QUEUE_NAME, CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        messageQueueService.createConsumer(TABLE_8_QUEUE_NAME, CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
-        channel.basicPublish(DATABASE_1_EXCHANGE, TABLE_1_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(TABLE_1_CSV_DTO));
+        channel.basicPublish(DATABASE_3_EXCHANGE, TABLE_8_ROUTING_KEY, basicProperties, objectMapper.writeValueAsBytes(TABLE_8_CSV_DTO));
     }
 
     @Test

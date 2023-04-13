@@ -8,7 +8,7 @@ import java.util.List;
 public interface LicenseService {
 
     /**
-     * Finds all licenses in the metadata repository
+     * Finds all licenses in the metadata database.
      *
      * @return List of licenses
      */

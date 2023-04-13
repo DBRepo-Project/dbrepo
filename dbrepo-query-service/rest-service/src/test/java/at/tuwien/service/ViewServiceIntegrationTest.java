@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
@@ -14,6 +13,7 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.elastic.ViewIdxRepository;
 import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
+import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -76,7 +76,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewService viewService;
 
-    final static String BIND = new File("./src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -84,7 +84,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         /* create network */
         DockerConfig.createAllNetworks();
         /* create container */
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
     }
 
@@ -177,13 +177,13 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("-36.0653583", row0.get("lat"));
         assertEquals("146.9112214", row0.get("lng"));
         final Map<String, String> row1 = resultSet.get(1);
-        assertEquals("Melbourne", row1.get("location"));
-        assertNull(row1.get("lat"));
-        assertNull(row1.get("lng"));
+        assertEquals("Sydney", row1.get("location"));
+        assertEquals("-33.847927", row1.get("lat"));
+        assertEquals("150.6517942", row1.get("lng"));
         final Map<String, String> row2 = resultSet.get(2);
-        assertEquals("Sydney", row2.get("location"));
-        assertEquals("-33.847927", row2.get("lat"));
-        assertEquals("150.6517942", row2.get("lng"));
+        assertEquals("Vienna", row2.get("location"));
+        assertNull(row2.get("lat"));
+        assertNull(row2.get("lng"));
     }
 
 }

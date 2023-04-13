@@ -3,6 +3,7 @@ package at.tuwien.handlers;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.exception.InvalidPrefixException;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(IdentifierNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
@@ -26,6 +28,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidPrefixException.class)
     public ResponseEntity<ApiErrorDto> handle(InvalidPrefixException e, WebRequest request) {

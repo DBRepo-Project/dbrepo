@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public interface IdentifierService {
-    List<Identifier> findAll(Long containerId);
+    List<Identifier> findAll(Long databaseId);
 
-    Identifier find(Long containerId, Long databaseId, IdentifierType type) throws IdentifierNotFoundException;
+    Identifier find(Long databaseId, IdentifierType type) throws IdentifierNotFoundException;
 }

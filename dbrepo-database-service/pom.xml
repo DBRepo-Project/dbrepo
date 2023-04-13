@@ -9,10 +9,10 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-database-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-database-service</name>
-    <description>Demo project for Spring Boot</description>
+    <artifactId>dbrepo-database-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-database-service</name>
+    <description>Service that manages the databases</description>
 
     <packaging>pom</packaging>
     <modules>
@@ -69,7 +69,7 @@
         <!-- Entities and API -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- Monitoring -->
@@ -98,36 +98,26 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${postgresql.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
         </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.version}</version>
-        </dependency>
         <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-db-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-querystore</artifactId>
+            <artifactId>dbrepo-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -157,6 +147,12 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-db-test</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- IDE -->
         <dependency>

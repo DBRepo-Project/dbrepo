@@ -12,8 +12,7 @@
       <v-card-title v-if="hasDatabase(container)">
         <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>
       </v-card-title>
-      <v-card-subtitle v-if="!hasIdentifier(container)" class="db-subtitle" v-text="formatOwner(container)" />
-      <v-card-subtitle v-if="hasIdentifier(container)" class="db-subtitle" v-text="formatCreators(container)" />
+      <v-card-subtitle class="db-subtitle" v-text="formatCreators(container)" />
       <v-card-text v-if="hasDatabase(container)" class="db-description">
         <div class="db-tags">
           <v-chip v-if="hasDatabase(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
@@ -59,9 +58,10 @@
 </template>
 
 <script>
-import { formatCreators, formatUser, formatYearUTC, isResearcher } from '@/utils'
+import { formatYearUTC, isResearcher } from '@/utils'
 import DatabaseService from '@/api/database.service'
 import ContainerService from '@/api/container.service'
+import ContainerMapper from '@/api/container.mapper'
 
 export default {
   data () {
@@ -106,15 +106,8 @@ export default {
     this.loadContainers()
   },
   methods: {
-    formatOwner (container) {
-      if (!('database' in container) || !container.database) {
-        return formatUser(container.creator)
-      }
-      return formatUser(container.database?.owner)
-    },
     formatCreators (container) {
-      const creators = formatCreators(container)
-      return creators || this.formatUser(container.creator)
+      return ContainerMapper.containerToCreator(container)
     },
     needsStart (container) {
       if (!this.user) {

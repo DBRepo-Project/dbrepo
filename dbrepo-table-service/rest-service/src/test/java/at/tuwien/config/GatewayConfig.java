@@ -12,6 +12,9 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Configuration
 public class GatewayConfig {
 
+    @Value("${spring.rabbitmq.host}")
+    private String hostname;
+
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
 
@@ -21,7 +24,7 @@ public class GatewayConfig {
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://dbrepo-broker-service:15672"));
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("http://" + hostname + ":15672"));
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
         return restTemplate;

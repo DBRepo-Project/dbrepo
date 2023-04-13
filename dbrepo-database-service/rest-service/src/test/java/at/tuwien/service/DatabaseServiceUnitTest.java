@@ -12,6 +12,7 @@ import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
+import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;

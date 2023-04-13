@@ -7,19 +7,19 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>api</artifactId>
-            <version>1.1.0-alpha</version>
+            <version>1.2.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
     <parent>
-        <artifactId>fda-identifier-service</artifactId>
+        <artifactId>dbrepo-identifier-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>1.1.0-alpha</version>
+        <version>1.2.0</version>
     </parent>
 
     <artifactId>services</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-identifier-service-services</name>
+    <version>1.2.0</version>
+    <name>dbrepo-identifier-service-services</name>
 
     <build>
         <plugins>

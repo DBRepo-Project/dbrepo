@@ -1,15 +1,18 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.*;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +49,23 @@ public class TableEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "table.list", description = "Time needed to list the tables")
     @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List tables",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto[].class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "List tables not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     Principal principal)
@@ -65,6 +85,43 @@ public class TableEndpoint {
     @PreAuthorize("hasAuthority('create-table')")
     @Timed(value = "table.create", description = "Time needed to create a table")
     @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created a new table",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Create table query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database, container or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Create table not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Create table conflicts with existing table name",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "504",
+                    description = "Broker service failed to create queue",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
@@ -87,6 +144,28 @@ public class TableEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "table.find", description = "Time needed to find a table")
     @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Find table successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table, database or container could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Find table not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
@@ -105,8 +184,44 @@ public class TableEndpoint {
     @PreAuthorize("hasAuthority('delete-table')")
     @Timed(value = "table.delete", description = "Time needed to delete a table")
     @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
-    @ResponseStatus(HttpStatus.OK)
-    public void delete(@NotNull @PathVariable("id") Long containerId,
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Delete table successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = TableDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Delete table query resulted in an invalid query statement",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table, database or container could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Delete table not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "423",
+                    description = "Delete table resulted in an invalid state",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "501",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
                        @NotNull @PathVariable("databaseId") Long databaseId,
                        @NotNull @PathVariable("tableId") Long tableId,
                        @NotNull Principal principal)
@@ -115,6 +230,8 @@ public class TableEndpoint {
         log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         tableService.deleteTable(containerId, databaseId, tableId);
+        return ResponseEntity.accepted()
+                .build();
     }
 
 }
