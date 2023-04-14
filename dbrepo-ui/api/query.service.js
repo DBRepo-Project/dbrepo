@@ -2,9 +2,9 @@ import Vue from 'vue'
 import api from '@/api'
 
 class QueryService {
-  findAll (id, databaseId) {
+  findAll (id, databaseId, persisted) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/container/${id}/database/${databaseId}/query${persisted === null ? '' : `?persisted=${persisted}`}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const queries = response.data
           console.debug('response queries', queries)

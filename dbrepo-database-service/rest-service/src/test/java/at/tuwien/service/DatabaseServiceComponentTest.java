@@ -7,13 +7,12 @@ import at.tuwien.config.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +22,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
-import java.security.Principal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,16 +44,16 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     private IndexConfig indexConfig;
 
     @MockBean
-    private DatabaseIdxRepository databaseIdxRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ImageRepository imageRepository;
+    @MockBean
+    private ContainerRepository containerRepository;
+
+    @MockBean
+    private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private MariaDbServiceImpl databaseService;
@@ -81,8 +80,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
         afterEach();
         /* metadata database */
         h2Utils.runScript("schema.sql");
-        imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
     }
 
     @AfterEach
@@ -112,15 +109,17 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
 
     protected void generic_create(Long containerId, DatabaseCreateDto createDto, Database database)
             throws Exception {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
-        final Database response = databaseService.create(containerId, createDto, principal);
+        final Database response = databaseService.create(containerId, createDto, USER_1_PRINCIPAL);
         assertEquals(database.getName(), response.getName());
         assertEquals(containerId, database.getId());
     }

@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -40,16 +41,19 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
+    private final ContainerService containerService;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, MariaDbServiceImpl databaseService,
-                            QueryStoreService queryStoreService, MessageQueueService messageQueueService,
-                            AccessService accessService, DatabaseAccessRepository databaseAccessRepository) {
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, ContainerService containerService,
+                            MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            MessageQueueService messageQueueService, AccessService accessService,
+                            DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
+        this.containerService = containerService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
@@ -142,8 +146,13 @@ public class DatabaseEndpoint {
             BrokerVirtualHostGrantException {
         log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
                 principal);
-        final Database database = databaseService.create(containerId, createDto, principal);
+        final Container container = containerService.find(containerId);
         final User user = userService.findByUsername(principal.getName());
+        if (!container.getOwner().getId().equals(user.getId())) {
+            log.error("Failed to create database: not owner");
+            throw new NotAllowedException(("Failed to create database: not owner"));
+        }
+        final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
         messageQueueService.updatePermissions(principal);
@@ -167,7 +176,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Database or user could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -181,11 +190,16 @@ public class DatabaseEndpoint {
                                                   @NotNull @PathVariable Long databaseId,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint update database, containerId={}, databaseId={}, data={}, principal={}", containerId,
                 databaseId, data, principal);
-        final Database database = databaseService.visibility(containerId, databaseId, data);
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final Database database = databaseService.findById(containerId, databaseId);
+        final User user = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(user.getId())) {
+            log.error("Failed to create database: not owner");
+            throw new NotAllowedException(("Failed to create database: not owner"));
+        }
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.visibility(containerId, databaseId, data));
         log.trace("update database resulted in database {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
@@ -217,11 +231,16 @@ public class DatabaseEndpoint {
                                                 @NotNull @PathVariable Long databaseId,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException {
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
                 databaseId, transferDto, principal);
-        final Database database = databaseService.transfer(containerId, databaseId, transferDto);
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
+        final Database database = databaseService.findById(containerId, databaseId);
+        final User user = userService.findByUsername(principal.getName());
+        if (!database.getOwner().getId().equals(user.getId())) {
+            log.error("Failed to create database: not owner");
+            throw new NotAllowedException(("Failed to create database: not owner"));
+        }
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.transfer(containerId, databaseId, transferDto));
         log.trace("update database resulted in database {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

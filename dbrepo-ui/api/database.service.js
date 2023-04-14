@@ -159,6 +159,36 @@ class DatabaseService {
         })
     })
   }
+
+  createView (id, databaseId, data) {
+    return new Promise((resolve, reject) => {
+      api.post(`/api/container/${id}/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete view', error)
+          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  deleteView (id, databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete view', error)
+          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          reject(error)
+        })
+    })
+  }
 }
 
 export default new DatabaseService()

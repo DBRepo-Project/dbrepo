@@ -68,7 +68,9 @@
 </template>
 
 <script>
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
+import QueryService from '@/api/query.service'
+import IdentifierService from '@/api/identifier.service'
 
 export default {
   data () {
@@ -130,39 +132,25 @@ export default {
     this.simulateProgress()
   },
   methods: {
-    formatCreator (creator) {
-      return formatUser(creator)
+    loadIdentifiers () {
+      this.loadingIdentifiers = true
+      IdentifierService.findAll(this.$route.params.database_id, 'subset')
+        .then((identifiers) => {
+          this.identifiers = identifiers
+        })
+        .finally(() => {
+          this.loadingIdentifiers = false
+        })
     },
-    async loadIdentifiers () {
-      try {
-        this.loadingIdentifiers = true
-        const res = await this.$axios.get(`/api/identifier?dbid=${this.$route.params.database_id}&type=subset`, this.config)
-        this.identifiers = res.data
-        console.debug('identifiers', this.identifiers)
-      } catch (error) {
-        this.error = true
-        console.error('Failed to load identifiers', error)
-        const { message } = error.response
-        this.$toast.error(`Failed to load identifiers: ${message}`)
-      }
-      this.loadingIdentifiers = false
-    },
-    async loadQueries () {
-      try {
-        this.loadingQueries = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?persisted=true`, this.config)
-        this.queries = res.data
-        console.debug('queries', this.queries)
-      } catch (error) {
-        const { status, data } = error.response
-        const { message } = data
-        if (status !== 405) {
-          this.error = true
-          console.error('Connection to query store failed', error)
-          this.$toast.error(`Failed to connect to query store: ${message}`)
-        }
-      }
-      this.loadingQueries = false
+    loadQueries () {
+      this.loadingQueries = true
+      QueryService.findAll(this.$route.params.container_id, this.$route.params.database_id, true)
+        .then((queries) => {
+          this.queries = queries
+        })
+        .finally(() => {
+          this.loadingQueries = false
+        })
     },
     title (query) {
       if (query.identifier === null) {

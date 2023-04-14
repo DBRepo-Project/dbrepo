@@ -1,9 +1,10 @@
-package at.tuwien.entities.auth;
+package at.tuwien.entities.user;
 
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -13,6 +14,9 @@ import javax.persistence.*;
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "realm")
+@NamedQueries({
+        @NamedQuery(name = "Realm.findAll", query = "select r from Realm r where r.name = 'dbrepo'")
+})
 public class Realm {
 
     @Id

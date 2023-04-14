@@ -148,6 +148,9 @@
 </template>
 
 <script>
+import DatabaseService from '@/api/database.service'
+import MiddlewareService from '@/api/middleware.service'
+
 export default {
   props: {
     mode: {
@@ -316,58 +319,35 @@ export default {
       }
       await this.$refs.queryResults.executeFirstTime(this, this.sql, this.timestamp)
     },
-    async createView () {
+    createView () {
       this.loadingQuery = true
-      try {
-        this.view.query = this.sql
-        console.debug('create view payload', this.view)
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, this.view, this.config)
-        this.resultId = res.data.id
-        console.debug('view', res.data)
-        await this.loadDatabase()
-      } catch (error) {
-        console.error('Failed to create view', error)
-        const { statusText } = error.response
-        this.$toast.error(`Failed to create view: ${statusText}`)
-      }
-      this.loadingQuery = false
-      await Promise.all([this.$refs.queryResults.reExecute(this.resultId), this.$refs.queryResults.reExecuteCount(this.resultId)])
+      DatabaseService.createView(this.$route.params.container_id, this.$route.params.database_id, this.view)
+        .then(async (view) => {
+          this.resultId = view.id
+          await this.$store.dispatch('reloadDatabase')
+          await Promise.all([this.$refs.queryResults.reExecute(this.resultId), this.$refs.queryResults.reExecuteCount(this.resultId)])
+        })
+        .finally(() => {
+          this.loadingQuery = false
+        })
     },
-    async buildQuery () {
+    buildQuery () {
       if (!this.table) {
         return
       }
-      const url = '/server-middleware/query/build'
       const data = {
         table: this.table.internal_name,
         select: this.select.map(s => s.internal_name),
         clauses: this.clauses
       }
-      try {
-        this.loadingQuery = true
-        const res = await this.$axios.post(url, data, { progress: false })
-        if (res && !res.error) {
-          this.query = res.data
-        }
-      } catch (e) {
-        console.log(e)
-      }
-      this.loadingQuery = false
-    },
-    async loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, this.config)
-        this.$store.commit('SET_DATABASE', res.data)
-        console.debug('database', this.database)
-      } catch (err) {
-        console.error('Could not load database', err)
-        this.$toast.error('Could not load database')
-      }
-      this.loading = false
+      this.loadingQuery = true
+      MiddlewareService.buildQuery(data)
+        .then((query) => {
+          this.query = query
+        })
+        .finally(() => {
+          this.loadingQuery = false
+        })
     }
   }
 }

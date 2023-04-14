@@ -4,6 +4,7 @@ import at.tuwien.api.amqp.ConsumerDto;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -23,7 +24,7 @@ public class RabbitMqConfig {
     private final RestTemplate restTemplate;
 
     @Autowired
-    public RabbitMqConfig(RestTemplate restTemplate) {
+    public RabbitMqConfig(@Qualifier("brokerRestTemplate") RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

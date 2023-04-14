@@ -28,6 +28,7 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
@@ -38,6 +39,7 @@ import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.utils.ArrayUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -47,7 +49,6 @@ import com.github.dockerjava.api.model.HealthCheck;
 import java.math.BigInteger;
 import java.security.Principal;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,28 +87,73 @@ import static java.time.temporal.ChronoUnit.*;
  * Database 4 (Public, User 4)
  * <ul>
  * </ul>
+ * <br />
+ * User 1 (authorities=default researcher)
+ * <br />
+ * User 2 (authorities=default developer)
+ * <br />
+ * User 3 (authorities=empty)
  */
 public abstract class BaseTest {
 
-    public final static String[] DEFAULT_RESEARCHER_ROLES = new String[]{"default-container-handling",
-            "create-container", "list-containers", "modify-container-state", "find-container",
-            "default-database-handling", "update-database-access", "modify-database-visibility", "create-database",
-            "modify-database-owner", "delete-database-access", "check-database-access", "list-databases",
-            "create-database-access", "find-database", "default-identifier-handling", "create-identifier",
-            "find-identifier", "list-identifiers", "default-query-handling", "view-table-data", "execute-query",
-            "view-table-history", "list-database-views", "list-queries", "view-database-view-data", "export-query-data",
-            "find-query", "create-database-view", "delete-database-view", "delete-table-data", "export-table-data",
-            "persist-query", "re-execute-query", "insert-table-data", "find-database-view", "default-table-handling",
-            "list-tables", "create-table", "modify-table-column-semantics", "find-table", "default-user-handling",
-            "modify-user-theme", "modify-user-information", "default-researcher-roles", "default-user-handling",
-            "default-identifier-handling", "default-database-handling", "default-container-handling",
-            "default-table-handling", "default-query-handling"};
+    public final static String[] DEFAULT_CONTAINER_HANDLING = new String[]{"default-container-handling",
+            "create-container", "list-containers", "modify-container-state", "find-container"};
+
+    public final static String[] ESCALATED_CONTAINER_HANDLING = new String[]{"escalated-container-handling",
+            "modify-foreign-container-state", "delete-container"};
+
+    public final static String[] DEFAULT_DATABASE_HANDLING = new String[]{"default-database-handling",
+            "update-database-access", "modify-database-visibility", "create-database", "modify-database-owner",
+            "delete-database-access", "check-database-access", "list-databases",
+            "create-database-access", "find-database"};
+
+    public final static String[] ESCALATED_DATABASE_HANDLING = new String[]{"escalated-database-handling",
+            "delete-database"};
+
+    public final static String[] DEFAULT_IDENTIFIER_HANDLING = new String[]{"default-identifier-handling",
+            "create-identifier", "find-identifier", "list-identifiers"};
+
+    public final static String[] ESCALATED_IDENTIFIER_HANDLING = new String[]{"escalated-identifier-handling",
+            "modify-identifier-metadata", "delete-identifier"};
+
+    public final static String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
+            "execute-query", "view-table-history", "list-database-views", "list-queries", "view-database-view-data",
+            "export-query-data", "find-query", "create-database-view", "delete-database-view", "delete-table-data",
+            "export-table-data", "persist-query", "re-execute-query", "insert-table-data", "find-database-view"};
+
+    public final static String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};
+
+    public final static String[] DEFAULT_TABLE_HANDLING = new String[]{"default-table-handling",
+            "list-tables", "create-table", "modify-table-column-semantics", "find-table"};
+
+    public final static String[] ESCALATED_TABLE_HANDLING = new String[]{"escalated-table-handling",
+            "delete-table"};
+
+    public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
+            "modify-user-information"};
+
+    public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-researcher-roles"},
+            DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
+            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING));
+
+    public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-developer-roles"},
+            DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
+            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_CONTAINER_HANDLING, ESCALATED_DATABASE_HANDLING,
+            ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING, ESCALATED_TABLE_HANDLING));
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
+    public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DEVELOPER_ROLES = Arrays.stream(DEFAULT_DEVELOPER_ROLES)
+            .map(GrantedAuthorityDto::new)
+            .collect(Collectors.toList());
+
     public final static List<GrantedAuthority> AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES = AUTHORITY_DEFAULT_RESEARCHER_ROLES.stream()
+            .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
+            .collect(Collectors.toList());
+
+    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES = AUTHORITY_DEFAULT_DEVELOPER_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
@@ -117,6 +163,16 @@ public abstract class BaseTest {
 
     public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
             .themeDark(false)
+            .build();
+
+    public final static String REALM_DBREPO_ID = "6264bf7b-d1d3-4562-9c07-ce4364a8f9d3";
+    public final static String REALM_DBREPO_NAME = "dbrepo";
+    public final static Boolean REALM_DBREPO_ENABLED = true;
+
+    public final static Realm REALM_DBREPO = Realm.builder()
+            .id(REALM_DBREPO_ID)
+            .name(REALM_DBREPO_NAME)
+            .enabled(REALM_DBREPO_ENABLED)
             .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
@@ -140,9 +196,11 @@ public abstract class BaseTest {
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
+    public final static Boolean USER_1_ENABLED = true;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
+    public final static String USER_1_REALM_ID = REALM_DBREPO_ID;
 
     public final static List<UserAttribute> USER_1_ATTRIBUTES = List.of(UserAttribute.builder()
                     .id("c466a105-5bbd-4afc-87ae-751d5037d9ab")
@@ -190,7 +248,8 @@ public abstract class BaseTest {
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .emailVerified(USER_1_VERIFIED)
-            .attributes(USER_1_ATTRIBUTES)
+            .enabled(USER_1_ENABLED)
+            .realmId(USER_1_REALM_ID)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -240,9 +299,11 @@ public abstract class BaseTest {
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
+    public final static Boolean USER_2_ENABLED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
+    public final static String USER_2_REALM_ID = REALM_DBREPO_ID;
 
     public final static List<UserAttribute> USER_2_ATTRIBUTES = List.of(UserAttribute.builder()
                     .id("23da2c08-cb8a-4e18-a7f0-70c30de2771e")
@@ -291,6 +352,8 @@ public abstract class BaseTest {
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .emailVerified(USER_2_VERIFIED)
+            .enabled(USER_2_ENABLED)
+            .realmId(USER_2_REALM_ID)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -313,7 +376,7 @@ public abstract class BaseTest {
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
             .password(USER_2_PASSWORD)
-            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
 
     public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
@@ -334,8 +397,10 @@ public abstract class BaseTest {
     public final static String USER_3_PASSWORD = "password";
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static Boolean USER_3_VERIFIED = true;
+    public final static Boolean USER_3_ENABLED = true;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559) /* 2023-02-26 08:19:19 (UTC) */;
+    public final static String USER_3_REALM_ID = REALM_DBREPO_ID;
 
     public final static User USER_3 = User.builder()
             .id(USER_3_ID)
@@ -343,6 +408,8 @@ public abstract class BaseTest {
             .email(USER_3_EMAIL)
             .emailVerified(true)
             .databasePassword(USER_3_DATABASE_PASSWORD)
+            .enabled(USER_3_ENABLED)
+            .realmId(USER_3_REALM_ID)
             .build();
 
     public final static UserDto USER_3_DTO = UserDto.builder()
@@ -358,7 +425,7 @@ public abstract class BaseTest {
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_DATA_STEWARD")))
+            .authorities(List.of())
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
@@ -379,8 +446,10 @@ public abstract class BaseTest {
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
+    public final static Boolean USER_4_ENABLED = true;
     public final static Boolean USER_4_THEME_DARK = false;
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
+    public final static String USER_4_REALM_ID = REALM_DBREPO_ID;
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
@@ -388,6 +457,8 @@ public abstract class BaseTest {
             .email(USER_4_EMAIL)
             .emailVerified(USER_4_VERIFIED)
             .databasePassword(USER_4_DATABASE_PASSWORD)
+            .enabled(USER_4_ENABLED)
+            .realmId(USER_4_REALM_ID)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
@@ -421,6 +492,7 @@ public abstract class BaseTest {
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_THEME_DARK = false;
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
+    public final static String USER_5_REALM_ID = REALM_DBREPO_ID;
 
     public final static User USER_5 = User.builder()
             .id(USER_5_ID)
@@ -428,6 +500,7 @@ public abstract class BaseTest {
             .email(USER_5_EMAIL)
             .emailVerified(USER_5_VERIFIED)
             .databasePassword(USER_5_DATABASE_PASSWORD)
+            .realmId(USER_5_REALM_ID)
             .build();
 
     public final static UserDto USER_5_DTO = UserDto.builder()

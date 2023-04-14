@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -23,15 +24,24 @@ public interface UserMapper {
 
     /* keep */
     @Mappings({
-            @Mapping(target = "orcid", expression = "java(data.getAttributes().stream().filter(a -> a.getName().equals(\"orcid\")).findFirst().get().getValue())")
+            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
     })
     UserBriefDto userToUserBriefDto(User data);
 
     /* keep */
     @Mappings({
-            @Mapping(target = "orcid", expression = "java(data.getAttributes().stream().filter(a -> a.getName().equals(\"orcid\")).findFirst().get().getValue())")
+            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
     })
     UserDto userToUserDto(User data);
+
+    /* keep */
+    default String userToOrcid(User data) {
+        if (data.getAttributes() == null) {
+            return null;
+        }
+        final Optional<UserAttribute> orcid = data.getAttributes().stream().filter(a -> a.getName().equals("orcid")).findFirst();
+        return orcid.map(UserAttribute::getValue).orElse(null);
+    }
 
     UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
 

@@ -24,6 +24,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -62,69 +64,48 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     private AccessMapper accessMapper;
 
     @Test
+    @WithAnonymousUser
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, null);
         });
     }
 
     @Test
-    @Disabled("Requires integration")
-    public void create_privateResearcherNoAccessOwner_succeeds() throws UserNotFoundException, NotAllowedException,
+    @Disabled("not unit test")
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
+    public void create_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
+        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void create_privateResearcherNoAccess_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void create_noRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3, USER_2_PRINCIPAL);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    public void create_privateResearcherRead_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void create_privateResearcherWriteOwn_fails() {
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void create_privateResearcherWriteAll_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
+    @WithAnonymousUser
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, null);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_1_USERNAME, null, null);
         });
     }
 
     @Test
-    public void find_noAccess_fails() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
+    public void find_hasRoleNoAccess_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
@@ -133,27 +114,15 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void find_privateResearcherRead_succeeds() throws AccessDeniedException, NotAllowedException {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
+    public void find_hasRoleHasAccess_fails() throws AccessDeniedException, NotAllowedException {
 
         /* test */
         generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void find_privateResearcherWriteOwn_succeeds() throws AccessDeniedException, NotAllowedException {
-
-        /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    public void find_privateResearcherWriteAll_succeeds() throws AccessDeniedException, NotAllowedException {
-
-        /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
-    }
-
-    @Test
+    @WithAnonymousUser
     public void update_anonymous_fails() {
 
         /* mock */
@@ -161,47 +130,50 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, null);
         });
     }
 
     @Test
-    public void update_privateResearcherRead_fails() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
+    public void update_hasRoleNoAccess_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void update_privateResearcherWriteOwn_fails() {
+    @Disabled("not unit test")
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
+    public void update_hasRoleHasAccess_succeeds() throws UserNotFoundException, AccessDeniedException,
+            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
-        });
+        generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_DATA_STEWARD_READ_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void update_privateResearcherWriteAll_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void update_noRoleNoAccess_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
                 .thenReturn(Optional.of(USER_3));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3_PRINCIPAL);
         });
     }
 

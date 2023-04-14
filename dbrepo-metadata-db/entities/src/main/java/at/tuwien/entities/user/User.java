@@ -5,7 +5,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Immutable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -19,7 +18,15 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "user_entity")
+@Table(name = "user_entity", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"REALM_ID", "EMAIL"}),
+        @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"})
+})
+@NamedQueries({
+        @NamedQuery(name = "User.findAll", query = "select u from User u join Realm r on r.name = 'dbrepo'"),
+        @NamedQuery(name = "User.findById", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.id = ?1"),
+        @NamedQuery(name = "User.findByUsername", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.username = ?1")
+})
 public class User {
 
     @Id
@@ -29,7 +36,7 @@ public class User {
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private String id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String username;
 
     @Column(name = "FIRST_NAME")
@@ -41,7 +48,7 @@ public class User {
     @Column(name = "REALM_ID")
     private String realmId;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)

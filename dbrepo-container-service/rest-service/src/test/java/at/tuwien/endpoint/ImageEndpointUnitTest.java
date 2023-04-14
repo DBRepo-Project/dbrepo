@@ -55,6 +55,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     private DockerDaemonConfig dockerUtil;
 
     @Test
+    @WithAnonymousUser
     public void findAll_anonymous_succeeds() {
 
         /* test */
@@ -62,16 +63,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void findAll_anonymous2_succeeds() {
-
-        /* test */
-        findAll_generic(null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findAll_researcher_succeeds() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-image"})
+    public void findAll_hasRole_succeeds() {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -82,20 +75,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findAll_developer_succeeds() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        findAll_generic(USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findAll_dataSteward_succeeds() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void findAll_noRole_succeeds() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -106,25 +87,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_anonymous_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .defaultPort(IMAGE_1_PORT)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            create_generic(request, null);
-        });
-    }
-
-    @Test
     @WithAnonymousUser
-    public void create_anonymous2_fails() {
+    public void create_anonymous_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
@@ -141,8 +105,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcher_fails() {
+    @WithMockUser(username = USER_1_USERNAME, roles = {"create-image"})
+    public void create_hasRole_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
@@ -163,51 +127,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void create_developer_succeeds() throws UserNotFoundException, ImageAlreadyExistsException,
-            DockerClientException, ImageNotFoundException, ImageInvalidException {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .defaultPort(IMAGE_1_PORT)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        create_generic(request, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void create_developerMissingEssentialInfo_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .defaultPort(null)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        assertThrows(ImageInvalidException.class, () -> {
-            create_generic(request, USER_2_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_dataSteward_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void create_noRole_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
@@ -223,6 +144,28 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
+            create_generic(request, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-image"})
+    public void create_missingEssentialInfo_fails() {
+        final ImageCreateDto request = ImageCreateDto.builder()
+                .repository(IMAGE_1_REPOSITORY)
+                .tag(IMAGE_1_TAG)
+                .defaultPort(null)
+                .dialect(IMAGE_1_DIALECT)
+                .jdbcMethod(IMAGE_1_JDBC)
+                .environment(IMAGE_1_ENV_DTO)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        assertThrows(ImageInvalidException.class, () -> {
             create_generic(request, USER_1_PRINCIPAL);
         });
     }
@@ -248,17 +191,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_anonymous_fails() {
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            delete_generic(IMAGE_1_ID, IMAGE_1, null);
-        });
-    }
-
-    @Test
     @WithAnonymousUser
-    public void delete_anonymous2_fails() {
+    public void delete_anonymous_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
@@ -267,8 +201,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void delete_researcher_fails() {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void delete_noRole_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -281,8 +215,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void delete_developer_succeeds() throws ImageNotFoundException {
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-image"})
+    public void delete_hasRole_succeeds() throws ImageNotFoundException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -293,37 +227,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void delete_developer_fails() {
-
-        /* mock */
-        doThrow(DataIntegrityViolationException.class)
-                .when(imageRepository)
-                .deleteById(IMAGE_1_ID);
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        assertThrows(ImageNotFoundException.class, () -> {
-            delete_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_dataSteward_fails() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            delete_generic(IMAGE_1_ID, IMAGE_1, USER_3_PRINCIPAL);
-        });
-    }
-
-    @Test
+    @WithAnonymousUser
     public void modify_anonymous_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(IMAGE_1_PORT)
@@ -334,31 +238,14 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            modify_generic(IMAGE_1_ID, IMAGE_1, request, null);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void modify_anonymous2_fails() {
-        final ImageChangeDto request = ImageChangeDto.builder()
-                .defaultPort(IMAGE_1_PORT)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .driverClass(IMAGE_1_DRIVER)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-
-        /* test */
         assertThrows(AccessDeniedException.class, () -> {
             modify_generic(IMAGE_1_ID, IMAGE_1, request, null);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcher_fails() {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void modify_noRole_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
@@ -378,8 +265,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void modify_developer_succeeds() throws ImageNotFoundException {
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-image"})
+    public void modify_hasRole_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
@@ -394,27 +281,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void modify_dataSteward_fails() {
-        final ImageChangeDto request = ImageChangeDto.builder()
-                .defaultPort(IMAGE_1_PORT)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .driverClass(IMAGE_1_DRIVER)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_3_PRINCIPAL);
-        });
     }
 
     /* ################################################################################################### */

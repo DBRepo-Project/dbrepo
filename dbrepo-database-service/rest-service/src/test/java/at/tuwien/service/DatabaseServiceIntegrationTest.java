@@ -27,6 +27,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.security.Principal;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,19 +49,16 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private IndexConfig indexConfig;
 
     @MockBean
-    private DatabaseIdxRepository databaseIdxRepository;
-
-    @Autowired
-    private ContainerRepository containerRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private ImageRepository imageRepository;
+    @MockBean
+    private ContainerRepository containerRepository;
 
-    @Autowired
+    @MockBean
     private MariaDbServiceImpl databaseService;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private MariaDbConfig mariaDbConfig;
@@ -85,9 +83,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         afterEach();
         DockerConfig.createAllNetworks();
-        /* metadata database */
-        imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
     }
 
     @AfterEach
@@ -105,6 +100,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);
@@ -123,6 +120,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, DATABASE_2);
@@ -142,6 +141,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);
@@ -154,6 +155,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -166,6 +169,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -179,6 +184,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_system_insert("root", "mariadb");
@@ -190,6 +197,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         assertThrows(SQLException.class, () -> {
@@ -203,6 +212,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_user_insert("root", "mariadb");
@@ -214,6 +225,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
+        when(containerRepository.findById(CONTAINER_3_ID))
+                .thenReturn(Optional.of(CONTAINER_3));
 
         /* test */
         generic_user_insert("junit1", "junit1");
@@ -227,9 +240,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         mariaDbConfig.mockGrantUserPermissions(CONTAINER_3_INTERNALNAME, DATABASE_3, USER_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
 
         /* test */
         final Long response = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, query);
@@ -241,11 +251,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             throws Exception {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
-        /* mock */
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
-
         /* test */
         final Database response = databaseService.create(containerId, createDto, principal);
         assertEquals(database.getName(), response.getName());
@@ -256,9 +261,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         mariaDbConfig.mockGrantUserPermissions(CONTAINER_3_INTERNALNAME, DATABASE_3, USER_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
 
         /* test */
         final Long queryId = MariaDbConfig.mockSystemQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,
@@ -270,9 +272,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         mariaDbConfig.mockGrantUserPermissions(CONTAINER_3_INTERNALNAME, DATABASE_3, USER_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
 
         /* test */
         final Long queryId = MariaDbConfig.mockUserQueryInsert(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME,

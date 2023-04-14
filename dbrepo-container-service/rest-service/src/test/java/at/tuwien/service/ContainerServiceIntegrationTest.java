@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.DockerConfig;
-import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -61,6 +60,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* create networks */
         DockerConfig.createAllNetworks();
         /* mock data */
+        USER_1.setAttributes(List.of());
         userRepository.save(USER_1);
         imageRepository.save(ContainerImage.builder()
                 .id(IMAGE_1_ID)

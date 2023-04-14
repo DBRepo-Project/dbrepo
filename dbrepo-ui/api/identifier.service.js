@@ -2,7 +2,25 @@ import Vue from 'vue'
 import api from '@/api'
 
 class IdentifierService {
-  findPid (id) {
+  findAll (databaseId, type) {
+    return new Promise((resolve, reject) => {
+      const delim = databaseId !== null && type !== null ? '&' : '?'
+      api.get(`/api/identifier${databaseId !== null ? `?dbid=${databaseId}` : ''}${type !== null ? `${delim}type=${type}` : ''}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const identifiers = response.data
+          console.debug('response identifiers', identifiers)
+          resolve(identifiers)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load identifiers', error)
+          Vue.$toast.error(`[${code}] Failed to load identifiers: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  findOne (id) {
     return new Promise((resolve, reject) => {
       api.get(`/api/pid/${id}`, { headers: { Accept: 'application/json' } })
         .then((response) => {

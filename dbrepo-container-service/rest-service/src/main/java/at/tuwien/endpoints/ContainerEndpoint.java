@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -166,7 +168,7 @@ public class ContainerEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "container.modify", description = "Time needed to modify the container state")
-    @PreAuthorize("hasAuthority('modify-container-state')")
+    @PreAuthorize("hasAuthority('modify-container-state') or hasAuthority('modify-foreign-container-state')")
     @Operation(summary = "Modify some container", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -194,13 +196,18 @@ public class ContainerEndpoint {
                                                     @Valid @RequestBody ContainerChangeDto changeDto,
                                                     @NotNull Principal principal)
             throws ContainerNotFoundException, ContainerAlreadyRunningException, ContainerAlreadyStoppedException,
-            UserNotFoundException, NotAllowedException, DockerClientException {
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint modify container, containerId={}, changeDto={}, principal={}", containerId, changeDto, principal);
         final User user = userService.findByUsername(principal.getName());
         final Container container = containerService.find(containerId);
-        if (!(container.getCreator().getId().equals(user.getId()))) {
-            log.error("Failed to modify container because it is not owned '{}' by the current user {} or is not developer", container.getCreator().getUsername(), user.getUsername());
-            throw new NotAllowedException("Failed to modify container because it is not owned by the current user or is not developer");
+        final Authentication authentication = (Authentication) principal;
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("modify-foreign-container-state"))
+                && !(container.getOwner().getId().equals(user.getId()))) {
+            log.error("Failed to modify container: not owner and no sufficient privileges");
+            log.debug("relevant privileges found: {}", authentication.getAuthorities().stream()
+                    .filter(a -> a.getAuthority().startsWith("modify-") && a.getAuthority().endsWith("container-state"))
+                    .collect(Collectors.toList()));
+            throw new NotAllowedException("Failed to modify container: not owner and no sufficient privileges");
         }
         final Container entity;
         if (changeDto.getAction().equals(ContainerActionTypeDto.START)) {

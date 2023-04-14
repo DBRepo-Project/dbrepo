@@ -57,6 +57,19 @@ class TableService {
         })
     })
   }
+
+  deleteTuple (id, databaseId, tableId, data) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete table tuple', error)
+          Vue.$toast.error(`[${code}] Failed to delete table tuple: ${message}`)
+          reject(error)
+        })
+    })
+  }
 }
 
 export default new TableService()

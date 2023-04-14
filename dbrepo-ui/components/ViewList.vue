@@ -24,6 +24,7 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
+import DatabaseService from '@/api/database.service'
 
 export default {
   data () {
@@ -81,52 +82,22 @@ export default {
       }
       return formatTimestampUTCLabel(this.viewDetails.created)
     },
-    viewVisibility () {
-      return this.viewDetails.is_public ? 'Public' : 'Private'
-    },
     canDelete () {
-      console.debug(this.viewDetails.created_by, '=?=', this.user.id)
       return this.viewDetails.created_by === this.user.id
     }
   },
   mounted () {
   },
   methods: {
-    async details (table) {
-      if (table.id === this.viewDetails.id) {
-        /* prevent weird glitch of opening and collapsing simultaneously */
-        return
-      }
-      this.attemptedLoadingConsumers = false
-      /* use cache */
-      this.viewDetails = table
-      /* load remaining info */
-      if (this.isPublicOrOwner) {
-        try {
-          this.loadingDetails = true
-          const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${table.id}`, this.config)
-          this.viewDetails = res.data
-          console.debug('table details', this.viewDetails)
-          if (table.id) {
-            this.openPanelByTableId(table.id)
-            await this.consumerDetails(this.viewDetails.topic)
-          }
-        } catch (err) {
-          this.$toast.error('Failed to load table details')
-          console.error('Failed to load table details', err)
-        }
-        this.loadingDetails = false
-      }
-    },
-    async deleteView (view) {
-      try {
-        const res = await this.$axios.$delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${view.id}`, this.config)
-        console.debug('deleted view', res.index)
-        this.$toast.success(`Successfully deleted view with id ${view.id}`)
-      } catch (err) {
-        this.$toast.error('Failed to delete view')
-        console.error('Failed to delete view')
-      }
+    deleteView (view) {
+      this.loading = true
+      DatabaseService.deleteView(this.$route.params.container_id, this.$route.params.database_id, view.id)
+        .then(() => {
+          this.$toast.success(`Successfully deleted view with id ${view.id}`)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

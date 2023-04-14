@@ -17,7 +17,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -47,6 +46,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     private ContainerEndpoint containerEndpoint;
 
     @Test
+    @WithAnonymousUser
     public void findById_anonymous_succeeds() throws DockerClientException, ContainerNotFoundException,
             ContainerNotRunningException {
 
@@ -55,17 +55,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void findById_anonymous2_succeeds() throws DockerClientException, ContainerNotFoundException,
-            ContainerNotRunningException {
-
-        /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcher_succeeds() throws DockerClientException, ContainerNotFoundException,
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-container"})
+    public void findById_hasRole_succeeds() throws DockerClientException, ContainerNotFoundException,
             ContainerNotRunningException {
 
         /* mock */
@@ -77,21 +68,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developer_succeeds() throws DockerClientException, ContainerNotFoundException,
-            ContainerNotRunningException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataSteward_succeeds() throws DockerClientException, ContainerNotFoundException,
+    @WithMockUser(username = USER_3_USERNAME)
+    public void findById_noRole_succeeds() throws DockerClientException, ContainerNotFoundException,
             ContainerNotRunningException {
 
         /* mock */
@@ -103,54 +81,18 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            delete_generic(CONTAINER_1_ID, CONTAINER_1, null);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void delete_anonymous2_fails() {
-
-        /* test */
         assertThrows(AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, CONTAINER_1, null);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void delete_researcher_fails() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void delete_developer_succeeds() throws ContainerStillRunningException, ContainerAlreadyRemovedException,
-            ContainerNotFoundException, DockerClientException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_dataSteward_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void delete_noRole_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -163,6 +105,20 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-container"})
+    public void delete_hasRole_succeeds() throws ContainerStillRunningException, ContainerAlreadyRemovedException,
+            ContainerNotFoundException, DockerClientException {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_2_PRINCIPAL);
+    }
+
+    @Test
+    @WithAnonymousUser
     public void findAll_anonymous_succeeds() {
 
         /* test */
@@ -170,16 +126,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void findAll_anonymous2_succeeds() {
-
-        /* test */
-        findAll_generic(null, null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findAll_researcher_succeeds() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-containers"})
+    public void findAll_hasRole_succeeds() {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -190,20 +138,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findAll_developer_succeeds() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        findAll_generic(USER_2_PRINCIPAL, null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findAll_dataSteward_succeeds() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void findAll_noRole_succeeds() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))
@@ -214,22 +150,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_anonymous_fails() {
-        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .name(CONTAINER_1_NAME)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .build();
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            create_generic(request, null);
-        });
-    }
-
-    @Test
     @WithAnonymousUser
-    public void create_anonymous2_fails() {
+    public void create_anonymous_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
                 .repository(IMAGE_1_REPOSITORY)
@@ -243,8 +165,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcher_succeeds() throws UserNotFoundException, DockerClientException,
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-container"})
+    public void create_hasRole_succeeds() throws UserNotFoundException, DockerClientException,
             ContainerAlreadyExistsException, ImageNotFoundException {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
@@ -261,40 +183,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcherEmpty_fails() throws UserNotFoundException, DockerClientException,
-            ContainerAlreadyExistsException, ImageNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        create_generic(null, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void create_developer_fails() {
-        final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
-                .name(CONTAINER_1_NAME)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            create_generic(request, USER_2_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_dataSteward_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void create_noRole_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
                 .repository(IMAGE_1_REPOSITORY)
@@ -312,17 +202,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void modify_anonymous_fails() {
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            modify_generic(ContainerActionTypeDto.START, CONTAINER_1_ID, CONTAINER_1, null);
-        });
-    }
-
-    @Test
     @WithAnonymousUser
-    public void modify_anonymous2_fails() {
+    public void modify_anonymous_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
@@ -331,8 +212,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcherStart_succeeds() throws ContainerAlreadyRunningException,
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-container-state"})
+    public void modify_hasRole_succeeds() throws ContainerAlreadyRunningException,
             ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException,
             DockerClientException {
 
@@ -345,57 +226,22 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcherStart_fails() throws ContainerNotFoundException, ContainerAlreadyRunningException {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void modify_noRole_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        doThrow(ContainerAlreadyRunningException.class)
-                .when(containerService)
-                .start(CONTAINER_1_ID);
+        when(userRepository.findByUsername(USER_3_USERNAME))
+                .thenReturn(Optional.of(USER_3));
 
         /* test */
-        assertThrows(ContainerAlreadyRunningException.class, () -> {
-            modify_generic(ContainerActionTypeDto.START, CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
+        assertThrows(AccessDeniedException.class, () -> {
+            modify_generic(ContainerActionTypeDto.START, CONTAINER_1_ID, CONTAINER_1, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcherStop_succeeds() throws ContainerAlreadyRunningException,
-            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException,
-            DockerClientException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcherStop_fails() throws ContainerAlreadyStoppedException, ContainerNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        doThrow(ContainerAlreadyStoppedException.class)
-                .when(containerService)
-                .stop(CONTAINER_1_ID);
-
-
-        /* test */
-        assertThrows(ContainerAlreadyStoppedException.class, () -> {
-            modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void modify_developerForeignStart_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-foreign-container-state"})
+    public void modify_hasRoleForeign_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
             NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException, DockerClientException {
 
         /* mock */
@@ -407,21 +253,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void modify_developerForeignStop_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
-            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException, DockerClientException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void modify_researcherForeignStart_fails() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-container-state"})
+    public void modify_notRoleForeign_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -434,8 +267,8 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void modify_dataStewardForeignStop_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void modify_noRoleForeign_fails() {
 
         /* mock */
         when(userRepository.findByUsername(USER_3_USERNAME))

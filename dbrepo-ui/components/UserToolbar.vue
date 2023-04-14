@@ -17,23 +17,11 @@
 </template>
 
 <script>
-import { isDeveloper, isResearcher } from '@/utils'
 
 export default {
   data () {
     return {
       tab: null
-    }
-  },
-  computed: {
-    user () {
-      return this.$store.state.user
-    },
-    isDeveloper () {
-      return isDeveloper(this.user)
-    },
-    isResearcher () {
-      return isResearcher(this.user)
     }
   }
 }

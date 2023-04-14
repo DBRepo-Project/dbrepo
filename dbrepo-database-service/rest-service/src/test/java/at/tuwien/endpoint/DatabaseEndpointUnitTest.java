@@ -15,6 +15,7 @@ import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
 import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
+import lombok.With;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -78,22 +79,16 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
-    @Test
-    public void create_anonymous_fails() {
-        final DatabaseCreateDto request = DatabaseCreateDto.builder()
-                .name(DATABASE_1_NAME)
-                .isPublic(DATABASE_1_PUBLIC)
-                .build();
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, null);
-        });
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setOwner(DATABASE_1_OWNER);
+        DATABASE_2.setOwner(DATABASE_2_OWNER);
+        DATABASE_3.setOwner(DATABASE_3_OWNER);
     }
 
     @Test
     @WithAnonymousUser
-    public void create_anonymous2_fails() {
+    public void create_anonymous_fails() {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
@@ -106,8 +101,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_dataSteward_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void create_noRole_fails() {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_3_NAME)
                 .isPublic(DATABASE_3_PUBLIC)
@@ -124,46 +119,26 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcherForeign_fails() {
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database"})
+    public void create_hasRoleForeign_fails() {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_1_NAME)
                 .isPublic(DATABASE_1_PUBLIC)
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, USER_4_PRINCIPAL);
+            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, USER_2_PRINCIPAL);
         });
     }
 
     @Test
-    public void list_anonymousPublic_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
-    }
-
-    @Test
     @WithAnonymousUser
-    public void list_anonymous2Public_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), null);
-    }
-
-    @Test
-    public void list_anonymousPrivate_succeeds() {
+    public void list_anonymous_succeeds() {
 
         /* pre-condition */
         assertFalse(DATABASE_1_PUBLIC);
@@ -173,228 +148,38 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
+    public void list_hasRole_succeeds() {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
+    public void list_hasRoleForeign_succeeds() {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+    }
+
+    @Test
     @WithAnonymousUser
-    public void list_anonymous2Private_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_1_PUBLIC);
-
-        /* test */
-        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherPublic_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherPublicWithIdentifiers_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(List.of(IDENTIFIER_1));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherPrivate_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherPublicForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherPrivateForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developerPublic_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developerPrivate_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developerPublicForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developerPrivateForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_1_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
-
-        /* test */
-        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataStewardPublic_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataStewardPrivate_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_1_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        list_generic(CONTAINER_1_ID, DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataStewardPublicForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        list_generic(CONTAINER_3_ID, DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataStewardPrivateForeignContainer_succeeds() {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        list_generic(CONTAINER_2_ID, DATABASE_2_ID, CONTAINER_2, List.of(DATABASE_2), USER_3_PRINCIPAL);
-    }
-
-    @Test
     public void visibility_anonymous_fails() {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
-                .build();
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, null);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void visibility_anonymous2_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -406,19 +191,53 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void visibility_researcher_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
+    public void visibility_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException, UserNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_1_PRINCIPAL);
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME, roles = {"RESEARCHER"})
-    public void transfer_researcherForeign_fails() {
+    @WithMockUser(username = USER_3_USERNAME)
+    public void visibility_noRole_fails() {
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
+                .isPublic(true)
+                .build();
+
+        /* test */
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-database-visibility"})
+    public void visibility_hasRoleForeign_fails() {
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
+                .isPublic(true)
+                .build();
+
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME)
+    public void transfer_noRole_fails() {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();
@@ -428,90 +247,70 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_4));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            databaseEndpoint.transfer(CONTAINER_1_ID, DATABASE_1_ID, request, USER_4_PRINCIPAL);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            databaseEndpoint.transfer(CONTAINER_3_ID, DATABASE_3_ID, request, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void visibility_researcherForeignDatabase_fails() {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
-                .build();
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, DATABASE_2_DTO, request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, roles = {"RESEARCHER"})
-    public void visibility_researcherForeign_fails() {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-database-owner"})
+    public void transfer_hasRoleForeign_fails() {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username(USER_4_USERNAME)
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_4_PRINCIPAL);
+            databaseEndpoint.transfer(CONTAINER_1_ID, DATABASE_1_ID, request, USER_2_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void visibility_developer_succeeds() throws NotAllowedException, DatabaseNotFoundException {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
+    public void transfer_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException, NotAllowedException {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username(USER_4_USERNAME)
                 .build();
 
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+
         /* test */
-        visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, DATABASE_2_DTO, request, USER_2_PRINCIPAL);
+        databaseEndpoint.transfer(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void visibility_developerForeignDatabase_succeeds() throws NotAllowedException, DatabaseNotFoundException {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
+    public void transfer_hasRoleUserNotExists_succeeds() {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username("foobar")
                 .build();
 
-        /* test */
-        visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void visibility_dataSteward_fails() {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
-                .build();
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            visibility_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, DATABASE_3_DTO, request, USER_3_PRINCIPAL);
+        assertThrows(UserNotFoundException.class, () -> {
+            databaseEndpoint.transfer(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void visibility_dataStewardForeignDatabase_fails() {
-        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
-                .isPublic(true)
-                .build();
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            visibility_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, DATABASE_2_DTO, request, USER_3_PRINCIPAL);
-        });
-    }
-
-    @Test
+    @WithAnonymousUser
     public void findById_anonymous_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* test */
@@ -520,13 +319,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous2_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, null);
-    }
-
-    @Test
     public void findById_anonymousNotFound_fails() {
 
         /* test */
@@ -536,131 +328,31 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
+    public void findById_hasRole_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* test */
+        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
+    public void findById_hasRoleForeign_succeeds() throws AccessDeniedException,
+            DatabaseNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* test */
+        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
+    }
+
+    @Test
     @WithAnonymousUser
-    public void findById_anonymous2NotFound_fails() {
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcherPublic_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcherPublicForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcherPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findById_researcherPrivateForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developerPublicForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findById_developerPrivate_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataStewardPublic_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataStewardPublicForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findById_dataStewardPrivateForeignDatabase_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
-
-        /* pre-condition */
-        assertFalse(DATABASE_2_PUBLIC);
-
-        /* test */
-        findById_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_3_PRINCIPAL);
-    }
-
-    @Test
     public void delete_anonymous_fails() {
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            delete_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, null, null);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void delete_anonymous2_fails() {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -669,8 +361,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void delete_researcher_fails() {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void delete_noRole_fails() {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
@@ -679,33 +371,14 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void delete_researcherForeignDatabase_fails() {
+    @Disabled
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
+    public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_dataSteward_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_dataStewardForeignDatabase_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, USER_3_USERNAME, USER_3_PRINCIPAL);
-        });
+        delete_generic(CONTAINER_2_ID, CONTAINER_2, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -768,7 +441,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     public void visibility_generic(Long containerId, Container container, Long databaseId, Database database,
                                    DatabaseDto dto, DatabaseModifyVisibilityDto data, Principal principal)
-            throws NotAllowedException, DatabaseNotFoundException {
+            throws NotAllowedException, DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
         when(containerRepository.findById(containerId))

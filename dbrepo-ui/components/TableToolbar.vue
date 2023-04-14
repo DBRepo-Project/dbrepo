@@ -54,6 +54,7 @@
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
 import { isResearcher } from '@/utils'
+import TableService from '@/api/table.service'
 
 export default {
   components: {
@@ -172,27 +173,8 @@ export default {
     isResearcher () {
       return isResearcher(this.user)
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
-    silentConfig () {
-      return {
-        headers: this.config.headers,
-        progress: false
-      }
-    },
     databaseTooltip () {
       return this.database.is_public ? 'Public' : 'Private'
-    }
-  },
-  watch: {
-    selection (newVersion, oldVersion) {
-      console.info('selected new', this.selection)
     }
   },
   methods: {
@@ -216,33 +198,24 @@ export default {
       }
       this.pickVersionDialog = true
     },
-    async deleteItems () {
+    deleteItems () {
       if (this.selection.length < 1) {
         return
       }
-      try {
-        this.loadingDelete = true
-        for (const select of this.selection) {
-          /* remove in container */
-          const constraints = {}
-          this.table.columns
-            .filter(c => c.is_primary_key)
-            .forEach((c) => {
-              constraints[c.internal_name] = select[c.internal_name]
-            })
-          await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data`, {
-            headers: { Authorization: `Bearer ${this.token}` },
-            data: { keys: constraints }
+      this.loadingDelete = true
+      for (const select of this.selection) {
+        /* remove in container */
+        const constraints = {}
+        this.table.columns
+          .filter(c => c.is_primary_key)
+          .forEach((c) => {
+            constraints[c.internal_name] = select[c.internal_name]
           })
-        }
-        console.info(`Deleted ${this.selection.length} rows(s)`)
-        this.$toast.success(`Deleted ${this.selection.length} rows(s)`)
-        this.$emit('modified', { success: true, action: 'delete' })
-      } catch (error) {
-        console.error('Failed to delete rows', error)
-        const { data } = error.response
-        const { message } = data
-        this.$toast.error(`Failed to delete rows: ${message}`)
+        TableService.deleteTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
+          .then(() => {
+            this.$toast.success(`Deleted ${this.selection.length} rows(s)`)
+            this.$emit('modified', { success: true, action: 'delete' })
+          })
       }
       this.loadingDelete = false
     },
