@@ -38,8 +38,8 @@ public class PersistenceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1_SIMPLE);
+        imageRepository.save(IMAGE_1_SIMPLE);
     }
 
     @Test

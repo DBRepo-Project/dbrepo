@@ -7,6 +7,7 @@ import at.tuwien.config.*;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.jpa.DatabaseRepository;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -81,8 +82,8 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
         afterEach();
         /* metadata database */
         h2Utils.runScript("schema.sql");
-        imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
+        imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
     }
 
     @AfterEach
@@ -96,8 +97,8 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(null, CONTAINER_ELASTIC, CONTAINER_ELASTIC_ENV);
         DockerConfig.startContainer(CONTAINER_ELASTIC);
-        DockerConfig.createContainer(BIND, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
+        DockerConfig.createContainer(BIND, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
 
@@ -114,9 +115,9 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        containerRepository.save(CONTAINER_3);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_3_SIMPLE);
 
         /* test */
         final Database response = databaseService.create(containerId, createDto, principal);

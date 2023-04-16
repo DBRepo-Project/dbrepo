@@ -12,7 +12,6 @@ import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -49,16 +48,16 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private IndexConfig indexConfig;
 
     @MockBean
-    private UserRepository userRepository;
+    private ContainerRepository containerRepository;
 
     @MockBean
-    private ContainerRepository containerRepository;
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private MariaDbServiceImpl databaseService;
 
     @MockBean
-    private DatabaseIdxRepository databaseIdxRepository;
+    private DatabaseRepository databaseRepository;
 
     @Autowired
     private MariaDbConfig mariaDbConfig;
@@ -95,13 +94,15 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
 
         /* test */
         generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);
@@ -111,17 +112,20 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_inSequence_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2, CONTAINER_2_ENV);
-        DockerConfig.startContainer(CONTAINER_2);
+        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2_SIMPLE, CONTAINER_2_ENV);
+        DockerConfig.startContainer(CONTAINER_2_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_2_INTERNALNAME, DATABASE_2_INTERNALNAME, "root", "mariadb");
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
         when(containerRepository.findById(CONTAINER_3_ID))
-                .thenReturn(Optional.of(CONTAINER_3));
+                .thenReturn(Optional.of(CONTAINER_3_SIMPLE));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_2)
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_create(CONTAINER_2_ID, DATABASE_2_CREATE, DATABASE_2);
@@ -132,17 +136,20 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_outOfSequence_succeeds() throws Exception {
 
         /* mock */
-        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2, CONTAINER_2_ENV);
-        DockerConfig.startContainer(CONTAINER_2);
+        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2_SIMPLE, CONTAINER_2_ENV);
+        DockerConfig.startContainer(CONTAINER_2_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_2_INTERNALNAME, DATABASE_2_INTERNALNAME, "root", "mariadb");
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_2)
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);
@@ -153,10 +160,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_queryStore_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -167,10 +176,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             QueryMalformedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -182,10 +193,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_systemProcedure_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_system_insert("root", "mariadb");
@@ -195,10 +208,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_systemProcedure_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         assertThrows(SQLException.class, () -> {
@@ -210,10 +225,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_userProcedureRoot_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_user_insert("root", "mariadb");
@@ -223,10 +240,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_userProcedureUser_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
-        DockerConfig.startContainer(CONTAINER_3);
+        DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
+        DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         when(containerRepository.findById(CONTAINER_3_ID))
                 .thenReturn(Optional.of(CONTAINER_3));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_user_insert("junit1", "junit1");

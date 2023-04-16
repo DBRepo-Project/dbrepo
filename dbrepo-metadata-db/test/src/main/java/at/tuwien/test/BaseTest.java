@@ -250,6 +250,20 @@ public abstract class BaseTest {
             .emailVerified(USER_1_VERIFIED)
             .enabled(USER_1_ENABLED)
             .realmId(USER_1_REALM_ID)
+            .attributes(USER_1_ATTRIBUTES)
+            .build();
+
+    public final static User USER_1_SIMPLE = User.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .databasePassword(USER_1_DATABASE_PASSWORD)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .emailVerified(USER_1_VERIFIED)
+            .enabled(USER_1_ENABLED)
+            .realmId(USER_1_REALM_ID)
+            .attributes(List.of() /* for jpa */)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -354,6 +368,21 @@ public abstract class BaseTest {
             .emailVerified(USER_2_VERIFIED)
             .enabled(USER_2_ENABLED)
             .realmId(USER_2_REALM_ID)
+            .attributes(USER_2_ATTRIBUTES)
+            .build();
+
+    public final static User USER_2_SIMPLE = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(true)
+            .databasePassword(USER_2_DATABASE_PASSWORD)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .emailVerified(USER_2_VERIFIED)
+            .enabled(USER_2_ENABLED)
+            .realmId(USER_2_REALM_ID)
+            .attributes(List.of() /* for jpa */)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -635,6 +664,21 @@ public abstract class BaseTest {
             .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
             .build();
 
+    public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .compiled(IMAGE_1_BUILT)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .size(IMAGE_1_SIZE)
+            .environment(List.of() /* for jpa */)
+            .defaultPort(IMAGE_1_PORT)
+            .environment(List.of() /* for jpa */)
+            .build();
+
     public final static Long IMAGE_2_ID = 2L;
     public final static String IMAGE_2_REPOSITORY = "mysql";
     public final static String IMAGE_2_TAG = "8.0";
@@ -717,6 +761,19 @@ public abstract class BaseTest {
             .owner(USER_1)
             .build();
 
+    public final static Container CONTAINER_1_SIMPLE = Container.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_1_IMAGE)
+            .hash(CONTAINER_1_HASH)
+            .created(CONTAINER_1_CREATED)
+            .ipAddress(CONTAINER_1_IP)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .build();
+
     public final static Long CONTAINER_2_ID = 2L;
     public final static String CONTAINER_2_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
@@ -741,6 +798,19 @@ public abstract class BaseTest {
             .owner(USER_2)
             .build();
 
+    public final static Container CONTAINER_2_SIMPLE = Container.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_2_IMAGE)
+            .hash(CONTAINER_2_HASH)
+            .created(CONTAINER_2_CREATED)
+            .ipAddress(CONTAINER_2_IP)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .build();
+
     public final static Long CONTAINER_3_ID = 3L;
     public final static String CONTAINER_3_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
@@ -763,6 +833,19 @@ public abstract class BaseTest {
             .ipAddress(CONTAINER_3_IP)
             .creator(USER_3)
             .owner(USER_3)
+            .build();
+
+    public final static Container CONTAINER_3_SIMPLE = Container.builder()
+            .id(CONTAINER_3_ID)
+            .name(CONTAINER_3_NAME)
+            .internalName(CONTAINER_3_INTERNALNAME)
+            .imageId(IMAGE_1_ID)
+            .image(CONTAINER_3_IMAGE)
+            .hash(CONTAINER_3_HASH)
+            .created(CONTAINER_3_CREATED)
+            .ipAddress(CONTAINER_3_IP)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
@@ -859,6 +942,24 @@ public abstract class BaseTest {
             .owner(DATABASE_1_OWNER)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
             .views(List.of())
+            .build();
+
+    public final static Database DATABASE_1_SIMPLE = Database.builder()
+            .id(DATABASE_1_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .description(DATABASE_1_DESCRIPTION)
+            .container(null /* for jpa */)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .created(DATABASE_1_CREATED)
+            .lastModified(DATABASE_1_LAST_MODIFIED)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .tables(List.of() /* for jpa */)
+            .views(List.of() /* for jpa */)
             .build();
 
     public final static DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
@@ -958,6 +1059,24 @@ public abstract class BaseTest {
             .owner(DATABASE_2_OWNER)
             .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
             .views(List.of()) /* VIEW_4 */
+            .build();
+
+    public final static Database DATABASE_2_SIMPLE = Database.builder()
+            .id(DATABASE_2_ID)
+            .created(DATABASE_1_CREATED)
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .description(DATABASE_2_DESCRIPTION)
+            .container(null /* for jpa */)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .exchangeName(DATABASE_2_EXCHANGE)
+            .created(DATABASE_2_CREATED)
+            .lastModified(DATABASE_2_LAST_MODIFIED)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .tables(List.of() /* for jpa */)
+            .views(List.of() /* for jpa */)
             .build();
 
     public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
@@ -1063,6 +1182,24 @@ public abstract class BaseTest {
             .owner(DATABASE_3_OWNER)
             .tables(List.of()) /* TABLE_8 */
             .views(List.of()) /* VIEW_5 */
+            .build();
+
+    public final static Database DATABASE_3_SIMPLE = Database.builder()
+            .id(DATABASE_3_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .lastModified(Instant.now())
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .description(DATABASE_3_DESCRIPTION)
+            .container(null /* for jpa */)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .exchangeName(DATABASE_3_EXCHANGE)
+            .created(DATABASE_3_CREATED)
+            .lastModified(DATABASE_3_LAST_MODIFIED)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .tables(List.of() /* for jpa */)
+            .views(List.of() /* for jpa */)
             .build();
 
     public final static DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()

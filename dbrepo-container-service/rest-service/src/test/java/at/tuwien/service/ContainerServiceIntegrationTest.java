@@ -9,9 +9,9 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.RealmRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,12 +46,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ContainerService containerService;
 
-    @BeforeAll
-    public static void beforeAll() {
-        afterAll();
-        /* create networks */
-        DockerConfig.createAllNetworks();
-    }
+    @Autowired
+    private RealmRepository realmRepository;
 
     @BeforeEach
     public void beforeEach() {
@@ -60,31 +55,13 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* create networks */
         DockerConfig.createAllNetworks();
         /* mock data */
-        USER_1.setAttributes(List.of());
-        userRepository.save(USER_1);
-        imageRepository.save(ContainerImage.builder()
-                .id(IMAGE_1_ID)
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
-                .hash(IMAGE_1_HASH)
-                .compiled(IMAGE_1_BUILT)
-                .dialect(IMAGE_1_DIALECT)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .driverClass(IMAGE_1_DRIVER)
-                .size(IMAGE_1_SIZE)
-                .environment(IMAGE_1_ENV)
-                .defaultPort(IMAGE_1_PORT)
-                .build()) /* keep */;
+        userRepository.save(USER_1_SIMPLE);
+        imageRepository.save(IMAGE_1_SIMPLE);
+        realmRepository.save(REALM_DBREPO);
     }
 
     @AfterEach
     public void afterEach() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
-    }
-
-    @AfterAll
-    public static void afterAll() {
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
     }
@@ -98,10 +75,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .tag(IMAGE_1_TAG)
                 .name(CONTAINER_1_NAME)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
-        final Container container = containerService.create(request, principal);
+        final Container container = containerService.create(request, USER_1_PRINCIPAL);
         assertEquals(CONTAINER_1_NAME, container.getName());
         assertEquals(USER_1_USERNAME, container.getCreator().getUsername());
         assertEquals(USER_1_USERNAME, container.getOwner().getUsername());
@@ -115,14 +91,13 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .tag(IMAGE_1_TAG)
                 .name(CONTAINER_1_NAME)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerAlreadyExistsException.class, () -> {
-            containerService.create(request, principal);
+            containerService.create(request, USER_1_PRINCIPAL);
         });
     }
 
@@ -142,11 +117,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
                 .tag(IMAGE_2_TAG)
                 .name(CONTAINER_3_NAME)
                 .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            containerService.create(request, principal);
+            containerService.create(request, USER_1_PRINCIPAL);
         });
     }
 
@@ -164,8 +138,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerAlreadyRunningException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         containerService.start(CONTAINER_1_ID);
@@ -176,9 +150,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerAlreadyStoppedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         containerService.stop(CONTAINER_1_ID);
@@ -188,7 +162,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_startSavedButNotFound_fails() {
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -200,7 +174,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_removeSavedButNotFound_fails() {
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -212,8 +186,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void getAll_succeeds() {
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
 
         /* test */
         final List<Container> response = containerService.getAll(null);
@@ -224,8 +198,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void getAll_limit_succeeds() {
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
 
         /* test */
         final List<Container> response = containerService.getAll(1);
@@ -237,10 +211,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotFoundException, ContainerAlreadyRemovedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        DockerConfig.stopContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        DockerConfig.stopContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         containerService.remove(CONTAINER_1_ID);
@@ -259,9 +233,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void remove_stillRunning_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerStillRunningException.class, () -> {
@@ -273,9 +247,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyRunning_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerAlreadyRunningException.class, () -> {
@@ -299,10 +273,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_alreadyStopped_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        DockerConfig.stopContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        DockerConfig.stopContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerAlreadyStoppedException.class, () -> {
@@ -314,8 +288,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopNeverStarted_fails() {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerAlreadyStoppedException.class, () -> {
@@ -327,7 +301,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void change_stopSavedButNotFound_fails() {
 
         /* mock */
-        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
@@ -340,9 +314,9 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         final Container response = containerService.inspect(CONTAINER_1_ID);
@@ -365,8 +339,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void inspect_notRunning_fails() {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        containerRepository.save(CONTAINER_1);
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
         assertThrows(ContainerNotRunningException.class, () -> {

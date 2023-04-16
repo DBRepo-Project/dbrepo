@@ -12,7 +12,6 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -86,11 +85,10 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        DATABASE_1.setCreator(USER_1);
-        databaseRepository.save(DATABASE_1);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
     }
 
     @AfterEach
@@ -104,12 +102,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         create_generic(AccessTypeDto.READ, AccessType.READ, USER_2_USERNAME, USER_2_ID);
@@ -119,12 +117,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void create_multiple_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
         databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
 
         /* test */
@@ -138,12 +136,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
         databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
 
         /* test */
@@ -155,12 +153,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.WRITE_OWN, AccessType.WRITE_OWN, USER_2_USERNAME, USER_2_ID);
@@ -171,12 +169,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         update_generic(CONTAINER_1_ID, DATABASE_1_ID, AccessTypeDto.WRITE_ALL, AccessType.WRITE_ALL, USER_2_USERNAME, USER_2_ID);
@@ -186,11 +184,11 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void update_userNotFound_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
@@ -204,11 +202,11 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_2, CONTAINER_2_ENV);
         DockerConfig.startContainer(CONTAINER_2);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -221,12 +219,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         accessService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME);
@@ -236,11 +234,11 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void delete_isOwner_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        userRepository.save(USER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -252,10 +250,10 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     public void delete_notExists_fails() throws InterruptedException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
