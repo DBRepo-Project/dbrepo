@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -23,12 +24,7 @@ public class UserAttributeServiceImpl implements UserAttributeService {
     }
 
     @Override
-    public List<UserAttribute> findAll(String userId) {
-        return userAttributeRepository.findByUser(userId);
-    }
-
-    @Override
-    public UserAttribute find(String userId, String name) throws UserAttributeNotFoundException {
+    public UserAttribute find(UUID userId, String name) throws UserAttributeNotFoundException {
         final Optional<UserAttribute> optional = userAttributeRepository.findByUserIdAndName(userId, name);
         if (optional.isEmpty()) {
             log.error("Failed to find user attribute with name {}", name);
@@ -38,7 +34,7 @@ public class UserAttributeServiceImpl implements UserAttributeService {
     }
 
     @Override
-    public UserAttribute update(String userId, String name, String value) throws UserAttributeNotFoundException {
+    public UserAttribute update(UUID userId, String name, String value) throws UserAttributeNotFoundException {
         final UserAttribute entity = find(userId, name);
         entity.setValue(value);
         return userAttributeRepository.save(entity);

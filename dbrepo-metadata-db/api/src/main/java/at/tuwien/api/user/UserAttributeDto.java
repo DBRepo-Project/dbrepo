@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,12 +17,12 @@ public class UserAttributeDto {
 
     @NotNull
     @JsonIgnore
-    private String id;
+    private UUID id;
 
     @NotNull
     @JsonIgnore
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
-    private String userId;
+    private UUID userId;
 
     @Schema(example = "theme_dark")
     private String name;

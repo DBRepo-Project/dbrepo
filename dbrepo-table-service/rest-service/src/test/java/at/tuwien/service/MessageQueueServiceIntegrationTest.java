@@ -72,13 +72,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public static void afterAll() {
         /* stop containers and remove them */
         DockerConfig.removeAllContainers();
-        DockerConfig.createAllNetworks();
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_1);
+        DockerConfig.removeAllNetworks();
     }
 
     @Test

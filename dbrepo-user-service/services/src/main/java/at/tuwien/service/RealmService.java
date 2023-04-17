@@ -1,6 +1,6 @@
 package at.tuwien.service;
 
-import at.tuwien.entities.auth.Realm;
+import at.tuwien.entities.user.Realm;
 import at.tuwien.exception.RealmNotFoundException;
 
 public interface RealmService {

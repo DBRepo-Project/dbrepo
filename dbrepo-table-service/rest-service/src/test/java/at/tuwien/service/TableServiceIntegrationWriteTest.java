@@ -10,10 +10,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -73,6 +70,12 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     private TableService tableService;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
     private H2Utils h2Utils;
 
     private static final String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
@@ -88,11 +91,14 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         /* metadata database */
         h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1) /* will have 2 tables */;
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.save(TABLE_1_SIMPLE);
+        tableRepository.save(TABLE_2_SIMPLE);
     }
 
     @AfterEach
@@ -105,7 +111,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
             ContainerNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(tableidxRepository.save(any(TableDto.class)))
@@ -114,7 +119,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, principal);
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -142,7 +147,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     public void create_withConstraints_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
             ContainerNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
         when(tableidxRepository.save(any(TableDto.class)))
@@ -151,23 +155,16 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, principal); // table to reference
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, principal);
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
+        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
     public void create_withForeignKeyButWithoutReferencingTable_fails() {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
-                .thenReturn(null);
-        when(tableColumnidxRepository.saveAll(anyList()))
-                .thenReturn(List.of());
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, principal);
+            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
         });
     }
 

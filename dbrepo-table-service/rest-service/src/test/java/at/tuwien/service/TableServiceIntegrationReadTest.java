@@ -9,10 +9,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -51,7 +48,13 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     private TableColumnIdxRepository tableColumnidxRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
@@ -88,11 +91,14 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     public void beforeEach() {
         h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1) /* will have 2 tables */;
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.save(TABLE_1_SIMPLE);
+        tableRepository.save(TABLE_2_SIMPLE);
     }
 
     @Test
@@ -128,7 +134,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_ID);
+            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, 99999L);
         });
     }
 
@@ -137,7 +143,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_2_ID, DATABASE_3_ID, TABLE_3_ID);
+            tableService.findById(CONTAINER_2_ID, 99999L, TABLE_3_ID);
         });
     }
 
@@ -146,7 +152,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_3_ID);
+            tableService.findById(99999L, DATABASE_3_ID, TABLE_3_ID);
         });
     }
 

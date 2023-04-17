@@ -3,12 +3,13 @@ package at.tuwien.entities.user;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 @EqualsAndHashCode
 public class RoleMappingKey implements Serializable {
 
-    private String userId;
+    private UUID userId;
 
-    private String roleId;
+    private UUID roleId;
 
 }

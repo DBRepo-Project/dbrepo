@@ -9,6 +9,7 @@ import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,7 +22,7 @@ public class DatabaseAccessDto {
     @NotNull
     @JsonIgnore
     @ToString.Exclude
-    private String huserid;
+    private UUID huserid;
 
     @NotNull
     @JsonIgnore

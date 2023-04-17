@@ -10,14 +10,12 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
-import at.tuwien.service.UserService;
 import at.tuwien.service.impl.StoreServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -34,6 +32,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
@@ -69,9 +68,6 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private StoreServiceImpl storeService;
-
-    @MockBean
-    private UserService userService;
 
     @MockBean
     private IdentifierRepository identifierRepository;
@@ -309,13 +305,6 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doReturn(List.of(QUERY_1)).when(storeService)
                 .findAll(containerId, databaseId, true, principal);
-        if (user != null) {
-            when(userService.findAll())
-                    .thenReturn(List.of(user));
-        } else {
-            when(userService.findAll())
-                    .thenReturn(List.of());
-        }
         when(databaseService.find(containerId, databaseId))
                 .thenReturn(database);
 
@@ -330,7 +319,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     }
 
     protected QueryDto find_generic(Long containerId, Long databaseId, Database database, Long queryId, Query query,
-                                    String userId, User user, Principal principal) throws QueryStoreException,
+                                    UUID userId, User user, Principal principal) throws QueryStoreException,
             QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
             NotAllowedException, DatabaseConnectionException {
 
@@ -341,13 +330,6 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         } else {
             when(storeService.findOne(containerId, databaseId, queryId, principal))
                     .thenThrow(QueryNotFoundException.class);
-        }
-        if (user != null) {
-            when(userService.find(userId))
-                    .thenReturn(user);
-        } else {
-            when(userService.find(userId))
-                    .thenThrow(UserNotFoundException.class);
         }
         if (database != null) {
             when(databaseService.find(containerId, databaseId))

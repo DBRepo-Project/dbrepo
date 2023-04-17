@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -19,16 +20,14 @@ public class Credential {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "credential-uuid")
-    @GenericGenerator(name = "credential-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    private String id;
+    private UUID id;
 
     @Column(nullable = false)
     private String type;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId;
+    @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID userId;
 
     @Column(nullable = false)
     private Long createdDate;

@@ -1,11 +1,11 @@
 package at.tuwien.entities.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -20,14 +20,12 @@ public class UserAttribute {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "attribute-uuid")
-    @GenericGenerator(name = "attribute-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    private String id;
+    private UUID id;
 
     @ToString.Exclude
-    @Column(name = "USER_ID", nullable = false)
-    private String userId;
+    @Column(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID userId;
 
     @Column(name = "NAME", nullable = false)
     private String name;

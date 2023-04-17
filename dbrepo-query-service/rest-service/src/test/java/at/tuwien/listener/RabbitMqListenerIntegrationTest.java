@@ -48,6 +48,12 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -85,14 +91,14 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata database */
         h2Utils.runScript("schema.sql");
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        DATABASE_1.setTables(List.of());
-        databaseRepository.save(DATABASE_1);
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3));
-        tableRepository.save(TABLE_1_NOCOLS);
-        tableRepository.save(TABLE_2_NOCOLS);
-        tableRepository.save(TABLE_3_NOCOLS);
+        imageRepository.save(IMAGE_1_SIMPLE);
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.save(TABLE_1_SIMPLE);
+        tableRepository.save(TABLE_2_SIMPLE);
+        tableRepository.save(TABLE_3_SIMPLE);
     }
 
     @Test

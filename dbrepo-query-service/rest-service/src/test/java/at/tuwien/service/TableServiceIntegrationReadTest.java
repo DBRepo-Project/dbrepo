@@ -8,10 +8,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.jpa.*;
 import com.rabbitmq.client.Channel;
 import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
@@ -66,6 +63,12 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -97,15 +100,16 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
         /* metadata db */
         h2Utils.runScript("schema.sql");
         /* metadata db */
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        tableRepository.save(TABLE_1_NOCOLS);
-        tableRepository.save(TABLE_2_NOCOLS);
-        tableRepository.save(TABLE_3_NOCOLS);
-        tableRepository.save(TABLE_7_NOCOLS);
-        DATABASE_1.setTables(List.of());
-        DATABASE_1.setViews(List.of());
-        databaseRepository.save(DATABASE_1);
+        imageRepository.save(IMAGE_1_SIMPLE);
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.save(TABLE_1_SIMPLE);
+        tableRepository.save(TABLE_2_SIMPLE);
+        tableRepository.save(TABLE_3_SIMPLE);
+        tableRepository.save(TABLE_7_SIMPLE);
     }
 
     @Test

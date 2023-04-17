@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.entities.auth.Realm;
+import at.tuwien.entities.user.Realm;
 import at.tuwien.exception.RealmNotFoundException;
 import at.tuwien.repository.jpa.RealmRepository;
 import at.tuwien.service.RealmService;

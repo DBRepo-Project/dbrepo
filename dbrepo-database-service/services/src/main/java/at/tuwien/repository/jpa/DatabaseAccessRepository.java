@@ -8,11 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface DatabaseAccessRepository extends JpaRepository<DatabaseAccess, Long> {
 
-    void deleteByHdbidAndHuserid(Long databaseId, String userId);
+    void deleteByHdbidAndHuserid(Long databaseId, UUID userId);
 
     Optional<DatabaseAccess> findByHdbidAndHuserid(Long databaseId, String userId);
 

@@ -4,13 +4,11 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.entities.auth.Realm;
 import at.tuwien.entities.user.*;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.jpa.CredentialRepository;
 import at.tuwien.repository.jpa.RoleMappingRepository;
-import at.tuwien.repository.jpa.UserAttributeRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.UserAttributeService;
 import at.tuwien.service.UserService;
@@ -30,6 +28,7 @@ import java.security.spec.KeySpec;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -62,26 +61,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAll() {
         return userRepository.findAll();
-    }
-
-    @Override
-    public User findByUsername(String username) throws UserNotFoundException {
-        final Optional<User> optional = userRepository.findByUsername(username);
-        if (optional.isEmpty()) {
-            log.error("Failed to retrieve user with username {}", username);
-            throw new UserNotFoundException("Failed to retrieve user");
-        }
-        return optional.get();
-    }
-
-    @Override
-    public User findById(String id) throws UserNotFoundException {
-        final Optional<User> optional = userRepository.findById(id);
-        if (optional.isEmpty()) {
-            log.error("Failed to retrieve user with id {}", id);
-            throw new UserNotFoundException("Failed to retrieve user");
-        }
-        return optional.get();
     }
 
     @Override
@@ -141,10 +120,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException,
+    public User modify(UUID id, UserUpdateDto data, Principal principal) throws UserNotFoundException,
             ForeignUserException, UserAttributeNotFoundException {
         /* check */
-        User user = findById(id);
+        User user = find(id);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
@@ -161,10 +140,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updatePassword(String id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
+    public User updatePassword(UUID id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
             ForeignUserException {
         /* check */
-        final User user = findById(id);
+        final User user = find(id);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
@@ -191,10 +170,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
+    public User toggleTheme(UUID id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
             ForeignUserException, UserAttributeNotFoundException {
         /* check */
-        final User user = findById(id);
+        final User user = find(id);
         if (!user.getUsername().equals(principal.getName())) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
@@ -205,7 +184,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User find(String id) throws UserNotFoundException {
+    public User find(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve user with id {}", id);

@@ -15,6 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -42,7 +43,7 @@ public class Table {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID", columnDefinition = "VARCHAR(36)")
     })
     private User creator;
 

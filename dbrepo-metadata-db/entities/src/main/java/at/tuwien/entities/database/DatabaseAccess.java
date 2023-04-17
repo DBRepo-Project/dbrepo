@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -21,8 +22,8 @@ public class DatabaseAccess {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(name = "user_id", updatable = false)
-    private String huserid;
+    @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
+    private UUID huserid;
 
     @Id
     @EqualsAndHashCode.Include

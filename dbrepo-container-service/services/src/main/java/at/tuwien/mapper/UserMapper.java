@@ -24,6 +24,12 @@ public interface UserMapper {
 
     /* keep */
     @Mappings({
+            @Mapping(target = "id", expression = "java(data.getId().toString())")
+    })
+    UserDetailsDto userDtoToUserDetailsDto(UserDto data);
+
+    /* keep */
+    @Mappings({
             @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
     })
     UserBriefDto userToUserBriefDto(User data);
@@ -43,6 +49,10 @@ public interface UserMapper {
         return orcid.map(UserAttribute::getValue).orElse(null);
     }
 
+    /* keep */
+    @Mappings({
+            @Mapping(target = "id", expression = "java(data.getId().toString())")
+    })
     UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
 
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {

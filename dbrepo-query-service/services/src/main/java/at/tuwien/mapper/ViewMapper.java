@@ -3,30 +3,19 @@ package at.tuwien.mapper;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.QueryStoreException;
-import at.tuwien.exception.TableMalformedException;
-import at.tuwien.querystore.Query;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import javax.persistence.Column;
 import java.sql.*;
 import java.text.Normalizer;
-import java.time.Instant;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class})
 public interface ViewMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ViewMapper.class);
@@ -52,7 +41,7 @@ public interface ViewMapper {
     ViewDto viewToViewDto(View data);
 
     @Mappings({
-            @Mapping(target = "createdBy", source = "creator.id")
+            @Mapping(target = "createdBy", expression = "java(data.getCreator().getId().toString())")
     })
     ViewBriefDto viewToViewBriefDto(View data);
 

@@ -3,7 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.config.AuthenticationConfig;
-import at.tuwien.entities.auth.Realm;
+import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -15,7 +15,6 @@ import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
-import org.elasticsearch.client.security.ChangePasswordRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +26,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -90,7 +90,7 @@ public class UserEndpoint {
                                         @NotNull Principal principal)
             throws UserNotFoundException {
         log.debug("endpoint find a user, id={}, principal={}", id, principal);
-        final UserDto dto = userMapper.userToUserDto(userService.find(id));
+        final UserDto dto = userMapper.userToUserDto(userService.find(UUID.fromString(id)));
         log.trace("find user resulted in dto {}", dto);
         return ResponseEntity.ok()
                 .body(dto);
@@ -106,7 +106,7 @@ public class UserEndpoint {
                                           @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
-        final UserDto dto = userMapper.userToUserDto(userService.modify(id, data, principal));
+        final UserDto dto = userMapper.userToUserDto(userService.modify(UUID.fromString(id), data, principal));
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -122,7 +122,7 @@ public class UserEndpoint {
                                          @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
-        final User user = userService.toggleTheme(id, data, principal);
+        final User user = userService.toggleTheme(UUID.fromString(id), data, principal);
         final UserDto dto = userMapper.userToUserDto(user);
         log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
@@ -139,7 +139,7 @@ public class UserEndpoint {
                                             @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
-        final User user = userService.updatePassword(id, data, principal);
+        final User user = userService.updatePassword(UUID.fromString(id), data, principal);
         final UserDto dto = userMapper.userToUserDto(user);
         log.trace("updated user password resulted in dto {}", dto);
         return ResponseEntity.accepted()

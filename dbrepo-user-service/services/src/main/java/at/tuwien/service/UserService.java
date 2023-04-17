@@ -4,13 +4,14 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.entities.auth.Realm;
+import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 public interface UserService {
 
@@ -21,26 +22,16 @@ public interface UserService {
      */
     List<User> findAll();
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username The username.
-     * @return The user.
-     * @throws UserNotFoundException The user was not found in the metadata database.
-     */
-    User findByUsername(String username) throws UserNotFoundException;
-
-    User findById(String id) throws UserNotFoundException;
-
     User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException,
             UserAlreadyExistsException;
 
-    User modify(String id, UserUpdateDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
+    User modify(UUID id, UserUpdateDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
 
-    User updatePassword(String id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
+    User updatePassword(UUID id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
             ForeignUserException;
 
-    User toggleTheme(String id, UserThemeSetDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
+    User toggleTheme(UUID id, UserThemeSetDto data, Principal principal) throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException;
 
-    User find(String id) throws UserNotFoundException;
+
+    User find(UUID id) throws UserNotFoundException;
 }

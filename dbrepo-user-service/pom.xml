@@ -9,9 +9,9 @@
     </parent>
 
     <groupId>at.tuwien</groupId>
-    <artifactId>fda-user-service</artifactId>
-    <version>1.1.0-alpha</version>
-    <name>fda-user-service</name>
+    <artifactId>dbrepo-user-service</artifactId>
+    <version>1.2.0</version>
+    <name>dbrepo-user-service</name>
     <description>
         The query service provides an interface to insert data into the tables created by the table service. It
         also allows for view-only (possibly paginated and versioned) query execution to the raw data and consumes
@@ -132,13 +132,13 @@
         <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-db-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>fda-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>

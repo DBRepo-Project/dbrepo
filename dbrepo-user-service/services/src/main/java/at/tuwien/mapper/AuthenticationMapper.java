@@ -6,7 +6,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 import java.util.Collections;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface AuthenticationMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AuthenticationMapper.class);

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,7 +21,7 @@ public class UserBriefDto {
 
     @NotNull
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
-    private String id;
+    private UUID id;
 
     @NotNull
     @Schema(example = "jcarberry", description = "Only contains lowercase characters")

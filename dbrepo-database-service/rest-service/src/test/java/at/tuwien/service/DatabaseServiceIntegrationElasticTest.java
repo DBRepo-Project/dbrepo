@@ -82,7 +82,7 @@ public class DatabaseServiceIntegrationElasticTest extends BaseUnitTest {
         afterEach();
         /* metadata database */
         h2Utils.runScript("schema.sql");
-        imageRepository.save(IMAGE_1_SIMPLE);
+        imageRepository.save(IMAGE_1);
         userRepository.save(USER_1_SIMPLE);
     }
 

@@ -30,6 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -209,7 +210,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_find(Long containerId, Long databaseId, Database database, DatabaseAccess access,
-                                String username, String userId, Principal principal) throws AccessDeniedException,
+                                String username, UUID userId, Principal principal) throws AccessDeniedException,
             NotAllowedException {
 
         /* mock */

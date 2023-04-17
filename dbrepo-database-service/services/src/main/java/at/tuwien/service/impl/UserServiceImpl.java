@@ -8,7 +8,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -32,7 +34,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User find(Long id) throws UserNotFoundException {
+    public User find(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve user with id {}", id);

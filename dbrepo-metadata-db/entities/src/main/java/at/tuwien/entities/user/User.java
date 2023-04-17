@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -31,10 +32,8 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "user-uuid")
-    @GenericGenerator(name = "user-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    private String id;
+    private UUID id;
 
     @Column(nullable = false)
     private String username;
@@ -45,8 +44,8 @@ public class User {
     @Column(name = "LAST_NAME")
     private String lastname;
 
-    @Column(name = "REALM_ID")
-    private String realmId;
+    @Column(name = "REALM_ID", columnDefinition = "VARCHAR(36)")
+    private UUID realmId;
 
     @Column(nullable = false)
     private String email;
@@ -94,5 +93,10 @@ public class User {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
     private List<Identifier> identifiers;
+
+    @Transient
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
+    private List<at.tuwien.entities.database.table.Table> tables;
 
 }

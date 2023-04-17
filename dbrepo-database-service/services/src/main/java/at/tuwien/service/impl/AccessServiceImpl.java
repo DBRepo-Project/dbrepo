@@ -102,7 +102,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Transactional
     public void update(Long containerId, Long databaseId, String username, DatabaseModifyAccessDto accessDto)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, AccessDeniedException {
         /* check */
         final Database database = databaseService.findById(containerId, databaseId);
         final Container container = database.getContainer();
@@ -111,6 +111,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             log.error("Failed to modify access of user with username {}, because it is the owner", username);
             throw new NotAllowedException("Failed modify access");
         }
+        find(databaseId, username);
         final User root = databaseMapper.containerToPrivilegedUser(container);
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
         final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(username, accessDto);
@@ -133,8 +134,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             dataSource.close();
         }
         /* update access */
-        final DatabaseAccess access = databaseMapper.databaseModifyAccessDtoToDatabaseAccess(database, user, accessDto);
-        final DatabaseAccess entity = databaseAccessRepository.save(access);
+        databaseAccessRepository.save(databaseMapper.databaseModifyAccessDtoToDatabaseAccess(database, user, accessDto));
         log.info("Modified access to database with id {} for user with username {}", databaseId, username);
     }
 

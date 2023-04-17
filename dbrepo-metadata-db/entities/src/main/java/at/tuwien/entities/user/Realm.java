@@ -5,6 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -21,10 +22,8 @@ public class Realm {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "realm-uuid")
-    @GenericGenerator(name = "realm-uuid", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    private String id;
+    private UUID id;
 
     @Column(nullable = false)
     private Boolean enabled;

@@ -50,7 +50,7 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void update(Long containerId, Long databaseId, String username, DatabaseModifyAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, AccessDeniedException;
 
     /**
      * Revokes access to a database of container.
