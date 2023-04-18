@@ -4,10 +4,14 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,11 +40,16 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/identifier")
 public class IdentifierEndpoint {
 
+    private final UserService userService;
+    private final AccessService accessService;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(IdentifierMapper identifierMapper, IdentifierService identifierService) {
+    public IdentifierEndpoint(UserService userService, AccessService accessService, IdentifierMapper identifierMapper,
+                              IdentifierService identifierService) {
+        this.userService = userService;
+        this.accessService = accessService;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
     }
@@ -125,7 +134,7 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, AccessDeniedException {
         log.debug("endpoint create identifier, data={}, authorization={}, principal={}", data, authorization, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
             log.error("Identifier of type subset need to have a qid present");
@@ -134,6 +143,8 @@ public class IdentifierEndpoint {
             log.error("Identifier of type database must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
+        final User user = userService.findByUsername(principal.getName());
+        final DatabaseAccess access = accessService.find(data.getDbid(), user.getId());
         final Identifier identifier = identifierService.create(data, principal, authorization);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));

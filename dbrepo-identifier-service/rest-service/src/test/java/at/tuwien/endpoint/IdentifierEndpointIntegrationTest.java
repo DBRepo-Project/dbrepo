@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -55,37 +56,29 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private AccessRepository accessRepository;
+
+    @Autowired
     private IdentifierEndpoint identifierEndpoint;
 
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
+        realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1);
-        databaseRepository.save(DATABASE_2);
-    }
-
-    @Test
-    public void list_anonymous_succeeds() throws IdentifierNotFoundException {
-
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
-        /* test */
-        final List<IdentifierDto> response = this.generic_list(null, null, null);
-        assertEquals(1, response.size());
-        final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        databaseRepository.save(DATABASE_2_SIMPLE);
     }
 
     @Test
     @WithAnonymousUser
-    public void list_anonymous2_succeeds() throws IdentifierNotFoundException {
+    public void list_anonymous_succeeds() {
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(null, null, null);
@@ -93,11 +86,11 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcher_succeeds() throws IdentifierNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-identifiers"})
+    public void list_hasRole_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(null, null, null);
@@ -109,11 +102,27 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherDatabaseId_succeeds() throws IdentifierNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_noRole_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+
+        /* test */
+        final List<IdentifierDto> response = this.generic_list(null, null, null);
+        assertEquals(1, response.size());
+        final IdentifierDto identifier = response.get(0);
+        assertEquals(IDENTIFIER_1_ID, identifier.getId());
+        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
+        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_databaseId_succeeds() {
+
+        /* mock */
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, null, null);
@@ -125,60 +134,34 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void list_developer_succeeds() throws IdentifierNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_databaseIdAndType_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierRepository.save(IDENTIFIER_4_SIMPLE);
 
         /* test */
-        final List<IdentifierDto> response = this.generic_list(null, null, null);
+        final List<IdentifierDto> response = this.generic_list(DATABASE_4_ID, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        assertEquals(IDENTIFIER_4_ID, identifier.getId());
+        assertEquals(IDENTIFIER_4_TITLE, identifier.getTitle());
+        assertEquals(IDENTIFIER_4_DESCRIPTION, identifier.getDescription());
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void list_dataSteward_succeeds() throws IdentifierNotFoundException {
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_subsetIdAndType_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
-        /* test */
-        final List<IdentifierDto> response = this.generic_list(null, null, null);
-        assertEquals(1, response.size());
-        final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
-    }
-
-    @Test
-    @Disabled("Creator constraint")
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherDatabaseIdAndType_succeeds() throws IdentifierNotFoundException {
-
-        /* mock */
-        identifierRepository.save(IDENTIFIER_2);
-
-        /* test */
-        final List<IdentifierDto> response = this.generic_list(DATABASE_2_ID, null, IdentifierTypeDto.DATABASE);
-        assertEquals(1, response.size());
-        final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_2_ID, identifier.getId());
-        assertEquals(IDENTIFIER_2_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_2_DESCRIPTION, identifier.getDescription());
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void list_researcherSubsetIdAndType_succeeds() throws IdentifierNotFoundException {
-
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.SUBSET);
@@ -190,15 +173,26 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_researcherDatabaseNotExists_fails() {
-
-        /* mock */
-        containerRepository.save(CONTAINER_2);
+    @WithMockUser(username = USER_1_USERNAME)
+    public void create_noRole_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, "ABC", USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_accessNotExists_fails() {
+
+        /* mock */
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+
+        /* test */
+        assertThrows(at.tuwien.exception.AccessDeniedException.class, () -> {
+            identifierEndpoint.create(IDENTIFIER_3_DTO_REQUEST, "ABC", USER_1_PRINCIPAL);
         });
     }
 
@@ -206,7 +200,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, IdentifierTypeDto type) throws IdentifierNotFoundException {
+    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, IdentifierTypeDto type) {
 
         /* test */
         final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId, type);

@@ -13,6 +13,7 @@ import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.jpa.RealmRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

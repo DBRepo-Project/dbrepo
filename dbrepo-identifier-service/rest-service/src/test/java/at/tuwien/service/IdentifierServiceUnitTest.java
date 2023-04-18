@@ -14,6 +14,7 @@ import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
@@ -49,6 +50,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
+    @Qualifier("restTemplate")
     private RestTemplate restTemplate;
 
     @MockBean
@@ -204,7 +206,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_notVisibleByEveryone_fails() {
-
         Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).build();
         IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.TRUSTED).build();
         IDENTIFIER_1_DTO.setVisibility(VisibilityTypeDto.TRUSTED);
@@ -224,7 +225,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -241,13 +241,12 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
 
         /* test */
-        identifierService.create(IDENTIFIER_1_DTO_REQUEST, principal, bearer);
+        identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
     }
 
     @Test
     public void create_existsSubset_fails()
             throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -259,14 +258,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_2_DTO_REQUEST, principal, bearer);
+            identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
         });
     }
 
     @Test
     public void create_existsDatabase_fails()
             throws DatabaseNotFoundException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -278,7 +276,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_REQUEST, principal, bearer);
+            identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
         });
     }
 

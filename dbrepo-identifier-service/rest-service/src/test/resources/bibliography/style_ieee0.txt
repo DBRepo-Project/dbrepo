@@ -1,1 +1,1 @@
-[1] “Sweden weather data“, Swedish Government, 2022, doi: http://localhost:3000/pid/4.
+[1] “Sweden weather data“, Swedish Government, 2022, Available: http://localhost:3000/pid/4.
