@@ -12,6 +12,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.jpa.DatabaseAccessRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
@@ -32,6 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,72 +66,88 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     private StoreEndpoint storeEndpoint;
 
     @MockBean
-    private QueryService queryService;
-
-    @MockBean
     private StoreServiceImpl storeService;
-
-    @MockBean
-    private IdentifierRepository identifierRepository;
 
     @MockBean
     private DatabaseService databaseService;
 
     @MockBean
+    private DatabaseAccessRepository accessRepository;
+
+    @MockBean
     private AccessService accessService;
 
     @Test
-    public void findAll_anonymous_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null);
-    }
-
-    @Test
     @WithAnonymousUser
-    public void findAll_anonymous2_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+    public void findAll_anonymous_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_researcher_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+    public void findAll_noRole_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1, USER_1_PRINCIPAL);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_researcherPrivateNoAccess_fails() {
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-queries"})
+    public void findAll_hasRole_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-queries"})
+    public void findAll_noAccess_fails() {
+
+        /* mock */
+        when(accessRepository.findByDatabaseIdAndUsername(DATABASE_2_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_RESEARCHER_READ_ACCESS));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1, USER_1_PRINCIPAL);
+            findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-queries"})
+    public void findAll_hasAccess_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException {
+
+        /* mock */
+        when(accessRepository.findByDatabaseIdAndUsername(DATABASE_2_ID, USER_1_USERNAME))
+                .thenReturn(Optional.of(DATABASE_1_RESEARCHER_READ_ACCESS));
+
+        /* test */
+        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME)
     public void findAll_dataSteward_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2, USER_2_PRINCIPAL);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME)
     public void findAll_developer_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, NotAllowedException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_3, USER_3_PRINCIPAL);
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -298,9 +316,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
         return response.getBody();
     }
 
-    protected void findAll_generic(Long containerId, Long databaseId, Database database, User user, Principal principal)
+    protected void findAll_generic(Long containerId, Long databaseId, Database database, Principal principal)
             throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, NotAllowedException {
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
 
         /* mock */
         doReturn(List.of(QUERY_1)).when(storeService)

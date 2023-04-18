@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
+import at.tuwien.entities.database.Database;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,11 +33,13 @@ public class QueryEndpoint {
 
     private final QueryService queryService;
     private final StoreService storeService;
+    private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
     public QueryEndpoint(QueryService queryService, StoreService storeService,
-                         EndpointValidator endpointValidator) {
+                         DatabaseService databaseService, EndpointValidator endpointValidator) {
+        this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.queryService = queryService;
         this.storeService = storeService;
@@ -44,7 +48,7 @@ public class QueryEndpoint {
     @PostMapping
     @Transactional(readOnly = true)
     @Timed(value = "query.execute", description = "Time needed to execute a query")
-    @PreAuthorize("hasAuthority('execute-query')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -56,7 +60,7 @@ public class QueryEndpoint {
                                                   @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
-            NotAllowedException, DatabaseConnectionException, SortException, PaginationException {
+            DatabaseConnectionException, SortException, PaginationException, NotAllowedException {
         log.debug("endpoint execute query, containerId={}, databaseId={}, data={}, page={}, size={}, principal={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, data, page, size, principal, sortDirection, sortColumn);
         /* check */
@@ -66,6 +70,18 @@ public class QueryEndpoint {
         }
         endpointValidator.validateForbiddenStatements(data);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to execute private query: principal is null");
+                throw new NotAllowedException("Failed to re-execute private query: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("execute-query"))) {
+                log.error("Failed to execute private query: role missing");
+                throw new NotAllowedException("Failed to re-execute private query: role missing");
+            }
+        }
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size,
                 sortDirection, sortColumn);
@@ -76,7 +92,6 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/data")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('re-execute-query')")
     @Timed(value = "query.reexecute", description = "Time needed to re-execute a query")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("id") Long containerId,
@@ -88,11 +103,23 @@ public class QueryEndpoint {
                                                     @RequestParam(required = false) SortType sortDirection,
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, SortException, PaginationException, UserNotFoundException {
+            QueryMalformedException, TableMalformedException, ColumnParseException,
+            DatabaseConnectionException, SortException, PaginationException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint re-execute query, containerId={}, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to re-execute private query: principal is null");
+                throw new NotAllowedException("Failed to re-execute private query: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("re-execute-query"))) {
+                log.error("Failed to re-execute private query: role missing");
+                throw new NotAllowedException("Failed to re-execute private query: role missing");
+            }
+        }
         /* execute */
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryResultDto result = queryService.reExecute(containerId, databaseId, query, page, size,
@@ -105,7 +132,6 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/data/count")
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAuthority('re-execute-query')")
     @Timed(value = "query.reexecute.count", description = "Time needed to re-execute a query")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("id") Long containerId,
@@ -117,6 +143,18 @@ public class QueryEndpoint {
             DatabaseConnectionException, UserNotFoundException {
         log.debug("endpoint re-execute query count, containerId={}, databaseId={}, queryId={}, principal={}",
                 containerId, databaseId, queryId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to re-execute private query: principal is null");
+                throw new NotAllowedException("Failed to re-execute private query: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("re-execute-query"))) {
+                log.error("Failed to re-execute private query: role missing");
+                throw new NotAllowedException("Failed to re-execute private query: role missing");
+            }
+        }
         /* execute */
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final Long result = queryService.reExecuteCount(containerId, databaseId, query, principal);
@@ -136,10 +174,21 @@ public class QueryEndpoint {
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, TableMalformedException, FileStorageException, QueryMalformedException,
-            DatabaseConnectionException, UserNotFoundException {
-        // TODO: check if authority 'export-query-data'
+            DatabaseConnectionException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint export query, containerId={}, databaseId={}, queryId={}, accept={}, principal={}",
                 containerId, databaseId, queryId, accept, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to export private query: principal is null");
+                throw new NotAllowedException("Failed to export private query: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("export-query-data"))) {
+                log.error("Failed to export private query: role missing");
+                throw new NotAllowedException("Failed to export private query: role missing");
+            }
+        }
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         log.trace("querystore returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);

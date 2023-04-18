@@ -20,12 +20,16 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,11 +55,9 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexInitializer;
 
-    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 
@@ -75,75 +77,56 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     private ExportEndpoint exportEndpoint;
 
     @Test
-    public void export_publicAnonymous_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    @WithAnonymousUser
+    public void export_anonymous_succeeds() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"export-table-data"})
+    public void export_publicHasRoleNoAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, null);
     }
 
     @Test
-    public void export_publicRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"export-table-data"})
+    public void export_publicHasRoleReadAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS);
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS);
     }
 
     @Test
-    public void export_publicWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
-
-        /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
-    }
-
-    @Test
-    public void export_publicWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
-
-        /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void export_publicOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
-
-        /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void export_publicReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
+    @WithAnonymousUser
+    public void export_publicReadWithTimestamp_succeeds() {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+        });
     }
 
     @Test
-    public void export_publicReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
+    public void export_publicReadWithTimestampInFuture_succeeds() {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS);
+        assertThrows(NotAllowedException.class, () -> {
+            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+        });
     }
 
     /* ################################################################################################### */
@@ -151,6 +134,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     @Test
+    @WithAnonymousUser
     public void export_privateAnonymous_fails() {
 
         /* test */
@@ -160,17 +144,19 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void export_privateRead_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
+    public void export_privateHasRoleNoAccess_fails() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, null);
     }
 
     @Test
-    public void export_privateWriteOwn_succeeds() throws TableNotFoundException, DatabaseConnectionException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
+    public void export_HasRoleReadAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
             UserNotFoundException, IOException {
@@ -180,26 +166,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void export_privateWriteAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
-
-        /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void export_privateOwner_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
-            UserNotFoundException, IOException {
-
-        /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
     public void export_privateReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
@@ -211,6 +178,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
     public void export_privateReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
             PaginationException, ContainerNotFoundException, NotAllowedException, QueryMalformedException,
@@ -220,7 +188,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         /* test */
         export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
-    
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */

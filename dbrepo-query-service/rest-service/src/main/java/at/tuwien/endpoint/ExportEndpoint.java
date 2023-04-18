@@ -1,7 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
-import at.tuwien.config.QueryConfig;
+import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,10 +27,12 @@ import java.time.Instant;
 public class ExportEndpoint {
 
     private final QueryService queryService;
+    private final DatabaseService databaseService;
 
     @Autowired
-    public ExportEndpoint(QueryService queryService) {
+    public ExportEndpoint(QueryService queryService, DatabaseService databaseService) {
         this.queryService = queryService;
+        this.databaseService = databaseService;
     }
 
     @GetMapping
@@ -44,10 +46,21 @@ public class ExportEndpoint {
                                                       Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, QueryMalformedException, UserNotFoundException {
-        // TODO: check if authority 'export-table'
+            FileStorageException, QueryMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint export table, id={}, databaseId={}, tableId={}, timestamp={}, principal={}", containerId, databaseId,
                 tableId, timestamp, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to export private table: principal is null");
+                throw new NotAllowedException("Failed to export private table: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("export-table-data"))) {
+                log.error("Failed to export private table: role missing");
+                throw new NotAllowedException("Failed to export private table: role missing");
+            }
+        }
         final HttpHeaders headers = new HttpHeaders();
         final ExportResource resource = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, principal);
         headers.add("Content-Disposition", "attachment; filename=\"" + resource.getFilename() + "\"");

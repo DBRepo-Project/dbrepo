@@ -50,7 +50,7 @@ public class TableDataEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, NotAllowedException, DatabaseConnectionException,
+            ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
             UserNotFoundException {
         log.debug("endpoint insert data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
@@ -91,7 +91,7 @@ public class TableDataEndpoint {
                                        @NotNull @Valid @RequestBody TableCsvDeleteDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, TupleDeleteException, ContainerNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException,
             DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
         log.debug("endpoint delete data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
