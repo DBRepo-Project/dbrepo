@@ -18,6 +18,8 @@ import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
@@ -38,6 +40,7 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class StoreServiceIntegrationModifyTest extends BaseUnitTest {

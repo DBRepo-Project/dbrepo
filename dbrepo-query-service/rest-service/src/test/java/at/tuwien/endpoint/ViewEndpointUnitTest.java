@@ -27,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -76,90 +77,264 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     private ViewEndpoint viewEndpoint;
 
     @Test
+    @WithAnonymousUser
     public void findAll_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException {
 
         /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null, null);
+        findAll_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
+    public void findAll_publicHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
+    public void findAll_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_DEVELOPER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void findAll_publicNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, null);
     }
 
     @Test
     @WithAnonymousUser
-    public void findAll_publicAnonymous2_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null, null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void findAll_publicRead_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void findAll_publicWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void findAll_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findAll_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findAll_privateResearcher_fails() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, null);
-    }
-
-    @Test
     public void create_publicAnonymous_succeeds() {
 
         /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
+    public void create_publicHasRole_fails() {
+
+        /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null, null);
+            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
+    public void create_publicHasRoleHasAccess_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void create_publicNoRole_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            create_generic(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, null);
         });
     }
 
     @Test
     @WithAnonymousUser
-    public void create_publicAnonymous2_succeeds() {
+    public void find_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException {
+
+        /* test */
+        find_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
+    public void find_publicHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException {
+
+        /* test */
+        find_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_publicNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException {
+
+        /* test */
+        find_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException {
+
+        /* test */
+        find_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void delete_publicAnonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database-view"})
+    public void delete_publicHasRole_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void delete_publicNoRole_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-database-view"})
+    public void delete_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, ViewMalformedException,
+            QueryMalformedException {
+
+        /* test */
+        delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_5_ID, DATABASE_3, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void data_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
+            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
+
+        /* test */
+        data_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void data_publicNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
+            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
+
+        /* test */
+        data_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"view-database-view-data"})
+    public void data_publicHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
+            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
+
+        /* test */
+        data_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"view-database-view-data"})
+    public void data_publicHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
+            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
+            ContainerNotFoundException, PaginationException, ViewMalformedException {
+
+        /* test */
+        data_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
+    }
+
+    /* ################################################################################################### */
+    /* ## PRIVATE DATABASES                                                                             ## */
+    /* ################################################################################################### */
+
+    @Test
+    @WithAnonymousUser
+    public void findAll_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
+    public void findAll_privateHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"list-views"})
+    public void findAll_privateHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_READ_ACCESS);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME)
+    public void findAll_privateNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException {
+
+        /* test */
+        findAll_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, null);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void create_privateAnonymous_succeeds() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
             create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, null, null);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_publicRead_fails() {
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
+    public void create_privateHasRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-database-view"})
+    public void create_privateHasRoleHasAccess_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -168,45 +343,18 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_publicWriteOwn_fails() {
+    @WithMockUser(username = USER_2_USERNAME)
+    public void create_privateNoRole_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        assertThrows(AccessDeniedException.class, () -> {
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, null);
         });
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void create_publicWriteAll_succeeds() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void create_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
-
-        /* test */
-        create_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void find_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
     }
 
     @Test
     @WithAnonymousUser
-    public void find_publicAnonymous2_succeeds() throws UserNotFoundException, NotAllowedException,
+    public void find_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
@@ -214,8 +362,8 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void find_publicRead_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"find-database-view"})
+    public void find_privateHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
@@ -223,63 +371,36 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void find_publicWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_privateNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void find_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME)
+    public void find_privateHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException {
 
         /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void find_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void find_privateResearcher_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_4_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, null);
-    }
-
-    @Test
-    public void delete_publicAnonymous_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
-        });
+        find_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
     @WithAnonymousUser
-    public void delete_publicAnonymous2_fails() {
+    public void delete_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_publicRead_succeeds() {
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database-view"})
+    public void delete_privateHasRole_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -288,28 +409,18 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_publicWriteOwn_succeeds() {
+    @WithMockUser(username = USER_2_USERNAME)
+    public void delete_privateNoRole_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        assertThrows(AccessDeniedException.class, () -> {
+            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void delete_publicWriteAll_succeeds() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void delete_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-view"})
+    public void delete_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, ViewMalformedException,
             QueryMalformedException {
 
@@ -318,29 +429,18 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void data_publicAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
-    }
-
-    @Test
     @WithAnonymousUser
-    public void data_publicAnonymous2_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
+    public void data_privateAnonymous_fails() {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
+        });
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_publicRead_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME)
+    public void data_privateNoRole_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
             ContainerNotFoundException, PaginationException, ViewMalformedException {
@@ -350,270 +450,25 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_publicWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"view-database-view-data"})
+    public void data_privateHasRole_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, roles = {"DATA_STEWARD"})
-    public void data_publicWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"view-database-view-data"})
+    public void data_privateHasRoleHasAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
             QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
             ContainerNotFoundException, PaginationException, ViewMalformedException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void data_publicOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void data_privateResearcher_succeeds() throws UserNotFoundException, QueryStoreException,
-            NotAllowedException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
-            ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
-            PaginationException, ViewNotFoundException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_4_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, null);
-    }
-
-    /* ################################################################################################### */
-    /* ## PRIVATE DATABASES                                                                             ## */
-    /* ################################################################################################### */
-
-    @Test
-    public void findAll_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, null, null);
-    }
-
-    @Test
-    public void findAll_privateRead_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-    }
-
-    @Test
-    public void findAll_privateWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
-    }
-
-    @Test
-    public void findAll_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void findAll_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException {
-
-        /* test */
-        findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void create_privateAnonymous_succeeds() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, null, null);
-        });
-    }
-
-    @Test
-    public void create_privateRead_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-        });
-    }
-
-    @Test
-    public void create_privateWriteOwn_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_3_USERNAME, USER_3_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
-        });
-    }
-
-    @Test
-    public void create_privateWriteAll_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS);
-        });
-    }
-
-    @Test
-    public void create_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
-
-        /* test */
-        create_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void find_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, null, null, null);
-    }
-
-    @Test
-    public void find_privateRead_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-    }
-
-    @Test
-    public void find_privateWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
-    }
-
-    @Test
-    public void find_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void find_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException {
-
-        /* test */
-        find_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void delete_privateAnonymous_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, null, null, null);
-        });
-    }
-
-    @Test
-    public void delete_privateRead_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-        });
-    }
-
-    @Test
-    public void delete_privateWriteOwn_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
-        });
-    }
-
-    @Test
-    public void delete_privateWriteAll_fails() {
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            delete_generic(CONTAINER_3_ID, DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-        });
-    }
-
-    @Test
-    public void delete_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, ViewMalformedException,
-            QueryMalformedException {
-
-        /* test */
-        delete_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void data_privateAnonymous_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, null, null, null);
-    }
-
-    @Test
-    public void data_privateRead_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
-    }
-
-    @Test
-    public void data_privateWriteOwn_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
-    }
-
-    @Test
-    public void data_privateWriteAll_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
-    }
-
-    @Test
-    public void data_privateOwner_succeeds() throws UserNotFoundException, NotAllowedException,
-            DatabaseNotFoundException, ViewNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, TableMalformedException, ColumnParseException, ImageNotSupportedException,
-            ContainerNotFoundException, PaginationException, ViewMalformedException {
-
-        /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, VIEW_1_ID, DATABASE_2, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
+        data_generic(CONTAINER_1_ID, DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2_RESEARCHER_READ_ACCESS);
     }
 
     /* ################################################################################################### */
@@ -743,9 +598,6 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, NotAllowedException, ViewNotFoundException, DatabaseConnectionException,
             QueryMalformedException, QueryStoreException, TableMalformedException, ColumnParseException,
             ImageNotSupportedException, ContainerNotFoundException, PaginationException, ViewMalformedException {
-        final ExecuteStatementDto statement = ExecuteStatementDto.builder()
-                .statement(VIEW_1_QUERY)
-                .build();
         final Long page = 0L;
         final Long size = 2L;
 

@@ -4,10 +4,7 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
-import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -26,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -110,6 +108,16 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Credentials missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Credentials missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user could not be found",
                     content = {@Content(
@@ -139,7 +147,12 @@ public class ViewEndpoint {
             UserNotFoundException {
         log.debug("endpoint create view, containerId={}, databaseId={}, data={}, principal={}", containerId,
                 databaseId, data, principal);
+        /* check */
         final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to create view: not the database owner");
+            throw new NotAllowedException("Failed to create view: not the database owner");
+        }
         log.trace("create view for database {}", database);
         final View view;
         view = viewService.create(containerId, databaseId, data, principal);
@@ -198,6 +211,16 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Credentials missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Credentials missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, view or user could not be found",
                     content = {@Content(
@@ -224,9 +247,15 @@ public class ViewEndpoint {
                                     @NotNull @PathVariable("viewId") Long viewId,
                                     @NotNull Principal principal) throws DatabaseNotFoundException,
             ViewNotFoundException, UserNotFoundException, DatabaseConnectionException,
-            ViewMalformedException, QueryMalformedException {
+            ViewMalformedException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint delete view, containerId={}, databaseId={}, viewId={}, principal={}", containerId,
                 databaseId, viewId, principal);
+        /* check */
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getOwner().getUsername().equals(principal.getName())) {
+            log.error("Failed to delete view: not the database owner");
+            throw new NotAllowedException("Failed to delete view: not the database owner");
+        }
         viewService.delete(containerId, databaseId, viewId, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -244,6 +273,16 @@ public class ViewEndpoint {
                             schema = @Schema(implementation = QueryResultDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Pagination not in valid range or find data query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "401",
+                    description = "Credentials missing",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Credentials missing",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -296,8 +335,19 @@ public class ViewEndpoint {
                 containerId, databaseId, viewId, principal, page, size);
         /* check */
         endpointValidator.validateDataParams(page, size);
-        /* find */
         final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic()) {
+            if (principal == null) {
+                log.error("Failed to view data of private view: principal is null");
+                throw new NotAllowedException("Failed to view data of private view: principal is null");
+            }
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("view-database-view-data"))) {
+                log.error("Failed to view data of private view: role missing");
+                throw new NotAllowedException("Failed to view data of private view: role missing");
+            }
+        }
+        /* find */
         log.trace("find view data for database {}", database);
         final View view = viewService.findById(databaseId, viewId, principal);
         final QueryResultDto result = queryService.viewFindAll(containerId, databaseId, view, page, size, principal);
@@ -312,12 +362,12 @@ public class ViewEndpoint {
     @Timed(value = "view.data.count", description = "Time needed to retrieve data count from a view")
     @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> count(@NotNull @PathVariable("id") Long containerId,
-                                               @NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("viewId") Long viewId,
-                                               Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
-            QueryStoreException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
-            ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException, ViewMalformedException {
+                                      @NotNull @PathVariable("databaseId") Long databaseId,
+                                      @NotNull @PathVariable("viewId") Long viewId,
+                                      Principal principal)
+            throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            TableMalformedException, QueryMalformedException, ImageNotSupportedException, UserNotFoundException,
+            ContainerNotFoundException {
         log.debug("endpoint find view data count, containerId={}, databaseId={}, viewId={}, principal={}",
                 containerId, databaseId, viewId, principal);
         /* find */

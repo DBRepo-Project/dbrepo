@@ -80,6 +80,13 @@ build-table-service:
   script:
     - "make build-table-service"
 
+build-user-service:
+  stage: build-backend
+  needs:
+    - build-metadata-db
+  script:
+    - "make build-user-service"
+
 build-metadata-service:
   stage: build-backend
   needs:
@@ -112,6 +119,23 @@ test-identifier-service:
     expire_in: 1 days
     reports:
       junit: ./dbrepo-identifier-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
+
+test-user-service:
+  stage: test-backend
+  needs:
+    - build-user-service
+  script:
+    - "make test-user-service"
+    - "cat ./dbrepo-user-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-user-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-user-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-user-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-container-service:
@@ -300,6 +324,7 @@ build-docker:
     - build-metadata-service
     - build-semantics-service
     - build-analyse-service
+    - build-user-service
   script:
     - cp .env.unix.example .env
     - make build-docker
