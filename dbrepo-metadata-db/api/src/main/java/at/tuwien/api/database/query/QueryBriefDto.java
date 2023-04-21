@@ -13,6 +13,7 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.UUID;
 
 
 @Getter
@@ -35,7 +36,7 @@ public class QueryBriefDto {
 
     @JsonIgnore
     @NotNull(message = "created by is required")
-    private String createdBy;
+    private UUID createdBy;
 
     @NotNull(message = "creator is required")
     private UserDto creator;

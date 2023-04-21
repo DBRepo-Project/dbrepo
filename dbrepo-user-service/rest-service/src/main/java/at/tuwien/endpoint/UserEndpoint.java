@@ -106,7 +106,12 @@ public class UserEndpoint {
                                           @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
-        final UserDto dto = userMapper.userToUserDto(userService.modify(UUID.fromString(id), data, principal));
+        final User user = userService.find(UUID.fromString(id));
+        if (!user.equals(principal)) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        final UserDto dto = userMapper.userToUserDto(userService.modify(user.getId(), data, principal));
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -122,8 +127,12 @@ public class UserEndpoint {
                                          @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
-        final User user = userService.toggleTheme(UUID.fromString(id), data, principal);
-        final UserDto dto = userMapper.userToUserDto(user);
+        final User user = userService.find(UUID.fromString(id));
+        if (!user.equals(principal)) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        final UserDto dto = userMapper.userToUserDto(userService.toggleTheme(user.getId(), data, principal));
         log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
@@ -139,8 +148,12 @@ public class UserEndpoint {
                                             @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
-        final User user = userService.updatePassword(UUID.fromString(id), data, principal);
-        final UserDto dto = userMapper.userToUserDto(user);
+        final User user = userService.find(UUID.fromString(id));
+        if (!user.equals(principal)) {
+            log.error("Failed to modify user: attempting to modify other user");
+            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
+        }
+        final UserDto dto = userMapper.userToUserDto(userService.updatePassword(user.getId(), data, principal));
         log.trace("updated user password resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

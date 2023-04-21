@@ -99,8 +99,8 @@ public class ContainerServiceImpl implements ContainerService {
                 response.getName() + ":/var/lib/mysql", availableTcpPort + ":" + image.get().getDefaultPort());
         log.trace("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
-        container.setCreator(user);
-        container.setOwner(user);
+        container.setCreatedBy(user.getId());
+        container.setOwnedBy(user.getId());
         /* create the container */
         final CreateContainerResponse response1;
         try {

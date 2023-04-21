@@ -40,9 +40,6 @@ public interface ViewMapper {
     })
     ViewDto viewToViewDto(View data);
 
-    @Mappings({
-            @Mapping(target = "createdBy", expression = "java(data.getCreator().getId().toString())")
-    })
     ViewBriefDto viewToViewBriefDto(View data);
 
     default PreparedStatement viewToRawDeleteViewQuery(Connection connection, View view)

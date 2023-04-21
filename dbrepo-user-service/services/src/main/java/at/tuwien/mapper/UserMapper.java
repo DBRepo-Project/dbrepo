@@ -15,7 +15,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.UUID;
 
-
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
@@ -41,6 +40,7 @@ public interface UserMapper {
 
     default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
         return UserAttribute.builder()
+                .id(UUID.randomUUID())
                 .userId(userId)
                 .name(name)
                 .value(value)

@@ -245,7 +245,7 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull Principal principal) throws ContainerNotFoundException,
-            ContainerStillRunningException, ContainerAlreadyRemovedException, DockerClientException {
+            ContainerStillRunningException, ContainerAlreadyRemovedException {
         log.debug("endpoint delete container, containerId={}, principal={}", containerId, principal);
         containerService.remove(containerId);
         return ResponseEntity.accepted()

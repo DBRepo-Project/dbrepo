@@ -17,6 +17,7 @@ import org.keycloak.common.util.Base64;
 import org.keycloak.common.util.PaddingUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -85,6 +86,7 @@ public class UserServiceImpl implements UserService {
                 .append(Base64.encodeBytes(salt))
                 .append("\",\"additionalParameters\":{}}");
         Credential credential = Credential.builder()
+                .id(UUID.randomUUID())
                 .createdDate(Instant.now().toEpochMilli())
                 .secretData(secretData.toString())
                 .type("password")
@@ -93,6 +95,7 @@ public class UserServiceImpl implements UserService {
                 .build();
         /* save */
         User user = userMapper.signupRequestDtoToUser(data);
+        user.setId(UUID.randomUUID());
         user.setEmailVerified(false);
         user.setEnabled(true);
         user.setRealmId(realm.getId());
@@ -171,13 +174,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User toggleTheme(UUID id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
-            ForeignUserException, UserAttributeNotFoundException {
+            UserAttributeNotFoundException {
         /* check */
         final User user = find(id);
-        if (!user.getUsername().equals(principal.getName())) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
-        }
         final UserAttribute entity = userAttributeService.update(user.getId(), "theme_dark", data.getThemeDark().toString());
         log.info("Updated theme by updating attribute with id {}", entity.getId());
         return user;

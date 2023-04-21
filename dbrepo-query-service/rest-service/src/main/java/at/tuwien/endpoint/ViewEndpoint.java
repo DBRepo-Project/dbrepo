@@ -7,6 +7,7 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.service.*;
@@ -149,7 +150,7 @@ public class ViewEndpoint {
                 databaseId, data, principal);
         /* check */
         final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getOwner().getUsername().equals(principal.getName())) {
+        if (!database.getOwner().equals(principal)) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
@@ -252,7 +253,7 @@ public class ViewEndpoint {
                 databaseId, viewId, principal);
         /* check */
         final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getOwner().getUsername().equals(principal.getName())) {
+        if (!database.getOwner().equals(principal)) {
             log.error("Failed to delete view: not the database owner");
             throw new NotAllowedException("Failed to delete view: not the database owner");
         }
@@ -341,8 +342,7 @@ public class ViewEndpoint {
                 log.error("Failed to view data of private view: principal is null");
                 throw new NotAllowedException("Failed to view data of private view: principal is null");
             }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("view-database-view-data"))) {
+            if (!User.hasRole(principal, "view-database-view-data")) {
                 log.error("Failed to view data of private view: role missing");
                 throw new NotAllowedException("Failed to view data of private view: role missing");
             }

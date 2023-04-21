@@ -6,6 +6,7 @@ import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -44,9 +46,14 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
+    @ToString.Exclude
+    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID createdBy;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
 

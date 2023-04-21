@@ -11,6 +11,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -57,7 +58,7 @@ public class ViewDto {
     private Instant created;
 
     @JsonIgnore
-    private String createdBy;
+    private UUID createdBy;
 
     @NotNull
     private UserDto creator;

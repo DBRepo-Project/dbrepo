@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
 import lombok.*;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class DatabaseAccess {
 
     @Id
+    @Type(type = "uuid-char")
     @EqualsAndHashCode.Include
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;

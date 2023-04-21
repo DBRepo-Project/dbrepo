@@ -5,15 +5,13 @@ import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.UUID;
 
 
 @Getter
@@ -37,7 +35,7 @@ public class QueryDto {
     @JsonIgnore
     @EqualsAndHashCode.Exclude
     @NotNull(message = "created by is required")
-    private String createdBy;
+    private UUID createdBy;
 
     @NotNull(message = "creator is required")
     private UserDto creator;

@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -34,15 +35,26 @@ public class Database implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @ToString.Exclude
+    @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID createdBy;
+
+    @Type(type = "uuid-char")
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID")
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID ownedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "owned_by", referencedColumnName = "ID")
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User owner;
 
@@ -66,9 +78,15 @@ public class Database implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @ToString.Exclude
+    @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID contactPerson;
+
+    @Type(type = "uuid-char")
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "contact_person", referencedColumnName = "ID")
+            @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User contact;
 

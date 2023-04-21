@@ -146,7 +146,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .vdbid(databaseId)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
-                .creator(user)
+                .createdBy(user.getId())
                 .database(database)
                 .query(data.getQuery())
                 .isInitialView(false)

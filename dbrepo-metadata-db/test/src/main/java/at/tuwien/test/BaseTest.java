@@ -2170,7 +2170,7 @@ public abstract class BaseTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID.toString())
+            .createdBy(USER_1_ID)
             .creator(USER_1_DTO)
             .build();
 
@@ -2183,7 +2183,7 @@ public abstract class BaseTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
             .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID.toString())
+            .createdBy(USER_1_ID)
             .creator(USER_1_DTO)
             .build();
 

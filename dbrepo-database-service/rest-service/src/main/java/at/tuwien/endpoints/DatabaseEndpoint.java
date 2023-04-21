@@ -148,7 +148,7 @@ public class DatabaseEndpoint {
                 principal);
         final Container container = containerService.find(containerId);
         final User user = userService.findByUsername(principal.getName());
-        if (!container.getOwner().getId().equals(user.getId())) {
+        if (!container.getOwner().equals(user)) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
@@ -195,7 +195,7 @@ public class DatabaseEndpoint {
                 databaseId, data, principal);
         final Database database = databaseService.findById(containerId, databaseId);
         final User user = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(user.getId())) {
+        if (!database.getOwner().equals(user)) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
@@ -236,7 +236,7 @@ public class DatabaseEndpoint {
                 databaseId, transferDto, principal);
         final Database database = databaseService.findById(containerId, databaseId);
         final User user = userService.findByUsername(principal.getName());
-        if (!database.getOwner().getId().equals(user.getId())) {
+        if (!database.getOwner().equals(user)) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
@@ -274,7 +274,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
-        if (principal != null && database.getOwner().getUsername().equals(principal.getName())) {
+        if (principal != null && database.getOwner().equals(principal)) {
             /* only owner sees the access rights */ // TODO improve this by proper mapping
             final List<DatabaseAccess> accesses = accessService.list(databaseId);
             dto.setAccesses(accesses.stream()

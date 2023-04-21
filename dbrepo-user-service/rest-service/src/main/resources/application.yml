@@ -20,6 +20,10 @@ spring:
           time_zone: UTC
   application:
     name: user-service
+  rabbitmq:
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus

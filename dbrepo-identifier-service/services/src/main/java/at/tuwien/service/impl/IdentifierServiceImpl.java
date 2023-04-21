@@ -116,7 +116,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         tmp.setContainerId(data.getCid());
         tmp.setDatabaseId(data.getDbid());
         final User creator = userService.findByUsername(principal.getName());
-        tmp.setCreator(creator);
+        tmp.setCreatedBy(creator.getId());
         tmp.setCreators(List.of());
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
@@ -136,7 +136,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .map(c -> {
                     final Creator creatorDto = identifierMapper.creatorCreateDtoToCreator(c);
                     creatorDto.setPid(entity.getId());
-                    creatorDto.setCreator(creator);
+                    creatorDto.setCreatedBy(creator.getId());
                     return creatorDto;
                 })
                 .collect(Collectors.toList()));
@@ -146,7 +146,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                     .forEach(r -> {
                         final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
                         id.setIid(entity.getId());
-                        id.setCreator(creator);
+                        id.setCreatedBy(creator.getId());
                         final RelatedIdentifier relatedIdentifier = relatedIdentifierRepository.save(id);
                         log.debug("identifier add related with id {}", relatedIdentifier.getId());
                         entity.getRelated().add(relatedIdentifier);

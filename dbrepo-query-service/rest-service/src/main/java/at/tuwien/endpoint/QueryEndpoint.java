@@ -4,6 +4,7 @@ import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.*;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
@@ -114,8 +115,7 @@ public class QueryEndpoint {
                 log.error("Failed to re-execute private query: principal is null");
                 throw new NotAllowedException("Failed to re-execute private query: principal is null");
             }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("re-execute-query"))) {
+            if (!User.hasRole(principal, "re-execute-query")) {
                 log.error("Failed to re-execute private query: role missing");
                 throw new NotAllowedException("Failed to re-execute private query: role missing");
             }
@@ -149,8 +149,7 @@ public class QueryEndpoint {
                 log.error("Failed to re-execute private query: principal is null");
                 throw new NotAllowedException("Failed to re-execute private query: principal is null");
             }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("re-execute-query"))) {
+            if (!User.hasRole(principal, "re-execute-query")) {
                 log.error("Failed to re-execute private query: role missing");
                 throw new NotAllowedException("Failed to re-execute private query: role missing");
             }
@@ -183,8 +182,7 @@ public class QueryEndpoint {
                 log.error("Failed to export private query: principal is null");
                 throw new NotAllowedException("Failed to export private query: principal is null");
             }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("export-query-data"))) {
+            if (!User.hasRole(principal, "export-query-data")) {
                 log.error("Failed to export private query: role missing");
                 throw new NotAllowedException("Failed to export private query: role missing");
             }

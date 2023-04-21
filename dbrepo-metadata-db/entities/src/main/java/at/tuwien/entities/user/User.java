@@ -5,9 +5,12 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.Authentication;
 
 import javax.persistence.*;
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,15 +27,16 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"})
 })
 @NamedQueries({
-        @NamedQuery(name = "User.findAll", query = "select u from User u join Realm r on r.name = 'dbrepo'"),
-        @NamedQuery(name = "User.findById", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.id = ?1"),
-        @NamedQuery(name = "User.findByUsername", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.username = ?1")
+        @NamedQuery(name = "User.findAll", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.enabled = true"),
+        @NamedQuery(name = "User.findById", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.id = ?1 and u.enabled = true"),
+        @NamedQuery(name = "User.findByUsername", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.username = ?1 and u.enabled = true")
 })
 public class User {
 
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(nullable = false)
@@ -45,6 +49,7 @@ public class User {
     private String lastname;
 
     @Column(name = "REALM_ID", columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
     private UUID realmId;
 
     @Column(nullable = false)
@@ -98,5 +103,35 @@ public class User {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
     private List<at.tuwien.entities.database.table.Table> tables;
+
+    /**
+     * Compares if the user instance equals with another instance by the principal.
+     *
+     * @param principal The user principal.
+     * @return True if the user are equal, false otherwise.
+     */
+    public boolean equals(Principal principal) {
+        if (principal == null) {
+            return false;
+        }
+        return this.username.equals(principal.getName());
+    }
+
+    /**
+     * Compares the user principal and checks if a certain role is present.
+     *
+     * @param principal The user principal.
+     * @param role      The role.
+     * @return True if the role is present, false otherwise.
+     */
+    public static boolean hasRole(Principal principal, String role) {
+        if (principal == null || role == null) {
+            return false;
+        }
+        final Authentication authentication = (Authentication) principal;
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals(role));
+    }
 
 }

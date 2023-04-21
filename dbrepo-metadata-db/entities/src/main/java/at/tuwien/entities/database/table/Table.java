@@ -7,6 +7,7 @@ import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -41,9 +42,14 @@ public class Table {
     @EqualsAndHashCode.Include
     private Long tdbid;
 
+    @ToString.Exclude
+    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID createdBy;
+
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", columnDefinition = "VARCHAR(36)")
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User creator;
 

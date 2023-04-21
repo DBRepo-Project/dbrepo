@@ -133,8 +133,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setId(containerId);
         database.setContainer(container);
         final User owner = userService.findByUsername(principal.getName());
-        database.setCreator(owner);
-        database.setOwner(owner);
+        database.setOwnedBy(owner.getId());
+        database.setCreatedBy(owner.getId());
+        database.setContactPerson(owner.getId());
         database.setExchangeName("dbrepo." + database.getInternalName());
         final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
         try {
@@ -185,7 +186,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database entity = findById(containerId, databaseId);
         final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
-        entity.setOwner(user);
+        entity.setOwnedBy(user.getId());
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
         log.info("Updated database in elastic search with id {}", entity.getId());
         return entity;

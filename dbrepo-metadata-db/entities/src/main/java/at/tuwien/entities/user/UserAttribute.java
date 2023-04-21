@@ -2,6 +2,7 @@ package at.tuwien.entities.user;
 
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -21,10 +22,12 @@ public class UserAttribute {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
     private UUID id;
 
     @ToString.Exclude
     @Column(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
     private UUID userId;
 
     @Column(name = "NAME", nullable = false)

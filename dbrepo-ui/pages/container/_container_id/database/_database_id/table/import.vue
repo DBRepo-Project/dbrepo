@@ -194,8 +194,8 @@
   </div>
 </template>
 <script>
+import { notEmpty, isNonNegativeInteger } from '@/utils'
 import TableSchema from '@/components/TableSchema'
-import { notEmpty, isNonNegativeInteger, isResearcher } from '@/utils'
 import ContainerService from '@/api/container.service'
 import TableService from '@/api/table.service'
 import MiddlewareService from '@/api/middleware.service'
@@ -279,12 +279,6 @@ export default {
     },
     roles () {
       return this.$store.state.roles
-    },
-    isResearcher () {
-      return isResearcher(this.user)
-    },
-    fileConfig () {
-      return { headers: { 'Content-Type': 'multipart/form-data' } }
     },
     validTableName () {
       if (this.tableCreate.name === null) {
@@ -387,7 +381,8 @@ export default {
     },
     async loadDateFormats () {
       this.loading = true
-      this.dateFormats = await ContainerService.findOne(this.$route.params.container_id).image.date_formats
+      const res = await ContainerService.findOne(this.$route.params.container_id)
+      this.dateFormats = await ContainerService.findImage(res.image.id).date_formats
       this.loading = true
     },
     createTable () {

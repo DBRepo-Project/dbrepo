@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.ExportResource;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
@@ -55,8 +56,7 @@ public class ExportEndpoint {
                 log.error("Failed to export private table: principal is null");
                 throw new NotAllowedException("Failed to export private table: principal is null");
             }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("export-table-data"))) {
+            if (!User.hasRole(principal, "export-table-data")) {
                 log.error("Failed to export private table: role missing");
                 throw new NotAllowedException("Failed to export private table: role missing");
             }

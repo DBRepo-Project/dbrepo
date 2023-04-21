@@ -12,22 +12,22 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canAddTuple" class="mr-2 mb-1" @click="addTuple">
-          Add
+          <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
         <v-btn v-if="canEditTuple" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
-          Edit
+          <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
         <v-btn v-if="canDeleteTuple" color="error" class="mr-2 mb-1" :loading="loadingDelete" @click="deleteItems">
-          Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
+          <v-icon left>mdi-delete</v-icon> Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
-          Create Subset
+          <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
         <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
-          Create View
+          <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
         <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
-          Import csv
+          <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>

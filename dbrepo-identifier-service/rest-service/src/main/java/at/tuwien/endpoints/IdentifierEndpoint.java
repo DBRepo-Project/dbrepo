@@ -174,7 +174,7 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data)
-            throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
+            throws IdentifierNotFoundException, IdentifierRequestException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.update(id, data);
         return ResponseEntity.accepted()

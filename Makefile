@@ -46,6 +46,25 @@ build-docker:
 	docker compose build dbrepo-metadata-db
 	docker compose build --parallel
 
+build-docker-slow:
+	docker compose build dbrepo-analyse-service
+	docker compose build dbrepo-authentication-service
+	docker compose build dbrepo-broker-service
+	docker compose build dbrepo-metadata-db
+	docker compose build dbrepo-container-service
+	docker compose build dbrepo-database-service
+	docker compose build dbrepo-discovery-service
+	docker compose build dbrepo-gateway-service
+	docker compose build dbrepo-identifier-service
+	docker compose build dbrepo-metadata-service
+	docker compose build dbrepo-proxy
+	docker compose build dbrepo-query-service
+	docker compose build dbrepo-search-service
+	docker compose build dbrepo-semantics-service
+	docker compose build dbrepo-table-service
+	docker compose build dbrepo-ui
+	docker compose build dbrepo-user-service
+
 build-frontend:
 	yarn --cwd ./dbrepo-ui install --legacy-peer-deps
 	yarn --cwd ./dbrepo-ui run build

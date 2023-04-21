@@ -20,6 +20,10 @@ spring:
           time_zone: UTC
   application:
     name: user-service
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
