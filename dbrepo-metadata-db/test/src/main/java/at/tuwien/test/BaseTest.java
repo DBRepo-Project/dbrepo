@@ -813,6 +813,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
             .ipAddress(CONTAINER_1_IP)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .creator(USER_1)
             .owner(USER_1)
             .build();
@@ -826,6 +828,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
             .ipAddress(CONTAINER_1_IP)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .build();
@@ -850,6 +854,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
             .ipAddress(CONTAINER_2_IP)
+            .createdBy(USER_2_ID)
+            .ownedBy(USER_2_ID)
             .creator(USER_2)
             .owner(USER_2)
             .build();
@@ -863,6 +869,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
             .ipAddress(CONTAINER_2_IP)
+            .createdBy(USER_2_ID)
+            .ownedBy(USER_2_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .build();
@@ -887,6 +895,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
             .ipAddress(CONTAINER_3_IP)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .creator(USER_3)
             .owner(USER_3)
             .build();
@@ -900,6 +910,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
             .ipAddress(CONTAINER_3_IP)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .build();
@@ -924,6 +936,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
             .ipAddress(CONTAINER_4_IP)
+            .createdBy(USER_4_ID)
+            .ownedBy(USER_4_ID)
             .creator(USER_4)
             .owner(USER_4)
             .build();
@@ -937,6 +951,8 @@ public abstract class BaseTest {
             .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
             .ipAddress(CONTAINER_4_IP)
+            .createdBy(USER_4_ID)
+            .ownedBy(USER_4_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .build();
@@ -1007,6 +1023,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
+            .contactPerson(USER_1_ID)
+            .contact(USER_1)
             .creator(DATABASE_1_CREATOR)
             .owner(DATABASE_1_OWNER)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
@@ -1025,6 +1045,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
+            .contactPerson(USER_1_ID)
+            .contact(null /* for jpa */)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
@@ -1124,6 +1148,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
+            .createdBy(USER_2_ID)
+            .contactPerson(USER_2_ID)
+            .contact(USER_2)
+            .ownedBy(USER_2_ID)
             .creator(DATABASE_2_CREATOR)
             .owner(DATABASE_2_OWNER)
             .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
@@ -1142,6 +1170,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
+            .createdBy(USER_2_ID)
+            .ownedBy(USER_2_ID)
+            .contactPerson(USER_1_ID)
+            .contact(null /* for jpa */)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
@@ -1247,6 +1279,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
+            .contactPerson(USER_3_ID)
+            .contact(USER_3)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .creator(DATABASE_3_CREATOR)
             .owner(DATABASE_3_OWNER)
             .tables(List.of()) /* TABLE_8 */
@@ -1265,6 +1301,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
+            .contactPerson(USER_3_ID)
+            .contact(null /* for jpa */)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
@@ -1362,6 +1402,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
+            .contactPerson(USER_4_ID)
+            .contact(USER_4)
+            .createdBy(USER_4_ID)
+            .ownedBy(USER_4_ID)
             .creator(USER_4)
             .owner(USER_4)
             .tables(List.of())
@@ -1380,6 +1424,10 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
+            .contactPerson(USER_4_ID)
+            .contact(null /* for jpa */)
+            .createdBy(USER_4_ID)
+            .ownedBy(USER_4_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
@@ -1571,6 +1619,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(TABLE_7_COLUMNS)
             .creator(USER_1)
             .created(TABLE_7_CREATED)
@@ -1586,6 +1635,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(List.of() /* for jpa */)
             .creator(null /* for jpa */)
             .created(TABLE_7_CREATED)
@@ -1636,6 +1686,7 @@ public abstract class BaseTest {
                             .autoGenerated(false)
                             .isPrimaryKey(false)
                             .build()))
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
@@ -2482,6 +2533,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(TABLE_1_COLUMNS)
             .constraints(null) /* TABLE_1_CONSTRAINTS */
             .creator(USER_1)
@@ -2500,6 +2552,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
             .creator(null /* for jpa */)
@@ -2561,6 +2614,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
             .created(TABLE_2_CREATED)
@@ -2578,6 +2632,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(List.of() /* for jpa */)
             .creator(null /* for jpa */)
             .created(TABLE_2_CREATED)
@@ -3072,6 +3127,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(TABLE_3_COLUMNS)
             .constraints(TABLE_3_CONSTRAINTS)
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
@@ -3090,6 +3146,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(TABLE_3_CONSTRAINTS)
+            .createdBy(USER_1_ID)
             .creator(null /* for jpa */)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
@@ -3406,6 +3463,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(TABLE_4_COLUMNS)
             .constraints(TABLE_4_CONSTRAINTS)
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .build();
 
@@ -3518,6 +3576,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_5_ROUTING_KEY)
             .columns(TABLE_5_COLUMNS)
             .constraints(TABLE_5_CONSTRAINTS)
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
@@ -3648,6 +3707,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_2_ID)
             .queueName(TABLE_6_QUEUE_NAME)
             .routingKey(TABLE_6_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
             .created(TABLE_6_CREATED)
@@ -3664,6 +3724,7 @@ public abstract class BaseTest {
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
+            .createdBy(USER_1_ID)
             .columns(List.of())
             .creator(USER_1)
             .build();
@@ -3686,6 +3747,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .query(VIEW_1_QUERY)
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .build();
 
@@ -3696,6 +3758,7 @@ public abstract class BaseTest {
             .internalName(VIEW_1_INTERNAL_NAME)
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
+            .createdBy(USER_1_ID)
             .query(VIEW_1_QUERY)
             .build();
 
@@ -3718,6 +3781,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
             .creator(USER_1)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static ViewDto VIEW_2_DTO = ViewDto.builder()
@@ -3728,6 +3792,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static Long VIEW_3_ID = 3L;
@@ -3749,6 +3814,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_3_PUBLIC)
             .query(VIEW_3_QUERY)
             .creator(USER_1)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static ViewDto VIEW_3_DTO = ViewDto.builder()
@@ -3759,6 +3825,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
             .query(VIEW_3_QUERY)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static Long VIEW_4_ID = 4L;
@@ -3779,6 +3846,8 @@ public abstract class BaseTest {
             .vdbid(VIEW_4_DATABASE_ID)
             .isPublic(VIEW_4_PUBLIC)
             .query(VIEW_4_QUERY)
+            .createdBy(USER_1_ID)
+            .creator(USER_1)
             .build();
 
     public final static Long VIEW_5_ID = 5L;
@@ -3799,6 +3868,8 @@ public abstract class BaseTest {
             .vdbid(VIEW_5_DATABASE_ID)
             .isPublic(VIEW_5_PUBLIC)
             .query(VIEW_5_QUERY)
+            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;
@@ -3904,6 +3975,8 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_PUBLISHER = "Austrian Government";
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
+    public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
+    public final static User IDENTIFIER_1_CREATOR = USER_1;
 
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
@@ -3912,6 +3985,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_1_LASTNAME)
             .orcid(CREATOR_1_ORCID)
             .affiliation(CREATOR_1_AFFIL)
+            .createdBy(IDENTIFIER_1_CREATED_BY)
+            .creator(IDENTIFIER_1_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_1_CREATOR_1_DTO = CreatorDto.builder()
@@ -3943,6 +4018,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
+            .createdBy(USER_1_ID)
             .creator(USER_1)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .build();
@@ -3968,6 +4044,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
+            .createdBy(USER_1_ID)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
             .build();
@@ -3993,6 +4070,8 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
+            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .build();
 
@@ -4069,6 +4148,8 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static UUID IDENTIFIER_2_CREATED_BY = USER_2_ID;
+    public final static User IDENTIFIER_2_CREATOR = USER_2;
 
     public final static Creator IDENTIFIER_2_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
@@ -4077,6 +4158,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_1_LASTNAME)
             .orcid(CREATOR_1_ORCID)
             .affiliation(CREATOR_1_AFFIL)
+            .createdBy(IDENTIFIER_2_CREATED_BY)
+            .creator(IDENTIFIER_2_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_2_CREATOR_1_DTO = CreatorDto.builder()
@@ -4094,6 +4177,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_2_LASTNAME)
             .orcid(CREATOR_2_ORCID)
             .affiliation(CREATOR_2_AFFIL)
+            .createdBy(IDENTIFIER_2_CREATED_BY)
+            .creator(IDENTIFIER_2_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_2_CREATOR_2_DTO = CreatorDto.builder()
@@ -4126,6 +4211,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
+            .createdBy(USER_2_ID)
             .creator(USER_2)
             .creators(List.of(IDENTIFIER_2_CREATOR_1, IDENTIFIER_2_CREATOR_2))
             .build();
@@ -4152,6 +4238,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
+            .createdBy(USER_2_ID)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
             .build();
@@ -4366,6 +4453,8 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_3_PUBLISHER = "Norwegian Government";
     public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static UUID IDENTIFIER_3_CREATOR_ID = USER_3_ID;
+    public final static User IDENTIFIER_3_CREATOR = USER_3;
 
     public final static Creator IDENTIFIER_3_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
@@ -4374,6 +4463,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_1_LASTNAME)
             .orcid(CREATOR_1_ORCID)
             .affiliation(CREATOR_1_AFFIL)
+            .createdBy(IDENTIFIER_3_CREATOR_ID)
+            .creator(IDENTIFIER_3_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_3_CREATOR_1_DTO = CreatorDto.builder()
@@ -4391,6 +4482,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_2_LASTNAME)
             .orcid(CREATOR_2_ORCID)
             .affiliation(CREATOR_2_AFFIL)
+            .createdBy(IDENTIFIER_3_CREATOR_ID)
+            .creator(IDENTIFIER_3_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_3_CREATOR_2_DTO = CreatorDto.builder()
@@ -4408,6 +4501,8 @@ public abstract class BaseTest {
             .lastname(CREATOR_3_LASTNAME)
             .orcid(CREATOR_3_ORCID)
             .affiliation(CREATOR_3_AFFIL)
+            .createdBy(IDENTIFIER_3_CREATOR_ID)
+            .creator(IDENTIFIER_3_CREATOR)
             .build();
 
     public final static CreatorDto IDENTIFIER_3_CREATOR_3_DTO = CreatorDto.builder()
@@ -4440,7 +4535,8 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .creator(USER_3)
+            .createdBy(IDENTIFIER_3_CREATOR_ID)
+            .creator(IDENTIFIER_3_CREATOR)
             .creators(List.of(IDENTIFIER_3_CREATOR_1, IDENTIFIER_3_CREATOR_2, IDENTIFIER_3_CREATOR_3))
             .build();
 
@@ -4466,6 +4562,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
+            .createdBy(USER_3_ID)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
             .build();
@@ -4556,6 +4653,8 @@ public abstract class BaseTest {
     public final static Long IDENTIFIER_4_RESULT_NUMBER = 2L;
     public final static String IDENTIFIER_4_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.DATABASE;
+    public final static UUID IDENTIFIER_4_CREATOR_ID = USER_4_ID;
+    public final static User IDENTIFIER_4_CREATOR = USER_4;
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
@@ -4578,6 +4677,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
+            .createdBy(USER_3_ID)
             .creator(USER_3)
             .creators(List.of())
             .build();
@@ -4603,6 +4703,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
+            .createdBy(USER_3_ID)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
             .build();

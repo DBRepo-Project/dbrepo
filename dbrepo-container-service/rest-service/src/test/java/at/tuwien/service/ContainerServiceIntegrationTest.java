@@ -5,7 +5,6 @@ import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.ImageRepository;
@@ -55,9 +54,10 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         /* create networks */
         DockerConfig.createAllNetworks();
         /* mock data */
-        userRepository.save(USER_1_SIMPLE);
-        imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        imageRepository.save(IMAGE_1_SIMPLE);
     }
 
     @AfterEach
@@ -81,7 +81,6 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         assertEquals(CONTAINER_1_NAME, container.getName());
         assertEquals(USER_1_USERNAME, container.getCreator().getUsername());
         assertEquals(USER_1_USERNAME, container.getOwner().getUsername());
-        assertEquals(1, userRepository.findAll().size());
     }
 
     @Test

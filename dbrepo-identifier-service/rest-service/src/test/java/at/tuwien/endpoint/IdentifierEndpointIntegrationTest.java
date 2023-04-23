@@ -6,11 +6,9 @@ import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
-import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,9 +57,6 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private RealmRepository realmRepository;
 
     @Autowired
-    private AccessRepository accessRepository;
-
-    @Autowired
     private IdentifierEndpoint identifierEndpoint;
 
     @BeforeEach
@@ -70,6 +65,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
+        userRepository.save(USER_3);
+        userRepository.save(USER_4);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

@@ -28,42 +28,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(ContainerNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(ContainerNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.container.notfound")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @Hidden
-    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    @ExceptionHandler(NotAllowedException.class)
-    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.METHOD_NOT_ALLOWED)
-                .message(e.getLocalizedMessage())
-                .code("error.container.notallowed")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @Hidden
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ImageInvalidException.class)
-    public ResponseEntity<ApiErrorDto> handle(ImageInvalidException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.image.invalid")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @Hidden
     @ResponseStatus(HttpStatus.GONE)
     @ExceptionHandler(ContainerAlreadyRemovedException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyRemovedException e, WebRequest request) {
@@ -100,6 +64,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ContainerNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(ContainerNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.container.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     @ExceptionHandler(ContainerNotRunningException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerNotRunningException e, WebRequest request) {
@@ -118,7 +94,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
-                .code("error.container.running")
+                .code("error.container.stillrunning")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -148,6 +124,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ImageInvalidException.class)
+    public ResponseEntity<ApiErrorDto> handle(ImageInvalidException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.image.invalid")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ImageNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ImageNotFoundException e, WebRequest request) {
@@ -155,6 +143,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
                 .code("error.image.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(NotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.container.notallowed")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

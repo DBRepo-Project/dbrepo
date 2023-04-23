@@ -121,6 +121,8 @@ public class ContainerServiceImpl implements ContainerService {
         }
         container.setHash(response1.getId());
         container = containerRepository.save(container);
+        container.setCreator(user);
+        container.setOwner(user);
         log.info("Created container {}", container.getId());
         return container;
     }
