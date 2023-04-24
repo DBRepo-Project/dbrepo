@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
             ForeignUserException, UserAttributeNotFoundException {
         /* check */
         User user = find(id);
-        if (!user.getUsername().equals(principal.getName())) {
+        if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
@@ -147,7 +147,7 @@ public class UserServiceImpl implements UserService {
             ForeignUserException {
         /* check */
         final User user = find(id);
-        if (!user.getUsername().equals(principal.getName())) {
+        if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }

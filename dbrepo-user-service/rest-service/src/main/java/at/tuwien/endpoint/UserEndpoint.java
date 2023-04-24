@@ -107,7 +107,7 @@ public class UserEndpoint {
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
         final User user = userService.find(UUID.fromString(id));
-        if (!user.equals(principal)) {
+        if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
@@ -128,7 +128,7 @@ public class UserEndpoint {
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
         final User user = userService.find(UUID.fromString(id));
-        if (!user.equals(principal)) {
+        if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
@@ -149,7 +149,7 @@ public class UserEndpoint {
             throws UserNotFoundException, ForeignUserException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
         final User user = userService.find(UUID.fromString(id));
-        if (!user.equals(principal)) {
+        if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }

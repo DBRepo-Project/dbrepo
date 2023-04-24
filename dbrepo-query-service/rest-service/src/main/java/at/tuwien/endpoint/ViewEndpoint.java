@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -150,7 +149,7 @@ public class ViewEndpoint {
                 databaseId, data, principal);
         /* check */
         final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getOwner().equals(principal)) {
+        if (!database.getOwner().equalsPrincipal(principal)) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
@@ -253,7 +252,7 @@ public class ViewEndpoint {
                 databaseId, viewId, principal);
         /* check */
         final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getOwner().equals(principal)) {
+        if (!database.getOwner().equalsPrincipal(principal)) {
             log.error("Failed to delete view: not the database owner");
             throw new NotAllowedException("Failed to delete view: not the database owner");
         }

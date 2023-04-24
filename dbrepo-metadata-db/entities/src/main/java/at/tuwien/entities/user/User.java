@@ -110,7 +110,7 @@ public class User {
      * @param principal The user principal.
      * @return True if the user are equal, false otherwise.
      */
-    public boolean equals(Principal principal) {
+    public boolean equalsPrincipal(Principal principal) {
         if (principal == null) {
             return false;
         }

@@ -3,12 +3,18 @@ package at.tuwien.validation;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.config.QueryConfig;
-import at.tuwien.exception.PaginationException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.SortException;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
+import at.tuwien.exception.*;
+import at.tuwien.service.AccessService;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,10 +25,18 @@ import java.util.regex.Pattern;
 @Component
 public class EndpointValidator {
 
+    private final UserService userService;
     private final QueryConfig queryConfig;
+    private final AccessService accessService;
+    private final DatabaseService databaseService;
 
-    public EndpointValidator(QueryConfig queryConfig) {
+    @Autowired
+    public EndpointValidator(UserService userService, QueryConfig queryConfig, AccessService accessService,
+                             DatabaseService databaseService) {
+        this.userService = userService;
         this.queryConfig = queryConfig;
+        this.accessService = accessService;
+        this.databaseService = databaseService;
     }
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
@@ -72,6 +86,22 @@ public class EndpointValidator {
         }
         log.error("Query contains forbidden keyword(s): {}", words);
         throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
+    }
+
+    public void validateOnlyAccess(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException, NotAllowedException {
+        final Database database = databaseService.find(containerId, databaseId);
+        if (database.getIsPublic()) {
+            log.trace("database with id {} is public: no access needed", databaseId);
+            return;
+        }
+        log.trace("database with id {} is private", databaseId);
+        if (principal == null) {
+            log.error("Access not allowed: database with id {} is not public and no authorization provided", databaseId);
+            throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
+        }
+        log.trace("principal is {}", principal);
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        log.trace("found access {}", access);
     }
 
 }

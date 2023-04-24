@@ -100,7 +100,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_2_SIMPLE);
         userRepository.save(USER_3_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
     }
 
     @AfterEach

@@ -21,7 +21,7 @@ public class UserMapperTest extends BaseUnitTest {
     }
 
     @Test
-    public void equals_identitiy_succeeds() {
+    public void equals_identity_succeeds() {
 
         /* test */
         assertEquals(USER_1, USER_1);

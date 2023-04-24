@@ -274,7 +274,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
-        if (principal != null && database.getOwner().equals(principal)) {
+        if (principal != null && database.getOwner().equalsPrincipal(principal)) {
             /* only owner sees the access rights */ // TODO improve this by proper mapping
             final List<DatabaseAccess> accesses = accessService.list(databaseId);
             dto.setAccesses(accesses.stream()
