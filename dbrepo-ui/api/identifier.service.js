@@ -53,6 +53,36 @@ class IdentifierService {
         })
     })
   }
+
+  export (pid) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/pid/${pid}`, { headers: { Accept: 'text/xml' } })
+        .then((response) => {
+          const identifier = response.data
+          console.debug('response identifier', identifier)
+          resolve(identifier)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to export identifier', error)
+          Vue.$toast.error(`[${code}] Failed to export identifier: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  delete (pid) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/pid/${pid}`, { headers: { Accept: 'application/json' } })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete identifier', error)
+          Vue.$toast.error(`[${code}] Failed to delete identifier: ${message}`)
+          reject(error)
+        })
+    })
+  }
 }
 
 export default new IdentifierService()

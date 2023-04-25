@@ -120,16 +120,12 @@
 </template>
 
 <script>
-import { isDeveloper } from '@/utils'
 import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
 import IdentifierService from '@/api/identifier.service'
 
 export default {
-  name: 'DefaultLayout',
-  components: {
-  },
   data () {
     return {
       drawer: false,
@@ -146,8 +142,7 @@ export default {
   },
   computed: {
     availableLocales () {
-      // return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
-      return []
+      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
     },
     token () {
       return this.$store.state.token
@@ -166,9 +161,6 @@ export default {
     },
     database () {
       return this.$store.state.database
-    },
-    isDeveloper () {
-      return isDeveloper(this.user)
     },
     version () {
       return this.$config.version
