@@ -2,8 +2,13 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.NotAllowedException;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface AccessService {
+
+    @Transactional(readOnly = true)
+    DatabaseAccess find(Long databaseId, String username) throws NotAllowedException;
 
     /**
      * Checks if the user with username has access to the table with given id in database with given id.

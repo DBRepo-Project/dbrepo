@@ -3,10 +3,13 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
+import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,12 +40,15 @@ public class TableEndpoint {
     private final TableMapper tableMapper;
     private final TableService tableService;
     private final MessageQueueService amqpService;
+    private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService) {
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService,
+                         EndpointValidator endpointValidator) {
         this.tableMapper = tableMapper;
         this.amqpService = amqpService;
         this.tableService = tableService;
+        this.endpointValidator = endpointValidator;
     }
 
     @GetMapping
@@ -69,9 +75,11 @@ public class TableEndpoint {
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                     @NotNull @PathVariable("databaseId") Long databaseId,
                                                     Principal principal)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint list tables, containerId={}, databaseId={}, principal={}", containerId, databaseId,
                 principal);
+        endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
+        endpointValidator.validateOnlyPrivateHasRole(containerId, databaseId, principal, "list-tables");
         final List<TableBriefDto> dto = tableService.findAll(containerId, databaseId)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
@@ -131,6 +139,7 @@ public class TableEndpoint {
             NotAllowedException {
         log.debug("endpoint create table, containerId={}, databaseId={}, createDto={}, principal={}", containerId,
                 databaseId, createDto, principal);
+        endpointValidator.validateOnlyAccess(databaseId, principal, true);
         final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
@@ -170,9 +179,14 @@ public class TableEndpoint {
                                              @NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, NotAllowedException {
         log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
+        endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
+        if (principal != null && User.hasRole(principal, "find-table")) {
+            log.error("Failed to find table: role is missing");
+            throw new NotAllowedException("Failed to find table: role is missing");
+        }
         final Table table = tableService.findById(containerId, databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);
@@ -222,13 +236,14 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
-                       @NotNull @PathVariable("databaseId") Long databaseId,
-                       @NotNull @PathVariable("tableId") Long tableId,
-                       @NotNull Principal principal)
+                                       @NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
+        endpointValidator.validateOnlyOwner(containerId, databaseId, principal);
         tableService.deleteTable(containerId, databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();

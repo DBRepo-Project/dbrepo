@@ -1138,7 +1138,7 @@ public abstract class BaseTest {
 
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
-            .created(DATABASE_1_CREATED)
+            .created(DATABASE_2_CREATED)
             .lastModified(Instant.now())
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
@@ -1160,7 +1160,7 @@ public abstract class BaseTest {
 
     public final static Database DATABASE_2_SIMPLE = Database.builder()
             .id(DATABASE_2_ID)
-            .created(DATABASE_1_CREATED)
+            .created(DATABASE_2_CREATED)
             .lastModified(Instant.now())
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
