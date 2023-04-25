@@ -13,7 +13,6 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -38,7 +37,6 @@ import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @Log4j2
@@ -259,8 +257,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void delete_publicNoRole_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_4_USERNAME, USER_4_PRINCIPAL, null);
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_delete(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_4_PRINCIPAL);
         });
     }
 
@@ -466,7 +464,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<List<TableBriefDto>> generic_list(Long containerId, Long databaseId, Database database, String username, Principal principal, DatabaseAccess access) throws DatabaseNotFoundException, NotAllowedException {
 
-        /* when */
+        /* mock */
         if (database != null) {
             when(databaseService.find(containerId, databaseId))
                     .thenReturn(database);
@@ -496,7 +494,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<TableBriefDto> generic_create(Long containerId, Long databaseId, Database database, TableCreateDto data, String username, Principal principal, DatabaseAccess access) throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
-        /* when */
+        /* mock */
         if (database != null) {
             when(databaseService.find(containerId, databaseId))
                     .thenReturn(database);
@@ -525,7 +523,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<TableDto> generic_findById(Long containerId, Long databaseId, Long tableId, Database database, Table table, String username, Principal principal, DatabaseAccess access) throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException, TableNotFoundException {
 
-        /* when */
+        /* mock */
         if (table != null) {
             when(tableService.findById(containerId, databaseId, tableId))
                     .thenReturn(table);
@@ -561,7 +559,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<?> generic_delete(Long containerId, Long databaseId, Long tableId, Database database, Table table, Principal principal) throws DatabaseNotFoundException, NotAllowedException, ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, DataProcessingException {
 
-        /* when */
+        /* mock */
         if (table != null) {
             doNothing()
                     .when(tableService)

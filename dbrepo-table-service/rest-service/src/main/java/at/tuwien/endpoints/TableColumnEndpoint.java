@@ -1,6 +1,5 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -8,6 +7,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.TableService;
+import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,11 +34,13 @@ public class TableColumnEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
+    private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableColumnEndpoint(TableMapper tableMapper, TableService tableService) {
+    public TableColumnEndpoint(TableMapper tableMapper, TableService tableService, EndpointValidator endpointValidator) {
         this.tableMapper = tableMapper;
         this.tableService = tableService;
+        this.endpointValidator = endpointValidator;
     }
 
     @PutMapping
@@ -78,11 +80,13 @@ public class TableColumnEndpoint {
                                             @NotNull @PathVariable("tableId") Long tableId,
                                             @NotNull @PathVariable("columnId") Long columnId,
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
-                                            @NotNull Principal principal) throws NotAllowedException,
+                                            @NotNull Principal principal) throws
             TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ContainerNotFoundException, UnitNotFoundException, ConceptNotFoundException {
+            ContainerNotFoundException, UnitNotFoundException, ConceptNotFoundException, NotAllowedException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
+        endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
+        endpointValidator.validateOnlyOwnerOrWriteAll(containerId, databaseId, tableId, principal);
         final TableColumn column = tableService.update(containerId, databaseId, tableId, columnId, updateDto, principal);
         log.info("Updated table semantics of table with id {} and database with id {}", tableId, databaseId);
         final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);

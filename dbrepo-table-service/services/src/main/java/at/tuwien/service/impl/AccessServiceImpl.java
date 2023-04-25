@@ -36,7 +36,7 @@ public class AccessServiceImpl implements AccessService {
 
     @Override
     @Transactional(readOnly = true)
-    public DatabaseAccess hasAccess(Long databaseId, Long tableId, String username) throws AccessDeniedException {
+    public DatabaseAccess hasAccess(Long databaseId, String username) throws AccessDeniedException {
         final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve access, not found");

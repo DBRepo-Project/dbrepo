@@ -11,13 +11,12 @@ public interface AccessService {
     DatabaseAccess find(Long databaseId, String username) throws NotAllowedException;
 
     /**
-     * Checks if the user with username has access to the table with given id in database with given id.
+     * Checks if the user with username has access to the database with given id.
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param username    The username.
+     * @param databaseId The database id.
+     * @param username   The username.
      * @return The access object.
      * @throws AccessDeniedException The user does not have access.
      */
-    DatabaseAccess hasAccess(Long databaseId, Long tableId, String username) throws AccessDeniedException;
+    DatabaseAccess hasAccess(Long databaseId, String username) throws AccessDeniedException;
 }
