@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -139,7 +140,7 @@ public class TableEndpoint {
             NotAllowedException {
         log.debug("endpoint create table, containerId={}, databaseId={}, createDto={}, principal={}", containerId,
                 databaseId, createDto, principal);
-        endpointValidator.validateOnlyAccess(databaseId, principal, true);
+        endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
         final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
         amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
@@ -183,10 +184,7 @@ public class TableEndpoint {
         log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
-        if (principal != null && User.hasRole(principal, "find-table")) {
-            log.error("Failed to find table: role is missing");
-            throw new NotAllowedException("Failed to find table: role is missing");
-        }
+        endpointValidator.validateOnlyPrivateHasRole(containerId, databaseId, principal, "find-table");
         final Table table = tableService.findById(containerId, databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);
@@ -240,10 +238,9 @@ public class TableEndpoint {
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException, NotAllowedException {
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
         log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
-        endpointValidator.validateOnlyOwner(containerId, databaseId, principal);
         tableService.deleteTable(containerId, databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();

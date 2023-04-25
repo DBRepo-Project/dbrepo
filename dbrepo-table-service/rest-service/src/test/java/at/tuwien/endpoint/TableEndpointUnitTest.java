@@ -9,12 +9,14 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.TableService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -36,8 +39,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
@@ -64,10 +66,10 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     private DatabaseService databaseService;
 
     @MockBean
-    private TableRepository tableRepository;
+    private AccessService accessService;
 
     @MockBean
-    private AccessService accessService;
+    private TableService tableService;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -163,6 +165,102 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_create(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findById_publicAnonymous_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
+
+        /* test */
+        generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_publicHasRoleTableNotFound_fails() {
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_publicHasRoleDatabaseNotFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_publicHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
+
+        /* test */
+        final ResponseEntity<TableDto> response = generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final TableDto body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void findById_publicNoRole_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
+
+        /* test */
+        generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME, USER_1_PRINCIPAL, null);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void delete_publicAnonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_delete(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_3, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_publicHasRoleTableNotFound_fails() {
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            generic_delete(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_publiceHasRoleDatabaseNotFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            generic_delete(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_publicHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, ContainerNotFoundException, DataProcessingException {
+
+        /* test */
+        final ResponseEntity<?> response = generic_delete(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_PRINCIPAL);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void delete_publicNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_4_USERNAME, USER_4_PRINCIPAL, null);
         });
     }
 
@@ -262,6 +360,106 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         });
     }
 
+    @Test
+    @WithAnonymousUser
+    public void findById_privateAnonymous_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_privateHasRoleTableNotFound_fails() {
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_privateHasRoleDatabaseNotFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
+    public void findById_privateHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
+
+        /* test */
+        final ResponseEntity<TableDto> response = generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final TableDto body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void findById_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void delete_privateAnonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_delete(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_privateHasRoleTableNotFound_fails() {
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            generic_delete(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_privateHasRoleDatabaseNotFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            generic_delete(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_privateHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, ContainerNotFoundException, DataProcessingException {
+
+        /* test */
+        final ResponseEntity<?> response = generic_delete(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_PRINCIPAL);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void delete_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
+        });
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -272,15 +470,16 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         if (database != null) {
             when(databaseService.find(containerId, databaseId))
                     .thenReturn(database);
-            log.trace("mock {} tables", database.getTables().size());
-            when(tableRepository.findByDatabaseOrderByCreatedDesc(any(Database.class)))
+            when(tableService.findAll(containerId, databaseId))
                     .thenReturn(database.getTables());
+            log.trace("mock {} table(s)", database.getTables().size());
         } else {
             doThrow(DatabaseNotFoundException.class)
                     .when(databaseService)
                     .find(containerId, databaseId);
-            when(tableRepository.findByDatabaseOrderByCreatedDesc(any(Database.class)))
+            when(tableService.findAll(containerId, databaseId))
                     .thenReturn(List.of());
+            log.trace("mock 0 tables");
         }
         if (access != null) {
             when(accessService.find(databaseId, username))
@@ -302,13 +501,13 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             when(databaseService.find(containerId, databaseId))
                     .thenReturn(database);
             log.trace("mock {} tables", database.getTables().size());
-            when(tableRepository.findByDatabaseOrderByCreatedDesc(any(Database.class)))
+            when(tableService.findAll(containerId, databaseId))
                     .thenReturn(database.getTables());
         } else {
             doThrow(DatabaseNotFoundException.class)
                     .when(databaseService)
                     .find(containerId, databaseId);
-            when(tableRepository.findByDatabaseOrderByCreatedDesc(any(Database.class)))
+            when(tableService.findAll(containerId, databaseId))
                     .thenReturn(List.of());
         }
         if (access != null) {
@@ -322,5 +521,63 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         return tableEndpoint.create(containerId, databaseId, data, principal);
+    }
+
+    protected ResponseEntity<TableDto> generic_findById(Long containerId, Long databaseId, Long tableId, Database database, Table table, String username, Principal principal, DatabaseAccess access) throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException, TableNotFoundException {
+
+        /* when */
+        if (table != null) {
+            when(tableService.findById(containerId, databaseId, tableId))
+                    .thenReturn(table);
+            when(databaseService.find(containerId, databaseId))
+                    .thenReturn(database);
+        } else {
+            doThrow(TableNotFoundException.class)
+                    .when(tableService)
+                    .findById(containerId, databaseId, tableId);
+            when(tableService.findAll(containerId, databaseId))
+                    .thenReturn(List.of());
+        }
+        if (database != null) {
+            when(databaseService.find(containerId, databaseId))
+                    .thenReturn(database);
+        } else {
+            doThrow(DatabaseNotFoundException.class)
+                    .when(databaseService)
+                    .find(containerId, databaseId);
+        }
+        if (access != null) {
+            when(accessService.find(databaseId, username))
+                    .thenReturn(access);
+        } else {
+            doThrow(NotAllowedException.class)
+                    .when(accessService)
+                    .find(databaseId, username);
+        }
+
+        /* test */
+        return tableEndpoint.findById(containerId, databaseId, tableId, principal);
+    }
+
+    protected ResponseEntity<?> generic_delete(Long containerId, Long databaseId, Long tableId, Database database, Table table, Principal principal) throws DatabaseNotFoundException, NotAllowedException, ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, DataProcessingException {
+
+        /* when */
+        if (table != null) {
+            doNothing()
+                    .when(tableService)
+                    .deleteTable(containerId, databaseId, tableId);
+        } else {
+            doThrow(TableNotFoundException.class)
+                    .when(tableService)
+                    .deleteTable(containerId, databaseId, tableId);
+        }
+        if (database == null) {
+            doThrow(DatabaseNotFoundException.class)
+                    .when(tableService)
+                    .deleteTable(containerId, databaseId, tableId);
+        }
+
+        /* test */
+        return tableEndpoint.delete(containerId, databaseId, tableId, principal);
     }
 }
