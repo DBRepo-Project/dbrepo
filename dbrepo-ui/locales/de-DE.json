@@ -8,7 +8,7 @@
     "signup": "Registrieren"
   },
   "databases": {
-    "recent": "Kürzliche Datenbanken",
+    "recent": "Neue Datenbanken",
     "tooltip": {
       "private": "Privat",
       "public": "Öffentlich"

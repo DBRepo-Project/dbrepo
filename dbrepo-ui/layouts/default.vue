@@ -85,7 +85,7 @@
             </template>
             <v-list>
               <v-list-item
-                v-for="locale in availableLocales"
+                v-for="locale in []"
                 :key="locale.code"
                 :to="switchLocalePath(locale.code)">
                 <v-list-item-title>{{ locale.name }}</v-list-item-title>

@@ -245,7 +245,6 @@ export default {
       loading: false,
       loadingDelete: false,
       editDbDialog: false,
-      metadataLoading: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -385,26 +384,6 @@ export default {
       }
       this.editDbDialog = false
       this.editVisibilityDialog = false
-    },
-    async download () {
-      this.metadataLoading = true
-      try {
-        const config = this.config
-        config.headers.Accept = 'text/xml'
-        const res = await this.$axios.get(`/api/pid/${this.database.identifier.id}`, config)
-        console.debug('export identifier', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'identifier.xml')
-        document.body.appendChild(link)
-        link.click()
-      } catch (err) {
-        console.error('Could not export identifier', err)
-        this.$toast.error('Could not export identifier')
-        this.error = true
-      }
-      this.metadataLoading = false
     },
     async deleteIdentifier () {
       if (!this.database.identifier.id) {

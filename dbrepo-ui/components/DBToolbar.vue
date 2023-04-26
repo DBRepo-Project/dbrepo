@@ -31,6 +31,12 @@
         <v-btn v-if="canImportCsv" class="mr-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
+        <DownloadButton
+          v-if="database?.identifier"
+          :pid="database.identifier.id"
+          class="mr-2 mb-1">
+          <v-icon left>mdi-code-tags</v-icon> Identifier .xml
+        </DownloadButton>
         <v-btn v-if="canCreateSubset" color="secondary" class="mb-1 white--text" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create`">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
@@ -65,7 +71,10 @@
 </template>
 
 <script>
+import DownloadButton from '@/components/identifier/DownloadButton'
+
 export default {
+  components: { DownloadButton },
   data () {
     return {
       tab: null,
@@ -117,20 +126,6 @@ export default {
         return false
       }
       return this.database.owner.username === this.user.username
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
-    silentConfig () {
-      return {
-        headers: this.config.headers,
-        progress: false
-      }
     }
   }
 }

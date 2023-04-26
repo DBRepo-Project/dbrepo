@@ -117,7 +117,7 @@ class QueryService {
 
   exportSubset (id, databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/query/${queryId}/export`, {}, { headers: { Accept: 'text/csv' } })
+      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           resolve(response.data)
         })
