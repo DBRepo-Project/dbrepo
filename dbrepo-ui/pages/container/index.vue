@@ -2,7 +2,7 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
-        Recent Databases
+        {{ $t('databases.recent', { name: 'vue-i18n' }) }}
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>

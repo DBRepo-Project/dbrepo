@@ -24,19 +24,13 @@ class List:
         self.c.namespace_manager.bind('wdt', 'http://www.wikidata.org/prop/direct/')
         self.c.namespace_manager.bind('schema', 'http://schema.org/')
 
-        if not offline:
-            # ontology of measure
-            rdf = rq.get('http://www.ontology-of-units-of-measure.org/data/om-2/',
-                         headers={'Accept': 'application/rdf+xml'})
-            rdf.raise_for_status()
-            self.u.parse(data=rdf.text, format='xml')
+        # ontology of measure
+        self.u.parse('ontologies/om-2.rdf', format='xml')
 
-            # wikidata
-            rdf = rq.get('https://query.wikidata.org/sparql',
-                         headers={'Accept': 'application/rdf+xml'})
-            rdf.raise_for_status()
-        else:
-            self.u.parse('ontologies/om-2.rdf', format='xml')
+        # wikidata
+        rdf = rq.get('https://query.wikidata.org/sparql',
+                     headers={'Accept': 'application/rdf+xml'})
+        rdf.raise_for_status()
 
     def list_units(self, name, offset=0) -> []:
         name = name.lower()

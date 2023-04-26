@@ -61,11 +61,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private IndexConfig indexInitializer;
 
-    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 

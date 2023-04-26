@@ -72,8 +72,8 @@ export default {
     '@nuxtjs/axios',
     ['nuxt-i18n', {
       locales: [
-        { code: 'de', file: 'de-DE.js', name: 'Deutsch' },
-        { code: 'en', file: 'en-US.js', name: 'English' }
+        { code: 'de', file: path.resolve(__dirname, 'locales/de-DE.json'), name: 'Deutsch' },
+        { code: 'en', file: path.resolve(__dirname, 'locales/en-US.json'), name: 'English' }
       ],
       lazy: true,
       langDir: 'lang/',

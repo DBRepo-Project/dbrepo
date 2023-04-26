@@ -32,7 +32,7 @@ networks:
 
 services:
   dbrepo-metadata-db:
-    restart: no
+    restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     build: ./dbrepo-metadata-db
@@ -50,7 +50,7 @@ services:
       driver: json-file
 
   dbrepo-discovery-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-discovery-service
     hostname: discovery-service
     build: ./dbrepo-discovery-service
@@ -65,7 +65,7 @@ services:
       driver: json-file
 
   dbrepo-gateway-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
     build: ./dbrepo-gateway-service
@@ -83,7 +83,7 @@ services:
       driver: json-file
 
   dbrepo-database-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-database-service
     hostname: database-service
     build: ./dbrepo-database-service
@@ -108,7 +108,7 @@ services:
       driver: json-file
 
   dbrepo-container-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-container-service
     hostname: container-service
     build: ./dbrepo-container-service
@@ -128,7 +128,7 @@ services:
       driver: json-file
 
   dbrepo-authentication-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
     image: dbrepo-authentication-service
@@ -151,7 +151,7 @@ services:
       driver: json-file
 
   dbrepo-query-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-query-service
     hostname: query-service
     build: ./dbrepo-query-service
@@ -176,7 +176,7 @@ services:
       driver: json-file
 
   dbrepo-table-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-table-service
     hostname: table-service
     build: ./dbrepo-table-service
@@ -202,7 +202,7 @@ services:
       driver: json-file
 
   dbrepo-identifier-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-identifier-service
     hostname: identifier-service
     build: ./dbrepo-identifier-service
@@ -224,7 +224,7 @@ services:
       driver: json-file
 
   dbrepo-metadata-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
     build: ./dbrepo-metadata-service
@@ -244,7 +244,7 @@ services:
       driver: json-file
 
   dbrepo-analyse-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
     build: ./dbrepo-analyse-service
@@ -266,7 +266,7 @@ services:
       driver: json-file
 
   dbrepo-user-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-user-service
     hostname: user-service
     build: ./dbrepo-user-service
@@ -286,7 +286,7 @@ services:
       driver: json-file
 
   dbrepo-semantics-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-semantics-service
     hostname: semantics-service
     build: ./dbrepo-semantics-service
@@ -311,7 +311,7 @@ services:
       driver: json-file
 
   dbrepo-broker-service:
-    restart: no
+    restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
     build: ./dbrepo-broker-service
@@ -355,7 +355,7 @@ services:
       driver: json-file
 
   dbrepo-ui:
-    restart: no
+    restart: "no"
     container_name: dbrepo-ui
     hostname: ui
     build: ./dbrepo-ui
@@ -376,7 +376,7 @@ services:
       driver: json-file
 
   dbrepo-proxy:
-    restart: no
+    restart: "no"
     container_name: dbrepo-proxy
     hostname: proxy
     build: ./dbrepo-proxy

@@ -23,7 +23,7 @@
               mdi-lock-open-outline
             </v-icon>
           </template>
-          <span>{{ databaseTooltip }}</span>
+          <span>{{ $t('databases.tooltip.' + (database.is_public ? 'public' : 'private'), { name: 'vue-i18n' }) }}</span>
         </v-tooltip>
       </v-toolbar-title>
       <v-spacer />
@@ -44,19 +44,19 @@
       <template v-slot:extension>
         <v-tabs v-model="tab" color="primary">
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/info`">
-            Info
+            {{ $t('databases.toolbar.info', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
-            Tables
+            {{ $t('databases.toolbar.tables', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query`">
-            Subsets
+            {{ $t('databases.toolbar.subsets', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view`">
-            Views
+            {{ $t('databases.toolbar.views', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab v-if="isOwner" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/settings`">
-            Settings
+            {{ $t('databases.toolbar.settings', { name: 'vue-i18n' }) }}
           </v-tab>
         </v-tabs>
       </template>
@@ -131,9 +131,6 @@ export default {
         headers: this.config.headers,
         progress: false
       }
-    },
-    databaseTooltip () {
-      return this.database.is_public ? 'Public' : 'Private'
     }
   }
 }

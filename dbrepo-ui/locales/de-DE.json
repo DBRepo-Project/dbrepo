@@ -1,0 +1,24 @@
+{
+  "layout": {
+    "information": "Information",
+    "databases": "Datenbanken",
+    "search": "Suchen ...",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signup": "Registrieren"
+  },
+  "databases": {
+    "recent": "Kürzliche Datenbanken",
+    "tooltip": {
+      "private": "Privat",
+      "public": "Öffentlich"
+    },
+    "toolbar": {
+      "info": "Info",
+      "tables": "Tabellen",
+      "subsets": "Subsets",
+      "views": "Views",
+      "settings": "Einstellungen"
+    }
+  }
+}

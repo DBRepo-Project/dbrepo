@@ -25,7 +25,7 @@
             <v-icon>mdi-information-outline</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Information</v-list-item-title>
+            <v-list-item-title>{{ $t('layout.information', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -35,7 +35,7 @@
             <v-icon>mdi-database</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Databases</v-list-item-title>
+            <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -49,7 +49,7 @@
           flat
           single-line
           hide-details
-          placeholder="Search ..." />
+          :placeholder="$t('layout.search', { name: 'vue-i18n' })" />
         <v-btn icon class="ml-2" type="submit" name="search-submit" @click="retrieve">
           <v-icon>mdi-magnify</v-icon>
         </v-btn>
@@ -59,17 +59,19 @@
             class="mr-2"
             color="secondary"
             to="/login">
-            <v-icon left>mdi-login</v-icon> Login
+            <v-icon left>mdi-login</v-icon>
+            {{ $t('layout.login', { name: 'vue-i18n' }) }}
           </v-btn>
           <v-btn
             class="mr-2"
             color="primary"
             to="/signup">
-            <v-icon left>mdi-account-plus</v-icon> Signup
+            <v-icon left>mdi-account-plus</v-icon>
+            {{ $t('layout.signup', { name: 'vue-i18n' }) }}
           </v-btn>
         </div>
-        <div v-else>
-          <v-btn to="/user" plain>
+        <div>
+          <v-btn v-if="user" to="/user" plain>
             {{ user.username }}
           </v-btn>
           <v-menu bottom offset-y left>
@@ -89,9 +91,9 @@
                 <v-list-item-title>{{ locale.name }}</v-list-item-title>
               </v-list-item>
               <v-list-item
-                v-if="token"
+                v-if="user"
                 @click="logout">
-                Logout
+                {{ $t('layout.logout', { name: 'vue-i18n' }) }}
               </v-list-item>
             </v-list>
           </v-menu>
@@ -156,6 +158,9 @@ export default {
     container () {
       return this.$store.state.container
     },
+    locale () {
+      return this.$store.state.locale
+    },
     table () {
       return this.$store.state.table
     },
@@ -178,6 +183,11 @@ export default {
     }
   },
   watch: {
+    '$i18n.locale': {
+      handler () {
+        this.$store.commit('SET_LOCALE', this.$i18n.locale)
+      }
+    },
     $route: {
       handler () {
         if (this.refreshToken) {
@@ -208,6 +218,9 @@ export default {
   mounted () {
     if (this.refreshToken) {
       AuthenticationService.authenticateToken(this.refreshToken)
+    }
+    if (this.locale) {
+      this.$i18n.locale = this.locale
     }
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q

@@ -15,7 +15,8 @@ const store = new Store({
     user: null,
     database: null,
     table: null,
-    access: null
+    access: null,
+    locale: null
   },
   getters: {
     getToken: state => state.token,
@@ -24,7 +25,8 @@ const store = new Store({
     getUser: state => state.user,
     getDatabase: state => state.database,
     getTable: state => state.table,
-    getAccess: state => state.access
+    getAccess: state => state.access,
+    getLocale: state => state.locale
   },
   mutations: {
     SET_TOKEN (state, token) {
@@ -47,6 +49,9 @@ const store = new Store({
     },
     SET_ACCESS (state, access) {
       state.access = access
+    },
+    SET_LOCALE (state, locale) {
+      state.locale = locale
     }
   },
   actions: {
