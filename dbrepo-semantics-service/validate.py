@@ -8,15 +8,13 @@ Created on Thu Dec  2 23:31:39 2021
 import rdflib
 import requests as rq
 
-rdf = rq.get('http://www.ontology-of-units-of-measure.org/resource/om-2', headers={'Accept': 'application/rdf+xml'})
-rdf.raise_for_status()
-
-g = rdflib.Graph()
-g.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
-g.parse(data=rdf.text, format='xml')
+# ontology of measure
+u = rdflib.Graph()
+u.namespace_manager.bind('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/')
+u.namespace_manager.bind('schema', 'http://schema.org/')
+u.parse('ontologies/om-2.rdf', format='xml')
 
 om = rdflib.Namespace('http://www.ontology-of-units-of-measure.org/resource/om-2/')
-rdf_schema = rdflib.Namespace('http://www.w3.org/2000/01/rdf-schema#')
 
 
 # rdf = rq.get('http://qudt.org/2.1/vocab/unit', headers={'Accept': 'text/turtle'})
@@ -33,9 +31,9 @@ def validator(value):
     # input str
     tmp = str(om) + value
     t_uri = rdflib.term.URIRef(tmp)
-    if next(g.triples((t_uri, None, om.Unit)), _exhausted) is _exhausted and next(
-            g.triples((t_uri, None, om.PrefixedUnit)), _exhausted) is _exhausted and next(
-            g.triples((t_uri, None, None)), _exhausted) is _exhausted:
+    if next(u.triples((t_uri, None, om.Unit)), _exhausted) is _exhausted and next(
+            u.triples((t_uri, None, om.PrefixedUnit)), _exhausted) is _exhausted and next(
+            u.triples((t_uri, None, None)), _exhausted) is _exhausted:
         return False
     else:
         return True

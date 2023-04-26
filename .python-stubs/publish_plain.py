@@ -1,6 +1,6 @@
 import pika
 
-credentials = pika.credentials.PlainCredentials("", "THE_ACCESS_TOKEN")
+credentials = pika.credentials.PlainCredentials("foo", "bar")
 parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()

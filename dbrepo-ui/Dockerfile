@@ -28,6 +28,7 @@ COPY ./api ./api
 COPY ./components ./components
 COPY ./lang ./lang
 COPY ./layouts ./layouts
+COPY ./locales ./locales
 COPY ./pages ./pages
 COPY ./plugins ./plugins
 COPY ./server-middleware ./server-middleware
