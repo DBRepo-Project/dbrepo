@@ -1,0 +1,171 @@
+package at.tuwien.endpoints;
+
+import at.tuwien.BaseUnitTest;
+import at.tuwien.OaiListIdentifiersParameters;
+import at.tuwien.OaiRecordParameters;
+import at.tuwien.config.H2Utils;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.repository.jpa.*;
+import at.tuwien.service.IdentifierService;
+import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
+@Log4j2
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+public class MetadataEndpointUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private IdentifierRepository identifierRepository;
+
+    @Autowired
+    private MetadataEndpoint metadataEndpoint;
+
+    @Autowired
+    private H2Utils h2Utils;
+
+    @BeforeEach
+    public void beforeEach() {
+        /* schema */
+        h2Utils.runScript("schema.sql");
+    }
+
+    @Test
+    public void identify_succeeds() {
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.identify();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    public void identifyAlt_succeeds() {
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.identifyAlt();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    public void listIdentifiers_succeeds() {
+        final OaiListIdentifiersParameters parameters = new OaiListIdentifiersParameters();
+
+        /* mock */
+        when(identifierRepository.findAll())
+                .thenReturn(List.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.listIdentifiers(parameters);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    public void getRecord_formatMissing_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void getRecord_unsupportedFormat_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_marc");
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void getRecord_noIdentifier_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_dc");
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void getRecord_succeeds() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_dc");
+        parameters.setIdentifier(Long.toString(1L));
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+    }
+
+    @Test
+    public void getRecord_notFound_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_dc");
+        parameters.setIdentifier(Long.toString(9999L));
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    public void listMetadataFormats_succeeds() {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.listMetadataFormats();
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+    }
+
+}

@@ -1,0 +1,135 @@
+package at.tuwien.service;
+
+import at.tuwien.BaseUnitTest;
+import at.tuwien.OaiErrorType;
+import at.tuwien.OaiListIdentifiersParameters;
+import at.tuwien.OaiRecordParameters;
+import at.tuwien.config.H2Utils;
+import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.repository.jpa.*;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@Log4j2
+@SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@ExtendWith(SpringExtension.class)
+public class MetadataServiceIntegrationTest extends BaseUnitTest {
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
+    private DatabaseRepository databaseRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private IdentifierRepository identifierRepository;
+
+    @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
+    private H2Utils h2Utils;
+
+    @BeforeEach
+    public void beforeEach() {
+        /* schema */
+        h2Utils.runScript("schema.sql");
+        /* metadata database */
+        imageRepository.save(IMAGE_1_SIMPLE);
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+    }
+
+    @Test
+    public void identify_succeeds() {
+
+        /* test */
+        final String response = metadataService.identify();
+        assertTrue(response.contains("repositoryName"));
+        assertTrue(response.contains("baseURL"));
+        assertTrue(response.contains("adminEmail"));
+        assertTrue(response.contains("earliestDatestamp"));
+        assertTrue(response.contains("deletedRecord"));
+        assertTrue(response.contains("granularity"));
+    }
+
+    @Test
+    public void listIdentifiers_succeeds() {
+        final OaiListIdentifiersParameters parameters = new OaiListIdentifiersParameters();
+
+        /* test */
+        final String response = metadataService.listIdentifiers(parameters);
+        assertTrue(response.contains("identifier"));
+        assertTrue(response.contains("datestamp"));
+    }
+
+    @Test
+    public void listMetadataFormats_succeeds() {
+
+        /* test */
+        final String response = metadataService.listMetadataFormats();
+        assertTrue(response.contains("metadataPrefix"));
+        assertTrue(response.contains("schema"));
+        assertTrue(response.contains("metadataNamespace"));
+    }
+
+    @Test
+    public void error_succeeds() {
+
+        /* test */
+        final String response = metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT);
+        assertTrue(response.contains("error"));
+    }
+
+    @Test
+    public void getRecord_succeeds() throws IdentifierNotFoundException {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setIdentifier(Long.toString(1L));
+
+        /* test */
+        final String response = metadataService.getRecord(parameters);
+        assertTrue(response.contains("identifier"));
+        assertTrue(response.contains("datestamp"));
+        assertTrue(response.contains("title"));
+        assertTrue(response.contains("description"));
+        assertTrue(response.contains("publisher"));
+    }
+
+    @Test
+    public void getRecord_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setIdentifier(Long.toString(9999L));
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+}

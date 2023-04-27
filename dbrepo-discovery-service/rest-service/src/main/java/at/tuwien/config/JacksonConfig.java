@@ -1,4 +1,4 @@
-package at.tuwien.service;
+package at.tuwien.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -20,6 +20,10 @@ spring:
           time_zone: UTC
   application:
     name: discovery-service
+  rabbitmq:
+    host: localhost
+    username: fda
+    password: fda
   cloud:
     loadbalancer.ribbon.enabled: false
     gateway:
@@ -47,3 +51,4 @@ eureka:
     secure-port: 9090
 fda:
   ready.path: ./ready
+  gateway.endpoint: http://localhost:9095

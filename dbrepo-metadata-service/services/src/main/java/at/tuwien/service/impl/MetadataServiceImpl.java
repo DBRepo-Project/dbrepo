@@ -74,6 +74,7 @@ public class MetadataServiceImpl implements MetadataService {
         final Identifier identifier = identifierService.find(id);
         final Context context = new Context();
         context.setVariable("identifier", identifier.getId());
+        context.setVariable("creators", identifier.getCreators());
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         context.setVariable("title", identifier.getTitle());
         context.setVariable("description", identifier.getDescription());

@@ -18,6 +18,10 @@ spring:
           time_zone: UTC
   application:
     name: discovery-service
+  rabbitmq:
+    host: broker-service
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
@@ -41,3 +45,4 @@ eureka:
     secure-port: 9090
 fda:
   ready.path: /ready
+  gateway.endpoint: "${GATEWAY_ENDPOINT}"

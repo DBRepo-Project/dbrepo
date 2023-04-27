@@ -47,7 +47,7 @@ public class MetadataEndpoint {
                     description = "List containers",
                     content = {@Content(mediaType = "text/xml")}),
     })
-    public ResponseEntity<?> identify() {
+    public ResponseEntity<String> identify() {
         log.debug("endpoint identify repository");
         return identifyAlt();
     }
@@ -60,7 +60,7 @@ public class MetadataEndpoint {
                     description = "List containers",
                     content = {@Content(mediaType = "text/xml")}),
     })
-    public ResponseEntity<?> identifyAlt() {
+    public ResponseEntity<String> identifyAlt() {
         log.debug("endpoint identify repository, verb=Identify");
         final String xml = metadataService.identify();
         log.trace("identify repository resulted in xml {}", xml);
@@ -70,7 +70,7 @@ public class MetadataEndpoint {
     @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
     @Timed(value = "identifiers.list", description = "Time needed to list the identifiers")
     @Operation(summary = "List the identifiers")
-    public ResponseEntity<?> listIdentifiers(OaiListIdentifiersParameters parameters) {
+    public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
         final String xml = metadataService.listIdentifiers(parameters);
         log.trace("list identifiers resulted in xml {}", xml);
@@ -80,9 +80,9 @@ public class MetadataEndpoint {
     @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
     @Timed(value = "record.find", description = "Time needed to find a record")
     @Operation(summary = "Get the record")
-    public ResponseEntity<?> getRecord(OaiRecordParameters parameters) {
+    public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
-        if (!parameters.getMetadataPrefix().equals("oai_dc")) {
+        if (parameters.getMetadataPrefix() != null && !parameters.getMetadataPrefix().equals("oai_dc")) {
             log.trace("metadataPrefix matches oai_dc, failed to serve this format");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
@@ -105,7 +105,7 @@ public class MetadataEndpoint {
     @GetMapping(params = "verb=ListMetadataFormats", produces = "text/xml;charset=UTF-8")
     @Timed(value = "formats.list", description = "Time needed to list the metadata formats")
     @Operation(summary = "List the metadata formats")
-    public ResponseEntity<?> listMetadataFormats() {
+    public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
         final String xml = metadataService.listMetadataFormats();
         log.trace("list metadata formats resulted in xml {}", xml);

@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.jpa.*;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

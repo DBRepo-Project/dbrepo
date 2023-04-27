@@ -10,7 +10,7 @@
                 <dc:title>[[${title}]]</dc:title>
                 <dc:publisher>[[${publisher}]]</dc:publisher>
                 <dc:description>[[${description}]]</dc:description>
-                <dc:creator th:each="creator: ${identifier.getCreators()}">[(${creator.getLastname()})], [(${creator.getFirstname()})]</dc:creator>
+                <dc:creator th:each="creator: ${creators}">[(${creator.getLastname()})], [(${creator.getFirstname()})]</dc:creator>
             </oai_dc:dc>
         </metadata>
     </record>
