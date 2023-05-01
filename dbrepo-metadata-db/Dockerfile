@@ -14,7 +14,7 @@ COPY ./querystore ./querystore
 COPY ./test ./test
 
 # Make sure it compiles
-RUN mvn -q clean package -DskipTests > /dev/null
+RUN mvn -q clean package -DskipTests
 
 # Install to local repository
 RUN mvn -q clean install > /dev/null

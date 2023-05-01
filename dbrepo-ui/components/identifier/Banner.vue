@@ -1,10 +1,9 @@
 <template>
-  <p v-if="identifier?.doi">DOI: <a :href="doiUrl(identifier.doi)">{{ identifier.doi }}</a></p>
-  <p v-else-if="identifier?.id"><a :href="pidUrl(identifier.id)">{{ pidUrl(identifier.id) }}</a></p>
+  <div>
+    {{ prefix }}: <a :href="pidUrl">{{ displayName }}</a>
+  </div>
 </template>
-yarn dev
 <script>
-
 export default {
   props: {
     identifier: {
@@ -17,17 +16,34 @@ export default {
   computed: {
     baseUrl () {
       return `${location.protocol}//${location.host}`
-    }
-  },
-  methods: {
-    pidUrl (pid) {
-      return `${this.baseUrl}/pid/${pid}`
     },
-    doiUrl (doi) {
-      return `${this.$config.doiUrl}/${doi}`
+    baseDoi () {
+      return this.$config.doiUrl
+    },
+    isDoi () {
+      if (!this.identifier) {
+        return null
+      }
+      return this.identifier.doi !== null
+    },
+    prefix () {
+      if (!this.identifier) {
+        return null
+      }
+      return this.isDoi ? 'DOI' : 'URI'
+    },
+    pidUrl () {
+      if (!this.identifier) {
+        return null
+      }
+      return this.isDoi ? `${this.baseDoi}/${this.identifier.doi}` : `${this.baseUrl}/pid/${this.identifier.id}`
+    },
+    displayName () {
+      if (!this.identifier) {
+        return null
+      }
+      return this.isDoi ? `${this.identifier.doi}` : `/pid/${this.identifier.id}`
     }
   }
 }
 </script>
-
-<style scoped></style>

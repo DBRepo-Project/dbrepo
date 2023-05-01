@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { api, icon, search, clientSecret, title, sandbox, logo, version, defaultPublisher } from './config'
+import { api, icon, search, clientSecret, title, sandbox, logo, version, defaultPublisher, doiUrl } from './config'
 
 const proxy = {}
 
@@ -92,7 +92,8 @@ export default {
     version,
     logo,
     clientSecret,
-    defaultPublisher
+    defaultPublisher,
+    doiUrl
   },
 
   serverMiddleware: [

@@ -135,7 +135,7 @@ public class IdentifierEndpoint {
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, AccessDeniedException {
-        log.debug("endpoint create identifier, data={}, authorization={}, principal={}", data, authorization, principal);
+        log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
             log.error("Identifier of type subset need to have a qid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");

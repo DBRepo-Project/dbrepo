@@ -15,7 +15,7 @@ COPY ./report ./report
 COPY ./rest-service ./rest-service
 
 # Make sure it compiles
-RUN mvn -q clean package -DskipTests > /dev/null
+RUN mvn -q clean package -DskipTests
 
 ###### SECOND STAGE ######
 FROM openjdk:11-jre-slim as runtime
