@@ -4,6 +4,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
@@ -91,7 +92,7 @@ public class IdentifierEndpoint {
     @PostMapping
     @Transactional
     @Timed(value = "identifier.create", description = "Time needed to create an identifier")
-    @PreAuthorize("hasAuthority('create-identifier')")
+    @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -104,8 +105,8 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Query, database or user could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "Insufficient access rights or authorities",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -134,7 +135,7 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, AccessDeniedException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, AccessDeniedException, NotAllowedException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
             log.error("Identifier of type subset need to have a qid present");
@@ -145,62 +146,12 @@ public class IdentifierEndpoint {
         }
         final User user = userService.findByUsername(principal.getName());
         final DatabaseAccess access = accessService.find(data.getDbid(), user.getId());
+        if (!User.hasRole(principal, "create-foreign-identifier") && access.getType().equals(AccessType.READ)) {
+            log.error("Failed to create identifier: insufficient access");
+            throw new NotAllowedException("Failed to create identifier: insufficient access");
+        }
         final Identifier identifier = identifierService.create(data, principal, authorization);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
-    }
-
-    @PutMapping("/{id}")
-    @Transactional
-    @Timed(value = "identifier.update", description = "Time needed to update an identifier")
-    @PreAuthorize("hasAuthority('update-identifier')")
-    @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Updated identifier",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifierDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Identifier could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "406",
-                    description = "Updating identifier not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
-                                                @NotNull @Valid @RequestBody IdentifierDto data)
-            throws IdentifierNotFoundException, IdentifierRequestException {
-        log.debug("endpoint update identifier, id={}, data={}", id, data);
-        final Identifier identifier = identifierService.update(id, data);
-        return ResponseEntity.accepted()
-                .body(identifierMapper.identifierToIdentifierDto(identifier));
-    }
-
-    @DeleteMapping("/{id}")
-    @Transactional
-    @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
-    @PreAuthorize("hasAuthority('delete-identifier')")
-    @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Deleted identifier",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "404",
-                    description = "Identifier could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
-            throws IdentifierNotFoundException, NotAllowedException {
-        log.debug("endpoint delete identifier, id={}", id);
-        identifierService.delete(id);
-        return ResponseEntity.accepted()
-                .build();
     }
 }
