@@ -13,6 +13,7 @@ from gevent.pywsgi import WSGIServer
 from save import insert_mdb_concepts, insert_mdb_units
 from onto_feat import list_ontologies, get_ontology
 from prometheus_flask_exporter import PrometheusMetrics
+from flask_jwt_extended import jwt_required, JWTManager
 
 dictConfig({
     'version': 1,
@@ -31,6 +32,7 @@ dictConfig({
 })
 
 app = Flask(__name__)
+jwt = JWTManager(app)
 metrics = PrometheusMetrics(app)
 metrics.info('app_info', 'Application info', version='1.2.0')
 app.config['SWAGGER'] = {'openapi': '3.0.0', 'title': 'Swagger UI', 'uiversion': 3}
@@ -194,6 +196,7 @@ def get_concept_label():
 
 @app.route('/api/semantics/concept', methods=['POST'], endpoint='concepts_save')
 @swag_from('us-yml/post_concept.yml')
+@jwt_required()
 def save_concept():
     input_json = request.get_json()
     logging.debug('endpoint save concept, body=%s', input_json)
@@ -216,7 +219,8 @@ def save_concept():
 
 @app.route('/api/semantics/unit', methods=['POST'], endpoint='units_save')
 @swag_from('us-yml/post_unit.yml')
-def save_concept():
+@jwt_required()
+def save_unit():
     input_json = request.get_json()
     logging.debug('endpoint save unit, body=%s', input_json)
     try:
