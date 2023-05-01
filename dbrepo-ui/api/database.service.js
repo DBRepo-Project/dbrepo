@@ -51,6 +51,19 @@ class DatabaseService {
     })
   }
 
+  delete (id, databaseId) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete database', error)
+          Vue.$toast.error(`[${code}] Failed to delete database: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   modifyVisibility (id, databaseId, isPublic) {
     return new Promise((resolve, reject) => {
       api.put(`/api/container/${id}/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })

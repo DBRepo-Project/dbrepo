@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import IdentifierService from '@/api/identifier.service'
 
 export default {
   props: {

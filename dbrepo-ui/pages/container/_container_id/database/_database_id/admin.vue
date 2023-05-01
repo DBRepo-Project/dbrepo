@@ -38,6 +38,7 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar'
+import DatabaseService from '@/api/database.service'
 
 export default {
   components: {
@@ -71,34 +72,14 @@ export default {
       return this.confirm !== this.db.internalName
     }
   },
-  mounted () {
-    this.init()
-  },
   methods: {
-    async deleteDatabase () {
-      try {
-        await this.$axios.delete(`/api/database/${this.$route.params.database_id}`)
-        this.$router.push({ path: '/databases' })
-        this.$toast.success(`Database "${this.db.name}" deleted.`)
-      } catch (err) {
-        this.$toast.error('Could not delete database')
-      }
-      this.dialogDelete = false
-    },
-    async init () {
-      if (this.db != null) {
-        return
-      }
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/database/${this.$route.params.database_id}`)
-        console.debug('database', res.data)
-        this.$store.commit('SET_DATABASE', res.data)
-        this.loading = false
-      } catch (err) {
-        this.$toast.error('Could not load database')
-        this.loading = false
-      }
+    deleteDatabase () {
+      DatabaseService.delete(this.$route.params.container_id, this.$route.params.database_id)
+        .then(async () => {
+          this.$toast.success(`Database "${this.db.name}" deleted.`)
+          await this.$router.push({ path: '/databases' })
+          this.dialogDelete = false
+        })
     }
   }
 }
