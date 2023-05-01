@@ -1,7 +1,6 @@
 <template>
   <div>
     <v-card>
-      <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
       <v-card-title v-text="`Persist ${title}`" />
       <v-card-text>
         <v-alert
@@ -169,6 +168,7 @@
         </v-btn>
         <v-btn
           class="mb-2"
+          :loading="loading"
           :disabled="!formValid || loading"
           color="primary"
           @click="persist">

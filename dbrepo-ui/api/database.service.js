@@ -176,6 +176,23 @@ class DatabaseService {
     })
   }
 
+  findView (id, databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to find view', error)
+          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   createView (id, databaseId, data) {
     return new Promise((resolve, reject) => {
       api.post(`/api/container/${id}/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })

@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import QueryService from '@/api/query.service'
 export default {
   props: {
     type: {
@@ -32,24 +33,6 @@ export default {
       total: -1
     }
   },
-  computed: {
-    token () {
-      return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
-    executeUrl () {
-      const page = 0
-      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query?${urlParams}`
-    }
-  },
   watch: {
     options: { /* keep */
       handler () {
@@ -59,28 +42,20 @@ export default {
     }
   },
   methods: {
-    async executeFirstTime (parent, sql, timestamp) {
+    executeFirstTime (parent, sql, timestamp) {
       this.loading++
-      try {
-        const res = await this.$axios.post(this.executeUrl, { statement: sql, timestamp }, this.config)
-        console.debug('query result', res.data)
-        this.$toast.success('Successfully executed query')
-        this.mapResults(res.data)
-        parent.resultId = res.data.id
-      } catch (error) {
-        console.error('Failed to execute query', error)
-        const { status, data } = error.response
-        const { message, code } = data
-        if (status === 504) {
-          console.error('Failed to execute query: container not online', code)
-          this.$toast.error('Failed to execute query: container not online')
-        } else {
-          console.error('Failed to execute query', code)
-          this.$toast.error('Failed to execute query: ' + message)
-        }
-        this.error = true
+      const payload = {
+        statement: sql,
+        timestamp
       }
-      this.loading--
+      QueryService.execute(this.$route.params.container_id, this.$route.params.database_id, payload, 0, this.options.itemsPerPage)
+        .then((result) => {
+          this.mapResults(result)
+          parent.resultId = result.id
+        })
+        .finally(() => {
+          this.loading--
+        })
     },
     buildHeaders (firstLine) {
       return Object.keys(firstLine).map(k => ({
@@ -89,42 +64,53 @@ export default {
         sortable: false
       }))
     },
-    reExecuteUrl (resultId) {
-      const page = this.options.page - 1
-      const urlParams = `page=${page}&size=${this.options.itemsPerPage}`
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/${this.type}/${resultId}/data?${urlParams}`
-    },
-    reExecuteCountUrl (resultId) {
-      return `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/${this.type}/${resultId}/data/count`
-    },
-    async reExecute (id) {
+    reExecute (id) {
       if (id === null) {
         return
       }
       this.loading++
-      try {
-        const res = await this.$axios.get(this.reExecuteUrl(id), this.config)
-        this.mapResults(res.data)
-        this.id = id
-      } catch (error) {
-        console.error('failed to execute query', error)
-        this.error = true
+      if (this.type === 'query') {
+        QueryService.reExecuteQuery(this.$route.params.container_id, this.$route.params.database_id, this.resultId, 0, this.options.itemsPerPage)
+          .then((result) => {
+            this.mapResults(result)
+            this.id = id
+          })
+          .finally(() => {
+            this.loading--
+          })
+      } else {
+        QueryService.reExecuteView(this.$route.params.container_id, this.$route.params.database_id, this.resultId, 0, this.options.itemsPerPage)
+          .then((result) => {
+            this.mapResults(result)
+            this.id = id
+          })
+          .finally(() => {
+            this.loading--
+          })
       }
-      this.loading--
     },
-    async reExecuteCount (id) {
+    reExecuteCount (id) {
       if (id === null) {
         return
       }
       this.loading++
-      try {
-        const res = await this.$axios.get(this.reExecuteCountUrl(id), this.config)
-        this.total = res.data
-      } catch (error) {
-        console.error('failed to execute query count', error)
-        this.error = true
+      if (this.type === 'query') {
+        QueryService.reExecuteQueryCount(this.$route.params.container_id, this.$route.params.database_id, this.resultId)
+          .then((count) => {
+            this.total = count
+          })
+          .finally(() => {
+            this.loading--
+          })
+      } else {
+        QueryService.reExecuteViewCount(this.$route.params.container_id, this.$route.params.database_id, this.resultId)
+          .then((count) => {
+            this.total = count
+          })
+          .finally(() => {
+            this.loading--
+          })
       }
-      this.loading--
     },
     mapResults (data) {
       if (data.result.length) {

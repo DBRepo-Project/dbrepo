@@ -65,7 +65,6 @@ export default {
     return {
       valid: false,
       loading: false,
-      error: false,
       engine: {
         repository: null,
         tag: null
@@ -90,22 +89,8 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     token () {
       return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: {}
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` },
-        progress: false
-      }
     },
     user () {
       return this.$store.state.user
@@ -121,20 +106,18 @@ export default {
     cancel () {
       this.$emit('close', { success: false })
     },
-    async getImages () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get('/api/image')
-        this.engines = res.data
-        console.debug('engines', this.engines)
-        if (this.engines.length > 0) {
-          this.engine = this.engines[0]
-        }
-      } catch (err) {
-        this.error = true
-        this.$toast.error('Failed to fetch supported engines. Try reload the page')
-      }
-      this.loading = false
+    getImages () {
+      this.loading = true
+      ContainerService.findAllImages()
+        .then((images) => {
+          this.engines = images
+          if (this.engines.length > 0) {
+            this.engine = this.engines[0]
+          }
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     async create () {
       await this.createContainer()

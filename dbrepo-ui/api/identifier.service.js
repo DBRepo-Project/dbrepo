@@ -20,9 +20,13 @@ class IdentifierService {
     })
   }
 
-  findOne (id) {
+  find (id) {
+    return this.findAccept(id, 'application/json')
+  }
+
+  findAccept (id, accept) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/pid/${id}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/pid/${id}`, { headers: { Accept: accept } })
         .then((response) => {
           const identifier = response.data
           console.debug('response identifier', identifier)

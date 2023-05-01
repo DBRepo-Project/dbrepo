@@ -41,6 +41,7 @@
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel'
 import TableToolbar from '@/components/TableToolbar'
+import TableService from '@/api/table.service'
 import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
 
 export default {
@@ -98,17 +99,6 @@ export default {
     table () {
       return this.$store.state.table
     },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: {},
-          progress: false
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     user () {
       return this.$store.state.user
     },
@@ -117,17 +107,6 @@ export default {
     },
     access () {
       return this.$store.state.access
-    },
-    downloadConfig () {
-      if (this.token === null) {
-        return {
-          responseType: 'text'
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` },
-        responseType: 'text'
-      }
     },
     versionColor () {
       if (this.version === null) {
@@ -193,28 +172,35 @@ export default {
     this.loadProperties()
   },
   methods: {
-    async download () {
+    download () {
       this.downloadLoading = true
-      try {
-        let exportUrl = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/export`
-        if (this.version) {
-          exportUrl += `?timestamp=${this.versionISO}`
-        }
-        const res = await this.$axios.get(exportUrl, this.downloadConfig)
-        console.debug('export table', res)
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', 'table.csv')
-        document.body.appendChild(link)
-        link.click()
-      } catch (error) {
-        console.error('Failed to export table', error)
-        const { message } = error.response
-        this.$toast.error('Failed to export table: ' + message)
-        this.error = true
+      if (!this.version) {
+        TableService.exportData(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+          .then((data) => {
+            const url = window.URL.createObjectURL(new Blob([data]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', 'table.csv')
+            document.body.appendChild(link)
+            link.click()
+          })
+          .finally(() => {
+            this.downloadLoading = false
+          })
+      } else {
+        TableService.exportData(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, this.versionISO)
+          .then((data) => {
+            const url = window.URL.createObjectURL(new Blob([data]))
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', `table_${this.versionISO}.csv`)
+            document.body.appendChild(link)
+            link.click()
+          })
+          .finally(() => {
+            this.downloadLoading = false
+          })
       }
-      this.downloadLoading = false
     },
     pick () {
       if (this.$refs.timeTravel !== undefined) {
@@ -273,71 +259,37 @@ export default {
       this.loadData()
       this.loadCount()
     },
-    async loadData () {
-      try {
-        this.loadingData++
-        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data?page=${this.options.page - 1}&size=${this.options.itemsPerPage}&timestamp=${this.versionISO || this.lastReload.toISOString()}`
-        if (this.version !== null) {
-          console.info('versioning active', this.version)
-        }
-        const res = await this.$axios.get(url, this.config)
-        this.rows = res.data.result.map((row) => {
-          for (const col in row) {
-            const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
-            if (columnDefinition.length > 0) {
-              if (columnDefinition[0].column_type === 'date') {
-                row[col] = formatDateUTC(row[col])
-              } else if (columnDefinition[0].column_type === 'timestamp') {
-                row[col] = formatTimestampUTC(row[col])
+    loadData () {
+      this.loadingData++
+      TableService.data(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, (this.options.page - 1), this.options.itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
+        .then((data) => {
+          this.rows = data.result.map((row) => {
+            for (const col in row) {
+              const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
+              if (columnDefinition.length > 0) {
+                if (columnDefinition[0].column_type === 'date') {
+                  row[col] = formatDateUTC(row[col])
+                } else if (columnDefinition[0].column_type === 'timestamp') {
+                  row[col] = formatTimestampUTC(row[col])
+                }
               }
             }
-          }
-          return row
+            return row
+          })
         })
-        console.debug('rows', this.rows)
-      } catch (error) {
-        console.error('Failed to load data', error)
-        this.error = true
-        this.loadProgress = 100
-        const { status, data } = error.response
-        const { message, code } = data
-        if (status === 423) {
-          console.error('Database is offline', code)
-          this.$toast.error('Database is offline: ' + message)
-        } else {
-          console.error('Failed to load data', code)
-          this.$toast.error('Failed to load data: ' + message)
-        }
-      } finally {
-        this.loadingData--
-      }
+        .finally(() => {
+          this.loadingData--
+        })
     },
-    async loadCount () {
-      try {
-        this.loadingData++
-        const url = `/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/data/count?timestamp=${this.versionISO || this.lastReload.toISOString()}`
-        if (this.version !== null) {
-          console.info('versioning active', this.version)
-        }
-        const res = await this.$axios.get(url, this.config)
-        this.total = res.data
-        console.info('total', this.total)
-      } catch (error) {
-        console.error('Failed to load count', error)
-        this.error = true
-        this.loadProgress = 100
-        const { status, data } = error.response
-        const { message, code } = data
-        if (status === 423) {
-          console.error('Database is offline', code)
-          this.$toast.error('Database is offline: ' + message)
-        } else {
-          console.error('Failed to load data', code)
-          this.$toast.error('Failed to load data: ' + message)
-        }
-      } finally {
-        this.loadingData--
-      }
+    loadCount () {
+      this.loadingData++
+      TableService.dataCount(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
+        .then((count) => {
+          this.total = count
+        })
+        .finally(() => {
+          this.loadingData--
+        })
     },
     simulateProgress () {
       if (this.loadProgress !== 0) {

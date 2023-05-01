@@ -58,17 +58,9 @@ export default {
       citation: null
     }
   },
-  computed: {
-    config () {
-      return {
-        headers: { Accept: 'text/bibliography;style=apa' },
-        progress: false
-      }
-    }
-  },
   watch: {
-    style (newVal, _) {
-      this.loadCitation(newVal)
+    style () {
+      this.loadCitation(this.style)
     },
     pid () {
       this.loadCitation(this.style)
@@ -79,25 +71,18 @@ export default {
     this.loadCitation(null)
   },
   methods: {
-    async loadCitation (accept) {
+    loadCitation (accept) {
       if (!this.pid) {
         return
       }
       this.loading = true
-      try {
-        const config = this.config
-        if (accept != null) {
-          config.headers.Accept = accept
-        }
-        const res = await this.$axios.get(`/api/pid/${this.pid}`, config)
-        this.citation = res.data
-        console.debug('citation', this.citation)
-      } catch (err) {
-        console.error('Could not cite identifier', err)
-        this.$toast.error('Could not cite identifier')
-        this.error = true
-      }
-      this.loading = false
+      IdentifierService.findAccept(this.pid, accept)
+        .then((citation) => {
+          this.citation = citation
+        })
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }
