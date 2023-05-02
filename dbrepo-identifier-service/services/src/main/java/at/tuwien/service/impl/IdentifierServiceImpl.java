@@ -256,12 +256,10 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier update(Long identifierId, IdentifierDto data)
             throws IdentifierNotFoundException, IdentifierRequestException {
         /* check */
-        Identifier old = find(identifierId);
-        if(data.getVisibility() != VisibilityTypeDto.EVERYONE) {
-            throw new IdentifierRequestException("Cannot set visibility to other value than \"EVERYONE\".");
-        }
+        final Identifier old = find(identifierId);
         if(data.getDoi() != null && !data.getDoi().equals(old.getDoi())) {
-            throw new IdentifierRequestException("The DOI of an identifier cannot be changed.");
+            log.error("Failed to update: DOI needs to stay the same");
+            throw new IdentifierRequestException("Failed to update: DOI needs to stay the same");
         }
         /* map */
         final Identifier entity = identifierMapper.identifierDtoToIdentifier(data);

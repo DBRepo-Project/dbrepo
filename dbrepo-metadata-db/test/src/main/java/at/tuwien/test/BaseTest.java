@@ -116,7 +116,7 @@ public abstract class BaseTest {
             "create-identifier", "find-identifier", "list-identifiers"};
 
     public final static String[] ESCALATED_IDENTIFIER_HANDLING = new String[]{"escalated-identifier-handling",
-            "modify-identifier-metadata", "delete-identifier"};
+            "modify-identifier-metadata", "delete-identifier", "update-foreign-identifier", "create-foreign-identifier"};
 
     public final static String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
             "execute-query", "view-table-history", "list-database-views", "list-queries", "view-database-view-data",
@@ -4056,8 +4056,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_TITLE_MODIFY = "Austrian weather some data";
     public final static String IDENTIFIER_1_DOI = null;
     public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.1000/183";
-    public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
-    public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352) /* 2022-01-07 20:45:52 */;
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352) /* 2022-01-07 20:45:52 */;
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352) /* 2022-01-07 20:45:52 */;
@@ -4102,7 +4100,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4128,7 +4125,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4154,7 +4150,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
-            .visibility(IDENTIFIER_1_VISIBILITY)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4180,7 +4175,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI)
-            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4205,7 +4199,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
-            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4229,8 +4222,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
     public final static String IDENTIFIER_2_TITLE = "Australian weather data";
     public final static String IDENTIFIER_2_DOI = null;
-    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.EVERYONE;
-    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
@@ -4294,7 +4285,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
-            .visibility(IDENTIFIER_2_VISIBILITY)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -4321,7 +4311,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
-            .visibility(IDENTIFIER_2_VISIBILITY)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -4348,7 +4337,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_2_DESCRIPTION)
             .title(IDENTIFIER_2_TITLE)
             .doi(IDENTIFIER_2_DOI)
-            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -4444,7 +4432,6 @@ public abstract class BaseTest {
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .creators(List.of(CREATOR_1_DTO))
@@ -4534,8 +4521,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_3_DESCRIPTION = "Selecting all from the weather Norwegian table";
     public final static String IDENTIFIER_3_TITLE = "Norwegian weather data";
     public final static String IDENTIFIER_3_DOI = null;
-    public final static VisibilityType IDENTIFIER_3_VISIBILITY = VisibilityType.EVERYONE;
-    public final static VisibilityTypeDto IDENTIFIER_3_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
     public final static Instant IDENTIFIER_3_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_3_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_3_EXECUTION = Instant.ofEpochSecond(1541588352);
@@ -4618,7 +4603,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_3_DESCRIPTION)
             .title(IDENTIFIER_3_TITLE)
             .doi(IDENTIFIER_3_DOI)
-            .visibility(IDENTIFIER_3_VISIBILITY)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -4645,7 +4629,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_3_DESCRIPTION)
             .title(IDENTIFIER_3_TITLE)
             .doi(IDENTIFIER_3_DOI)
-            .visibility(IDENTIFIER_3_VISIBILITY)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -4672,7 +4655,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_3_DESCRIPTION)
             .title(IDENTIFIER_3_TITLE)
             .doi(IDENTIFIER_3_DOI)
-            .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -4736,7 +4718,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_4_DESCRIPTION = "Selecting all from the weather Sweden table";
     public final static String IDENTIFIER_4_TITLE = "Sweden weather data";
     public final static String IDENTIFIER_4_DOI = null;
-    public final static VisibilityType IDENTIFIER_4_VISIBILITY = VisibilityType.EVERYONE;
     public final static Instant IDENTIFIER_4_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_4_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_4_EXECUTION = Instant.ofEpochSecond(1541588352);
@@ -4760,7 +4741,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_4_DESCRIPTION)
             .title(IDENTIFIER_4_TITLE)
             .doi(IDENTIFIER_4_DOI)
-            .visibility(IDENTIFIER_4_VISIBILITY)
             .created(IDENTIFIER_4_CREATED)
             .lastModified(IDENTIFIER_4_MODIFIED)
             .execution(IDENTIFIER_4_EXECUTION)
@@ -4786,7 +4766,6 @@ public abstract class BaseTest {
             .description(IDENTIFIER_4_DESCRIPTION)
             .title(IDENTIFIER_4_TITLE)
             .doi(IDENTIFIER_4_DOI)
-            .visibility(IDENTIFIER_4_VISIBILITY)
             .created(IDENTIFIER_4_CREATED)
             .lastModified(IDENTIFIER_4_MODIFIED)
             .execution(IDENTIFIER_4_EXECUTION)

@@ -3,14 +3,12 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -191,8 +188,10 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_doiChange_fails() {
-
-        IdentifierDto identifierWithNewDoiDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
+        final IdentifierDto request = IdentifierDto.builder()
+                .id(IDENTIFIER_1_ID)
+                .doi("10.000/thisisadifferentdoi")
+                .build();
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -200,23 +199,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, identifierWithNewDoiDto);
-        });
-    }
-
-    @Test
-    public void update_notVisibleByEveryone_fails() {
-        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).build();
-        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.TRUSTED).build();
-        IDENTIFIER_1_DTO.setVisibility(VisibilityTypeDto.TRUSTED);
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(identifier));
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, identifierDto);
+            identifierService.update(IDENTIFIER_1_ID, request);
         });
     }
 

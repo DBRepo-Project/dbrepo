@@ -153,7 +153,7 @@ public class PersistenceEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
-    @PreAuthorize("hasAuthority('update-identifier') or hasAuthority('create-foreign-identifier')")
+    @PreAuthorize("hasAuthority('update-identifier') or hasAuthority('update-foreign-identifier')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -185,15 +185,17 @@ public class PersistenceEndpoint {
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierDto data,
                                                 @NotNull Principal principal)
-            throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException,
-            AccessDeniedException {
+            throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.find(id);
         final User user = userService.findByUsername(principal.getName());
-        final DatabaseAccess access = accessService.find(identifier.getDatabaseId(), user.getId());
-        if (!User.hasRole(principal, "create-foreign-identifier") && access.getType().equals(AccessType.READ)) {
-            log.error("Failed to create identifier: insufficient access");
-            throw new NotAllowedException("Failed to create identifier: insufficient access");
+        try {
+            accessService.find(identifier.getDatabaseId(), user.getId());
+        } catch (AccessDeniedException e) {
+            if (!User.hasRole(principal, "update-foreign-identifier")) {
+                log.error("Failed to update identifier: insufficient access");
+                throw new NotAllowedException("Failed to update identifier: insufficient access");
+            }
         }
         final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data));
         log.debug("update identifier resulted in dto={}", dto);

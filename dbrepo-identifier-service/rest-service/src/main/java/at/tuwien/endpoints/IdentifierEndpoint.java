@@ -145,10 +145,13 @@ public class IdentifierEndpoint {
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final User user = userService.findByUsername(principal.getName());
-        final DatabaseAccess access = accessService.find(data.getDbid(), user.getId());
-        if (!User.hasRole(principal, "create-foreign-identifier") && access.getType().equals(AccessType.READ)) {
-            log.error("Failed to create identifier: insufficient access");
-            throw new NotAllowedException("Failed to create identifier: insufficient access");
+        try {
+            accessService.find(data.getDbid(), user.getId());
+        } catch (AccessDeniedException e) {
+            if (!User.hasRole(principal, "create-foreign-identifier")) {
+                log.error("Failed to create identifier: insufficient access");
+                throw new NotAllowedException("Failed to create identifier: insufficient access");
+            }
         }
         final Identifier identifier = identifierService.create(data, principal, authorization);
         return ResponseEntity.status(HttpStatus.CREATED)

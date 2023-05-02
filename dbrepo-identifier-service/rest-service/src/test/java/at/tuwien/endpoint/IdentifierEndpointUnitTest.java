@@ -40,7 +40,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -156,7 +155,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleDatabase_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException {
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
 
         /* mock */
         when(accessRepository.findByHdbidAndHuserid(DATABASE_1_ID, USER_1_ID))
@@ -171,7 +170,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_hasRoleDatabaseNoAccess_fails() {
 
         /* test */
-        assertThrows(at.tuwien.exception.AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
         });
     }
@@ -190,7 +189,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleReadAccessQuery_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException {
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
 
         /* mock */
         when(accessRepository.findByHdbidAndHuserid(DATABASE_2_ID, USER_2_ID))
@@ -249,60 +248,12 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void create_query_fails() {
+    public void create_queryForeign_fails() {
 
         /* test */
-        assertThrows(at.tuwien.exception.AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
         });
-    }
-
-    @Test
-    public void update_anonymous_fails() {
-
-        /* test */
-        assertThrows(AuthenticationCredentialsNotFoundException.class, this::generic_update);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {})
-    public void update_noRole_fails() {
-
-        /* test */
-        assertThrows(AccessDeniedException.class, this::generic_update);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"update-identifier"})
-    public void update_hasRole_succeeds() throws IdentifierPublishingNotAllowedException,
-            IdentifierNotFoundException, IdentifierRequestException {
-
-        /* test */
-        generic_update();
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void delete_anonymous_fails() {
-
-        /* test */
-        assertThrows(AccessDeniedException.class, this::generic_delete);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {})
-    public void delete_noRole_fails() {
-
-        /* test */
-        assertThrows(AccessDeniedException.class, this::generic_delete);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-identifier"})
-    public void delete_hasRole_succeeds() throws NotAllowedException, IdentifierNotFoundException {
-
-        /* test */
-        this.generic_delete();
     }
 
     /* ################################################################################################### */
@@ -314,7 +265,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, at.tuwien.exception.AccessDeniedException {
+            IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -366,42 +317,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         return persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
-    }
-
-    protected void generic_update()
-            throws IdentifierPublishingNotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
-
-        /* mock */
-        when(identifierService.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO))
-                .thenReturn(IDENTIFIER_3);
-        when(identifierRepository.save(IDENTIFIER_3))
-                .thenReturn(IDENTIFIER_3);
-
-        /* test */
-        final ResponseEntity<IdentifierDto> response = identifierEndpoint.update(IDENTIFIER_3_ID, IDENTIFIER_3_DTO);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final IdentifierDto body = response.getBody();
-        assertNotNull(body);
-        assertEquals(IDENTIFIER_3_ID, body.getId());
-        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
-        assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
-        assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
-        assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());
-        assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
-    }
-
-    protected void generic_delete() throws IdentifierNotFoundException, NotAllowedException {
-
-        /* mock */
-        doNothing()
-                .when(identifierService)
-                .delete(IDENTIFIER_1_ID);
-
-        /* test */
-        final ResponseEntity<?> response = identifierEndpoint.delete(IDENTIFIER_1_ID);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNull(response.getBody());
     }
 
 }
