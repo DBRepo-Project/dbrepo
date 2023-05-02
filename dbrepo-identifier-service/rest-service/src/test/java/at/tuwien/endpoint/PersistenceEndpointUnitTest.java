@@ -4,14 +4,13 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
@@ -33,7 +32,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -530,7 +528,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO, null, null, null);
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, null, null, null);
         });
     }
 
@@ -540,12 +538,12 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"update-identifier"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleNoAccess_succeeds() throws at.tuwien.exception.AccessDeniedException {
 
         /* mock */
@@ -555,12 +553,12 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
         });
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"update-identifier"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
 
@@ -569,7 +567,24 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_3_DATA_STEWARD_READ_ACCESS);
 
         /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-identifier-metadata"})
+    public void update_doiChange_fails() throws at.tuwien.exception.AccessDeniedException {
+        final IdentifierUpdateDto request = IdentifierUpdateDto.builder()
+                .doi("10.000/thisisadifferentdoi")
+                .build();
+
+        /* mock */
+        when(accessService.find(IDENTIFIER_1_DATABASE_ID, USER_1_ID))
+                .thenReturn(DATABASE_1_DATA_STEWARD_READ_ACCESS);
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
+        });
     }
 
     @Test
@@ -604,9 +619,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierDto data, String username, User user,
+    protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
+            UserNotFoundException, NotAllowedException {
 
         /* mock */
         if (identifier != null) {

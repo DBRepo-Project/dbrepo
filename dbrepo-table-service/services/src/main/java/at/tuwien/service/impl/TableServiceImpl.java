@@ -2,7 +2,6 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -98,14 +97,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         } finally {
             dataSource.close();
         }
-        log.info("Deleted table with id {}", table.getId());
-        log.trace("deleted table {}", table);
-        /* delete in database_index - elastic search */
-        tableIdxRepository.deleteById(tableId);
-        /* delete in column_index - elastic search */
-        table.getColumns()
-                .forEach(column -> tableColumnIdxRepository.deleteById(column.getId()));
-        log.info("Deleted columns in elastic search with id {}", databaseId);
+        tableRepository.delete(table);
+        log.info("Deleted table with id {} in metadata database", table.getId());
+        tableIdxRepository.delete(tableMapper.tableToTableDto(table));
+        log.info("Deleted table with id {} in search service", table.getId());
     }
 
     @Override
@@ -174,7 +169,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setColumns(List.of());
         tmp.setConstraints(null);
         final User creator = userService.findByUsername(principal.getName());
-        tmp.setCreatedBy(creator.getId());
+        tmp.setCreator(creator);
         /* save in metadata database */
         final Table entity = tableRepository.save(tmp);
         entity.setColumns(createDto.getColumns()

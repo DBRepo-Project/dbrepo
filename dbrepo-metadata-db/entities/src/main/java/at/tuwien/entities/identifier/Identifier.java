@@ -6,7 +6,6 @@ import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -16,7 +15,6 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -46,14 +44,9 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
-    @ToString.Exclude
-    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
-    private UUID createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
@@ -108,13 +101,13 @@ public class Identifier implements Serializable {
     @Column
     private Integer publicationDay;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {})
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -123,7 +116,7 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "identifier")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
     private List<Creator> creators;
 
     @Column(nullable = false, updatable = false)
@@ -133,6 +126,13 @@ public class Identifier implements Serializable {
     @Column
     @LastModifiedDate
     private Instant lastModified;
+
+    @PreRemove
+    private void preRemove() {
+        this.creator = null;
+        this.related.forEach(r -> r.setCreator(null));
+        this.creators.forEach(c -> c.setCreator(null));
+    }
 
 }
 

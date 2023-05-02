@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card>
-      <v-card-title v-text="`Persist ${title}`" />
+      <v-card-title v-text="title" />
       <v-card-text>
         <v-alert
           v-if="isSubset"
@@ -167,6 +167,16 @@
           Cancel
         </v-btn>
         <v-btn
+          v-if="isUpdate"
+          class="mb-2"
+          :loading="loading"
+          :disabled="!formValid || loading"
+          color="primary"
+          @click="update">
+          Update
+        </v-btn>
+        <v-btn
+          v-if="!isUpdate"
           class="mb-2"
           :loading="loading"
           :disabled="!formValid || loading"
@@ -202,28 +212,7 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
-      identifier: {
-        cid: parseInt(this.$route.params.container_id),
-        dbid: parseInt(this.$route.params.database_id),
-        qid: parseInt(this.$route.params.query_id),
-        title: null,
-        description: null,
-        publisher: null,
-        publication_year: formatYearUTC(Date.now()),
-        publication_month: formatMonthUTC(Date.now()),
-        publication_day: formatDayUTC(Date.now()),
-        license: null,
-        type: this.type,
-        creators: [
-          {
-            firstname: null,
-            lastname: null,
-            affiliation: null,
-            orcid: null
-          }
-        ],
-        related_identifiers: []
-      },
+      identifier: {},
       relatedTypes: [
         { value: 'DOI' },
         { value: 'URL' },
@@ -298,13 +287,17 @@ export default {
     isDatabase () {
       return this.type === 'database'
     },
+    isUpdate () {
+      return this.identifier.id !== null
+    },
     title () {
+      let title = (this.isUpdate ? 'Update' : 'Assign') + ' '
       if (this.isSubset) {
-        return 'subset'
+        title += 'subset'
       } else if (this.isDatabase) {
-        return 'database'
+        title += 'database'
       }
-      return ''
+      return (title + ' identifier')
     },
     prefix () {
       if (this.isSubset) {
@@ -317,11 +310,12 @@ export default {
   },
   mounted () {
     this.loadLicenses()
-    this.identifier.publisher = this.$config.defaultPublisher
+    if (this.database.identifier) {
+      this.init(this.database.identifier)
+    }
   },
   methods: {
     cancel () {
-      this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
     },
     addCreator () {
@@ -360,6 +354,18 @@ export default {
           this.loading = false
         })
     },
+    update () {
+      this.loading = true
+      IdentifierService.update(this.identifier.id, this.identifier)
+        .then(() => {
+          this.$store.dispatch('reloadDatabase')
+          this.$toast.success(this.prefix + ' successfully updated')
+          this.$emit('close', { action: 'persisted' })
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
     loadLicenses () {
       if (!this.token) {
         return
@@ -372,6 +378,35 @@ export default {
         .finally(() => {
           this.loading = false
         })
+    },
+    init (identifier) {
+      if (identifier) {
+        console.debug('=====>', identifier)
+        this.identifier = Object.assign(identifier, {})
+        return
+      }
+      this.identifier = {
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
+        qid: parseInt(this.$route.params.query_id),
+        title: null,
+        description: null,
+        publisher: this.$config.defaultPublisher,
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
+        license: null,
+        type: this.type,
+        creators: [
+          {
+            firstname: null,
+            lastname: null,
+            affiliation: null,
+            orcid: null
+          }
+        ],
+        related_identifiers: []
+      }
     }
   }
 }

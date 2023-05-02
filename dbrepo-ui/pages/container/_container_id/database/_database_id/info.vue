@@ -113,15 +113,22 @@
                 v-if="canCreateIdentifier"
                 small
                 color="primary"
-                @click="editDbDialog = true">
+                @click="persistDialog = true">
                 Get Database PID
               </v-btn>
               <v-btn
-                v-if="canDeleteIdentifier"
+                v-if="canEditIdentifier"
+                small
+                color="secondary"
+                @click="persistDialog = true">
+                Edit Database PID
+              </v-btn>
+              <v-btn
+                v-if="canDeleteIdentifier && hasIdentifier"
                 small
                 :loading="loadingDelete"
                 color="error"
-                @click="deleteIdentifier">
+                @click="deleteDialog = true">
                 Delete Database PID
               </v-btn>
             </v-card-actions>
@@ -214,10 +221,16 @@
       </v-tab-item>
     </v-tabs-items>
     <v-dialog
-      v-model="editDbDialog"
+      v-model="persistDialog"
       persistent
       max-width="860">
-      <Persist type="database" :database="database" @close="closeDialog" />
+      <Persist type="database" :database="database" @close="closePersistDialog" />
+    </v-dialog>
+    <v-dialog
+      v-model="deleteDialog"
+      persistent
+      max-width="480">
+      <DeleteIdentifier :identifier="identifier" @close="closeDeleteDialog" />
     </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -231,10 +244,11 @@ import Citation from '@/components/identifier/Citation'
 import { formatTimestampUTCLabel } from '@/utils'
 import Banner from '@/components/identifier/Banner'
 import DatabaseMapper from '@/api/database.mapper'
-import IdentifierService from '@/api/identifier.service'
+import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
 
 export default {
   components: {
+    DeleteIdentifier,
     DBToolbar,
     Persist,
     OrcidIcon,
@@ -245,7 +259,9 @@ export default {
     return {
       loading: false,
       loadingDelete: false,
-      editDbDialog: false,
+      editDialog: false,
+      deleteDialog: false,
+      persistDialog: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
         {
@@ -288,7 +304,7 @@ export default {
       if (!this.database) {
         return null
       }
-      return this.$store.state?.database.identifier
+      return this.database.identifier
     },
     access () {
       return this.$store.state.access
@@ -332,8 +348,17 @@ export default {
       }
       return this.roles.includes('create-identifier') || this.roles.includes('create-foreign-identifier')
     },
+    canEditIdentifier () {
+      if (!this.roles) {
+        return false
+      }
+      if (!this.hasIdentifier) {
+        return false
+      }
+      return this.roles.includes('modify-identifier-metadata')
+    },
     canDeleteIdentifier () {
-      if (!this.user) {
+      if (!this.user || this.hasDoi) {
         return false
       }
       return this.roles.includes('delete-identifier')
@@ -362,6 +387,12 @@ export default {
       }
       return false
     },
+    hasDoi () {
+      if (!this.hasIdentifier) {
+        return false
+      }
+      return this.database.identifier.doi !== null
+    },
     accessDescription () {
       if (!this.access) {
         return
@@ -379,27 +410,18 @@ export default {
     }
   },
   methods: {
-    async closeDialog (event) {
+    async closePersistDialog (event) {
       if (event.action === 'persisted') {
-        await this.loadDatabase()
+        await this.$store.dispatch('reloadDatabase')
       }
-      this.editDbDialog = false
+      this.persistDialog = false
       this.editVisibilityDialog = false
     },
-    deleteIdentifier () {
-      if (!this.database.identifier.id) {
-        return
+    async closeDeleteDialog (event) {
+      if (event.action === 'deleted') {
+        await this.$store.dispatch('reloadDatabase')
       }
-      this.loadingDelete = true
-      IdentifierService.delete(this.database.identifier.id)
-        .then(async () => {
-          console.info('Deleted identifier with id ', this.database.identifier.id)
-          this.$toast.success('Successfully deleted identifier with id ' + this.database.identifier.id)
-          await this.$store.dispatch('reloadDatabase')
-        })
-        .finally(() => {
-          this.loadingDelete = false
-        })
+      this.deleteDialog = false
     }
   }
 }

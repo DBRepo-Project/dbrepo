@@ -4,8 +4,6 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -135,7 +133,7 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, AccessDeniedException, NotAllowedException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
             log.error("Identifier of type subset need to have a qid present");

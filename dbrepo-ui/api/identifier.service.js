@@ -51,8 +51,25 @@ class IdentifierService {
         })
         .catch((error) => {
           const { code, message } = error
-          console.error('Failed to load identifier', error)
-          Vue.$toast.error(`[${code}] Failed to load identifier: ${message}`)
+          console.error('Failed to create identifier', error)
+          Vue.$toast.error(`[${code}] Failed to create identifier: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  update (id, data) {
+    return new Promise((resolve, reject) => {
+      api.put(`/api/pid/${id}`, data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const identifier = response.data
+          console.debug('response identifier', identifier)
+          resolve(identifier)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to update identifier', error)
+          Vue.$toast.error(`[${code}] Failed to update identifier: ${message}`)
           reject(error)
         })
     })

@@ -6,6 +6,7 @@ import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
+import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.jpa.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,7 +88,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void list_hasRole_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(null, null, null);
@@ -103,7 +104,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void list_noRole_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(null, null, null);
@@ -119,7 +120,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void list_databaseId_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, null, null);
@@ -139,10 +140,10 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_4_SIMPLE);
         databaseRepository.save(DATABASE_3_SIMPLE);
         databaseRepository.save(DATABASE_4_SIMPLE);
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierRepository.save(IDENTIFIER_2_SIMPLE);
-        identifierRepository.save(IDENTIFIER_3_SIMPLE);
-        identifierRepository.save(IDENTIFIER_4_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_2);
+        identifierRepository.save(IDENTIFIER_3);
+        identifierRepository.save(IDENTIFIER_4);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(DATABASE_4_ID, null, IdentifierTypeDto.DATABASE);
@@ -158,7 +159,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void list_subsetIdAndType_succeeds() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.SUBSET);
@@ -188,7 +189,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_3_SIMPLE);
 
         /* test */
-        assertThrows(at.tuwien.exception.AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_3_DTO_REQUEST, "ABC", USER_1_PRINCIPAL);
         });
     }

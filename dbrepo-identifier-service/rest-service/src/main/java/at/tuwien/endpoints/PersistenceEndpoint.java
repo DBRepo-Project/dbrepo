@@ -3,9 +3,8 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.EndpointConfig;
-import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -153,7 +152,7 @@ public class PersistenceEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @Timed(value = "identifier.update", description = "Time needed to update an identifier")
-    @PreAuthorize("hasAuthority('update-identifier') or hasAuthority('update-foreign-identifier')")
+    @PreAuthorize("hasAuthority('modify-identifier-metadata')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -183,7 +182,7 @@ public class PersistenceEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
-                                                @NotNull @Valid @RequestBody IdentifierDto data,
+                                                @NotNull @Valid @RequestBody IdentifierUpdateDto data,
                                                 @NotNull Principal principal)
             throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
@@ -196,6 +195,11 @@ public class PersistenceEndpoint {
                 log.error("Failed to update identifier: insufficient access");
                 throw new NotAllowedException("Failed to update identifier: insufficient access");
             }
+        }
+        /* check */
+        if (identifier.getDoi() != null && !identifier.getDoi().equals(data.getDoi())) {
+            log.error("Failed to update identifier: once attached the DOI cannot be changed");
+            throw new IdentifierRequestException("Failed to update identifier: once attached the DOI cannot be changed");
         }
         final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data));
         log.debug("update identifier resulted in dto={}", dto);
@@ -226,6 +230,11 @@ public class PersistenceEndpoint {
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
             throws IdentifierNotFoundException, NotAllowedException {
         log.debug("endpoint delete identifier, id={}", id);
+        final Identifier identifier = identifierService.find(id);
+        if (identifier.getDoi() != null) {
+            log.error("Failed to delete identifier: a DOI is already attached");
+            throw new NotAllowedException("Failed to delete identifier: a DOI is already attached");
+        }
         identifierService.delete(id);
         return ResponseEntity.accepted()
                 .build();
