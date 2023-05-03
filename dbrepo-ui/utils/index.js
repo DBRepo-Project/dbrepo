@@ -83,6 +83,22 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
+function isOrcid (orcid) {
+  if (!orcid || orcid.startsWith('http')) {
+    return false
+  }
+  const input = orcid.replace('-', '')
+  let total = 0
+  for (let i = 0; i < input.length; i++) {
+    const digit = Number(input.charAt(i))
+    total = (total + digit) * 2
+  }
+  const remainder = total % 11
+  const result = (12 - remainder) % 11
+  const checksum = result === 10 ? 'X' : String(result)
+  return orcid.charAt(orcid.length - 1) === checksum
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -92,5 +108,6 @@ module.exports = {
   isNonNegativeInteger,
   formatYearUTC,
   formatMonthUTC,
-  formatDayUTC
+  formatDayUTC,
+  isOrcid
 }

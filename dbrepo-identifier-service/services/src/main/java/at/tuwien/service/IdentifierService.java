@@ -2,7 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
@@ -108,16 +108,15 @@ public interface IdentifierService {
      * @param identifierId The identifier id.
      * @param data         The metadata.
      * @return The updated identifier if successful.
-     * @throws IdentifierNotFoundException             TThe identifier was not found in the metadata database or was deleted.
+     * @throws IdentifierNotFoundException TThe identifier was not found in the metadata database or was deleted.
      */
-    Identifier update(Long identifierId, IdentifierDto data) throws IdentifierNotFoundException, IdentifierRequestException;
+    Identifier update(Long identifierId, IdentifierUpdateDto data) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the database, but sets it as deleted.
      *
      * @param identifierId The identifier id.
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
-     * @throws NotAllowedException Identifiers with a valid DOI cannot be deleted.
      */
-    void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException;
+    void delete(Long identifierId) throws IdentifierNotFoundException;
 }

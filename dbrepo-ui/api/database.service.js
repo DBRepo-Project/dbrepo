@@ -51,6 +51,19 @@ class DatabaseService {
     })
   }
 
+  delete (id, databaseId) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to delete database', error)
+          Vue.$toast.error(`[${code}] Failed to delete database: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   modifyVisibility (id, databaseId, isPublic) {
     return new Promise((resolve, reject) => {
       api.put(`/api/container/${id}/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })
@@ -92,10 +105,13 @@ class DatabaseService {
           resolve(databases)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to check database access', error)
-          Vue.$toast.error(`[${code}] Failed to check database access: ${message}`)
-          reject(error)
+          const { code, message, response } = error
+          const { status } = response
+          if (status !== 403 && status !== 405) { /* ignore no access errors */
+            console.error('Failed to check database access', error)
+            Vue.$toast.error(`[${code}] Failed to check database access: ${message}`)
+            reject(error)
+          }
         })
     })
   }
@@ -155,6 +171,23 @@ class DatabaseService {
           const { code, message } = error
           console.error('Failed to load licenses', error)
           Vue.$toast.error(`[${code}] Failed to load licenses: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  findView (id, databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to find view', error)
+          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
           reject(error)
         })
     })

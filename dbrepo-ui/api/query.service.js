@@ -119,7 +119,9 @@ class QueryService {
     return new Promise((resolve, reject) => {
       api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
         .then((response) => {
-          resolve(response.data)
+          const subset = response.data
+          console.debug('response subset', subset)
+          resolve(subset)
         })
         .catch((error) => {
           const { code, message } = error
@@ -134,12 +136,99 @@ class QueryService {
     return new Promise((resolve, reject) => {
       api.get(`/api/pid/${id}`, { headers: { Accept: mime } })
         .then((response) => {
-          resolve(response.data)
+          const metadata = response.data
+          console.debug('response metadata', metadata)
+          resolve(metadata)
         })
         .catch((error) => {
           const { code, message } = error
-          console.error('Failed to export query', error)
-          Vue.$toast.error(`[${code}] Failed to export query: ${message}`)
+          console.error('Failed to export metadata', error)
+          Vue.$toast.error(`[${code}] Failed to export metadata: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  execute (id, databaseId, data, page, size) {
+    return new Promise((resolve, reject) => {
+      api.post(`/api/container/${id}/database/${databaseId}?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const result = response.data
+          console.debug('response result', result)
+          resolve(result)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to execute statement', error)
+          Vue.$toast.error(`[${code}] Failed to execute statement: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  reExecuteQuery (id, databaseId, queryId, page, size) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const result = response.data
+          console.debug('response result', result)
+          resolve(result)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to re-execute query', error)
+          Vue.$toast.error(`[${code}] Failed to re-execute query: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  reExecuteQueryCount (id, databaseId, queryId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data/count`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const count = response.data
+          console.debug('response count', count)
+          resolve(count)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to re-execute query count', error)
+          Vue.$toast.error(`[${code}] Failed to re-execute query count: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  reExecuteView (id, databaseId, viewId, page, size) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const result = response.data
+          console.debug('response result', result)
+          resolve(result)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to re-execute view', error)
+          Vue.$toast.error(`[${code}] Failed to re-execute view: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  reExecuteViewCount (id, databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data/count`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const count = response.data
+          console.debug('response count', count)
+          resolve(count)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to re-execute view count', error)
+          Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
           reject(error)
         })
     })

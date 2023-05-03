@@ -6,7 +6,7 @@ import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -103,17 +103,17 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                     }
             );
 
-            if(response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
+            if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
                 log.error("Could not successfully create DOI. Response: {}", response);
                 throw new IdentifierRequestException("Could not successfully create DOI.");
             }
 
             identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
             this.identifierRepository.save(identifier);
-        } catch(HttpClientErrorException e) {
+        } catch (HttpClientErrorException e) {
             log.error("Invalid DOI metadata.", e);
             throw new IdentifierRequestException("Invalid DOI metadata.", e);
-        } catch(RestClientException e) {
+        } catch (RestClientException e) {
             log.error("Could not fulfil request to DataCite server.", e);
             throw new InternalError("Could not fulfil request to DataCite server.", e);
         }
@@ -146,10 +146,10 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackOn = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierDto data)
+    public Identifier update(Long identifierId, IdentifierUpdateDto data)
             throws IdentifierNotFoundException, IdentifierRequestException {
         Identifier identifier = identifierService.update(identifierId, data);
-        if(identifier.getDoi() == null) {
+        if (identifier.getDoi() == null) {
             return identifier;
         }
 
@@ -178,17 +178,17 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                     identifier.getDoi()
             );
 
-            if(response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
                 log.error("Could not successfully create DOI. Response: {}", response);
                 throw new IdentifierRequestException("Could not successfully create DOI.");
             }
 
             identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
             this.identifierRepository.save(identifier);
-        } catch(HttpClientErrorException e) {
+        } catch (HttpClientErrorException e) {
             log.error("Invalid DOI metadata.", e);
             throw new IdentifierRequestException("Invalid DOI metadata.", e);
-        } catch(RestClientException e) {
+        } catch (RestClientException e) {
             log.error("Could not fulfil request to DataCite server.", e);
             throw new InternalError("Could not fulfil request to DataCite server.", e);
         }
@@ -197,7 +197,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    public void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException {
+    @Transactional
+    public void delete(Long identifierId) throws IdentifierNotFoundException {
         identifierService.delete(identifierId);
     }
 

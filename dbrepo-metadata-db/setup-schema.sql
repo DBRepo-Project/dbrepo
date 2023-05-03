@@ -357,7 +357,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     language          VARCHAR(50),
     license           VARCHAR(50),
     description       TEXT,
-    visibility        ENUM ('SELF', 'TRUSTED', 'EVERYONE') NOT NULL,
     publication_year  INTEGER                              NOT NULL,
     publication_month INTEGER,
     publication_day   INTEGER,

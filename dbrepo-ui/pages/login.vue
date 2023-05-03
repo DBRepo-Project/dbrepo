@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar v-if="!token" flat>
       <v-toolbar-title>
         Login
       </v-toolbar-title>
     </v-toolbar>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card v-if="!token" flat tile>
+    <v-form v-if="!token" ref="form" v-model="valid" @submit.prevent="submit">
+      <v-card flat tile>
         <v-card-text>
           <v-alert
             border="left"
@@ -53,7 +53,6 @@
         </v-card-actions>
       </v-card>
     </v-form>
-    <p v-if="token">Already logged-in</p>
   </div>
 </template>
 
@@ -72,9 +71,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     token () {
       return this.$store.state.token
     },
@@ -83,17 +79,11 @@ export default {
     },
     user () {
       return this.$store.state.user
-    },
-    clientSecret () {
-      return this.$config.clientSecret
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
+    }
+  },
+  mounted () {
+    if (this.token) {
+      this.$router.push('/container')
     }
   },
   methods: {
@@ -106,10 +96,10 @@ export default {
         .then(() => {
           const userId = UserMapper.tokenToUserId(this.token)
           UserService.findOne(userId)
-            .then((user) => {
+            .then(async (user) => {
               this.$store.commit('SET_USER', user)
               this.$vuetify.theme.dark = user.attributes.theme_dark
-              this.$router.push('/container')
+              await this.$router.push('/container')
             })
         })
         .catch(() => {
@@ -118,9 +108,6 @@ export default {
     },
     signup () {
       this.$router.push('/signup')
-    },
-    forgot () {
-      this.$router.push('/forgot')
     }
   }
 }

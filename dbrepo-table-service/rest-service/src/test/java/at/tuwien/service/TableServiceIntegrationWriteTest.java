@@ -29,6 +29,7 @@ import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doNothing;
@@ -99,8 +100,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
-        tableRepository.save(TABLE_2_SIMPLE);
+        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_2);
     }
 
     @AfterEach
@@ -181,6 +182,22 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        assertTrue(userRepository.findById(TABLE_1_CREATED_BY).isPresent());
+        assertTrue(databaseRepository.findById(TABLE_1_DATABASE_ID).isPresent());
+    }
+
+    @Test
+    public void delete_notFound_fails() {
+
+        /* mock */
+        doNothing()
+                .when(tableidxRepository)
+                .delete(any(TableDto.class));
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, 9999L);
+        });
     }
 
 }

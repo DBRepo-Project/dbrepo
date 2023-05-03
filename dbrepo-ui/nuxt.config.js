@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { api, icon, search, clientSecret, title, sandbox, logo, version, defaultPublisher, doiUrl } from './config'
+import { api, icon, search, clientSecret, title, sandbox, logo, version, defaultPublisher, doiUrl, baseUrl } from './config'
 
 const proxy = {}
 
@@ -93,7 +93,8 @@ export default {
     logo,
     clientSecret,
     defaultPublisher,
-    doiUrl
+    doiUrl,
+    baseUrl
   },
 
   serverMiddleware: [
@@ -109,7 +110,7 @@ export default {
           primary: colors.blue.darken2,
           accent: colors.amber.darken3,
           secondary: colors.blueGrey.base,
-          info: colors.amber.lighten4,
+          info: colors.amber.lighten1,
           code: colors.grey.lighten4,
           warning: colors.orange.lighten2,
           error: colors.red.base /* is used by forms */,

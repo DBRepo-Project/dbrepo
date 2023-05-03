@@ -6,31 +6,38 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import org.mapstruct.Mapper;
-import org.springframework.transaction.annotation.Transactional;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
-    @Transactional
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
-    @Transactional
+    @Mappings({
+            @Mapping(target = "containerId", source = "cid"),
+            @Mapping(target = "databaseId", source = "dbid"),
+            @Mapping(target = "queryId", source = "qid"),
+    })
     Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
+    @Mappings({
+            @Mapping(target = "containerId", source = "cid"),
+            @Mapping(target = "databaseId", source = "dbid"),
+            @Mapping(target = "queryId", source = "qid"),
+    })
+    Identifier identifierUpdateDtoToIdentifier(IdentifierUpdateDto data);
+
     /* keep */
-    @Transactional
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
-    @Transactional
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
-    @Transactional
+    /* keep */
     Creator creatorDtoToCreator(CreatorDto data);
 
-    @Transactional
     Creator creatorCreateDtoToCreator(CreatorCreateDto data);
 
-    @Transactional
     RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierCreateDto data);
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);

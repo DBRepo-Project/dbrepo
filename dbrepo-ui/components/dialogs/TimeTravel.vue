@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card>
-      <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
+      <v-progress-linear v-if="loading" color="primary" />
       <v-card-title>
         Versioning
       </v-card-title>
@@ -55,6 +55,7 @@
 </template>
 
 <script>
+import TableService from '@/api/table.service'
 import { Bar } from 'vue-chartjs/legacy'
 import { Chart as ChartJS, Title, Tooltip, BarElement, CategoryScale, LinearScale, LogarithmicScale } from 'chart.js'
 import { formatTimestampUTC, formatTimestampUTCLabel } from '@/utils'
@@ -69,7 +70,6 @@ export default {
     return {
       formValid: false,
       loading: false,
-      error: false,
       datetime: null,
       chartData: {
         labels: [],
@@ -87,22 +87,6 @@ export default {
         }
       },
       totalChanges: 0
-    }
-  },
-  computed: {
-    loadingColor () {
-      return this.error ? 'error' : 'primary'
-    },
-    token () {
-      return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
     }
   },
   mounted () {
@@ -129,29 +113,25 @@ export default {
         time: this.datetime
       })
     },
-    async loadHistory () {
-      try {
-        this.loading = true
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/history`, this.config)
-        this.error = false
-        this.chartData.labels = res.data.map(function (d, idx) {
-          if (idx === 0) {
-            return 'Origin'
-          }
-          return formatTimestampUTCLabel(d.timestamp)
+    loadHistory () {
+      this.loading = true
+      TableService.findHistory(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+        .then((history) => {
+          this.chartData.labels = history.map(function (d, idx) {
+            if (idx === 0) {
+              return 'Origin'
+            }
+            return formatTimestampUTCLabel(d.timestamp)
+          })
+          this.chartData.dates = history.map(d => formatTimestampUTC(d.timestamp))
+          this.chartData.datasets = [{
+            backgroundColor: this.$vuetify.theme.themes.light.primary,
+            data: history.map(d => d.total)
+          }]
         })
-        this.chartData.dates = res.data.map(d => formatTimestampUTC(d.timestamp))
-        this.chartData.datasets = [{
-          backgroundColor: this.$vuetify.theme.themes.light.primary,
-          data: res.data.map(d => d.total)
-        }]
-        // this.totalChanges = this.res.data.length
-        console.debug('history', this.chartData)
-      } catch (err) {
-        this.error = true
-        console.error('failed to load table history', err)
-      }
-      this.loading = false
+        .finally(() => {
+          this.loading = false
+        })
     }
   }
 }

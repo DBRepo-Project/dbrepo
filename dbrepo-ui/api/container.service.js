@@ -19,6 +19,23 @@ class ContainerService {
     })
   }
 
+  findAllImages () {
+    return new Promise((resolve, reject) => {
+      api.get('/api/image', { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const images = response.data
+          console.debug('response images', images)
+          resolve(images)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load images', error)
+          Vue.$toast.error(`[${code}] Failed to load images: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   findOne (id) {
     return new Promise((resolve, reject) => {
       api.get(`/api/container/${id}`, { headers: { Accept: 'application/json' } })

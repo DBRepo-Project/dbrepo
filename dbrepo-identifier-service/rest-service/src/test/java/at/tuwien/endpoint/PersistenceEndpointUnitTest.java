@@ -1,20 +1,19 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.exception.IdentifierRequestException;
-import at.tuwien.exception.QueryNotFoundException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.IdentifierRepository;
-import at.tuwien.repository.jpa.RealmRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
+import at.tuwien.exception.*;
+import at.tuwien.service.AccessService;
+import at.tuwien.service.IdentifierService;
+import at.tuwien.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -30,27 +29,22 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.security.Principal;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -63,10 +57,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     private IndexInitializer indexInitializer;
 
     @MockBean
-    private IdentifierRepository identifierRepository;
+    private AccessService accessService;
 
     @MockBean
-    private QueryServiceGateway queryServiceGateway;
+    private IdentifierService identifierService;
+
+    @MockBean
+    private UserService userService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -87,14 +84,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_4_ID))
-                .thenReturn(Optional.of(IDENTIFIER_4));
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
@@ -118,14 +116,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_json1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -145,6 +144,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
         assertEquals(compare.getPublisher(), body.getPublisher());
+        assertNotNull(compare.getCreators());
+        assertNotNull(body.getCreators());
         assertEquals(compare.getCreators().size(), body.getCreators().size());
         final CreatorDto creator1 = body.getCreators().get(0);
         assertEquals(compare.getCreators().get(0).getFirstname(), creator1.getFirstname());
@@ -154,17 +155,18 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/csv";
-        final byte[] stream = FileUtils.readFileToByteArray(new File("src/test/resources/csv/keyboard.csv"));
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
+        final InputStreamResource mock = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
-        when(queryServiceGateway.export(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(stream);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
+        when(identifierService.exportResource(IDENTIFIER_1_ID))
+                .thenReturn(mock);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -175,15 +177,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("not testable with xml")
     public void find_xml0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata0.xml")));
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -194,15 +196,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("not testable with xml")
     public void find_xml1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata1.xml")));
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -214,6 +216,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliography_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography";
@@ -221,8 +224,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -233,6 +238,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyApa0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=apa";
@@ -240,8 +246,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_4_ID))
-                .thenReturn(Optional.of(IDENTIFIER_4));
+        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
@@ -252,6 +260,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyApa1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=apa";
@@ -259,8 +268,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -271,6 +282,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyApa2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=apa";
@@ -278,8 +290,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_2_ID))
-                .thenReturn(Optional.of(IDENTIFIER_2));
+        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_2_ID))
+                .thenReturn(IDENTIFIER_2);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
@@ -290,6 +304,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyApa3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=apa";
@@ -297,8 +312,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_3_ID))
-                .thenReturn(Optional.of(IDENTIFIER_3));
+        when(identifierService.exportBibliography(IDENTIFIER_3_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_3_ID))
+                .thenReturn(IDENTIFIER_3);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_3_ID, accept);
@@ -309,6 +326,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyApa4_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=apa";
@@ -316,8 +334,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.APA))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -328,6 +348,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyIeee0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=ieee";
@@ -335,8 +356,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_4_ID))
-                .thenReturn(Optional.of(IDENTIFIER_4));
+        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.IEEE))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
@@ -347,6 +370,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyIeee1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=ieee";
@@ -354,8 +378,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.IEEE))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -366,6 +392,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyIeee2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=ieee";
@@ -373,8 +400,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_2_ID))
-                .thenReturn(Optional.of(IDENTIFIER_2));
+        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.IEEE))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_2_ID))
+                .thenReturn(IDENTIFIER_2);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
@@ -385,6 +414,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyIeee3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=ieee";
@@ -392,8 +422,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.IEEE))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -404,6 +436,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyBibtex0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=bibtex";
@@ -411,8 +444,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_4_ID))
-                .thenReturn(Optional.of(IDENTIFIER_4));
+        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.BIBTEX))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_4_ID))
+                .thenReturn(IDENTIFIER_4);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
@@ -423,6 +458,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyBibtex1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=bibtex";
@@ -430,8 +466,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.BIBTEX))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -442,6 +480,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyBibtex2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=bibtex";
@@ -449,8 +488,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_2_ID))
-                .thenReturn(Optional.of(IDENTIFIER_2));
+        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.BIBTEX))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_2_ID))
+                .thenReturn(IDENTIFIER_2);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
@@ -461,6 +502,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void find_bibliographyBibtex3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, IOException {
         final String accept = "text/bibliography; style=bibtex";
@@ -468,8 +510,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
+        when(identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.BIBTEX))
+                .thenReturn(compare);
+        when(identifierService.find(IDENTIFIER_1_ID))
+                .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
         final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
@@ -479,8 +523,158 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare, body);
     }
 
+    @Test
+    @WithAnonymousUser
+    public void update_anonymous_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {})
+    public void update_noRole_fails() {
+
+        /* test */
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
+    public void update_hasRoleNoAccess_succeeds() throws at.tuwien.exception.AccessDeniedException {
+
+        /* mock */
+        doThrow(at.tuwien.exception.AccessDeniedException.class)
+                .when(accessService)
+                .find(IDENTIFIER_3_DATABASE_ID, USER_3_ID);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
+    public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
+            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException, IdentifierUpdateBadFormException {
+
+        /* mock */
+        when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
+                .thenReturn(DATABASE_3_DATA_STEWARD_READ_ACCESS);
+
+        /* test */
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-identifier-metadata"})
+    public void update_doiChange_fails() throws at.tuwien.exception.AccessDeniedException {
+        final IdentifierUpdateDto request = IdentifierUpdateDto.builder()
+                .doi("10.000/thisisadifferentdoi")
+                .build();
+
+        /* mock */
+        when(accessService.find(IDENTIFIER_1_DATABASE_ID, USER_1_ID))
+                .thenReturn(DATABASE_1_DATA_STEWARD_READ_ACCESS);
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void delete_anonymous_fails() {
+
+        /* test */
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {})
+    public void delete_noRole_fails() {
+
+        /* test */
+        assertThrows(AccessDeniedException.class, () -> {
+            this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-identifier"})
+    public void delete_hasRole_succeeds() throws NotAllowedException, IdentifierNotFoundException {
+
+        /* test */
+        this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
+    }
+
+    /* ################################################################################################### */
+    /* ## GENERIC TEST CASES                                                                            ## */
+    /* ################################################################################################### */
+
     protected static String inputStreamToString(InputStream inputStream) throws IOException {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+    }
+
+    protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
+                                  Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
+            UserNotFoundException, NotAllowedException, IdentifierUpdateBadFormException {
+
+        /* mock */
+        if (identifier != null) {
+            when(identifierService.update(id, data))
+                    .thenReturn(identifier);
+            when(identifierService.find(id))
+                    .thenReturn(identifier);
+        } else {
+            doThrow(IdentifierNotFoundException.class)
+                    .when(identifierService)
+                    .find(id);
+        }
+        if (user != null) {
+            when(userService.findByUsername(username))
+                    .thenReturn(user);
+        } else {
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findByUsername(username);
+        }
+
+        /* test */
+        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, principal);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        final IdentifierDto body = response.getBody();
+        assertNotNull(body);
+        assertEquals(IDENTIFIER_3_ID, body.getId());
+        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
+        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
+        assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
+        assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
+        assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());
+        assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
+    }
+
+    protected void generic_delete(Long id, Identifier identifier) throws IdentifierNotFoundException, NotAllowedException {
+
+        /* mock */
+        when(identifierService.find(id))
+                .thenReturn(identifier);
+        doNothing()
+                .when(identifierService)
+                .delete(id);
+
+        /* test */
+        final ResponseEntity<?> response = persistenceEndpoint.delete(id);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
 }

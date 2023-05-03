@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import SearchService from '@/api/search.service'
 export default {
   data () {
     return {
@@ -58,14 +59,6 @@ export default {
         return `${this.results.length} results`
       }
       return `${this.results.length} result`
-    },
-    elasticConfig () {
-      return {
-        auth: {
-          username: 'elastic',
-          password: this.$config.elasticPassword
-        }
-      }
     }
   },
   watch: {
@@ -90,20 +83,18 @@ export default {
     }
   },
   methods: {
-    async retrieve () {
+    retrieve () {
       if (this.loading) {
         return
       }
       this.loading = true
-      try {
-        const res = await this.$axios.get(`/retrieve/_all/_search?q=${this.query}*&terminate_after=50`, this.elasticConfig)
-        console.info('search results', res.data.hits.total.value)
-        console.debug('search results for', this.$route.query.q, 'are', res.data.hits.hits)
-        this.results = res.data.hits.hits.map(h => h._source)
-      } catch (err) {
-        console.error('Failed to load search results', err)
-      }
-      this.loading = false
+      SearchService.search(this.query)
+        .then((hits) => {
+          this.results = hits.map(h => h._source)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     isDatabase (item) {
       if (!item) {

@@ -37,3 +37,4 @@ zope.interface==5.5.2
 html5lib==1.1
 pytest==7.2.1
 coverage==7.1.0
+Flask-JWT-Extended==4.4.4

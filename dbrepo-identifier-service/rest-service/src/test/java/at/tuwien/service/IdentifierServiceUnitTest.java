@@ -3,14 +3,13 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.VisibilityTypeDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.IdentifierIdxRepository;
 import at.tuwien.repository.jpa.IdentifierRepository;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -175,52 +173,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_notFound_fails() {
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.empty());
-        when(identifierRepository.save(IDENTIFIER_1))
-                .thenReturn(IDENTIFIER_1);
-
-        /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
-        });
-    }
-
-    @Test
-    public void update_doiChange_fails() {
-
-        IdentifierDto identifierWithNewDoiDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.EVERYONE).doi("10.000/thisisadifferentdoi").build();
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, identifierWithNewDoiDto);
-        });
-    }
-
-    @Test
-    public void update_notVisibleByEveryone_fails() {
-        Identifier identifier = Identifier.builder().id(IDENTIFIER_1_ID).build();
-        IdentifierDto identifierDto = IdentifierDto.builder().id(IDENTIFIER_1_ID).visibility(VisibilityTypeDto.TRUSTED).build();
-        IDENTIFIER_1_DTO.setVisibility(VisibilityTypeDto.TRUSTED);
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(identifier));
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.update(IDENTIFIER_1_ID, identifierDto);
-        });
-    }
-
-    @Test
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
@@ -281,11 +233,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws IdentifierNotFoundException, NotAllowedException {
+    public void delete_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+        when(identifierRepository.existsById(IDENTIFIER_1_ID))
+                .thenReturn(true);
+        when(identifierIdxRepository.existsById(IDENTIFIER_1_ID))
+                .thenReturn(true);
         doNothing()
                 .when(identifierRepository)
                 .delete(IDENTIFIER_1);
@@ -309,22 +263,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.delete(IDENTIFIER_1_ID);
-        });
-    }
-
-    @Test
-    public void delete_withDoi_fails() {
-
-        /* mock */
-        when(identifierRepository.findById(IDENTIFIER_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1_WITH_DOI));
-        doNothing()
-                .when(identifierRepository)
-                .delete(IDENTIFIER_1);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
             identifierService.delete(IDENTIFIER_1_ID);
         });
     }

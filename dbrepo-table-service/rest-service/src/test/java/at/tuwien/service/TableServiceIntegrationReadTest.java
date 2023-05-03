@@ -100,8 +100,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
-        tableRepository.save(TABLE_2_SIMPLE);
+        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_2);
     }
 
     @Test
