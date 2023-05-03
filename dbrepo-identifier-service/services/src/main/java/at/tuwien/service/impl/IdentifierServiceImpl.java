@@ -250,12 +250,16 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier update(Long identifierId, IdentifierUpdateDto data) {
+    public Identifier update(Long identifierId, IdentifierUpdateDto data) throws IdentifierNotFoundException {
         /* map */
+        final Identifier old = find(identifierId);
         final Identifier entity = identifierMapper.identifierUpdateDtoToIdentifier(data);
         entity.setId(identifierId);
-        entity.getCreators()
-                .forEach(creator -> creator.setPid(identifierId));
+        entity.setCreator(old.getCreator());
+        entity.getCreators().forEach(c -> {
+            c.setPid(identifierId);
+            c.setCreator(old.getCreator());
+        });
         /* update */
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Updated identifier with id {}", identifierId);

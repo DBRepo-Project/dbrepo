@@ -32,11 +32,14 @@ dictConfig({
 })
 
 app = Flask(__name__)
-jwt = JWTManager(app)
 metrics = PrometheusMetrics(app)
 metrics.info('app_info', 'Application info', version='1.2.0')
 app.config['SWAGGER'] = {'openapi': '3.0.0', 'title': 'Swagger UI', 'uiversion': 3}
-
+# https://flask-jwt-extended.readthedocs.io/en/stable/options/
+app.config['JWT_ALGORITHM'] = 'HS256'
+app.config['JWT_DECODE_ISSUER'] = os.getenv('JWT_ISSUER')
+app.config['JWT_PUBLIC_KEY'] = os.getenv('JWT_PUBKEY')
+jwt = JWTManager(app)
 list = List(offline=False)
 
 swagger_config = {

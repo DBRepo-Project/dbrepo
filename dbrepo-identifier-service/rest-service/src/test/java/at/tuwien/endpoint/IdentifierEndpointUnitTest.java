@@ -10,12 +10,14 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.jpa.*;
+import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -37,9 +39,11 @@ import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -60,6 +64,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
+
+    @MockBean
+    private AccessService accessService;
 
     @MockBean
     private UserRepository userRepository;
@@ -147,7 +154,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, null, null, null, null);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, null, null, null, null, null);
         });
     }
 
@@ -155,23 +162,23 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleDatabase_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         when(accessRepository.findByHdbidAndHuserid(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(Optional.of(DATABASE_1_RESEARCHER_READ_ACCESS));
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"create-identifier"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleDatabaseNoAccess_fails() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_3_PRINCIPAL, USER_3_ID, USER_3_USERNAME, USER_3);
         });
     }
 
@@ -181,7 +188,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null, null);
+            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null, null, null);
         });
     }
 
@@ -189,14 +196,11 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleReadAccessQuery_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
-
-        /* mock */
-        when(accessRepository.findByHdbidAndHuserid(DATABASE_2_ID, USER_2_ID))
-                .thenReturn(Optional.of(DATABASE_2_RESEARCHER_READ_ACCESS));
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_USERNAME, USER_2);
+        generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, DATABASE_2_RESEARCHER_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
     }
 
     @Test
@@ -218,7 +222,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, request, null, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -242,7 +246,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, request, null, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -252,7 +256,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_USERNAME, USER_1);
+            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -260,12 +264,12 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Long containerId, Long databaseId, Database database, IdentifierCreateDto data,
-                                  Identifier identifier, Principal principal, String username, User user)
-            throws QueryNotFoundException, RemoteUnavailableException,
-            IdentifierAlreadyExistsException,
-            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
+    protected void generic_create(Long containerId, Long databaseId, Database database, DatabaseAccess access,
+                                  IdentifierCreateDto data, Identifier identifier, Principal principal, UUID userId,
+                                  String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
+            IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -276,6 +280,14 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         } else {
             when(userRepository.findByUsername(username))
                     .thenReturn(Optional.of(user));
+        }
+        if (access != null) {
+            when(accessService.find(databaseId, userId))
+                    .thenReturn(access);
+        } else {
+            doThrow(at.tuwien.exception.AccessDeniedException.class)
+                    .when(accessService)
+                    .find(databaseId, userId);
         }
         when(queryServiceGateway.find(containerId, databaseId, data, "ABC"))
                 .thenReturn(QUERY_1_DTO);

@@ -133,7 +133,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_succeeds()
-            throws IdentifierNotFoundException, IdentifierRequestException {
+            throws IdentifierNotFoundException, IdentifierRequestException, IdentifierUpdateBadFormException {
 
         /* mock */
         when(identifierIdxRepository.save(any(IdentifierDto.class)))

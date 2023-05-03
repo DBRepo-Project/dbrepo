@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.util.Optional;
 import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -145,6 +144,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
         assertEquals(compare.getPublisher(), body.getPublisher());
+        assertNotNull(compare.getCreators());
+        assertNotNull(body.getCreators());
         assertEquals(compare.getCreators().size(), body.getCreators().size());
         final CreatorDto creator1 = body.getCreators().get(0);
         assertEquals(compare.getCreators().get(0).getFirstname(), creator1.getFirstname());
@@ -560,7 +561,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException {
+            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException, IdentifierUpdateBadFormException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
@@ -583,7 +584,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
+            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
         });
     }
 
@@ -592,7 +593,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, this::generic_delete);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
+        });
     }
 
     @Test
@@ -600,7 +603,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, this::generic_delete);
+        assertThrows(AccessDeniedException.class, () -> {
+            this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
+        });
     }
 
     @Test
@@ -608,7 +613,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void delete_hasRole_succeeds() throws NotAllowedException, IdentifierNotFoundException {
 
         /* test */
-        this.generic_delete();
+        this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
     }
 
     /* ################################################################################################### */
@@ -621,7 +626,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, IdentifierUpdateBadFormException {
 
         /* mock */
         if (identifier != null) {
@@ -657,15 +662,17 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
     }
 
-    protected void generic_delete() throws IdentifierNotFoundException, NotAllowedException {
+    protected void generic_delete(Long id, Identifier identifier) throws IdentifierNotFoundException, NotAllowedException {
 
         /* mock */
+        when(identifierService.find(id))
+                .thenReturn(identifier);
         doNothing()
                 .when(identifierService)
-                .delete(IDENTIFIER_1_ID);
+                .delete(id);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.delete(IDENTIFIER_1_ID);
+        final ResponseEntity<?> response = persistenceEndpoint.delete(id);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }

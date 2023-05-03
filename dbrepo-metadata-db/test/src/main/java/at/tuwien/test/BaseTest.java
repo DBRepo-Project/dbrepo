@@ -4119,7 +4119,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_DESCRIPTION = "Selecting all from the weather Austrian table";
     public final static String IDENTIFIER_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
     public final static String IDENTIFIER_1_TITLE = "Austrian weather data";
-    public final static String IDENTIFIER_1_MODIFY_TITLE = "Austrian weather data2";
     public final static String IDENTIFIER_1_TITLE_MODIFY = "Austrian weather some data";
     public final static String IDENTIFIER_1_DOI = null;
     public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.1000/183";
@@ -4517,7 +4516,7 @@ public abstract class BaseTest {
             .cid(IDENTIFIER_1_CONTAINER_ID)
             .dbid(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
-            .title(IDENTIFIER_1_MODIFY_TITLE)
+            .title(IDENTIFIER_1_TITLE_MODIFY)
             .doi(IDENTIFIER_1_DOI)
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)

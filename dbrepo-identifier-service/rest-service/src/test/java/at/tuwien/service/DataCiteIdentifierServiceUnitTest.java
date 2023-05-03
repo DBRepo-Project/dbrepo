@@ -90,7 +90,6 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        IDENTIFIER_1.setCreators(null);
     }
 
     @Test
@@ -162,7 +161,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_existing_succeeds()
-            throws IdentifierRequestException, IdentifierNotFoundException {
+            throws IdentifierRequestException, IdentifierNotFoundException, IdentifierUpdateBadFormException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
@@ -180,7 +179,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_invalidMetadata_fails() {
+    public void update_invalidMetadata_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
@@ -197,7 +196,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_restClientException_fails() {
+    public void update_restClientException_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
