@@ -1,42 +1,44 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title v-text="title" />
-      <v-card-text>
-        <v-row dense>
-          <v-col>
-            This action cannot be undone! Type the identifier <strong>{{ confirmText }}</strong> below if you really want to delete it.
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-col>
-            <v-text-field
-              id="confirm"
-              v-model="confirm"
-              name="confirm"
-              label="Identifier *"
-              autofocus
-              required />
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          class="mb-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
-        <v-btn
-          class="mb-2 mr-1"
-          color="error"
-          :loading="loadingDelete"
-          :disabled="confirm !== confirmText"
-          @click="deleteIdentifier">
-          Delete
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
+      <v-card>
+        <v-card-title v-text="title" />
+        <v-card-text>
+          <v-row dense>
+            <v-col>
+              This action cannot be undone! Type the identifier <strong>{{ confirmText }}</strong> below if you really want to delete it.
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                id="confirm"
+                v-model="confirm"
+                name="confirm"
+                label="Identifier *"
+                autofocus
+                required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="mb-2"
+            @click="cancel">
+            Cancel
+          </v-btn>
+          <v-btn
+            class="mb-2 mr-1"
+            color="error"
+            :loading="loadingDelete"
+            :disabled="confirm !== confirmText"
+            @click="deleteIdentifier">
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </div>
 </template>
 
@@ -55,17 +57,24 @@ export default {
   data () {
     return {
       confirm: null,
-      loadingDelete: false
+      loadingDelete: false,
+      valid: false
     }
   },
   computed: {
     title () {
+      if (!this.identifier || !('doi' in this.identifier)) {
+        return null
+      }
       if (this.identifier.doi) {
         return `DOI ${this.identifier.doi}`
       }
       return `Identifier with id ${this.identifier.id}`
     },
     confirmText () {
+      if (!this.identifier || !('doi' in this.identifier)) {
+        return null
+      }
       if (this.identifier.doi) {
         return this.identifier.doi
       }
@@ -73,8 +82,10 @@ export default {
     }
   },
   methods: {
+    submit () {
+      this.$refs.form.validate()
+    },
     cancel () {
-      this.$parent.$parent.$parent.persistQueryDialog = false
       this.$emit('close', { action: 'closed' })
     },
     deleteIdentifier () {

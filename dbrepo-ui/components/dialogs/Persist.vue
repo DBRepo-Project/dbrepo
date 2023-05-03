@@ -16,6 +16,7 @@
                 id="title"
                 v-model="identifier.title"
                 name="title"
+                autofocus
                 :label="`${prefix} title *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
@@ -92,7 +93,8 @@
               <v-text-field
                 v-model="creator.orcid"
                 name="orcid"
-                label="ORCID" />
+                label="ORCID"
+                :rules="[v => !validateOrcidInput(v) || $t('Please remove the https:// part')]" />
             </v-col>
             <v-col v-if="i > 0" cols="1" class="mt-5">
               <v-btn icon x-small @click="deleteCreator(i)">
@@ -193,6 +195,7 @@
 import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
 import IdentifierService from '@/api/identifier.service'
 import DatabaseService from '@/api/database.service'
+
 export default {
   props: {
     type: {
@@ -212,7 +215,28 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
-      identifier: {},
+      identifier: {
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
+        qid: parseInt(this.$route.params.query_id),
+        title: null,
+        description: null,
+        publisher: this.$config.defaultPublisher,
+        publication_year: formatYearUTC(Date.now()),
+        publication_month: formatMonthUTC(Date.now()),
+        publication_day: formatDayUTC(Date.now()),
+        license: null,
+        type: this.type,
+        creators: [
+          {
+            firstname: null,
+            lastname: null,
+            affiliation: null,
+            orcid: null
+          }
+        ],
+        related_identifiers: []
+      },
       relatedTypes: [
         { value: 'DOI' },
         { value: 'URL' },
@@ -288,10 +312,13 @@ export default {
       return this.type === 'database'
     },
     isUpdate () {
-      return this.identifier.id !== null
+      if (!this.database.identifier) {
+        return false
+      }
+      return this.database.identifier.id !== null
     },
     title () {
-      let title = (this.isUpdate ? 'Update' : 'Assign') + ' '
+      let title = (this.isUpdate ? 'Update' : 'Get') + ' '
       if (this.isSubset) {
         title += 'subset'
       } else if (this.isDatabase) {
@@ -308,10 +335,18 @@ export default {
       return ''
     }
   },
+  watch: {
+    database () {
+      if (!this.database.identifier) {
+        return
+      }
+      this.identifier = Object.assign(this.database.identifier, {})
+    }
+  },
   mounted () {
     this.loadLicenses()
     if (this.database.identifier) {
-      this.init(this.database.identifier)
+      this.identifier = Object.assign(this.database.identifier, {})
     }
   },
   methods: {
@@ -346,7 +381,6 @@ export default {
       this.loading = true
       IdentifierService.create(this.identifier)
         .then(() => {
-          this.$store.dispatch('reloadDatabase')
           this.$toast.success(this.prefix + ' successfully persisted')
           this.$emit('close', { action: 'persisted' })
         })
@@ -356,10 +390,24 @@ export default {
     },
     update () {
       this.loading = true
-      IdentifierService.update(this.identifier.id, this.identifier)
+      const payload = {
+        cid: parseInt(this.$route.params.container_id),
+        dbid: parseInt(this.$route.params.database_id),
+        qid: parseInt(this.$route.params.query_id),
+        title: this.identifier.title,
+        description: this.identifier.description,
+        publisher: this.identifier.publisher,
+        publication_year: this.identifier.publication_year,
+        publication_month: this.identifier.publication_month,
+        publication_day: this.identifier.publication_day,
+        license: this.identifier.license,
+        type: this.identifier.type,
+        creators: this.identifier.creators,
+        related_identifiers: this.identifier.related_identifiers
+      }
+      IdentifierService.update(this.identifier.id, payload)
         .then(() => {
-          this.$store.dispatch('reloadDatabase')
-          this.$toast.success(this.prefix + ' successfully updated')
+          this.$toast.success(this.prefix + ' identifier successfully updated')
           this.$emit('close', { action: 'persisted' })
         })
         .finally(() => {
@@ -379,34 +427,11 @@ export default {
           this.loading = false
         })
     },
-    init (identifier) {
-      if (identifier) {
-        console.debug('=====>', identifier)
-        this.identifier = Object.assign(identifier, {})
-        return
+    validateOrcidInput (val) {
+      if (!val) {
+        return false
       }
-      this.identifier = {
-        cid: parseInt(this.$route.params.container_id),
-        dbid: parseInt(this.$route.params.database_id),
-        qid: parseInt(this.$route.params.query_id),
-        title: null,
-        description: null,
-        publisher: this.$config.defaultPublisher,
-        publication_year: formatYearUTC(Date.now()),
-        publication_month: formatMonthUTC(Date.now()),
-        publication_day: formatDayUTC(Date.now()),
-        license: null,
-        type: this.type,
-        creators: [
-          {
-            firstname: null,
-            lastname: null,
-            affiliation: null,
-            orcid: null
-          }
-        ],
-        related_identifiers: []
-      }
+      return val.startsWith('http')
     }
   }
 }

@@ -223,7 +223,7 @@
     <v-dialog
       v-model="persistDialog"
       persistent
-      max-width="860">
+      max-width="1080">
       <Persist type="database" :database="database" @close="closePersistDialog" />
     </v-dialog>
     <v-dialog
@@ -388,7 +388,7 @@ export default {
       return false
     },
     hasDoi () {
-      if (!this.hasIdentifier) {
+      if (!this.hasIdentifier || !('doi' in this.database.identifier)) {
         return false
       }
       return this.database.identifier.doi !== null

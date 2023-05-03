@@ -191,7 +191,7 @@ public class PersistenceEndpoint {
         try {
             accessService.find(identifier.getDatabaseId(), user.getId());
         } catch (AccessDeniedException e) {
-            if (!User.hasRole(principal, "update-foreign-identifier")) {
+            if (!User.hasRole(principal, "modify-identifier-metadata")) {
                 log.error("Failed to update identifier: insufficient access");
                 throw new NotAllowedException("Failed to update identifier: insufficient access");
             }
