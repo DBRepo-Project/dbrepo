@@ -46,25 +46,6 @@ build-docker:
 	docker compose build dbrepo-metadata-db
 	docker compose build --parallel
 
-build-docker-slow:
-	docker compose build dbrepo-analyse-service
-	docker compose build dbrepo-authentication-service
-	docker compose build dbrepo-broker-service
-	docker compose build dbrepo-metadata-db
-	docker compose build dbrepo-container-service
-	docker compose build dbrepo-database-service
-	docker compose build dbrepo-discovery-service
-	docker compose build dbrepo-gateway-service
-	docker compose build dbrepo-identifier-service
-	docker compose build dbrepo-metadata-service
-	docker compose build dbrepo-proxy
-	docker compose build dbrepo-query-service
-	docker compose build dbrepo-search-service
-	docker compose build dbrepo-semantics-service
-	docker compose build dbrepo-table-service
-	docker compose build dbrepo-ui
-	docker compose build dbrepo-user-service
-
 build-frontend:
 	yarn --cwd ./dbrepo-ui install --legacy-peer-deps
 	yarn --cwd ./dbrepo-ui run build
@@ -72,7 +53,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-identifier tag-search tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-metadata
+tag: tag-identifier tag-search tag-container tag-database tag-discovery tag-gateway tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-units tag-broker tag-metadata tag-user
 
 tag-analyse:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -122,54 +103,57 @@ tag-broker:
 tag-search:
 	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
 
-release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata
+tag-user:
+	docker tag dbrepo-user-service:latest "dbrepo/user-service:${TAG}"
 
-release-analyse:
+release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata release-user
+
+release-analyse: tag-analyse
 	docker push "dbrepo/analyse-service:${TAG}"
 
-release-authentication:
+release-authentication: tag-authentication
 	docker push "dbrepo/authentication-service:${TAG}"
 
-release-metadata-db: build-docker tag-metadata-db
+release-metadata-db: tag-metadata-db
 	docker push "dbrepo/metadata-db:${TAG}"
 
-release-ui:
+release-ui: tag-ui
 	docker push "dbrepo/ui:${TAG}"
 
-release-identifier:
+release-identifier: tag-identifier
 	docker push "dbrepo/identifier-service:${TAG}"
 
-release-container:
+release-container: tag-container
 	docker push "dbrepo/container-service:${TAG}"
 
-release-database:
+release-database: tag-database
 	docker push "dbrepo/database-service:${TAG}"
 
-release-discovery:
+release-discovery: tag-discovery
 	docker push "dbrepo/discovery-service:${TAG}"
 
-release-gateway:
+release-gateway: tag-gateway
 	docker push "dbrepo/gateway-service:${TAG}"
 
-release-query:
+release-query: tag-query
 	docker push "dbrepo/query-service:${TAG}"
 
-release-user:
+release-user: tag-user
 	docker push "dbrepo/user-service:${TAG}"
 
-release-table:
+release-table: tag-table
 	docker push "dbrepo/table-service:${TAG}"
 
-release-units:
+release-units: tag-units
 	docker push "dbrepo/semantics-service:${TAG}"
 
-release-broker:
+release-broker: tag-broker
 	docker push "dbrepo/broker-service:${TAG}"
 
-release-search:
+release-search: tag-search
 	docker push "dbrepo/search-service:${TAG}"
 
-release-metadata:
+release-metadata: tag-metadata
 	docker push "dbrepo/metadata-service:${TAG}"
 
 test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service

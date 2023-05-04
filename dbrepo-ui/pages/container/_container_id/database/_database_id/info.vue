@@ -340,19 +340,16 @@ export default {
       return this.canCreateIdentifier || this.hasIdentifier
     },
     canCreateIdentifier () {
-      if (!this.roles) {
+      if (!this.roles || this.hasIdentifier) {
         return false
       }
-      if (this.hasIdentifier) {
-        return false
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
       }
-      return this.roles.includes('create-identifier') || this.roles.includes('create-foreign-identifier')
+      return this.roles.includes('create-identifier') && this.isOwner
     },
     canEditIdentifier () {
-      if (!this.roles) {
-        return false
-      }
-      if (!this.hasIdentifier) {
+      if (!this.roles || !this.hasIdentifier) {
         return false
       }
       return this.roles.includes('modify-identifier-metadata')
@@ -407,6 +404,12 @@ export default {
         default:
           return { text: null, class: null }
       }
+    },
+    isOwner () {
+      if (!this.database || !this.user) {
+        return false
+      }
+      return this.database.owner.username === this.user.username
     }
   },
   methods: {

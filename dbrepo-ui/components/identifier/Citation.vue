@@ -72,7 +72,7 @@ export default {
   },
   methods: {
     loadCitation (accept) {
-      if (!this.pid) {
+      if (!this.pid || !accept) {
         return
       }
       this.loading = true

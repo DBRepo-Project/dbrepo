@@ -68,8 +68,7 @@ services:
     image: dbrepo/gateway-service:latest
     networks:
       core:
-    ports:
-      - "9095:9095"
+      public:
     env_file:
       - .env
     depends_on:
@@ -124,6 +123,8 @@ services:
     image: dbrepo/authentication-service:latest
     networks:
       core:
+    ports:
+      - "8443:8443"
     env_file:
       - .env
     volumes:

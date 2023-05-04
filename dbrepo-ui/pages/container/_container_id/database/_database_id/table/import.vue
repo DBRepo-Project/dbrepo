@@ -120,7 +120,6 @@
               <v-btn
                 class="mb-1"
                 :disabled="!validStep2"
-                :loading="loading"
                 color="primary"
                 type="submit"
                 @click="step = 3">

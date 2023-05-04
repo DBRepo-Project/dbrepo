@@ -97,26 +97,38 @@ export default {
     roles () {
       return this.$store.state.roles
     },
+    hasWriteAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
+    hasReadAccess () {
+      if (!this.access) {
+        return false
+      }
+      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
+    },
     canImportCsv () {
-      if (!this.user) {
+      if (!this.user || !this.hasWriteAccess) {
         return false
       }
       return this.roles.includes('insert-table-data')
     },
     canCreateSubset () {
-      if (!this.user) {
+      if (!this.user || !this.hasReadAccess) {
         return false
       }
       return this.roles.includes('execute-query')
     },
     canCreateView () {
-      if (!this.user) {
+      if (!this.user || !this.isOwner) {
         return false
       }
       return this.roles.includes('create-database-view')
     },
     canCreateTable () {
-      if (!this.user) {
+      if (!this.user || !this.hasWriteAccess) {
         return false
       }
       return this.roles.includes('create-table')
