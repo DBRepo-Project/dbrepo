@@ -76,8 +76,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
-    @javax.transaction.Transactional(rollbackOn = {Exception.class})
+    @Transactional(rollbackFor = {Exception.class})
     public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
@@ -153,8 +152,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional
-    @javax.transaction.Transactional(rollbackOn = {Exception.class})
+    @Transactional(rollbackFor = {Exception.class})
     public Identifier update(Long identifierId, IdentifierUpdateDto data)
             throws IdentifierNotFoundException, IdentifierRequestException {
         Identifier identifier = identifierService.update(identifierId, data);

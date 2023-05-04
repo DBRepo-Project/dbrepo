@@ -89,7 +89,6 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        when(restTemplateBuilder.build()).thenReturn(restTemplate);
     }
 
     @Test
@@ -108,6 +107,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
                 .thenReturn(ResponseEntity.status(HttpStatus.CREATED).body(response));
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal, bearer);
@@ -129,6 +129,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
                 .thenThrow(HttpClientErrorException.BadRequest.class);
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
@@ -151,6 +152,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
                 .thenThrow(RestClientException.class);
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         assertThrows(InternalError.class, () -> {
@@ -171,6 +173,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenReturn(ResponseEntity.ok(response));
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
@@ -187,6 +190,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenThrow(HttpClientErrorException.BadRequest.class);
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
@@ -204,6 +208,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenThrow(RestClientException.class);
+        when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
         assertThrows(InternalError.class, () -> {
