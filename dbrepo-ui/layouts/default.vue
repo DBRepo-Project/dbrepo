@@ -301,7 +301,7 @@ export default {
         return
       }
       this.loading = true
-      IdentifierService.findOne(this.database.identifier.id)
+      IdentifierService.find(this.database.identifier.id)
         .then((identifier) => {
           this.database.identifier = identifier
           this.$store.commit('SET_DATABASE', this.database)

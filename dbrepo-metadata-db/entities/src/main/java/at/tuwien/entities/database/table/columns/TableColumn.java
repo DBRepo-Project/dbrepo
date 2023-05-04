@@ -60,14 +60,9 @@ public class TableColumn implements Comparable<TableColumn> {
     })
     private Table table;
 
-    @ToString.Exclude
-    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
-    private UUID createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 

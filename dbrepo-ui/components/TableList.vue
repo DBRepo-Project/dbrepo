@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
+    <v-progress-linear v-if="loading" indeterminate />
     <v-card v-if="!loading && tables && tables.length === 0" flat>
       <v-card-text>
         (no tables)
@@ -24,7 +24,6 @@
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import TableService from '@/api/table.service'
 
 export default {
   data () {
@@ -78,17 +77,6 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
-    },
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
     },
     user () {
       return this.$store.state.user
@@ -144,53 +132,12 @@ export default {
       }
       return column.column_type
     },
-    details (table) {
-      /* use cache */
-      this.tableDetails = table
-      /* load remaining info */
-      if (this.canRead) {
-        this.loadingDetails = true
-        TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, table.id)
-          .then((table) => {
-            this.tableDetails = table
-            if (table.id) {
-              this.openPanelByTableId(table.id)
-            }
-          })
-          .finally(() => {
-            this.loadingDetails = false
-          })
-      }
-    },
-    is_owner (table) {
-      if (!this.user) {
-        return false
-      }
-      return table.creator.username === this.user.username
-    },
     closed (data) {
       console.debug('closed dialog', data)
       this.dialogSemantic = false
     },
     created (created) {
       return formatTimestampUTCLabel(created)
-    },
-    async deleteTable () {
-      try {
-        this.loading = true
-        await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.deleteTableId}`, this.config)
-        this.loading = false
-        this.refresh()
-      } catch (err) {
-        this.$toast.error('Could not delete table')
-      }
-      this.dialogDelete = false
-    },
-    /**
-     * open up the accordion with the table that has been updated (by the ColumnUnit dialog)
-     */
-    openPanelByTableId (id) {
-      this.panel = this.tables.findIndex(t => t.id === id)
     }
   }
 }

@@ -50,14 +50,9 @@ public class RelatedIdentifier {
     @Enumerated(EnumType.STRING)
     private RelationType relation;
 
-    @ToString.Exclude
-    @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
-    private UUID createdBy;
-
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 

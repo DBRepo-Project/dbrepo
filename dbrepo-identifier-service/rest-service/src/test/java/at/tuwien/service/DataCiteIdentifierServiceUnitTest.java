@@ -5,7 +5,7 @@ import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexInitializer;
@@ -90,7 +90,6 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
-        IDENTIFIER_1.setCreators(null);
     }
 
     @Test
@@ -162,29 +161,28 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_existing_succeeds()
-            throws IdentifierRequestException, IdentifierNotFoundException {
+            throws IdentifierRequestException, IdentifierNotFoundException, IdentifierUpdateBadFormException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
                 .thenReturn(ResponseEntity.ok(response));
 
         /* test */
-        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
+        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         assertTrue(identifierRepository.existsById(IDENTIFIER_1_ID));
         assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }
 
     @Test
-    public void update_invalidMetadata_fails()
-            throws IdentifierRequestException, IdentifierNotFoundException {
+    public void update_invalidMetadata_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -192,17 +190,16 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         });
         assertEquals(0, identifierRepository.count());
     }
 
     @Test
-    public void update_restClientException_fails()
-            throws IdentifierRequestException, IdentifierNotFoundException {
+    public void update_restClientException_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -210,7 +207,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(InternalError.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI_DTO);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         });
         assertEquals(0, identifierRepository.count());
     }

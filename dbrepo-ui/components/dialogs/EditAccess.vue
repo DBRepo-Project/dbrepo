@@ -73,6 +73,8 @@
 </template>
 
 <script>
+import DatabaseService from '@/api/database.service'
+import UserService from '@/api/user.service'
 export default {
   props: {
     username: {
@@ -195,69 +197,49 @@ export default {
         await this.giveAccess()
       }
     },
-    async revokeAccess () {
+    revokeAccess () {
       this.loading = true
-      try {
-        const res = await this.$axios.delete(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.username}`, this.config)
-        console.debug('revoke access', res.data)
-        this.$toast.success(`Successfully revoked access of ${this.username}`)
-        this.$emit('close-dialog', { success: true })
-      } catch (err) {
-        console.log('revoke access', err)
-        this.$toast.error('Could not revoke access to database')
-      }
-      this.loading = false
+      DatabaseService.revokeAccess(this.$route.params.container_id, this.$route.params.database_id, this.username)
+        .then(() => {
+          this.$toast.success(`Successfully revoked access of ${this.username}`)
+          this.$emit('close-dialog', { success: true })
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    async modifyAccess () {
+    modifyAccess () {
       this.loading = true
-      try {
-        const res = await this.$axios.put(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access/${this.username}`, {
-          type: this.modify.type
-        }, this.config)
-        console.debug('give access', res.data)
-        this.$toast.success('Successfully modified access')
-        this.$emit('close-dialog', { success: true })
-      } catch (err) {
-        console.log('modify access', err)
-        this.$toast.error('Could not modify access to database')
-      }
-      this.loading = false
+      DatabaseService.modifyAccess(this.$route.params.container_id, this.$route.params.database_id, this.username, this.modify.type)
+        .then(() => {
+          this.$toast.success('Successfully modified access')
+          this.$emit('close-dialog', { success: true })
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    async giveAccess () {
+    giveAccess () {
       const username = this.modify.username
       this.loading = true
-      try {
-        const res = await this.$axios.post(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/access`, this.modify, this.config)
-        console.debug('give access', res.data)
-        this.$toast.success(`Successfully gave ${username} access`)
-        this.$emit('close-dialog', { success: true })
-      } catch (err) {
-        if (err.response.status === 405) {
-          this.$toast.error(`User ${username} already has access`)
+      DatabaseService.giveAccess(this.$route.params.container_id, this.$route.params.database_id, this.username, this.modify.type)
+        .then(() => {
+          this.$toast.success(`Successfully gave ${username} access`)
+          this.$emit('close-dialog', { success: true })
+        })
+        .finally(() => {
           this.loading = false
-          return
-        } else if (err.response.status === 404) {
-          this.$toast.error(`User ${username} does not exist`)
-          this.loading = false
-          return
-        }
-        console.log('give access', err)
-        this.$toast.error('Could not give access to database')
-      }
-      this.loading = false
+        })
     },
-    async loadUsers () {
+    loadUsers () {
       this.loadingUsers = true
-      try {
-        const res = await this.$axios.get('/api/user', this.config)
-        this.users = res.data.filter(u => u.username !== this.database.creator.username)
-        console.debug('users', this.users)
-      } catch (error) {
-        console.error('Failed to load users', error)
-        const { message } = error.response.data
-        this.$toast.error(`Failed to load users: ${message}`)
-      }
-      this.loadingUsers = false
+      UserService.findAll()
+        .then((users) => {
+          this.users = users.filter(u => u.username !== this.database.creator.username)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     init () {
       if (!this.username) {

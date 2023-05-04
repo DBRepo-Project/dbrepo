@@ -103,7 +103,9 @@
   </div>
 </template>
 <script>
-import { formatTimestampUTCLabel, formatUser } from '@/utils'
+import { formatTimestampUTCLabel } from '@/utils'
+import DatabaseService from '@/api/database.service'
+import UserMapper from '@/api/user.mapper'
 
 export default {
   data () {
@@ -163,7 +165,7 @@ export default {
       if (!this.view) {
         return null
       }
-      return formatUser(this.view.creator)
+      return UserMapper.userToFullName(this.view.creator)
     }
   },
   mounted () {
@@ -171,20 +173,15 @@ export default {
     this.loadResult(this.$route.params.view_id)
   },
   methods: {
-    async loadView () {
+    loadView () {
       this.loadingView = true
-      try {
-        const res = await this.$axios.get(`/api/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, this.config)
-        console.debug('view', res.data)
-        this.view = res.data
-      } catch (err) {
-        if (err.response.status !== 401 && err.response.status !== 405) {
-          console.error('Could not load view', err)
-          this.$toast.error('Could not load view')
-        }
-        this.error = true
-      }
-      this.loadingView = false
+      DatabaseService.findView(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.view_id)
+        .then((view) => {
+          this.view = view
+        })
+        .then(() => {
+          this.loadingView = false
+        })
     },
     loadResult (viewId) {
       if (!viewId) {

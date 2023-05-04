@@ -59,7 +59,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_1);
     }
 
     @Test

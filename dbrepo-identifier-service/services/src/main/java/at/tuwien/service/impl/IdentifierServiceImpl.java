@@ -112,10 +112,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         /* identifier */
         final Identifier tmp = identifierMapper.identifierCreateDtoToIdentifier(data);
-        tmp.setContainerId(data.getCid());
-        tmp.setDatabaseId(data.getDbid());
         final User creator = userService.findByUsername(principal.getName());
-        tmp.setCreatedBy(creator.getId());
+        tmp.setCreator(creator);
         tmp.setCreators(List.of());
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
@@ -135,7 +133,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .map(c -> {
                     final Creator creatorDto = identifierMapper.creatorCreateDtoToCreator(c);
                     creatorDto.setPid(entity.getId());
-                    creatorDto.setCreatedBy(creator.getId());
+                    creatorDto.setCreator(creator);
                     return creatorDto;
                 })
                 .collect(Collectors.toList()));
@@ -145,7 +143,7 @@ public class IdentifierServiceImpl implements IdentifierService {
                     .forEach(r -> {
                         final RelatedIdentifier id = identifierMapper.relatedIdentifierCreateDtoToRelatedIdentifier(r);
                         id.setIid(entity.getId());
-                        id.setCreatedBy(creator.getId());
+                        id.setCreator(creator);
                         final RelatedIdentifier relatedIdentifier = relatedIdentifierRepository.save(id);
                         log.debug("identifier add related with id {}", relatedIdentifier.getId());
                         entity.getRelated().add(relatedIdentifier);
@@ -177,7 +175,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        if(identifier.getDoi() != null) {
+        if (identifier.getDoi() != null) {
             context.setVariable("identifierType", "DOI");
             context.setVariable("identifier", identifier.getDoi());
         } else {
@@ -207,7 +205,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        if(identifier.getDoi() != null) {
+        if (identifier.getDoi() != null) {
             context.setVariable("identifierType", "doi");
             context.setVariable("identifier", identifier.getDoi());
         } else {
@@ -252,20 +250,16 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier update(Long identifierId, IdentifierDto data)
-            throws IdentifierNotFoundException, IdentifierRequestException {
-        /* check */
-        Identifier old = find(identifierId);
-        if(data.getVisibility() != VisibilityTypeDto.EVERYONE) {
-            throw new IdentifierRequestException("Cannot set visibility to other value than \"EVERYONE\".");
-        }
-        if(data.getDoi() != null && !data.getDoi().equals(old.getDoi())) {
-            throw new IdentifierRequestException("The DOI of an identifier cannot be changed.");
-        }
+    public Identifier update(Long identifierId, IdentifierUpdateDto data) throws IdentifierNotFoundException {
         /* map */
-        final Identifier entity = identifierMapper.identifierDtoToIdentifier(data);
-        entity.getCreators()
-                .forEach(creator -> creator.setPid(identifierId));
+        final Identifier old = find(identifierId);
+        final Identifier entity = identifierMapper.identifierUpdateDtoToIdentifier(data);
+        entity.setId(identifierId);
+        entity.setCreator(old.getCreator());
+        entity.getCreators().forEach(c -> {
+            c.setPid(identifierId);
+            c.setCreator(old.getCreator());
+        });
         /* update */
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Updated identifier with id {}", identifierId);
@@ -278,17 +272,17 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException {
-        /* check */
-        final Identifier identifier = find(identifierId);
-        if(identifier.getDoi() != null) {
-            throw new NotAllowedException("Identifiers with a DOI cannot be deleted.");
+    public void delete(Long identifierId) throws IdentifierNotFoundException {
+        /* delete in metadata database */
+        if (!identifierRepository.existsById(identifierId)) {
+            throw new IdentifierNotFoundException("Identifier not found in metadata database");
         }
-        /* delete */
-        identifierRepository.delete(identifier);
+        identifierRepository.deleteById(identifierId);
         log.info("Deleted identifier with id {}", identifierId);
-        log.trace("deleted identifier {}", identifier);
-        /* elastic search */
+        /* delete in elastic search */
+        if (!identifierIdxRepository.existsById(identifierId)) {
+            throw new IdentifierNotFoundException("Identifier not found in metadata database");
+        }
         identifierIdxRepository.deleteById(identifierId);
         log.info("Deleted identifier with id {} in elastic search", identifierId);
     }

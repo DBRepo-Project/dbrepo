@@ -23,11 +23,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -76,14 +74,14 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        imageRepository.save(IMAGE_1);
+        imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_2);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        databaseRepository.save(DATABASE_2_SIMPLE);
         identifierRepository.save(IDENTIFIER_1);
     }
 
@@ -134,42 +132,36 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_notFound_fails() {
-
-        /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.update(IDENTIFIER_2_ID, IDENTIFIER_1_DTO);
-        });
-    }
-
-    @Test
-    @Transactional(readOnly = true)
     public void update_succeeds()
-            throws IdentifierNotFoundException, IdentifierPublishingNotAllowedException, IdentifierRequestException {
+            throws IdentifierNotFoundException, IdentifierRequestException, IdentifierUpdateBadFormException {
 
         /* mock */
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_1_DTO);
 
         /* test */
-        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO);
+        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         assertEquals(IDENTIFIER_1_ID, response.getId());
         assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_1_TITLE_MODIFY, response.getTitle());
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_1_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_1_PUBLICATION_DAY, response.getPublicationDay());
     }
 
     @Test
-    public void delete_succeeds() throws IdentifierNotFoundException, NotAllowedException {
+    public void delete_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
+        when(identifierIdxRepository.existsById(IDENTIFIER_1_ID))
+                .thenReturn(true);
         doNothing()
                 .when(identifierIdxRepository)
-                        .deleteById(IDENTIFIER_1_ID);
+                .deleteById(IDENTIFIER_1_ID);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
+        assertTrue(userRepository.findById(IDENTIFIER_1_CREATED_BY).isPresent()) /* no cascade of delete */;
     }
 
     @Test
