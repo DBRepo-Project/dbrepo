@@ -22,12 +22,12 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import javax.transaction.Transactional;
 import java.security.Principal;
 import java.util.List;
 
@@ -58,22 +58,26 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         return identifierService.findAll(databaseId, queryId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         return identifierService.find(databaseId, queryId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Identifier> findAll() {
         return identifierService.findAll();
     }
 
     @Override
-    @Transactional(rollbackOn = {Exception.class})
+    @Transactional
+    @javax.transaction.Transactional(rollbackOn = {Exception.class})
     public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
@@ -122,22 +126,26 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Identifier find(Long identifierId) throws IdentifierNotFoundException {
         return identifierService.find(identifierId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
         return identifierService.exportMetadata(id);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public String exportBibliography(Long id, BibliographyTypeDto style)
             throws IdentifierNotFoundException, IdentifierRequestException {
         return identifierService.exportBibliography(id, style);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId)
             throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierRequestException {
@@ -145,7 +153,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional(rollbackOn = {Exception.class})
+    @Transactional
+    @javax.transaction.Transactional(rollbackOn = {Exception.class})
     public Identifier update(Long identifierId, IdentifierDto data)
             throws IdentifierNotFoundException, IdentifierRequestException {
         Identifier identifier = identifierService.update(identifierId, data);
@@ -197,6 +206,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional
     public void delete(Long identifierId) throws IdentifierNotFoundException, NotAllowedException {
         identifierService.delete(identifierId);
     }
