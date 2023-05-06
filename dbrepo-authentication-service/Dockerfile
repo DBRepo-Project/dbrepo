@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM keycloak/keycloak:21.0 as config
+FROM keycloak/keycloak:21.1 as config
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 LABEL service=authentication
 
@@ -23,7 +23,7 @@ FROM redhat/ubi9-minimal as binary
 RUN microdnf update -y && microdnf install -y curl-minimal libcurl-minimal
 
 ###### FOURTH STAGE ######
-FROM keycloak/keycloak:21.0 as runtime
+FROM keycloak/keycloak:21.1 as runtime
 
 COPY --from=config /opt/keycloak/ /opt/keycloak/
 COPY --from=binary /usr/lib64 /usr/lib64
