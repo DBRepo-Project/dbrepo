@@ -342,6 +342,8 @@ scan-analyse-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-analyse-service
   cache:
@@ -358,6 +360,8 @@ scan-authentication-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-authentication-service
   cache:
@@ -374,6 +378,8 @@ scan-broker-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-broker-service
   cache:
@@ -390,6 +396,8 @@ scan-container-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-container-service
   cache:
@@ -406,6 +414,8 @@ scan-database-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-database-service
   cache:
@@ -422,6 +432,8 @@ scan-discovery-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-discovery-service
   cache:
@@ -438,6 +450,8 @@ scan-gateway-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-gateway-service
   cache:
@@ -454,6 +468,8 @@ scan-identifier-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-identifier-service
   cache:
@@ -470,6 +486,8 @@ scan-metadata-db:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-metadata-db
   cache:
@@ -486,6 +504,8 @@ scan-metadata-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-metadata-service
   cache:
@@ -502,6 +522,8 @@ scan-proxy:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-proxy
   cache:
@@ -518,6 +540,8 @@ scan-query-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-query-service
   cache:
@@ -534,6 +558,8 @@ scan-search-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-search-service
   cache:
@@ -550,6 +576,8 @@ scan-semantics-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-semantics-service
   cache:
@@ -566,6 +594,8 @@ scan-table-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-table-service
   cache:
@@ -582,6 +612,8 @@ scan-ui:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-ui
   cache:
@@ -598,6 +630,8 @@ scan-user-service:
   needs:
     - build-docker
   allow_failure: true
+  before_script:
+    - docker logout ghcr.io
   script:
     - make scan-user-service
   cache:
