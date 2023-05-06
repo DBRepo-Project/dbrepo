@@ -1,12 +1,12 @@
 package at.tuwien.entities.user;
 
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -30,18 +30,12 @@ public class Role {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "REALM_ID", nullable = false)
-    private String realmId;
+    @Column(name = "REALM_ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Type(type = "uuid-char")
+    private UUID realmId;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(name = "user_role_mapping",
-            joinColumns = {
-                    @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID", insertable = false, updatable = false),
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(name = "USER_ID", referencedColumnName = "ID", insertable = false, updatable = false),
-            })
-    private User user;
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
+    private List<User> users;
 
 }

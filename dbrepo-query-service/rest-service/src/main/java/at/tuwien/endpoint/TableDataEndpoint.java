@@ -6,6 +6,8 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
@@ -31,11 +33,14 @@ import java.time.Instant;
 public class TableDataEndpoint {
 
     private final QueryService queryService;
+    private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableDataEndpoint(QueryService queryService, EndpointValidator endpointValidator) {
+    public TableDataEndpoint(QueryService queryService, DatabaseService databaseService,
+                             EndpointValidator endpointValidator) {
         this.queryService = queryService;
+        this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
     }
 
@@ -51,9 +56,12 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint insert data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
+        /* check */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(containerId, databaseId, tableId, principal);
+        /* insert */
         queryService.insert(containerId, databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -72,9 +80,12 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
-            UserNotFoundException {
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint update data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
+        /* check */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(containerId, databaseId, tableId, principal);
+        /* update */
         queryService.update(containerId, databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -92,9 +103,12 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
+            DatabaseConnectionException, QueryMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint delete data, containerId={}, databaseId={}, tableId={}, data={}, principal={}", containerId,
                 databaseId, tableId, data, principal);
+        /* check */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(containerId, databaseId, tableId, principal);
+        /* delete */
         queryService.delete(containerId, databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -112,9 +126,12 @@ public class TableDataEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
-            QueryMalformedException, UserNotFoundException {
+            QueryMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint insert data from csv, containerId={}, databaseId={}, tableId={}, data={}, principal={}",
                 containerId, databaseId, tableId, data, principal);
+        /* check */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(containerId, databaseId, tableId, principal);
+        /* insert */
         queryService.insert(containerId, databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
@@ -135,11 +152,18 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, ContainerNotFoundException,
-            QueryMalformedException, UserNotFoundException, SortException {
+            QueryMalformedException, UserNotFoundException, SortException, NotAllowedException {
         log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 containerId, databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
+        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+            log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
+            throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
+        }
+        /* find */
         final QueryResultDto response = queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
         return ResponseEntity.ok()
@@ -147,18 +171,26 @@ public class TableDataEndpoint {
     }
 
     @GetMapping("/count")
+    @Transactional(readOnly = true)
     @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> getCount(@NotNull @PathVariable("id") Long containerId,
-                                                 @NotNull @PathVariable("databaseId") Long databaseId,
-                                                 @NotNull @PathVariable("tableId") Long tableId,
-                                                 @NotNull Principal principal,
-                                                 @RequestParam(required = false) Instant timestamp)
+                                         @NotNull @PathVariable("databaseId") Long databaseId,
+                                         @NotNull @PathVariable("tableId") Long tableId,
+                                         @NotNull Principal principal,
+                                         @RequestParam(required = false) Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, ContainerNotFoundException,
-            QueryStoreException, QueryMalformedException, UserNotFoundException {
+            QueryStoreException, QueryMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint find table data, containerId={}, databaseId={}, tableId={}, principal={}, timestamp={}",
                 containerId, databaseId, tableId, principal, timestamp);
+        /* check */
+        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
+        final Database database = databaseService.find(containerId, databaseId);
+        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+            log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
+            throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
+        }
         /* find */
         final Long count = queryService.tableCount(containerId, databaseId, tableId, timestamp, principal);
         log.debug("table data count is {} tuples", count);

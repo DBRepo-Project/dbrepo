@@ -3,13 +3,14 @@ package at.tuwien.validation;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.config.QueryConfig;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.user.User;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,16 +26,16 @@ import java.util.regex.Pattern;
 @Component
 public class EndpointValidator {
 
-    private final UserService userService;
     private final QueryConfig queryConfig;
+    private final TableService tableService;
     private final AccessService accessService;
     private final DatabaseService databaseService;
 
     @Autowired
-    public EndpointValidator(UserService userService, QueryConfig queryConfig, AccessService accessService,
-                             DatabaseService databaseService) {
-        this.userService = userService;
+    public EndpointValidator(QueryConfig queryConfig, TableService tableService,
+                             AccessService accessService, DatabaseService databaseService) {
         this.queryConfig = queryConfig;
+        this.tableService = tableService;
         this.accessService = accessService;
         this.databaseService = databaseService;
     }
@@ -88,7 +89,8 @@ public class EndpointValidator {
         throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
     }
 
-    public void validateOnlyAccess(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException, NotAllowedException {
+    public void validateOnlyAccessOrPublic(Long containerId, Long databaseId, Principal principal)
+            throws DatabaseNotFoundException, NotAllowedException {
         final Database database = databaseService.find(containerId, databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
@@ -102,6 +104,29 @@ public class EndpointValidator {
         log.trace("principal is {}", principal);
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         log.trace("found access {}", access);
+    }
+
+    public void validateOnlyWriteOwnOrWriteAllAccess(Long containerId, Long databaseId, Long tableId,
+                                                     Principal principal)
+            throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException {
+        final Table table = tableService.find(containerId, databaseId, tableId);
+        if (principal == null) {
+            log.error("Access not allowed: no authorization provided");
+            throw new NotAllowedException("Access not allowed: no authorization provided");
+        }
+        log.trace("principal is {}", principal);
+        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        log.trace("found access {}", access);
+        if (access.getType().equals(AccessType.WRITE_ALL)) {
+            log.debug("user {} has write-all access, skip.", principal.getName());
+            return;
+        }
+        if (table.getOwner().getUsername().equals(principal.getName()) && access.getType().equals(AccessType.WRITE_OWN)) {
+            log.debug("user {} has write-own access to their own table, skip.", principal.getName());
+            return;
+        }
+        log.error("Access not allowed: no write access for table with id {}", tableId);
+        throw new NotAllowedException("Access not allowed: no write access for table with id " + tableId);
     }
 
 }

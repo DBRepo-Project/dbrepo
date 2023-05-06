@@ -151,7 +151,7 @@ class QueryService {
 
   execute (id, databaseId, data, page, size) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/container/${id}/database/${databaseId}/query?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)

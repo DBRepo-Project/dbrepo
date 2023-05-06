@@ -26,6 +26,7 @@
                 v-if="!isModification"
                 v-model="modify.username"
                 :items="eligibleUsers"
+                :disabled="loadingUsers"
                 :loading="loadingUsers"
                 :rules="[v => !!v || $t('Required')]"
                 required
@@ -75,6 +76,7 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import UserService from '@/api/user.service'
+
 export default {
   props: {
     username: {
@@ -199,9 +201,9 @@ export default {
     },
     revokeAccess () {
       this.loading = true
-      DatabaseService.revokeAccess(this.$route.params.container_id, this.$route.params.database_id, this.username)
+      DatabaseService.revokeAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username)
         .then(() => {
-          this.$toast.success(`Successfully revoked access of ${this.username}`)
+          this.$toast.success(`Successfully revoked access of ${this.modify.username}`)
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -210,9 +212,9 @@ export default {
     },
     modifyAccess () {
       this.loading = true
-      DatabaseService.modifyAccess(this.$route.params.container_id, this.$route.params.database_id, this.username, this.modify.type)
+      DatabaseService.modifyAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username, this.modify.type)
         .then(() => {
-          this.$toast.success('Successfully modified access')
+          this.$toast.success(`Successfully modified access of ${this.modify.username}`)
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -220,11 +222,10 @@ export default {
         })
     },
     giveAccess () {
-      const username = this.modify.username
       this.loading = true
-      DatabaseService.giveAccess(this.$route.params.container_id, this.$route.params.database_id, this.username, this.modify.type)
+      DatabaseService.giveAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username, this.modify.type)
         .then(() => {
-          this.$toast.success(`Successfully gave ${username} access`)
+          this.$toast.success(`Successfully gave ${this.modify.username} access`)
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -238,7 +239,7 @@ export default {
           this.users = users.filter(u => u.username !== this.database.creator.username)
         })
         .finally(() => {
-          this.loading = false
+          this.loadingUsers = false
         })
     },
     init () {

@@ -5,15 +5,11 @@ import at.tuwien.config.DockerConfig;
 import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.endpoints.TableColumnEndpoint;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.TableService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterEach;
@@ -27,9 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
 
 @Log4j2
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)

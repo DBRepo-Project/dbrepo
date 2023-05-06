@@ -83,7 +83,7 @@
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
-                hint="max. 100 GB file size"
+                hint="max. 2GB file size"
                 persistent-hint
                 show-size
                 label="CSV/TSV File" />

@@ -36,7 +36,8 @@
                 required
                 name="username"
                 :rules="[v => !!v || $t('Required'),
-                         v => /^[a-z0-9]{3,}$/.test(v) || $t('Only lowercase letters, min. 3 length')]"
+                         v => /^[a-z0-9]{3,}$/.test(v) || $t('Only lowercase letters, min. 3 length'),
+                         v => !usernames.includes(v) || $t('This username is already taken')]"
                 hint="e.g. mmustermann"
                 label="Username *" />
             </v-col>
@@ -109,6 +110,8 @@ export default {
   data () {
     return {
       loading: false,
+      loadingUsers: false,
+      usernames: [],
       error: false, // XXX: `error` is never changed
       valid: false,
       password2: null,
@@ -132,6 +135,9 @@ export default {
       return this.$config.mailVerify
     }
   },
+  mounted () {
+    this.loadUsers()
+  },
   methods: {
     submit () {
       this.$refs.form.validate()
@@ -146,6 +152,16 @@ export default {
         })
         .catch(() => {
           this.loading = false
+        })
+    },
+    loadUsers () {
+      this.loadingUsers = true
+      UserService.findAll()
+        .then((users) => {
+          this.usernames = users.map(u => u.username)
+        })
+        .finally(() => {
+          this.loadingUsers = false
         })
     }
   }

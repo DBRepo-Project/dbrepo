@@ -35,8 +35,8 @@ public class TableBriefDto {
     @Schema(example = "air_quality")
     private String internalName;
 
-    @NotNull(message = "creator is required")
-    private UserBriefDto creator;
+    @NotNull(message = "owner is required")
+    private UserBriefDto owner;
 
     @NotNull(message = "columns are required")
     @org.springframework.data.annotation.Transient

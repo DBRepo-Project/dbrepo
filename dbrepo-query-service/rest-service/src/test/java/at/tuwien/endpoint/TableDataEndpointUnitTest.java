@@ -287,7 +287,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_publicAnonymousSizeNull_fails()  {
+    public void getAll_publicAnonymousSizeNull_fails() {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -309,7 +309,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_publicAnonymousSizeNegative_fails()  {
+    public void getAll_publicAnonymousSizeNegative_fails() {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -331,13 +331,32 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_privateAnonymous_fails() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, SortException, TableMalformedException, NotAllowedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException {
+    public void getAll_privateAnonymous_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {})
+    public void getAll_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_3_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS, USER_3_PRINCIPAL, null, null, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {})
+    public void getCount_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getCount(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_3_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS, USER_3_PRINCIPAL, null);
+        });
     }
 
     public static Stream<Arguments> getAll_succeeds_parameters() {

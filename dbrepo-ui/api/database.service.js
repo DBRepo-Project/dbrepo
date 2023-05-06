@@ -148,7 +148,7 @@ class DatabaseService {
 
   giveAccess (id, databaseId, username, type) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/access/${username}`, { username, type }, { headers: { Accept: 'application/json' } })
+      api.post(`/api/container/${id}/database/${databaseId}/access`, { username, type }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error

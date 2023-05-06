@@ -170,6 +170,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tmp.setConstraints(null);
         final User creator = userService.findByUsername(principal.getName());
         tmp.setCreator(creator);
+        tmp.setOwner(creator);
         /* save in metadata database */
         final Table entity = tableRepository.save(tmp);
         entity.setColumns(createDto.getColumns()

@@ -11,7 +11,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="!loadingQuery && !query.is_persisted && canWrite" :loading="loadingSave" class="mb-1" @click.stop="save">
+        <v-btn v-if="canPersistQuery" :loading="loadingSave" class="mb-1" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
         <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 ml-2" color="primary" :disabled="!executionUTC" @click.stop="openDialog()">
@@ -104,7 +104,7 @@
       </v-card-title>
       <v-card-text>
         <v-alert
-          v-if="!loadingQuery && !query.is_persisted && canWrite"
+          v-if="canPersistQuery"
           border="left"
           color="info">
           Query is not yet saved in the query store, <a @click="save">save</a> it to view it later.
@@ -225,6 +225,7 @@ import Banner from '@/components/identifier/Banner'
 import DownloadButton from '@/components/identifier/DownloadButton'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 import QueryService from '@/api/query.service'
+import UserUtils from '@/api/user.utils'
 
 export default {
   name: 'QueryShow',
@@ -304,23 +305,11 @@ export default {
       }
       return this.query.result_hash
     },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: {},
-          progress: false
-        }
+    canPersistQuery () {
+      if (!this.query || this.query.is_persisted) {
+        return false
       }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` },
-        progress: false
-      }
-    },
-    silentConfig () {
-      return {
-        headers: this.config.headers,
-        progress: false
-      }
+      return UserUtils.hasReadAccess(this.access)
     },
     publisher () {
       if (this.database.publisher === null) {
@@ -350,10 +339,7 @@ export default {
       if (!this.access || !this.access.type) {
         return false
       }
-      if (this.access.type === 'write_own' || this.access.type === 'write_all') {
-        return true
-      }
-      return false
+      return this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     publication () {
       if (this.query.identifier.publication_year && !this.query.identifier.publication_month && !this.query.identifier.publication_day) {

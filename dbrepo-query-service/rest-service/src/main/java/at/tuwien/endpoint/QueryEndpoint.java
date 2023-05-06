@@ -18,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +33,14 @@ public class QueryEndpoint {
 
     private final QueryService queryService;
     private final StoreService storeService;
+    private final AccessService accessService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public QueryEndpoint(QueryService queryService, StoreService storeService,
+    public QueryEndpoint(QueryService queryService, StoreService storeService, AccessService accessService,
                          DatabaseService databaseService, EndpointValidator endpointValidator) {
+        this.accessService = accessService;
         this.databaseService = databaseService;
         this.endpointValidator = endpointValidator;
         this.queryService = queryService;
@@ -71,18 +72,8 @@ public class QueryEndpoint {
         }
         endpointValidator.validateForbiddenStatements(data);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
-        final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to execute private query: principal is null");
-                throw new NotAllowedException("Failed to re-execute private query: principal is null");
-            }
-            final Authentication authentication = (Authentication) principal;
-            if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("execute-query"))) {
-                log.error("Failed to execute private query: role missing");
-                throw new NotAllowedException("Failed to re-execute private query: role missing");
-            }
-        }
+        /* has access */
+        accessService.find(databaseId, principal.getName());
         /* execute */
         final QueryResultDto result = queryService.execute(containerId, databaseId, data, principal, page, size,
                 sortDirection, sortColumn);

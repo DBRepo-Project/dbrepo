@@ -16,7 +16,9 @@ import java.util.UUID;
 @IdClass(RoleMappingKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "user_role_mapping")
+@Table(name = "user_role_mapping", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"USER_ID", "ROLE_ID"})
+})
 public class RoleMapping {
 
     @Id

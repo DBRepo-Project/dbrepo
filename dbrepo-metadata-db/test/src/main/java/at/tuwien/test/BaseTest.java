@@ -31,6 +31,7 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyRefere
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.Realm;
+import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
@@ -134,14 +135,17 @@ public abstract class BaseTest {
     public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
             "modify-user-information"};
 
+    public final static String[] ESCALATED_USER_HANDLING = new String[]{"escalated-user-handling", "find-user"};
+
     public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-researcher-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING));
 
     public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-developer-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
-            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_CONTAINER_HANDLING, ESCALATED_DATABASE_HANDLING,
-            ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING, ESCALATED_TABLE_HANDLING));
+            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_USER_HANDLING, ESCALATED_CONTAINER_HANDLING,
+            ESCALATED_DATABASE_HANDLING, ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING,
+            ESCALATED_TABLE_HANDLING));
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
@@ -175,6 +179,16 @@ public abstract class BaseTest {
             .id(REALM_DBREPO_ID)
             .name(REALM_DBREPO_NAME)
             .enabled(REALM_DBREPO_ENABLED)
+            .build();
+
+    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
+    public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
+    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
+
+    public final static Role ROLE_DEFAULT_RESEARCHER_ROLES = Role.builder()
+            .id(ROLE_DEFAULT_RESEARCHER_ROLES_ID)
+            .name(ROLE_DEFAULT_RESEARCHER_ROLES_NAME)
+            .realmId(ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID)
             .build();
 
     public final static String USER_BROKER_USERNAME = "guest";

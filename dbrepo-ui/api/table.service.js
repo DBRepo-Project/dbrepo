@@ -58,6 +58,19 @@ class TableService {
     })
   }
 
+  importCsv (id, databaseId, tableId, data) {
+    return new Promise((resolve, reject) => {
+      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
+        .then(() => resolve())
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to import table data', error)
+          Vue.$toast.error(`[${code}] Failed to import table data: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   data (id, databaseId, tableId, page, size, timestamp) {
     return new Promise((resolve, reject) => {
       api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/data?page=${page}&size=${size}&timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })

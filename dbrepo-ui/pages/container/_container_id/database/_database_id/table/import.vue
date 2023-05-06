@@ -139,7 +139,7 @@
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
-                hint="max. 100 GB file size"
+                hint="max. 2 GB file size"
                 persistent-hint
                 show-size
                 label="File Upload (.csv/.tsv)" />
@@ -160,7 +160,7 @@
               <v-btn
                 class="mb-1"
                 :disabled="!fileModel"
-                :loading="loading"
+                :loading="loadingUpload || loadingAnalyse"
                 color="primary"
                 type="submit"
                 @click="uploadAndAnalyse">
@@ -174,7 +174,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="4">
-        <TableSchema :back="true" :error="error" :loading="loading" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :error="error" :loading="loadingImage" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
       <v-stepper-step
         :complete="step > 5"
@@ -256,6 +256,9 @@ export default {
         skip_lines: 1
       },
       loading: false,
+      loadingUpload: false,
+      loadingAnalyse: false,
+      loadingImage: false,
       url: null,
       columns: [],
       newTableId: 42 // FIXME ???
@@ -316,7 +319,7 @@ export default {
       this.$refs.form.validate()
     },
     upload () {
-      this.loading = true
+      this.loadingUpload = true
       return new Promise((resolve, reject) => {
         MiddlewareService.upload(this.fileModel)
           .then((file) => {
@@ -327,12 +330,12 @@ export default {
             reject(error)
           })
           .finally(() => {
-            this.loading = false
+            this.loadingUpload = false
           })
       })
     },
     analyse () {
-      this.loading = true
+      this.loadingAnalyse = true
       AnalyseService.determineDataTypes(`/tmp/${this.file.filename}`)
         .then((analysis) => {
           const { columns } = analysis
@@ -348,10 +351,9 @@ export default {
             })
           this.tableImport.location = `/tmp/${this.file.filename}`
           this.step = 4
-          this.loading = false
         })
         .finally(() => {
-          this.loading = false
+          this.loadingAnalyse = false
         })
     },
     listTables () {
@@ -371,18 +373,24 @@ export default {
         return
       }
       this.validStep4 = true
-      this.step = 5
       this.createTable()
     },
     setOthers (column) {
       column.null_allowed = false
       column.unique = true
     },
-    async loadDateFormats () {
-      this.loading = true
-      const res = await ContainerService.findOne(this.$route.params.container_id)
-      this.dateFormats = await ContainerService.findImage(res.image.id).date_formats
-      this.loading = true
+    loadDateFormats () {
+      this.loadingImage = true
+      ContainerService.findOne(this.$route.params.container_id)
+        .then((container) => {
+          ContainerService.findImage(container.image.id)
+            .then((image) => {
+              this.dateFormats = image.date_formats
+            })
+        })
+        .finally(() => {
+          this.loadingImage = true
+        })
     },
     createTable () {
       /* make enum values to array */

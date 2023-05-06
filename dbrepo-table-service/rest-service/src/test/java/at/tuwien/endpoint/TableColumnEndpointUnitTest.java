@@ -1,16 +1,11 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableColumnEndpoint;
-import at.tuwien.endpoints.TableEndpoint;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
@@ -19,12 +14,10 @@ import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +25,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -40,7 +32,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

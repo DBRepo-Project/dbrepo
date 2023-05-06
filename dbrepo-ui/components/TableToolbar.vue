@@ -53,8 +53,9 @@
 
 <script>
 import EditTuple from '@/components/dialogs/EditTuple'
-import { isResearcher } from '@/utils'
 import TableService from '@/api/table.service'
+import UserUtils from '@/api/user.utils'
+import DatabaseUtils from '@/api/database.utils'
 
 export default {
   components: {
@@ -101,43 +102,34 @@ export default {
       return this.$store.state.token
     },
     canAddTuple () {
-      if (!this.roles) {
+      if (!this.roles || !this.isDataTab) {
         return false
       }
-      if (!this.isDataTab) {
-        return false
-      }
-      return this.roles.includes('insert-table-data')
+      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
-      if (!this.roles) {
+      if (!this.roles || !this.isDataTab) {
         return false
       }
-      if (!this.isDataTab) {
-        return false
-      }
-      return this.roles.includes('insert-table-data')
+      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
-      if (!this.roles) {
+      if (!this.roles || !this.isDataTab) {
         return false
       }
-      if (!this.isDataTab) {
-        return false
-      }
-      return this.roles.includes('delete-table-data')
+      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('delete-table-data')
     },
     canExecuteQuery () {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('execute-query')
+      return UserUtils.hasReadAccess(this.access) && this.roles.includes('execute-query')
     },
     canCreateView () {
       if (!this.user) {
         return false
       }
-      return this.roles.includes('create-database-view')
+      return DatabaseUtils.isOwner(this.database, this.user) && this.roles.includes('create-database-view')
     },
     canViewTableData () {
       /* view when database is public or when private: 1) view-table-data role present 2) access is at least read */
@@ -169,12 +161,6 @@ export default {
         return false
       }
       return this.database.creator.username === this.user.username
-    },
-    isResearcher () {
-      return isResearcher(this.user)
-    },
-    databaseTooltip () {
-      return this.database.is_public ? 'Public' : 'Private'
     }
   },
   methods: {

@@ -67,15 +67,21 @@ public class UserEndpoint {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("!isAuthenticated()")
     @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
     @Operation(summary = "Create user")
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserNotFoundException, RemoteUnavailableException, RealmNotFoundException,
-            UserAlreadyExistsException, RoleNotFoundException {
+            UserAlreadyExistsException, RoleNotFoundException, UserEmailAlreadyExistsException {
         log.debug("endpoint create a user, data={}", data);
+        /* check */
         final Realm realm = realmService.find("dbrepo");
         final Role role = roleService.find(authenticationConfig.getDefaultRole());
-        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data, realm, role));
+        userService.validateUsernameNotExists(data.getUsername());
+        userService.validateEmailNotExists(data.getEmail());
+        /* create */
+        final User user = userService.create(data, realm, role);
+        final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -83,17 +89,27 @@ public class UserEndpoint {
 
     @GetMapping("/{id}")
     @Transactional
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() or hasAuthority('find-user')")
     @Timed(value = "user.info", description = "Time needed to get information of a user in the metadata database")
     @Operation(summary = "Get a user info", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") String id,
                                         @NotNull Principal principal)
-            throws UserNotFoundException {
+            throws UserNotFoundException, NotAllowedException {
         log.debug("endpoint find a user, id={}, principal={}", id, principal);
-        final UserDto dto = userMapper.userToUserDto(userService.find(UUID.fromString(id)));
-        log.trace("find user resulted in dto {}", dto);
-        return ResponseEntity.ok()
-                .body(dto);
+        /* check */
+        final User user = userService.find(UUID.fromString(id));
+        final UserDto dto = userMapper.userToUserDto(user);
+        if (user.getUsername().equals(principal.getName())) {
+            log.trace("find user resulted in dto {}", dto);
+            return ResponseEntity.ok()
+                    .body(dto);
+        } else if (User.hasRole(principal, "find-user")) {
+            log.trace("find user resulted in dto {}", dto);
+            return ResponseEntity.ok()
+                    .body(dto);
+        }
+        log.error("Failed to find user: no authority and not the current logged-in user");
+        throw new NotAllowedException("Failed to find user: no authority");
     }
 
     @PutMapping("/{id}")
@@ -106,12 +122,14 @@ public class UserEndpoint {
                                           @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
+        /* check */
         final User user = userService.find(UUID.fromString(id));
         if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
-        final UserDto dto = userMapper.userToUserDto(userService.modify(user.getId(), data, principal));
+        /* modify */
+        final UserDto dto = userMapper.userToUserDto(userService.modify(user.getId(), data));
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -127,12 +145,14 @@ public class UserEndpoint {
                                          @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
+        /* check */
         final User user = userService.find(UUID.fromString(id));
         if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
-        final UserDto dto = userMapper.userToUserDto(userService.toggleTheme(user.getId(), data, principal));
+        /* modify theme */
+        final UserDto dto = userMapper.userToUserDto(userService.toggleTheme(user.getId(), data));
         log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
@@ -148,12 +168,14 @@ public class UserEndpoint {
                                             @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
+        /* check */
         final User user = userService.find(UUID.fromString(id));
         if (!user.equalsPrincipal(principal)) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
-        final UserDto dto = userMapper.userToUserDto(userService.updatePassword(user.getId(), data, principal));
+        /* modify password */
+        final UserDto dto = userMapper.userToUserDto(userService.updatePassword(user.getId(), data));
         log.trace("updated user password resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

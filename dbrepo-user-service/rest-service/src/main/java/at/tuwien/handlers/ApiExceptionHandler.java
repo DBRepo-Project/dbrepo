@@ -15,90 +15,13 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    @ExceptionHandler(AmqpException.class)
-    public ResponseEntity<ApiErrorDto> handle(AmqpException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_ACCEPTABLE)
-                .message(e.getLocalizedMessage())
-                .code("error.query.amqp")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
-    @ExceptionHandler(ColumnParseException.class)
-    public ResponseEntity<ApiErrorDto> handle(ColumnParseException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.EXPECTATION_FAILED)
-                .message(e.getLocalizedMessage())
-                .code("error.query.columnparse")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(ContainerNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(ContainerNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.query.containernotfound")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
-    @ExceptionHandler(DatabaseConnectionException.class)
-    public ResponseEntity<ApiErrorDto> handle(DatabaseConnectionException e, WebRequest request) {
+    @ExceptionHandler(ForeignUserException.class)
+    public ResponseEntity<ApiErrorDto> handle(ForeignUserException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .message(e.getLocalizedMessage())
-                .code("error.query.databaseconnection")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(DatabaseNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(DatabaseNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.query.databasenotfound")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(FileStorageException.class)
-    public ResponseEntity<ApiErrorDto> handle(FileStorageException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.query.filestore")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(IdentifierNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(IdentifierNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.query.identifiernotfound")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(ImageNotSupportedException.class)
-    public ResponseEntity<ApiErrorDto> handle(ImageNotSupportedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
-                .message(e.getLocalizedMessage())
-                .code("error.query.imagenotsupported")
+                .code("error.user.foreignpermission")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -109,106 +32,73 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .message(e.getLocalizedMessage())
-                .code("error.query.permission")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(PaginationException.class)
-    public ResponseEntity<ApiErrorDto> handle(PaginationException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.query.pagination")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(QueryAlreadyPersistedException.class)
-    public ResponseEntity<ApiErrorDto> handle(QueryAlreadyPersistedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.CONFLICT)
-                .message(e.getLocalizedMessage())
-                .code("error.query.alreadypersisted")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(QueryMalformedException.class)
-    public ResponseEntity<ApiErrorDto> handle(QueryMalformedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.query.malformed")
+                .code("error.user.permission")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(QueryNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(QueryNotFoundException e, WebRequest request) {
+    @ExceptionHandler(RealmNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(RealmNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.query.notfound")
+                .code("error.user.realmnotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
-    @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
-    @ExceptionHandler(QueryStoreException.class)
-    public ResponseEntity<ApiErrorDto> handle(QueryStoreException e, WebRequest request) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ExceptionHandler(RemoteUnavailableException.class)
+    public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.GATEWAY_TIMEOUT)
+                .status(HttpStatus.NO_CONTENT)
                 .message(e.getLocalizedMessage())
-                .code("error.query.store")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(SortException.class)
-    public ResponseEntity<ApiErrorDto> handle(SortException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message(e.getLocalizedMessage())
-                .code("error.query.sort")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.LOCKED)
-    @ExceptionHandler(TableMalformedException.class)
-    public ResponseEntity<ApiErrorDto> handle(TableMalformedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.LOCKED)
-                .message(e.getLocalizedMessage())
-                .code("error.query.tablemalformed")
+                .code("error.user.remoteunavailable")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(TableNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(TableNotFoundException e, WebRequest request) {
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(RoleNotFoundException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.query.tablenotfound")
+                .code("error.user.rolenotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler(TupleDeleteException.class)
-    public ResponseEntity<ApiErrorDto> handle(TupleDeleteException e, WebRequest request) {
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserAlreadyExistsException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
-                .code("error.query.tupledelete")
+                .code("error.user.alreadyexists")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserAttributeNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserAttributeNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.user.attributenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(UserEmailAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserEmailAlreadyExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.EXPECTATION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.user.emailexists")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -219,29 +109,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
-                .code("error.query.usernotfound")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.LOCKED)
-    @ExceptionHandler(ViewMalformedException.class)
-    public ResponseEntity<ApiErrorDto> handle(ViewMalformedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.LOCKED)
-                .message(e.getLocalizedMessage())
-                .code("error.query.viewmalformed")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(ViewNotFoundException.class)
-    public ResponseEntity<ApiErrorDto> handle(ViewNotFoundException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message(e.getLocalizedMessage())
-                .code("error.query.viewnotfound")
+                .code("error.user.notfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

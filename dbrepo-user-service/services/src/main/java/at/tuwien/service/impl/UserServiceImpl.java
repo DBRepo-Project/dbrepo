@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
-import java.security.Principal;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -60,24 +59,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
     @Override
-    public User create(SignupRequestDto data, Realm realm, Role role) throws RemoteUnavailableException, UserNotFoundException,
-            UserAlreadyExistsException {
-        /* check */
-        final Optional<User> optional = userRepository.findByUsername(data.getUsername());
-        if (optional.isPresent()) {
-            log.error("User with username {} already exists", data.getUsername());
-            throw new UserAlreadyExistsException("User with username " + data.getUsername() + " already exists");
-        }
-        final Optional<User> optional2 = userRepository.findByEmail(data.getEmail());
-        if (optional2.isPresent()) {
-            log.error("User with email {} already exists", data.getUsername());
-            throw new UserAlreadyExistsException("User with email " + data.getUsername() + " already exists");
-        }
+    @Transactional(rollbackFor = RuntimeException.class)
+    public User create(SignupRequestDto data, Realm realm, Role role) throws UserAlreadyExistsException {
         /* create secret */
         final byte[] salt = getSalt();
         final StringBuilder secretData = new StringBuilder("{\"value\":\"")
@@ -111,30 +100,21 @@ public class UserServiceImpl implements UserService {
         credential = credentialRepository.save(credential);
         user.setCredentials(List.of(credential));
         user.setAttributes(List.of(userAttribute1, userAttribute2, userAttribute3));
-        final RoleMapping tmp2 = RoleMapping.builder()
-                .userId(user.getId())
-                .roleId(role.getId())
-                .build();
-        roleMappingRepository.save(tmp2);
         user.setRoles(List.of(role));
         log.info("Created user with id {}", user.getId());
-        log.debug("created user {}", user);
         return user;
     }
 
     @Override
-    public User modify(UUID id, UserUpdateDto data, Principal principal) throws UserNotFoundException,
-            ForeignUserException, UserAttributeNotFoundException {
+    @Transactional
+    public User modify(UUID id, UserUpdateDto data) throws UserNotFoundException,
+            UserAttributeNotFoundException {
         /* check */
-        User user = find(id);
-        if (!user.equalsPrincipal(principal)) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
-        }
-        user.setFirstname(data.getFirstname());
-        user.setLastname(data.getLastname());
+        final User entity = find(id);
+        entity.setFirstname(data.getFirstname());
+        entity.setLastname(data.getLastname());
         /* save in metadata database */
-        user = userRepository.save(user);
+        final User user = userRepository.save(entity);
         log.info("Modified user with id {}", user.getId());
         /* modify attributes */
         userAttributeService.update(user.getId(), "orcid", data.getOrcid());
@@ -143,14 +123,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updatePassword(UUID id, UserPasswordDto data, Principal principal) throws UserNotFoundException,
-            ForeignUserException {
-        /* check */
+    @Transactional(rollbackFor = RuntimeException.class)
+    public User updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException {
         final User user = find(id);
-        if (!user.equalsPrincipal(principal)) {
-            log.error("Failed to modify user: attempting to modify other user");
-            throw new ForeignUserException("Failed to modify user: attempting to modify other user");
-        }
         /* create secret */
         final byte[] salt = getSalt();
         final StringBuilder secretData = new StringBuilder("{\"value\":\"")
@@ -158,7 +133,9 @@ public class UserServiceImpl implements UserService {
                 .append("\",\"salt\":\"")
                 .append(Base64.encodeBytes(salt))
                 .append("\",\"additionalParameters\":{}}");
-        Credential credential = Credential.builder()
+        final Credential entity = Credential.builder()
+                .id(UUID.randomUUID())
+                .userId(user.getId())
                 .createdDate(Instant.now().toEpochMilli())
                 .secretData(secretData.toString())
                 .type("password")
@@ -166,14 +143,15 @@ public class UserServiceImpl implements UserService {
                 .credentialData("{\"hashIterations\":" + DEFAULT_ITERATIONS + ",\"algorithm\":\"" + ID + "\",\"additionalParameters\":{}}")
                 .build();
         /* save */
-        credential = credentialRepository.save(credential);
+        final Credential credential = credentialRepository.save(entity);
         user.setCredentials(List.of(credential));
         log.info("Updated user password with id {}", user.getId());
         return user;
     }
 
     @Override
-    public User toggleTheme(UUID id, UserThemeSetDto data, Principal principal) throws UserNotFoundException,
+    @Transactional
+    public User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException,
             UserAttributeNotFoundException {
         /* check */
         final User user = find(id);
@@ -183,6 +161,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public User find(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
@@ -190,6 +169,26 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("Failed to retrieve user");
         }
         return optional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void validateUsernameNotExists(String username) throws UserAlreadyExistsException {
+        final Optional<User> optional = userRepository.findByUsername(username);
+        if (optional.isPresent()) {
+            log.error("User with username {} already exists", username);
+            throw new UserAlreadyExistsException("User with username " + username + " already exists");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void validateEmailNotExists(String email) throws UserEmailAlreadyExistsException {
+        final Optional<User> optional = userRepository.findByEmail(email);
+        if (optional.isPresent()) {
+            log.error("User with email {} already exists", email);
+            throw new UserEmailAlreadyExistsException("User with email already exists");
+        }
     }
 
     private String encodedCredential(String rawPassword, int iterations, byte[] salt, int derivedKeySize) {

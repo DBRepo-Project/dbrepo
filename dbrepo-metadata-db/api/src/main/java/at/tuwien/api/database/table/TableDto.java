@@ -45,6 +45,9 @@ public class TableDto {
     @NotNull(message = "creator is required")
     private UserBriefDto creator;
 
+    @NotNull(message = "owner is required")
+    private UserBriefDto owner;
+
     @NotBlank(message = "queueName is required")
     @JsonProperty("queue_name")
     @Schema(example = "dbrepo/air_quality/air_quality")
