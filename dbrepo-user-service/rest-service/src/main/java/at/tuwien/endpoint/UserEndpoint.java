@@ -1,6 +1,8 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.*;
 import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.user.Realm;
@@ -13,6 +15,10 @@ import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +61,13 @@ public class UserEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "user.list", description = "Time needed to list all users in the metadata database")
     @Operation(summary = "Find all users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "List users",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserBriefDto[].class))}),
+    })
     public ResponseEntity<List<UserBriefDto>> findAll() {
         log.debug("endpoint find all users");
         final List<UserBriefDto> users = userService.findAll()
@@ -70,9 +83,31 @@ public class UserEndpoint {
     @PreAuthorize("!isAuthenticated()")
     @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
     @Operation(summary = "Create user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201",
+                    description = "Created user",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserBriefDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Realm or default role not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "User with username already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "User with e-mail already exists",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws UserNotFoundException, RemoteUnavailableException, RealmNotFoundException,
-            UserAlreadyExistsException, RoleNotFoundException, UserEmailAlreadyExistsException {
+            throws RealmNotFoundException, UserAlreadyExistsException, RoleNotFoundException,
+            UserEmailAlreadyExistsException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
         final Realm realm = realmService.find("dbrepo");
@@ -92,6 +127,23 @@ public class UserEndpoint {
     @PreAuthorize("isAuthenticated() or hasAuthority('find-user')")
     @Timed(value = "user.info", description = "Time needed to get information of a user in the metadata database")
     @Operation(summary = "Get a user info", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found user",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Find user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") String id,
                                         @NotNull Principal principal)
             throws UserNotFoundException, NotAllowedException {
@@ -117,6 +169,23 @@ public class UserEndpoint {
     @PreAuthorize("hasAuthority('modify-user-information')")
     @Timed(value = "user.modify", description = "Time needed to modify a user in the metadata database")
     @Operation(summary = "Modify user information", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Modified user information",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User attribute was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Modify user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") String id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal)
@@ -140,6 +209,23 @@ public class UserEndpoint {
     @PreAuthorize("hasAuthority('modify-user-theme')")
     @Timed(value = "user.theme", description = "Time needed to modify a user theme in the metadata database")
     @Operation(summary = "Modify user theme", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Modified user theme",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User or user attribute was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Modify user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") String id,
                                          @NotNull @Valid @RequestBody UserThemeSetDto data,
                                          @NotNull Principal principal)
@@ -163,6 +249,23 @@ public class UserEndpoint {
     @PreAuthorize("isAuthenticated()")
     @Timed(value = "user.password", description = "Time needed to modify a user password in the metadata database")
     @Operation(summary = "Modify user password", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Modified user password",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User was not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "405",
+                    description = "Modify user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<UserDto> password(@NotNull @PathVariable("id") String id,
                                             @NotNull @Valid @RequestBody UserPasswordDto data,
                                             @NotNull Principal principal)

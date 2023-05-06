@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -47,6 +48,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void identify_succeeds() {
 
         /* test */
@@ -57,6 +59,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void identifyAlt_succeeds() {
 
         /* test */
@@ -67,6 +70,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void listIdentifiers_succeeds() {
         final OaiListIdentifiersParameters parameters = new OaiListIdentifiersParameters();
 
@@ -82,6 +86,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getRecord_formatMissing_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
 
@@ -95,6 +100,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getRecord_unsupportedFormat_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_marc");
@@ -109,6 +115,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getRecord_noIdentifier_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
@@ -123,6 +130,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getRecord_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
@@ -140,6 +148,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void getRecord_notFound_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
@@ -155,6 +164,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithAnonymousUser
     public void listMetadataFormats_succeeds() {
 
         /* mock */

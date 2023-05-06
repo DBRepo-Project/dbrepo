@@ -75,22 +75,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @Disabled("not unit test")
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
-    public void create_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
-
-        /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void create_noRoleNoAccess_fails() {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
         });
     }
 
@@ -119,7 +109,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void find_hasRoleHasAccess_fails() throws AccessDeniedException, NotAllowedException {
 
         /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
+        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_2_USERNAME, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -127,12 +117,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, null);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, null);
         });
     }
 
@@ -141,40 +131,26 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_hasRoleNoAccess_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_1_PRINCIPAL);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    @Disabled("not unit test")
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
-    public void update_hasRoleHasAccess_succeeds() throws UserNotFoundException, AccessDeniedException,
-            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
-
-        /* test */
-        generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_DATA_STEWARD_READ_ACCESS, USER_3_USERNAME, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void update_noRoleNoAccess_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_3_USERNAME, USER_3_PRINCIPAL);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4_PRINCIPAL);
         });
     }
 

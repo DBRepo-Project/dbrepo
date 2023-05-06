@@ -165,12 +165,12 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {"find-user"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"find-user"})
     public void find_hasRoleForeign_succeeds() {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID.toString(), USER_2, USER_4_PRINCIPAL);
+            find_generic(USER_2_ID.toString(), USER_2, USER_3_PRINCIPAL);
         });
     }
 
@@ -191,7 +191,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void modify_noRole_fails() {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
@@ -202,7 +202,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL, request);
+            modify_generic(USER_1_ID.toString(), USER_1, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -250,7 +250,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void theme_noRole_fails() {
         final UserThemeSetDto request = UserThemeSetDto.builder()
                 .themeDark(USER_1_THEME_DARK)
@@ -258,7 +258,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            theme_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL, request);
+            theme_generic(USER_4_ID.toString(), USER_4, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -300,7 +300,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_2_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void password_noRoleForeign_fails() {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
@@ -308,7 +308,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            password_generic(USER_1_ID.toString(), USER_1, USER_2_PRINCIPAL, request);
+            password_generic(USER_1_ID.toString(), USER_1, USER_4_PRINCIPAL, request);
         });
     }
 

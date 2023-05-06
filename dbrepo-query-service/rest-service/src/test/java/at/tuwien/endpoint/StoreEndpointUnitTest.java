@@ -147,7 +147,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(accessService.find(DATABASE_2_ID, USER_1_USERNAME))
-                .thenReturn(DATABASE_1_RESEARCHER_READ_ACCESS);
+                .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
         findAll_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, USER_1_PRINCIPAL);
@@ -231,7 +231,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException {
 
         /* test */
-        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -243,7 +243,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException {
 
         /* test */
-        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -255,7 +255,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException {
 
         /* test */
-        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
+        final QueryDto response = persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -270,7 +270,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_WRITE_ALL_ACCESS);
+            persist_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
         });
 
     }

@@ -2,6 +2,7 @@ package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
+import io.swagger.v3.oas.annotations.Hidden;
 import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @Hidden
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(ForeignUserException.class)
     public ResponseEntity<ApiErrorDto> handle(ForeignUserException e, WebRequest request) {
@@ -26,6 +28,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
     @ExceptionHandler(NotAllowedException.class)
     public ResponseEntity<ApiErrorDto> handle(NotAllowedException e, WebRequest request) {
@@ -37,6 +40,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(RealmNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(RealmNotFoundException e, WebRequest request) {
@@ -48,6 +52,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ExceptionHandler(RemoteUnavailableException.class)
     public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e, WebRequest request) {
@@ -59,6 +64,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(RoleNotFoundException e, WebRequest request) {
@@ -70,6 +76,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(UserAlreadyExistsException e, WebRequest request) {
@@ -81,6 +88,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserAttributeNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserAttributeNotFoundException e, WebRequest request) {
@@ -92,6 +100,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
     @ExceptionHandler(UserEmailAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(UserEmailAlreadyExistsException e, WebRequest request) {
@@ -103,6 +112,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(UserNotFoundException e, WebRequest request) {

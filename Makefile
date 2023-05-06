@@ -103,9 +103,6 @@ tag-broker:
 tag-search:
 	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
 
-tag-user:
-	docker tag dbrepo-user-service:latest "dbrepo/user-service:${TAG}"
-
 release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata release-user
 
 release-analyse: tag-analyse

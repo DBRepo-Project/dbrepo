@@ -79,13 +79,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
-    @BeforeEach
-    public void beforeEach() {
-        DATABASE_1.setOwner(DATABASE_1_OWNER);
-        DATABASE_2.setOwner(DATABASE_2_OWNER);
-        DATABASE_3.setOwner(DATABASE_3_OWNER);
-    }
-
     @Test
     @WithAnonymousUser
     public void create_anonymous_fails() {
@@ -101,7 +94,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .name(DATABASE_3_NAME)
@@ -109,12 +102,12 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, null, request, USER_3_PRINCIPAL);
+            create_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, null, request, USER_4_PRINCIPAL);
         });
     }
 
@@ -206,7 +199,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void visibility_noRole_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
@@ -214,7 +207,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_3_PRINCIPAL);
+            visibility_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_4_PRINCIPAL);
         });
     }
 
@@ -236,7 +229,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void transfer_noRole_fails() {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
@@ -248,7 +241,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            databaseEndpoint.transfer(CONTAINER_3_ID, DATABASE_3_ID, request, USER_3_PRINCIPAL);
+            databaseEndpoint.transfer(CONTAINER_3_ID, DATABASE_3_ID, request, USER_4_PRINCIPAL);
         });
     }
 
@@ -431,7 +424,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .when(messageQueueService)
                 .updatePermissions(principal);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
-                .thenReturn(DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS);
+                .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(containerId, data, principal);

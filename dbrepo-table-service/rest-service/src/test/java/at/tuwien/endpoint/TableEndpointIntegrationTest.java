@@ -98,7 +98,7 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
         /* mock */
         DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
-        accessRepository.save(DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        accessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
         tableEndpoint.create(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);

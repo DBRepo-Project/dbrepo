@@ -57,7 +57,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
-                .thenReturn(List.of(DATABASE_1_RESEARCHER_READ_ACCESS, DATABASE_2_RESEARCHER_READ_ACCESS));
+                .thenReturn(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_2_USER_1_READ_ACCESS));
 
         /* test */
         final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
@@ -81,7 +81,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
-                .thenReturn(Optional.of(DATABASE_1_RESEARCHER_READ_ACCESS));
+                .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
 
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
