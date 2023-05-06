@@ -32,6 +32,9 @@ fda-ui/
 # Environment
 .env
 
+# scanning
+.trivy/trivy-*.json
+
 # Debug
 debug.txt
 

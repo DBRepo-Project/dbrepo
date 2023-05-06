@@ -1,6 +1,7 @@
 .PHONY: clean all
 
 TAG ?= latest
+TRIVY_VERSION ?= v0.41.0
 
 all:
 
@@ -103,9 +104,6 @@ tag-broker:
 tag-search:
 	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
 
-tag-user:
-	docker tag dbrepo-user-service:latest "dbrepo/user-service:${TAG}"
-
 release: build-docker tag release-identifier release-search release-container release-database release-discovery release-gateway release-query release-table release-analyse release-authentication release-metadata-db release-ui release-units release-broker release-metadata release-user
 
 release-analyse: tag-analyse
@@ -191,6 +189,93 @@ test-semantics-service: build-semantics-service
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
+
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-container-service scan-database-service scan-discovery-service scan-gateway-service scan-identifier-service scan-metadata-db scan-metadata-service scan-proxy scan-query-service scan-search-service scan-semantics-service scan-table-service scan-ui scan-user-service
+
+scan-analyse-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
+	trivy image --exit-code 0 dbrepo-analyse-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-analyse-service:latest
+
+scan-authentication-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json dbrepo-authentication-service:latest
+	trivy image --exit-code 0 dbrepo-authentication-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
+
+scan-broker-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-broker-service:latest
+	trivy image --exit-code 0 dbrepo-broker-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
+
+scan-container-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-container-service-report.json dbrepo-container-service:latest
+	trivy image --exit-code 0 dbrepo-container-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-container-service:latest
+
+scan-database-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-database-service-report.json dbrepo-database-service:latest
+	trivy image --exit-code 0 dbrepo-database-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-database-service:latest
+
+scan-discovery-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-discovery-service-report.json dbrepo-discovery-service:latest
+	trivy image --exit-code 0 dbrepo-discovery-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-discovery-service:latest
+
+scan-gateway-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json dbrepo-gateway-service:latest
+	trivy image --exit-code 0 dbrepo-gateway-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-gateway-service:latest
+
+scan-identifier-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-identifier-service-report.json dbrepo-identifier-service:latest
+	trivy image --exit-code 0 dbrepo-identifier-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-identifier-service:latest
+
+scan-metadata-db:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
+	trivy image --exit-code 0 dbrepo-metadata-db:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-metadata-db:latest
+
+scan-metadata-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json dbrepo-metadata-service:latest
+	trivy image --exit-code 0 dbrepo-metadata-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
+
+scan-proxy:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-proxy-report.json dbrepo-proxy:latest
+	trivy image --exit-code 0 dbrepo-proxy:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-proxy:latest
+
+scan-query-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-query-service-report.json dbrepo-query-service:latest
+	trivy image --exit-code 0 dbrepo-query-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-query-service:latest
+
+scan-search-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-service-report.json dbrepo-search-service:latest
+	trivy image --exit-code 0 dbrepo-search-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-search-service:latest
+
+scan-semantics-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-semantics-service-report.json dbrepo-semantics-service:latest
+	trivy image --exit-code 0 dbrepo-semantics-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-semantics-service:latest
+
+scan-table-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-table-service-report.json dbrepo-table-service:latest
+	trivy image --exit-code 0 dbrepo-table-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-table-service:latest
+
+scan-ui:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
+	trivy image --exit-code 0 dbrepo-ui:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-ui:latest
+
+scan-user-service:
+	trivy image --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-user-service-report.json dbrepo-user-service:latest
+	trivy image --exit-code 0 dbrepo-user-service:latest
+	trivy image --exit-code 1 --severity CRITICAL dbrepo-user-service:latest
 
 coverage-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui run coverage || true

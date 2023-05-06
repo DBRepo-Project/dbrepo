@@ -9,7 +9,9 @@ before_script:
 variables:
   HOSTALIASES: ./hosts
   DOCKER_TLS_CERTDIR: /certs
-  TAG: ${TAG:-latest}
+  TAG: "${TAG:-latest}"
+  TRIVY_NO_PROGRESS: "true"
+  TRIVY_CACHE_DIR: ".trivycache/"
 
 cache:
   paths:
@@ -24,6 +26,7 @@ stages:
   - test-backend
   - test-frontend
   - build-docker
+  - scan-docker
   - release
 
 build-metadata-db:
@@ -334,10 +337,298 @@ build-frontend:
   script:
     - make build-frontend
 
+scan-analyse-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-analyse-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-analyse-service-report.json
+
+scan-authentication-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-authentication-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-authentication-service-report.json
+
+scan-broker-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-broker-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-broker-service-report.json
+
+scan-container-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-container-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-container-service-report.json
+
+scan-database-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-database-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-database-service-report.json
+
+scan-discovery-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-discovery-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-discovery-service-report.json
+
+scan-gateway-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-gateway-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-gateway-service-report.json
+
+scan-identifier-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-identifier-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-identifier-service-report.json
+
+scan-metadata-db:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-metadata-db
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-metadata-db-report.json
+
+scan-metadata-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-metadata-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-metadata-service-report.json
+
+scan-proxy:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-proxy
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-proxy-report.json
+
+scan-query-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-query-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-query-service-report.json
+
+scan-search-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-search-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-search-service-report.json
+
+scan-semantics-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-semantics-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-semantics-service-report.json
+
+scan-table-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-table-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-table-service-report.json
+
+scan-ui:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-ui
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-ui-report.json
+
+scan-user-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  allow_failure: true
+  script:
+    - make scan-user-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-user-service-report.json
+
 release-latest:
   stage: release
   needs:
-    - build-docker
+    - scan-analyse-service
+    - scan-authentication-service
+    - scan-broker-service
+    - scan-container-service
+    - scan-database-service
+    - scan-discovery-service
+    - scan-gateway-service
+    - scan-identifier-service
+    - scan-metadata-db
+    - scan-metadata-service
+    - scan-proxy
+    - scan-query-service
+    - scan-search-service
+    - scan-semantics-service
+    - scan-table-service
+    - scan-ui
+    - scan-user-service
   only:
     refs:
       - dev
@@ -349,7 +640,23 @@ release-latest:
 release-version:
   stage: release
   needs:
-    - build-docker
+    - scan-analyse-service
+    - scan-authentication-service
+    - scan-broker-service
+    - scan-container-service
+    - scan-database-service
+    - scan-discovery-service
+    - scan-gateway-service
+    - scan-identifier-service
+    - scan-metadata-db
+    - scan-metadata-service
+    - scan-proxy
+    - scan-query-service
+    - scan-search-service
+    - scan-semantics-service
+    - scan-table-service
+    - scan-ui
+    - scan-user-service
   only:
     refs:
       - master
